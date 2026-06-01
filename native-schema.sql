@@ -1316,7 +1316,7 @@ CREATE TABLE public.alert_attachments (
     analyzed_at timestamp with time zone,
     deleted_at timestamp with time zone,
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-    tenant_id uuid DEFAULT 'f47ac10b-58cc-4372-a567-0e02b2c3d479'::uuid NOT NULL,
+    tenant_id uuid DEFAULT '00000000-0000-0000-0000-000000000001'::uuid NOT NULL,
     investigation_id character varying(255),
     CONSTRAINT alert_attachments_analysis_status_check CHECK (((analysis_status)::text = ANY ((ARRAY['pending'::character varying, 'analyzing'::character varying, 'clean'::character varying, 'suspicious'::character varying, 'malicious'::character varying, 'error'::character varying])::text[]))),
     CONSTRAINT alert_attachments_storage_type_check CHECK (((storage_type)::text = ANY ((ARRAY['local'::character varying, 's3'::character varying, 'azure'::character varying, 'gcs'::character varying])::text[]))),
@@ -1339,7 +1339,7 @@ CREATE TABLE public.alert_groups (
     first_seen timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
     last_seen timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
     status character varying(20) DEFAULT 'active'::character varying,
-    tenant_id uuid DEFAULT 'f47ac10b-58cc-4372-a567-0e02b2c3d479'::uuid NOT NULL,
+    tenant_id uuid DEFAULT '00000000-0000-0000-0000-000000000001'::uuid NOT NULL,
     CONSTRAINT alert_groups_status_check CHECK (((status)::text = ANY ((ARRAY['active'::character varying, 'resolved'::character varying, 'expired'::character varying])::text[])))
 );
 
@@ -1358,7 +1358,7 @@ CREATE TABLE public.alert_ioc_links (
     extraction_method character varying(50) DEFAULT 'regex'::character varying,
     extraction_source character varying(100),
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-    tenant_id uuid DEFAULT 'f47ac10b-58cc-4372-a567-0e02b2c3d479'::uuid NOT NULL,
+    tenant_id uuid DEFAULT '00000000-0000-0000-0000-000000000001'::uuid NOT NULL,
     CONSTRAINT alert_ioc_links_ioc_type_check CHECK (((ioc_type)::text = ANY ((ARRAY['ip'::character varying, 'domain'::character varying, 'hash_md5'::character varying, 'hash_sha1'::character varying, 'hash_sha256'::character varying, 'url'::character varying, 'email'::character varying, 'cve'::character varying])::text[])))
 );
 
@@ -1539,7 +1539,7 @@ CREATE TABLE public.approval_requests (
     risk_level character varying(20) DEFAULT 'medium'::character varying,
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
     updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-    tenant_id uuid DEFAULT 'f47ac10b-58cc-4372-a567-0e02b2c3d479'::uuid NOT NULL,
+    tenant_id uuid DEFAULT '00000000-0000-0000-0000-000000000001'::uuid NOT NULL,
     CONSTRAINT approval_requests_priority_check CHECK (((priority)::text = ANY ((ARRAY['P1'::character varying, 'P2'::character varying, 'P3'::character varying, 'P4'::character varying])::text[]))),
     CONSTRAINT approval_requests_risk_level_check CHECK (((risk_level)::text = ANY ((ARRAY['low'::character varying, 'medium'::character varying, 'high'::character varying, 'critical'::character varying])::text[]))),
     CONSTRAINT approval_requests_status_check CHECK (((status)::text = ANY ((ARRAY['pending'::character varying, 'approved'::character varying, 'denied'::character varying, 'expired'::character varying])::text[])))
@@ -1569,7 +1569,7 @@ CREATE TABLE public.approval_tokens (
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
     created_by character varying(255),
     metadata jsonb DEFAULT '{}'::jsonb,
-    tenant_id uuid DEFAULT 'f47ac10b-58cc-4372-a567-0e02b2c3d479'::uuid NOT NULL
+    tenant_id uuid DEFAULT '00000000-0000-0000-0000-000000000001'::uuid NOT NULL
 );
 
 ALTER TABLE ONLY public.approval_tokens FORCE ROW LEVEL SECURITY;
@@ -1596,7 +1596,7 @@ CREATE TABLE public.asset_conflicts (
     resolution_notes text,
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
     discovery_job_id uuid,
-    tenant_id uuid DEFAULT 'f47ac10b-58cc-4372-a567-0e02b2c3d479'::uuid NOT NULL,
+    tenant_id uuid DEFAULT '00000000-0000-0000-0000-000000000001'::uuid NOT NULL,
     CONSTRAINT asset_conflicts_conflict_type_check CHECK (((conflict_type)::text = ANY ((ARRAY['duplicate_identifier'::character varying, 'conflicting_attributes'::character varying, 'merge_required'::character varying, 'ownership_conflict'::character varying, 'stale_data'::character varying, 'orphaned_relationship'::character varying])::text[]))),
     CONSTRAINT asset_conflicts_status_check CHECK (((status)::text = ANY ((ARRAY['pending'::character varying, 'resolved'::character varying, 'ignored'::character varying])::text[])))
 );
@@ -1619,7 +1619,7 @@ CREATE TABLE public.asset_history (
     change_source character varying(100),
     change_reason text,
     "timestamp" timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-    tenant_id uuid DEFAULT 'f47ac10b-58cc-4372-a567-0e02b2c3d479'::uuid NOT NULL,
+    tenant_id uuid DEFAULT '00000000-0000-0000-0000-000000000001'::uuid NOT NULL,
     CONSTRAINT asset_history_change_type_check CHECK (((change_type)::text = ANY ((ARRAY['created'::character varying, 'updated'::character varying, 'merged'::character varying, 'split'::character varying, 'decommissioned'::character varying, 'reactivated'::character varying, 'deleted'::character varying])::text[])))
 );
 
@@ -1640,7 +1640,7 @@ CREATE TABLE public.asset_identifiers (
     confidence integer DEFAULT 100,
     last_verified timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-    tenant_id uuid DEFAULT 'f47ac10b-58cc-4372-a567-0e02b2c3d479'::uuid NOT NULL
+    tenant_id uuid DEFAULT '00000000-0000-0000-0000-000000000001'::uuid NOT NULL
 );
 
 ALTER TABLE ONLY public.asset_identifiers FORCE ROW LEVEL SECURITY;
@@ -1661,7 +1661,7 @@ CREATE TABLE public.asset_relationships (
     metadata jsonb DEFAULT '{}'::jsonb,
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
     updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-    tenant_id uuid DEFAULT 'f47ac10b-58cc-4372-a567-0e02b2c3d479'::uuid NOT NULL,
+    tenant_id uuid DEFAULT '00000000-0000-0000-0000-000000000001'::uuid NOT NULL,
     CONSTRAINT asset_relationships_relationship_type_check CHECK (((relationship_type)::text = ANY ((ARRAY['runs_on'::character varying, 'connects_to'::character varying, 'depends_on'::character varying, 'managed_by'::character varying, 'hosts'::character varying, 'member_of'::character varying, 'backs_up_to'::character varying, 'replicates_to'::character varying, 'load_balances'::character varying, 'proxies'::character varying])::text[])))
 );
 
@@ -1701,7 +1701,7 @@ CREATE TABLE public.assets (
     updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
     created_by character varying(255),
     updated_by character varying(255),
-    tenant_id uuid DEFAULT 'f47ac10b-58cc-4372-a567-0e02b2c3d479'::uuid NOT NULL,
+    tenant_id uuid DEFAULT '00000000-0000-0000-0000-000000000001'::uuid NOT NULL,
     CONSTRAINT assets_asset_type_check CHECK (((asset_type)::text = ANY ((ARRAY['server'::character varying, 'workstation'::character varying, 'laptop'::character varying, 'network_device'::character varying, 'cloud_instance'::character varying, 'container'::character varying, 'virtual_machine'::character varying, 'mobile'::character varying, 'iot'::character varying, 'database'::character varying, 'application'::character varying, 'unknown'::character varying])::text[]))),
     CONSTRAINT assets_criticality_check CHECK (((criticality)::text = ANY ((ARRAY['tier1'::character varying, 'tier2'::character varying, 'tier3'::character varying, 'tier4'::character varying, 'unknown'::character varying])::text[]))),
     CONSTRAINT assets_environment_check CHECK (((environment)::text = ANY ((ARRAY['production'::character varying, 'staging'::character varying, 'development'::character varying, 'test'::character varying, 'dr'::character varying, 'unknown'::character varying])::text[]))),
@@ -1781,7 +1781,7 @@ CREATE TABLE public.audit_log (
     ip_address inet,
     user_agent text,
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-    tenant_id uuid DEFAULT 'f47ac10b-58cc-4372-a567-0e02b2c3d479'::uuid NOT NULL
+    tenant_id uuid DEFAULT '00000000-0000-0000-0000-000000000001'::uuid NOT NULL
 );
 
 ALTER TABLE ONLY public.audit_log FORCE ROW LEVEL SECURITY;
@@ -1933,7 +1933,7 @@ CREATE TABLE public.campaign_iocs (
     first_seen timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
     last_seen timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
     confidence numeric(5,2) DEFAULT 70.0,
-    tenant_id uuid DEFAULT 'f47ac10b-58cc-4372-a567-0e02b2c3d479'::uuid NOT NULL
+    tenant_id uuid DEFAULT '00000000-0000-0000-0000-000000000001'::uuid NOT NULL
 );
 
 ALTER TABLE ONLY public.campaign_iocs FORCE ROW LEVEL SECURITY;
@@ -1953,7 +1953,7 @@ CREATE TABLE public.campaign_members (
     correlation_reason text,
     correlation_score numeric(5,2),
     added_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-    tenant_id uuid DEFAULT 'f47ac10b-58cc-4372-a567-0e02b2c3d479'::uuid NOT NULL,
+    tenant_id uuid DEFAULT '00000000-0000-0000-0000-000000000001'::uuid NOT NULL,
     CONSTRAINT campaign_members_member_type_check CHECK (((member_type)::text = ANY ((ARRAY['alert'::character varying, 'investigation'::character varying])::text[])))
 );
 
@@ -2003,7 +2003,7 @@ CREATE TABLE public.case_summaries (
     generated_by character varying(100) DEFAULT 'system'::character varying,
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
     updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-    tenant_id uuid DEFAULT 'f47ac10b-58cc-4372-a567-0e02b2c3d479'::uuid NOT NULL
+    tenant_id uuid DEFAULT '00000000-0000-0000-0000-000000000001'::uuid NOT NULL
 );
 
 ALTER TABLE ONLY public.case_summaries FORCE ROW LEVEL SECURITY;
@@ -2036,7 +2036,7 @@ CREATE TABLE public.chat_action_audit (
     error_message text,
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
     updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-    tenant_id uuid DEFAULT 'f47ac10b-58cc-4372-a567-0e02b2c3d479'::uuid NOT NULL,
+    tenant_id uuid DEFAULT '00000000-0000-0000-0000-000000000001'::uuid NOT NULL,
     CONSTRAINT chat_action_audit_status_check CHECK (((status)::text = ANY ((ARRAY['requested'::character varying, 'parsed'::character varying, 'pending_approval'::character varying, 'approved'::character varying, 'denied'::character varying, 'executed'::character varying, 'failed'::character varying, 'cancelled'::character varying])::text[])))
 );
 
@@ -2094,7 +2094,7 @@ CREATE TABLE public.chat_usage_analytics (
     ip_address character varying(50),
     metadata jsonb DEFAULT '{}'::jsonb,
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-    tenant_id uuid DEFAULT 'f47ac10b-58cc-4372-a567-0e02b2c3d479'::uuid NOT NULL,
+    tenant_id uuid DEFAULT '00000000-0000-0000-0000-000000000001'::uuid NOT NULL,
     CONSTRAINT chat_usage_analytics_event_type_check CHECK (((event_type)::text = ANY ((ARRAY['session_start'::character varying, 'session_end'::character varying, 'message_sent'::character varying, 'quick_action_used'::character varying, 'action_requested'::character varying, 'agent_response'::character varying, 'connection_error'::character varying, 'reconnection'::character varying])::text[])))
 );
 
@@ -2465,7 +2465,7 @@ CREATE TABLE public.credentials_vault (
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
     updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
     last_used_at timestamp with time zone,
-    tenant_id uuid DEFAULT 'f47ac10b-58cc-4372-a567-0e02b2c3d479'::uuid NOT NULL,
+    tenant_id uuid DEFAULT '00000000-0000-0000-0000-000000000001'::uuid NOT NULL,
     CONSTRAINT credentials_vault_auth_type_check CHECK (((auth_type)::text = ANY ((ARRAY['api_key'::character varying, 'bearer'::character varying, 'basic'::character varying, 'oauth2_client'::character varying, 'oauth2_token'::character varying, 'aws'::character varying, 'custom_header'::character varying, 'none'::character varying])::text[])))
 );
 
@@ -2542,7 +2542,7 @@ CREATE TABLE public.detection_hits (
     disposition_at timestamp with time zone,
     disposition_notes text,
     detected_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-    tenant_id uuid DEFAULT 'f47ac10b-58cc-4372-a567-0e02b2c3d479'::uuid NOT NULL,
+    tenant_id uuid DEFAULT '00000000-0000-0000-0000-000000000001'::uuid NOT NULL,
     CONSTRAINT detection_hits_disposition_check CHECK (((disposition)::text = ANY ((ARRAY['true_positive'::character varying, 'false_positive'::character varying, 'benign'::character varying, 'inconclusive'::character varying, 'MALICIOUS'::character varying, 'SUSPICIOUS'::character varying, 'BENIGN'::character varying, 'TRUE_POSITIVE'::character varying, 'FALSE_POSITIVE'::character varying, 'BENIGN_POSITIVE'::character varying, 'NEEDS_INVESTIGATION'::character varying, 'INCONCLUSIVE'::character varying, 'UNKNOWN'::character varying, NULL::character varying])::text[])))
 );
 
@@ -2825,7 +2825,7 @@ CREATE TABLE public.edl_credentials (
     use_count bigint DEFAULT 0,
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
     created_by character varying(100),
-    tenant_id uuid DEFAULT 'f47ac10b-58cc-4372-a567-0e02b2c3d479'::uuid NOT NULL,
+    tenant_id uuid DEFAULT '00000000-0000-0000-0000-000000000001'::uuid NOT NULL,
     CONSTRAINT edl_cred_valid_auth CHECK (((auth_type)::text = ANY ((ARRAY['none'::character varying, 'token'::character varying, 'basic'::character varying, 'ip_allowlist'::character varying, 'header'::character varying])::text[])))
 );
 
@@ -3175,7 +3175,7 @@ CREATE TABLE public.escalation_config (
     enabled boolean DEFAULT true,
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
     updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-    tenant_id uuid DEFAULT 'f47ac10b-58cc-4372-a567-0e02b2c3d479'::uuid NOT NULL,
+    tenant_id uuid DEFAULT '00000000-0000-0000-0000-000000000001'::uuid NOT NULL,
     CONSTRAINT escalation_config_trigger_type_check CHECK (((trigger_type)::text = ANY ((ARRAY['unassigned_timeout'::character varying, 'no_activity_timeout'::character varying, 'sla_approaching'::character varying, 'sla_breach'::character varying, 'manual'::character varying])::text[])))
 );
 
@@ -3235,7 +3235,7 @@ CREATE TABLE public.escalation_history (
     escalated_by character varying(255),
     reason text,
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-    tenant_id uuid DEFAULT 'f47ac10b-58cc-4372-a567-0e02b2c3d479'::uuid NOT NULL
+    tenant_id uuid DEFAULT '00000000-0000-0000-0000-000000000001'::uuid NOT NULL
 );
 
 ALTER TABLE ONLY public.escalation_history FORCE ROW LEVEL SECURITY;
@@ -3259,7 +3259,7 @@ CREATE TABLE public.exclusion_list (
     last_hit_at timestamp with time zone,
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
     updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-    tenant_id uuid DEFAULT 'f47ac10b-58cc-4372-a567-0e02b2c3d479'::uuid NOT NULL,
+    tenant_id uuid DEFAULT '00000000-0000-0000-0000-000000000001'::uuid NOT NULL,
     CONSTRAINT exclusion_list_category_check CHECK (((category)::text = ANY ((ARRAY['internal'::character varying, 'vendor'::character varying, 'false_positive'::character varying, 'whitelist'::character varying, 'custom'::character varying])::text[]))),
     CONSTRAINT exclusion_list_ioc_type_check CHECK (((ioc_type)::text = ANY ((ARRAY['ip'::character varying, 'domain'::character varying, 'email'::character varying, 'hash'::character varying, 'cidr'::character varying, 'regex'::character varying])::text[]))),
     CONSTRAINT exclusion_list_match_type_check CHECK (((match_type)::text = ANY ((ARRAY['exact'::character varying, 'prefix'::character varying, 'suffix'::character varying, 'contains'::character varying, 'cidr'::character varying, 'regex'::character varying])::text[])))
@@ -3429,7 +3429,7 @@ CREATE TABLE public.inbound_email_queue (
     received_at timestamp with time zone,
     processed_at timestamp with time zone,
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-    tenant_id uuid DEFAULT 'f47ac10b-58cc-4372-a567-0e02b2c3d479'::uuid NOT NULL,
+    tenant_id uuid DEFAULT '00000000-0000-0000-0000-000000000001'::uuid NOT NULL,
     CONSTRAINT inbound_email_queue_status_check CHECK (((status)::text = ANY ((ARRAY['pending'::character varying, 'processing'::character varying, 'processed'::character varying, 'failed'::character varying, 'ignored'::character varying, 'spam'::character varying])::text[])))
 );
 
@@ -3588,7 +3588,7 @@ CREATE TABLE public.integration_credentials (
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
     updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
     last_rotated_at timestamp with time zone,
-    tenant_id uuid DEFAULT 'f47ac10b-58cc-4372-a567-0e02b2c3d479'::uuid NOT NULL
+    tenant_id uuid DEFAULT '00000000-0000-0000-0000-000000000001'::uuid NOT NULL
 );
 
 ALTER TABLE ONLY public.integration_credentials FORCE ROW LEVEL SECURITY;
@@ -3771,7 +3771,7 @@ CREATE TABLE public.investigation_chat (
     read_by text[] DEFAULT ARRAY[]::text[],
     is_streaming boolean DEFAULT false,
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-    tenant_id uuid DEFAULT 'f47ac10b-58cc-4372-a567-0e02b2c3d479'::uuid NOT NULL,
+    tenant_id uuid DEFAULT '00000000-0000-0000-0000-000000000001'::uuid NOT NULL,
     CONSTRAINT investigation_chat_message_type_check CHECK (((message_type)::text = ANY ((ARRAY['text'::character varying, 'action_request'::character varying, 'action_result'::character varying, 'field_update'::character varying, 'status_change'::character varying, 'enrichment'::character varying, 'finding'::character varying, 'recommendation'::character varying, 'question'::character varying, 'system'::character varying, 'error'::character varying])::text[]))),
     CONSTRAINT investigation_chat_sender_type_check CHECK (((sender_type)::text = ANY ((ARRAY['human'::character varying, 'agent_t1'::character varying, 'agent_t2'::character varying, 'agent_t3'::character varying, 'system'::character varying, 'integration'::character varying])::text[])))
 );
@@ -3810,7 +3810,7 @@ CREATE TABLE public.investigation_iocs (
     found_in character varying(100),
     is_primary boolean DEFAULT false,
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-    tenant_id uuid DEFAULT 'f47ac10b-58cc-4372-a567-0e02b2c3d479'::uuid NOT NULL
+    tenant_id uuid DEFAULT '00000000-0000-0000-0000-000000000001'::uuid NOT NULL
 );
 
 ALTER TABLE ONLY public.investigation_iocs FORCE ROW LEVEL SECURITY;
@@ -3867,7 +3867,7 @@ CREATE TABLE public.investigation_ownership_log (
     changed_by character varying(100),
     metadata jsonb DEFAULT '{}'::jsonb,
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-    tenant_id uuid DEFAULT 'f47ac10b-58cc-4372-a567-0e02b2c3d479'::uuid NOT NULL,
+    tenant_id uuid DEFAULT '00000000-0000-0000-0000-000000000001'::uuid NOT NULL,
     CONSTRAINT investigation_ownership_log_change_type_check CHECK (((change_type)::text = ANY ((ARRAY['assigned'::character varying, 'reassigned'::character varying, 'claimed'::character varying, 'released'::character varying, 'escalated'::character varying, 'auto_assigned'::character varying, 'system'::character varying])::text[])))
 );
 
@@ -3932,7 +3932,7 @@ CREATE TABLE public.ioc_blocklist (
     added_by character varying(100),
     added_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
     expires_at timestamp with time zone,
-    tenant_id uuid DEFAULT 'f47ac10b-58cc-4372-a567-0e02b2c3d479'::uuid NOT NULL
+    tenant_id uuid DEFAULT '00000000-0000-0000-0000-000000000001'::uuid NOT NULL
 );
 
 ALTER TABLE ONLY public.ioc_blocklist FORCE ROW LEVEL SECURITY;
@@ -3961,7 +3961,7 @@ CREATE TABLE public.ioc_enrichments (
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
     enriched_at timestamp with time zone,
     updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-    tenant_id uuid DEFAULT 'f47ac10b-58cc-4372-a567-0e02b2c3d479'::uuid NOT NULL,
+    tenant_id uuid DEFAULT '00000000-0000-0000-0000-000000000001'::uuid NOT NULL,
     CONSTRAINT ioc_enrichments_score_check CHECK (((score >= 0) AND (score <= 100)))
 );
 
@@ -3980,7 +3980,7 @@ CREATE TABLE public.ioc_feed_appearances (
     first_seen_in_feed timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
     last_seen_in_feed timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
     times_seen integer DEFAULT 1,
-    tenant_id uuid DEFAULT 'f47ac10b-58cc-4372-a567-0e02b2c3d479'::uuid NOT NULL
+    tenant_id uuid DEFAULT '00000000-0000-0000-0000-000000000001'::uuid NOT NULL
 );
 
 ALTER TABLE ONLY public.ioc_feed_appearances FORCE ROW LEVEL SECURITY;
@@ -4003,7 +4003,7 @@ CREATE TABLE public.ioc_whitelist (
     expires_at timestamp with time zone,
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
     updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-    tenant_id uuid DEFAULT 'f47ac10b-58cc-4372-a567-0e02b2c3d479'::uuid NOT NULL,
+    tenant_id uuid DEFAULT '00000000-0000-0000-0000-000000000001'::uuid NOT NULL,
     CONSTRAINT ioc_whitelist_category_check CHECK (((category)::text = ANY ((ARRAY['internal'::character varying, 'trusted_vendor'::character varying, 'false_positive'::character varying, 'business_critical'::character varying, 'cdn_provider'::character varying, 'security_tool'::character varying, 'other'::character varying])::text[]))),
     CONSTRAINT ioc_whitelist_ioc_type_check CHECK (((ioc_type)::text = ANY ((ARRAY['ip'::character varying, 'domain'::character varying, 'url'::character varying, 'hash'::character varying, 'hash_md5'::character varying, 'hash_sha1'::character varying, 'hash_sha256'::character varying, 'email'::character varying, 'username'::character varying, 'hostname'::character varying, 'file_path'::character varying, 'cve'::character varying, 'mitre_attack'::character varying])::text[]))),
     CONSTRAINT ioc_whitelist_pattern_type_check CHECK (((pattern_type)::text = ANY ((ARRAY['exact'::character varying, 'prefix'::character varying, 'suffix'::character varying, 'contains'::character varying, 'regex'::character varying])::text[])))
@@ -4500,7 +4500,7 @@ CREATE TABLE public.notification_rules (
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
     updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
     created_by character varying(100),
-    tenant_id uuid DEFAULT 'f47ac10b-58cc-4372-a567-0e02b2c3d479'::uuid NOT NULL
+    tenant_id uuid DEFAULT '00000000-0000-0000-0000-000000000001'::uuid NOT NULL
 );
 
 ALTER TABLE ONLY public.notification_rules FORCE ROW LEVEL SECURITY;
@@ -5003,7 +5003,7 @@ CREATE TABLE public.playbook_execution_approvals (
     created_at timestamp without time zone DEFAULT now() NOT NULL,
     responded_at timestamp without time zone,
     expires_at timestamp without time zone,
-    tenant_id uuid DEFAULT 'f47ac10b-58cc-4372-a567-0e02b2c3d479'::uuid NOT NULL
+    tenant_id uuid DEFAULT '00000000-0000-0000-0000-000000000001'::uuid NOT NULL
 );
 
 ALTER TABLE ONLY public.playbook_execution_approvals FORCE ROW LEVEL SECURITY;
@@ -5066,7 +5066,7 @@ CREATE TABLE public.playbook_files (
     uploaded_by character varying(255),
     uploaded_by_user_id uuid,
     uploaded_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-    tenant_id uuid DEFAULT 'f47ac10b-58cc-4372-a567-0e02b2c3d479'::uuid NOT NULL
+    tenant_id uuid DEFAULT '00000000-0000-0000-0000-000000000001'::uuid NOT NULL
 );
 
 ALTER TABLE ONLY public.playbook_files FORCE ROW LEVEL SECURITY;
@@ -5132,7 +5132,7 @@ CREATE TABLE public.playbook_functions (
     created_by uuid,
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
     updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-    tenant_id uuid DEFAULT 'f47ac10b-58cc-4372-a567-0e02b2c3d479'::uuid NOT NULL
+    tenant_id uuid DEFAULT '00000000-0000-0000-0000-000000000001'::uuid NOT NULL
 );
 
 ALTER TABLE ONLY public.playbook_functions FORCE ROW LEVEL SECURITY;
@@ -5152,7 +5152,7 @@ CREATE TABLE public.playbook_lists (
     created_by uuid,
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
     updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-    tenant_id uuid DEFAULT 'f47ac10b-58cc-4372-a567-0e02b2c3d479'::uuid NOT NULL
+    tenant_id uuid DEFAULT '00000000-0000-0000-0000-000000000001'::uuid NOT NULL
 );
 
 ALTER TABLE ONLY public.playbook_lists FORCE ROW LEVEL SECURITY;
@@ -5175,7 +5175,7 @@ CREATE TABLE public.playbook_node_approvals (
     reviewed_by uuid,
     reviewed_at timestamp with time zone,
     review_notes text,
-    tenant_id uuid DEFAULT 'f47ac10b-58cc-4372-a567-0e02b2c3d479'::uuid NOT NULL
+    tenant_id uuid DEFAULT '00000000-0000-0000-0000-000000000001'::uuid NOT NULL
 );
 
 ALTER TABLE ONLY public.playbook_node_approvals FORCE ROW LEVEL SECURITY;
@@ -5228,7 +5228,7 @@ CREATE TABLE public.playbook_versions (
     change_summary character varying(500),
     created_by uuid,
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-    tenant_id uuid DEFAULT 'f47ac10b-58cc-4372-a567-0e02b2c3d479'::uuid NOT NULL
+    tenant_id uuid DEFAULT '00000000-0000-0000-0000-000000000001'::uuid NOT NULL
 );
 
 ALTER TABLE ONLY public.playbook_versions FORCE ROW LEVEL SECURITY;
@@ -5509,7 +5509,7 @@ END) STORED,
     t1_match boolean GENERATED ALWAYS AS ((lower((t1_verdict)::text) = lower((riggs_verdict)::text))) STORED,
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
     updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-    tenant_id uuid DEFAULT 'f47ac10b-58cc-4372-a567-0e02b2c3d479'::uuid NOT NULL,
+    tenant_id uuid DEFAULT '00000000-0000-0000-0000-000000000001'::uuid NOT NULL,
     CONSTRAINT riggs_feedback_riggs_confidence_check CHECK (((riggs_confidence >= 0) AND (riggs_confidence <= 100))),
     CONSTRAINT riggs_feedback_riggs_mode_check CHECK (((riggs_mode)::text = ANY ((ARRAY['FAST'::character varying, 'DEEP'::character varying])::text[]))),
     CONSTRAINT riggs_feedback_t1_confidence_check CHECK (((t1_confidence >= 0) AND (t1_confidence <= 100)))
@@ -5555,7 +5555,7 @@ CREATE TABLE public.riggs_decisions (
     processing_time_ms integer,
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
     created_by character varying(100) DEFAULT 'riggs_agent'::character varying,
-    tenant_id uuid DEFAULT 'f47ac10b-58cc-4372-a567-0e02b2c3d479'::uuid NOT NULL,
+    tenant_id uuid DEFAULT '00000000-0000-0000-0000-000000000001'::uuid NOT NULL,
     CONSTRAINT riggs_decisions_confidence_check CHECK (((confidence >= (0)::numeric) AND (confidence <= (100)::numeric)))
 );
 
@@ -5579,7 +5579,7 @@ CREATE TABLE public.riggs_playbook_executions (
     analyst_notes text,
     created_at timestamp without time zone DEFAULT now() NOT NULL,
     feedback_recorded_at timestamp without time zone,
-    tenant_id uuid DEFAULT 'f47ac10b-58cc-4372-a567-0e02b2c3d479'::uuid NOT NULL,
+    tenant_id uuid DEFAULT '00000000-0000-0000-0000-000000000001'::uuid NOT NULL,
     CONSTRAINT riggs_playbook_executions_effectiveness_score_check CHECK (((effectiveness_score >= 0) AND (effectiveness_score <= 100)))
 );
 
@@ -6383,7 +6383,7 @@ CREATE TABLE public.verdict_audit_log (
     analysis_mode character varying(20),
     merge_version integer,
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-    tenant_id uuid DEFAULT 'f47ac10b-58cc-4372-a567-0e02b2c3d479'::uuid NOT NULL
+    tenant_id uuid DEFAULT '00000000-0000-0000-0000-000000000001'::uuid NOT NULL
 );
 
 ALTER TABLE ONLY public.verdict_audit_log FORCE ROW LEVEL SECURITY;
