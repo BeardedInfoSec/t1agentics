@@ -51,8 +51,8 @@ preflight() {
 
   case "$(uname -s)" in
     Linux*) : ;;
-    Darwin*) warn "macOS detected. Installer is tested on Linux; proceed at your own risk." ;;
-    MINGW*|MSYS*|CYGWIN*) fail "Windows is not supported. Use WSL2 or a Linux VM." ;;
+    Darwin*) log "macOS detected - using Docker Desktop." ;;
+    MINGW*|MSYS*|CYGWIN*) fail "Native Windows shells are not supported. Open a WSL2 (Ubuntu) terminal and run this there; Docker Desktop's WSL2 backend runs the containers." ;;
     *) warn "Unknown OS $(uname -s); proceeding." ;;
   esac
 

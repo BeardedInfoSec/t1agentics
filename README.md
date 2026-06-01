@@ -12,7 +12,7 @@ T1 Agentics is a security operations platform you run on your own infrastructure
 
 ## Quick install
 
-On a fresh Linux host (Ubuntu 22.04+ recommended) with Docker installed:
+Runs on **Linux, macOS, or Windows** — anywhere Docker runs. With Docker installed:
 
 ```bash
 git clone https://github.com/BeardedInfoSec/t1agentics
@@ -20,9 +20,11 @@ cd t1agentics
 ./install.sh
 ```
 
-`install.sh` runs preflight checks, prompts for your domain and an optional LLM provider key, generates secrets, writes a `.env`, builds the images, and starts the stack. The web UI comes up on port 443 once DNS resolves.
+- **Linux** — Docker Engine 20.10+ and the Compose plugin.
+- **macOS** — Docker Desktop for Mac.
+- **Windows** — Docker Desktop with the WSL2 backend; run the commands inside your WSL2 (Ubuntu) shell.
 
-Not on Linux? Run it under WSL2 or a Linux VM — the installer does not support Windows. See [INSTALL.md](INSTALL.md) for the step-by-step flow.
+`install.sh` runs preflight checks, prompts for your domain and an optional LLM provider key, generates secrets, writes a `.env`, builds the images, and starts the stack. The web UI comes up on port 443 once DNS resolves. For a production deployment with automatic TLS, use a Linux host with a public domain. See [INSTALL.md](INSTALL.md) for the step-by-step flow.
 
 ---
 
@@ -45,7 +47,7 @@ Not on Linux? Run it under WSL2 or a Linux VM — the installer does not support
 - 8 GB RAM minimum (16 GB recommended for multi-tenant workloads)
 - 500 GB disk (event history, alert raw payloads, and knowledge-base index grow over time)
 - Docker 20.10+ and Docker Compose v2
-- Linux host (Ubuntu 22.04 LTS or newer is the tested baseline; recent Debian, Fedora, and RHEL work)
+- Docker host: Linux (Ubuntu 22.04 LTS+ is the tested baseline; recent Debian, Fedora, RHEL work), macOS (Docker Desktop), or Windows (Docker Desktop + WSL2). Linux is recommended for production.
 - A domain name with DNS pointing to your host (required for automatic TLS)
 - An LLM provider API key (optional but strongly recommended — AI features are off without one)
 

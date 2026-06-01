@@ -9,15 +9,15 @@ Recap from the README — install fails fast if these are not met:
 - 8 GB RAM minimum (16 GB recommended)
 - 500 GB disk
 - Docker 20.10+ and Docker Compose v2
-- Linux host (Ubuntu 22.04 LTS or newer is tested)
-- A domain name with DNS pointing to your host
+- A Docker host on Linux, macOS (Docker Desktop), or Windows (Docker Desktop + WSL2). Linux is recommended for production.
+- A domain name with DNS pointing to your host (for automatic TLS in production)
 - An LLM provider API key (optional, AI features are off without it)
 
 ---
 
 ## Option A: guided installer
 
-On a fresh Linux host (Ubuntu 22.04+ recommended) with Docker and the Compose plugin already installed:
+On Linux, macOS, or Windows with Docker installed:
 
 ```bash
 git clone https://github.com/BeardedInfoSec/t1agentics
@@ -25,15 +25,21 @@ cd t1agentics
 ./install.sh
 ```
 
+Per-OS prerequisites:
+
+- **Linux** — Docker Engine 20.10+ and the Compose plugin.
+- **macOS** — Docker Desktop for Mac. Run the commands in Terminal.
+- **Windows** — Docker Desktop with the WSL2 backend enabled. Run the commands inside a WSL2 (Ubuntu) shell, not PowerShell or `cmd` — `install.sh` is a bash script and the WSL2 backend is what runs the containers.
+
 What it does, in order:
 
-1. Runs preflight checks (OS is Linux, Docker daemon reachable, required ports free)
+1. Runs preflight checks (supported OS, Docker daemon reachable, required ports free)
 2. Prompts for your domain and an optional LLM provider API key
 3. Generates random values for every required secret and writes `.env`
 4. Builds the images and brings the stack up with `docker compose up -d`
 5. Prints the URL and next-step pointers
 
-The installer is Linux-only — on Windows or macOS, run it inside WSL2 or a Linux VM. It expects Docker already installed (it will not install Docker for you). Read `install.sh` in the repo first if you want to see exactly what runs.
+It expects Docker already installed (it will not install Docker for you). Read `install.sh` in the repo first if you want to see exactly what runs.
 
 ---
 
