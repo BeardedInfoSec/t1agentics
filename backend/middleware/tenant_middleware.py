@@ -356,6 +356,13 @@ class TenantMiddleware(BaseHTTPMiddleware):
                 if await self._verify_internal_key(internal_key):
                     tenant_id = header_tenant
 
+        # 5. Single-node native fallback: when running without subdomains
+        #    (the no-Docker localhost mode), resolve every request to the
+        #    configured default tenant. Gated by NATIVE_SINGLE_TENANT so it is
+        #    a no-op in the multi-tenant Docker deployment.
+        if not tenant_id and os.getenv("NATIVE_SINGLE_TENANT") == "1":
+            tenant_id = os.getenv("DEFAULT_TENANT_ID", "00000000-0000-0000-0000-000000000001")
+
         if not tenant_id:
             return None, None
 

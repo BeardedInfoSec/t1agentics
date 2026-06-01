@@ -40,6 +40,11 @@ PGDATA = STATE / "pgdata"
 CONFIG = STATE / "config.json"
 SCHEMA_SENTINEL = STATE / "schema_applied"
 INIT_SQL = BACKEND / "init-db.sql"
+# Consolidated, production-parity schema (pg_dump of the live DB, uuid-ossp shimmed).
+# Preferred over init-db.sql + migration replay, which is Docker-tuned and fragile
+# on the embedded Postgres.
+NATIVE_SCHEMA = REPO / "native-schema.sql"
+MIGRATIONS_DIR = BACKEND / "migrations"
 
 
 def log(msg):
@@ -71,7 +76,7 @@ def load_or_create_config():
         "CREDENTIALS_ENCRYPTION_KEY": Fernet.generate_key().decode(),
         "ADMIN_USERNAME": os.getenv("ADMIN_USERNAME", "admin"),
         "ADMIN_PASSWORD": pw,
-        "ADMIN_EMAIL": os.getenv("ADMIN_EMAIL", "admin@localhost"),
+        "ADMIN_EMAIL": os.getenv("ADMIN_EMAIL", "admin@example.com"),
     }
     CONFIG.write_text(json.dumps(cfg, indent=2))
     try:
@@ -91,11 +96,40 @@ def start_postgres():
     db = pgserver.get_server(str(PGDATA))
     uri = db.get_uri()
 
+    # pgserver's bundled Postgres doesn't ship the uuid-ossp extension, so the
+    # schema's `uuid_generate_v4()` column defaults would fail. Shim it over the
+    # built-in `gen_random_uuid()` (Postgres 13+). Idempotent; runs every boot so
+    # the function is always present for runtime inserts too.
+    db.psql("CREATE OR REPLACE FUNCTION uuid_generate_v4() RETURNS uuid "
+            "LANGUAGE sql AS 'SELECT gen_random_uuid()';")
+
     if not SCHEMA_SENTINEL.exists():
-        log("Applying base schema (backend/init-db.sql) ...")
-        db.psql(INIT_SQL.read_text(encoding="utf-8"))
+        if NATIVE_SCHEMA.exists():
+            log(f"Applying consolidated schema ({NATIVE_SCHEMA.name}) ...")
+            db.psql(NATIVE_SCHEMA.read_text(encoding="utf-8"))
+            # The consolidated dump already contains every migration's result, so
+            # mark them all applied -- the app then skips the Docker-tuned replay.
+            names = sorted(p.name for p in MIGRATIONS_DIR.glob("*.sql"))
+            if names:
+                vals = ",".join("('" + n.replace("'", "''") + "')" for n in names)
+                db.psql(
+                    "INSERT INTO schema_migrations (migration_name) VALUES "
+                    f"{vals} ON CONFLICT (migration_name) DO NOTHING;"
+                )
+                log(f"Marked {len(names)} migrations as already applied.")
+            # Seed the default platform tenant (the --schema-only dump has no rows)
+            # so bootstrap_users() can attach the initial admin/analyst/readonly
+            # users -- users.tenant_id has a FK to tenants.
+            db.psql(
+                "INSERT INTO tenants (id, slug, name) VALUES "
+                "('00000000-0000-0000-0000-000000000001', 't1-agentics', 'T1 Agentics') "
+                "ON CONFLICT (id) DO NOTHING;"
+            )
+        else:
+            log("Applying base schema (backend/init-db.sql) ...")
+            db.psql(INIT_SQL.read_text(encoding="utf-8"))
         SCHEMA_SENTINEL.write_text("ok")
-        log("Base schema applied.")
+        log("Schema applied.")
     return db, uri
 
 
@@ -132,6 +166,9 @@ def main():
     os.environ["CLICKHOUSE_HOST"] = ""
     os.environ["SERVE_FRONTEND"] = "1"
     os.environ.setdefault("FRONTEND_DIR", str(FRONTEND_BUILD))
+    # No subdomains on localhost; resolve every request to the default tenant.
+    os.environ["NATIVE_SINGLE_TENANT"] = "1"
+    os.environ.setdefault("DEFAULT_TENANT_ID", "00000000-0000-0000-0000-000000000001")
 
     port = int(os.getenv("PORT", "8000"))
 
