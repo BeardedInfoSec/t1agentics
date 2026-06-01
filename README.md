@@ -28,6 +28,21 @@ cd t1agentics
 
 ---
 
+## Run without Docker (experimental)
+
+Don't want to run Docker? There's a single-process native mode that boots an embedded PostgreSQL (shipped as a pip wheel — no system Postgres, no admin rights) and serves the whole app (UI + API + WebSocket) on one port. Needs **Python 3.11 or 3.12** and Node (to build the frontend once).
+
+```bash
+git clone https://github.com/BeardedInfoSec/t1agentics
+cd t1agentics
+./run-native.sh            # Linux / macOS
+#   .\run-native.ps1       # Windows PowerShell
+```
+
+It creates a virtualenv, installs dependencies, builds the frontend, starts a local Postgres under `./.native/`, and opens `http://localhost:8000`. Redis and ClickHouse are off in this mode (the app falls back gracefully). This is the easiest way to try it on a laptop — no Docker Desktop, no WSL2. Docker Compose remains the path for production multi-tenant deployments with automatic TLS.
+
+---
+
 ## What you get
 
 - **Multi-tenant from day one.** Row-level security enforced at the database layer. A tenant context is set on every connection acquire; cross-tenant leaks require defeating both the app-layer auth check and the database policy.

@@ -7693,6 +7693,48 @@ async def get_ai_triage_stats():
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
+# ── Static frontend (native single-node mode) ──────────────────────────────
+# When SERVE_FRONTEND is enabled, this FastAPI process also serves the built
+# React app, so a single port handles the UI, the REST API, and the WebSocket
+# with no nginx/Caddy. In the Docker deployment this stays OFF (nginx serves
+# the frontend), so default behaviour is unchanged. This block is registered
+# last, after every API/WebSocket route, so the SPA catch-all never shadows them.
+if os.getenv("SERVE_FRONTEND", "").lower() in ("1", "true", "yes"):
+    from fastapi.staticfiles import StaticFiles
+    from fastapi.responses import FileResponse
+
+    _FRONTEND_DIR = os.path.abspath(os.getenv(
+        "FRONTEND_DIR",
+        os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "frontend", "build"),
+    ))
+    _SPA_INDEX = os.path.join(_FRONTEND_DIR, "index.html")
+
+    if os.path.isfile(_SPA_INDEX):
+        _static_dir = os.path.join(_FRONTEND_DIR, "static")
+        if os.path.isdir(_static_dir):
+            app.mount("/static", StaticFiles(directory=_static_dir), name="frontend-static")
+
+        # Paths that must return a real 404 instead of falling back to the SPA.
+        _NON_SPA_PREFIXES = ("api/", "ws/", "v1/", "docs", "redoc", "openapi.json", "health", "metrics")
+
+        @app.get("/{full_path:path}", include_in_schema=False)
+        async def _spa_fallback(full_path: str):
+            if full_path.startswith(_NON_SPA_PREFIXES):
+                raise HTTPException(status_code=404, detail="Not found")
+            candidate = os.path.normpath(os.path.join(_FRONTEND_DIR, full_path))
+            if (
+                full_path
+                and candidate.startswith(_FRONTEND_DIR)
+                and os.path.isfile(candidate)
+            ):
+                return FileResponse(candidate)
+            return FileResponse(_SPA_INDEX)
+
+        logger.info(f"SERVE_FRONTEND enabled; serving SPA from {_FRONTEND_DIR}")
+    else:
+        logger.warning(f"SERVE_FRONTEND set but no build found at {_FRONTEND_DIR}; static serving skipped")
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
