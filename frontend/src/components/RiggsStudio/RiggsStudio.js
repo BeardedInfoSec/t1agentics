@@ -538,7 +538,7 @@ function MyPlaybooksTab({ navigate, onSwitchTab }) {
               <button className="onboard-card" onClick={() => setShowImport(true)}>
                 <div className="onboard-card-icon import"><FolderInput size={22} /></div>
                 <h3>Import from SOAR</h3>
-                <p>Bring your Splunk SOAR, Sentinel, Palo Alto XSOAR, and 15+ other platform playbooks directly in.</p>
+                <p>Bring your Sentinel, Palo Alto XSOAR, and 15+ other platform playbooks directly in.</p>
                 <span className="onboard-card-cta">Select platform &rarr;</span>
               </button>
               <button className="onboard-card" onClick={() => onSwitchTab?.('marketplace')}>
@@ -743,7 +743,6 @@ function ApprovalsTab() {
 // ============================================================================
 
 const IMPORT_PLATFORMS = [
-  { id: 'splunk_soar', name: 'Splunk SOAR', vendor: 'Cisco / Splunk', accept: '.tgz,.tar.gz,.gz,.json', hint: 'Upload .tgz archive or .json export', formats: ['TGZ', 'JSON'] },
   { id: 'xsoar', name: 'Cortex XSOAR', vendor: 'Palo Alto Networks', accept: '.yml,.yaml,.json', hint: 'Upload YAML or JSON playbook export', formats: ['YAML', 'JSON'] },
   { id: 'sentinel', name: 'Microsoft Sentinel', vendor: 'Microsoft', accept: '.json', hint: 'Upload ARM template or Logic App .json', formats: ['JSON'] },
   { id: 'chronicle_soar', name: 'Chronicle SOAR', vendor: 'Google', accept: '.json,.yml,.yaml', hint: 'Upload playbook export', formats: ['JSON', 'YAML'] },

@@ -26,7 +26,6 @@ logger = logging.getLogger(__name__)
 
 class SourcePlatform(str, Enum):
     """Supported source SOAR platforms."""
-    SPLUNK_SOAR = "splunk_soar"
     XSOAR = "xsoar"
     TINES = "tines"
     SWIMLANE = "swimlane"
@@ -521,12 +520,6 @@ def detect_platform(content: str) -> SourcePlatform:
         # Try JSON
         data = json.loads(content)
         content_lower = str(data).lower()[:2000]
-
-        # Splunk SOAR indicators
-        if 'playbook_type' in data or 'cef_field' in content_lower:
-            return SourcePlatform.SPLUNK_SOAR
-        if 'coa' in data and 'data' in data.get('coa', {}):
-            return SourcePlatform.SPLUNK_SOAR
 
         # Tines indicators (check before generic 'agents' key)
         story = data.get('story', data)

@@ -8,7 +8,6 @@ Maps actions from SOAR platforms to T1 Agentics native node types.
 Each entry maps: source_action -> (node_type, base_config)
 
 Supported platforms:
-- Splunk SOAR (Phantom)
 - Palo Alto XSOAR (Demisto)
 - Tines
 - Swimlane
@@ -17,99 +16,6 @@ Supported platforms:
 """
 
 from typing import Dict, Tuple, Any
-
-
-# ============================================================================
-# Splunk SOAR (Phantom) Action Mappings
-# ============================================================================
-
-SPLUNK_SOAR_ACTIONS: Dict[str, Tuple[str, Dict[str, Any]]] = {
-    # Enrichment - IP
-    'ip_reputation': ('enrich', {'integration': 'virustotal', 'observable_type': 'ip'}),
-    'ip_lookup': ('enrich', {'integration': 'virustotal', 'observable_type': 'ip'}),
-    'geolocate_ip': ('enrich', {'integration': 'ipinfo', 'observable_type': 'ip'}),
-    'whois_ip': ('enrich', {'integration': 'whois', 'observable_type': 'ip'}),
-    'reverse_ip': ('enrich', {'integration': 'dns', 'observable_type': 'ip'}),
-    'hunt_ip': ('enrich', {'integration': 'threat_intel', 'observable_type': 'ip'}),
-
-    # Enrichment - Domain
-    'domain_reputation': ('enrich', {'integration': 'virustotal', 'observable_type': 'domain'}),
-    'domain_lookup': ('enrich', {'integration': 'virustotal', 'observable_type': 'domain'}),
-    'whois_domain': ('enrich', {'integration': 'whois', 'observable_type': 'domain'}),
-    'dns_lookup': ('enrich', {'integration': 'dns', 'observable_type': 'domain'}),
-    'hunt_domain': ('enrich', {'integration': 'threat_intel', 'observable_type': 'domain'}),
-
-    # Enrichment - Hash/File
-    'file_reputation': ('enrich', {'integration': 'virustotal', 'observable_type': 'hash'}),
-    'hunt_file': ('enrich', {'integration': 'virustotal', 'observable_type': 'hash'}),
-    'detonate_file': ('enrich', {'integration': 'sandbox', 'observable_type': 'hash'}),
-    'get_file': ('enrich', {'integration': 'edr', 'observable_type': 'hash'}),
-    'get_file_info': ('enrich', {'integration': 'edr', 'observable_type': 'hash'}),
-
-    # Enrichment - URL
-    'url_reputation': ('enrich', {'integration': 'virustotal', 'observable_type': 'url'}),
-    'detonate_url': ('enrich', {'integration': 'urlscan', 'observable_type': 'url'}),
-
-    # Enrichment - User
-    'get_user_attributes': ('enrich', {'integration': 'ldap', 'observable_type': 'user'}),
-    'lookup_user': ('enrich', {'integration': 'identity', 'observable_type': 'user'}),
-
-    # Enrichment - Host/System
-    'get_system_info': ('enrich', {'integration': 'edr', 'observable_type': 'host'}),
-    'list_processes': ('enrich', {'integration': 'edr', 'observable_type': 'host'}),
-    'list_connections': ('enrich', {'integration': 'edr', 'observable_type': 'host'}),
-
-    # Enrichment - SIEM
-    'run_query': ('enrich', {'integration': 'siem', 'observable_type': 'query'}),
-    'get_events': ('enrich', {'integration': 'siem', 'observable_type': 'events'}),
-
-    # Containment - Host
-    'quarantine_device': ('action', {'action_type': 'contain_host', 'requires_approval': True}),
-    'contain_device': ('action', {'action_type': 'contain_host', 'requires_approval': True}),
-    'isolate_device': ('action', {'action_type': 'contain_host', 'requires_approval': True}),
-    'unquarantine_device': ('action', {'action_type': 'uncontain_host', 'requires_approval': True}),
-    'terminate_process': ('action', {'action_type': 'kill_process', 'requires_approval': True}),
-
-    # Containment - Network
-    'block_ip': ('action', {'action_type': 'block_ip', 'requires_approval': True}),
-    'unblock_ip': ('action', {'action_type': 'unblock_ip', 'requires_approval': True}),
-    'block_domain': ('action', {'action_type': 'block_domain', 'requires_approval': True}),
-    'block_url': ('action', {'action_type': 'block_url', 'requires_approval': True}),
-    'block_hash': ('action', {'action_type': 'block_hash', 'requires_approval': True}),
-
-    # Containment - User
-    'disable_user': ('action', {'action_type': 'disable_user', 'requires_approval': True}),
-    'enable_user': ('action', {'action_type': 'enable_user', 'requires_approval': True}),
-    'reset_password': ('action', {'action_type': 'reset_password', 'requires_approval': True}),
-    'revoke_sessions': ('action', {'action_type': 'revoke_sessions', 'requires_approval': True}),
-
-    # Ticketing
-    'create_ticket': ('create_ticket', {'integration': 'servicenow'}),
-    'update_ticket': ('action', {'action_type': 'update_ticket'}),
-    'get_ticket': ('enrich', {'integration': 'servicenow', 'observable_type': 'ticket'}),
-    'close_ticket': ('action', {'action_type': 'close_ticket'}),
-
-    # Notification
-    'send_email': ('notify', {'channel': 'email'}),
-    'send_message': ('notify', {'channel': 'slack'}),
-    'post_slack_message': ('notify', {'channel': 'slack'}),
-    'send_teams_message': ('notify', {'channel': 'teams'}),
-
-    # Flow Control
-    'decision': ('condition', {}),
-    'filter': ('condition', {}),
-    'prompt': ('approval_gate', {}),
-    'playbook': ('action', {'action_type': 'run_playbook'}),
-
-    # Custom Code
-    'code': ('python_code', {}),
-    'custom_function': ('function_call', {}),
-
-    # Data
-    'format': ('transform', {'transform_type': 'format'}),
-    'join': ('transform', {'transform_type': 'join'}),
-    'split': ('transform', {'transform_type': 'split'}),
-}
 
 
 # ============================================================================
@@ -1794,7 +1700,6 @@ D3_SECURITY_ACTIONS: Dict[str, Tuple[str, Dict[str, Any]]] = {
 # ============================================================================
 
 ACTION_MAPS = {
-    'splunk_soar': SPLUNK_SOAR_ACTIONS,
     'xsoar': XSOAR_COMMANDS,
     'tines': TINES_AGENTS,
     'swimlane': SWIMLANE_ACTIONS,

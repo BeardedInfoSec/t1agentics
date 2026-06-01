@@ -928,7 +928,7 @@ async def duplicate_entry(
 class SOARPlaybookImport(BaseModel):
     """Request model for importing a SOAR playbook."""
     playbook_content: str = Field(..., description="Playbook definition content")
-    playbook_format: str = Field(..., description="Source format: splunk_soar, palo_xsoar, swimlane, etc.")
+    playbook_format: str = Field(..., description="Source format: palo_xsoar, swimlane, etc.")
 
 
 @router.post("/upload")
@@ -1053,7 +1053,6 @@ async def import_soar_playbook(
     Import and convert a SOAR playbook to knowledge base entries.
 
     Supports playbooks from various SOAR platforms:
-    - splunk_soar (Splunk SOAR/Phantom)
     - palo_xsoar (Palo Alto XSOAR/Demisto)
     - swimlane
     - siemplify

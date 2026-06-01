@@ -6,7 +6,6 @@ Playbook Converters Package
 
 Converts playbooks from various SOAR platforms to T1 Agentics native format.
 Supported platforms:
-- Splunk SOAR (Phantom)
 - Palo Alto XSOAR (Demisto)
 - Tines
 - Swimlane
@@ -28,7 +27,6 @@ Supported platforms:
 
 from .base import PlaybookConverter, ConversionReport, ParsedPlaybook, SourcePlatform
 from .action_maps import ACTION_MAPS
-from .splunk_soar import SplunkSOARConverter
 from .xsoar import XSOARConverter
 from .tines import TinesConverter
 from .swimlane import SwimlaneConverter
@@ -53,7 +51,6 @@ __all__ = [
     'ParsedPlaybook',
     'SourcePlatform',
     'ACTION_MAPS',
-    'SplunkSOARConverter',
     'XSOARConverter',
     'TinesConverter',
     'SwimlaneConverter',

@@ -854,7 +854,7 @@ If it's a single coherent document, create one comprehensive entry."""
     async def process_soar_playbook(
         self,
         playbook_content: str,
-        playbook_format: str,  # splunk_soar, palo_xsoar, swimlane, etc.
+        playbook_format: str,  # palo_xsoar, swimlane, etc.
         uploaded_by: str = 'system'
     ) -> Dict[str, Any]:
         """

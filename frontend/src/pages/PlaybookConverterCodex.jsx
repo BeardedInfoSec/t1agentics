@@ -445,16 +445,7 @@ function PlaybookConverterCodex() {
     const isArchive = isArchiveFile(lowerName);
 
     if (isArchive) {
-      if (platform !== 'splunk_soar') {
-        throw new Error('Archive uploads are only supported for Splunk SOAR.');
-      }
-      const content = await readFileContent(picked);
-      const preview = await fetchPreviewFromBackend(content, 'splunk_soar');
-      return buildCodexFromPreview(preview.playbook);
-    }
-
-    if (platform === 'splunk_soar') {
-      throw new Error('Splunk SOAR imports require a .tgz or .tar.gz file.');
+      throw new Error('Archive uploads are not supported. Upload a .json export.');
     }
 
     // Tines has a local parser that goes straight to the codex layout
@@ -621,9 +612,7 @@ function PlaybookConverterCodex() {
           <div className="import-upload-text">
             {file
               ? file.name
-              : selectedPlatform === 'splunk_soar'
-                ? 'Drop a .tgz archive here or click to browse'
-                : 'Drop a .json export here or click to browse'}
+              : 'Drop a .json export here or click to browse'}
           </div>
           <input
             type="file"
@@ -665,9 +654,9 @@ function buildSampleGraph(platform) {
   }
 
   return {
-    name: 'Splunk SOAR: Dynamic ACL Update',
+    name: 'Dynamic ACL Update',
     nodes: [
-      { id: 's1', type: 'signal', position: { x: 520, y: 60 }, data: baseNode('trigger', 'Alert Trigger', 'Phantom container', 'live', { trigger_type: 'alert' }) },
+      { id: 's1', type: 'signal', position: { x: 520, y: 60 }, data: baseNode('trigger', 'Alert Trigger', 'Incident received', 'live', { trigger_type: 'alert' }) },
       { id: 's2', type: 'signal', position: { x: 520, y: 220 }, data: baseNode('input', 'Normalize Inputs', 'Map artifacts', 'draft', { input_type: 'form', schema: '{ src_ip, dst_ip, user }' }) },
       { id: 's3', type: 'signal', position: { x: 520, y: 380 }, data: baseNode('decision', 'Is Critical?', 'severity >= high', 'draft', { expression: '$.alert.severity == "high"' }) },
       { id: 's4', type: 'signal', position: { x: 320, y: 540 }, data: baseNode('action', 'Update ACL', 'Block IP', 'ready', { action_type: 'block_ip', target_path: '$.alert.src_ip' }) },
@@ -689,120 +678,9 @@ function buildSampleGraph(platform) {
   };
 }
 
-function buildFromSplunkSoar(raw) {
-  const coa = raw?.coa?.data;
-  if (!coa?.nodes || !coa?.edges) {
-    throw new Error('Splunk SOAR JSON is missing coa.data.nodes/edges');
-  }
-
-  const nodesById = coa.nodes;
-  const nodeEntries = Object.values(nodesById);
-  const xs = nodeEntries.map((n) => n.x || 0);
-  const ys = nodeEntries.map((n) => n.y || 0);
-  const minX = Math.min(...xs, 0);
-  const minY = Math.min(...ys, 0);
-  const maxX = Math.max(...xs, 1);
-  const maxY = Math.max(...ys, 1);
-  const spanX = Math.max(1, maxX - minX);
-  const spanY = Math.max(1, maxY - minY);
-  const scaleX = 520 / spanX;
-  const scaleY = 520 / spanY;
-
-  const vpeNodes = nodeEntries.map((node) => {
-    const data = node.data || {};
-    const type = mapSoarType(data.type);
-    const title = data.advanced?.customName || data.functionName || data.action || `Node ${node.id}`;
-    const summary = summarizeSoarNode(data);
-    const config = mapSoarConfig(type, data);
-
-    return {
-      id: `soar-${node.id}`,
-      type: 'signal',
-      position: {
-        x: 520 + (node.x - minX - spanX / 2) * Math.min(scaleX, 0.6),
-        y: 60 + (node.y - minY) * Math.min(scaleY, 0.45),
-      },
-      data: baseNode(type, title, summary, 'draft', config),
-    };
-  });
-
-  const vpeEdges = (coa.edges || []).map((edge, idx) => {
-    const source = `soar-${edge.sourceNode}`;
-    const target = `soar-${edge.targetNode}`;
-    const conditionIndex = edge.conditions?.[0]?.index;
-    return {
-      id: `soar-edge-${idx}`,
-      source,
-      target,
-      animated: true,
-      type: 'smoothstep',
-      sourceHandle: conditionIndex === 0 ? 'yes' : conditionIndex === 1 ? 'no' : undefined,
-      label: conditionIndex === 0 ? 'Yes' : conditionIndex === 1 ? 'No' : undefined,
-    };
-  });
-
-  const name = raw?.coa?.data?.origin?.playbook_name || raw?.name || 'Splunk SOAR Playbook';
-
-  return {
-    name: `Splunk SOAR: ${name}`,
-    nodes: vpeNodes,
-    edges: vpeEdges,
-  };
-}
-
 function buildFromTines(raw) {
   if (!raw) throw new Error('Invalid Tines export');
   return buildSampleGraph('tines');
-}
-
-function mapSoarType(type) {
-  if (type === 'start') return 'trigger';
-  if (type === 'end') return 'end';
-  if (type === 'action') return 'action';
-  if (type === 'filter' || type === 'decision') return 'decision';
-  if (type === 'prompt') return 'approval';
-  if (type === 'format') return 'set_variable';
-  if (type === 'utility') return 'case_update';
-  return 'note';
-}
-
-function mapSoarConfig(kind, data) {
-  switch (kind) {
-    case 'trigger':
-      return { trigger_type: data.playbook_trigger || 'alert', filter: '' };
-    case 'decision':
-      return { expression: buildConditionSummary(data.conditions), default_branch: 'no' };
-    case 'approval':
-      return { approvers: data.approver?.value || 'container_owner', sla_minutes: String(data.responseTime || 30) };
-    case 'action':
-      return { action_type: data.action || data.functionName || 'action', target_path: '' };
-    case 'case_update':
-      return { field: data.functionName || 'status', value: '' };
-    case 'set_variable':
-      return { var_name: data.functionName || 'var', value_path: data.parameters?.[0] || '' };
-    default:
-      return {};
-  }
-}
-
-function summarizeSoarNode(data) {
-  if (data.action) return data.action;
-  if (data.functionName) return data.functionName;
-  if (data.message) return data.message.split('\n')[0];
-  if (data.type) return data.type;
-  return '';
-}
-
-function buildConditionSummary(conditions) {
-  if (!conditions || !conditions.length) return '';
-  return conditions
-    .map((condition) => {
-      const comparisons = condition.comparisons || [];
-      const parts = comparisons.map((cmp) => `${cmp.param} ${cmp.op} ${cmp.value}`);
-      return parts.join(` ${condition.logic?.toUpperCase() || 'AND'} `);
-    })
-    .filter(Boolean)
-    .join(' OR ');
 }
 
 function baseNode(kind, title, summary, status, config) {

@@ -5,7 +5,6 @@
 Playbook Converter API Routes
 
 Endpoints for importing and converting playbooks from SOAR platforms:
-- Splunk SOAR (Phantom)
 - Palo Alto XSOAR (Demisto)
 - Tines
 - Swimlane
@@ -16,8 +15,6 @@ Endpoints for importing and converting playbooks from SOAR platforms:
 from fastapi import APIRouter, HTTPException, UploadFile, File, Depends
 from pydantic import BaseModel, Field
 from typing import Optional, Dict, Any, List
-from collections import Counter
-import re
 import logging
 import json
 import uuid
@@ -46,7 +43,6 @@ router = APIRouter(prefix="/api/v1/playbooks/import", tags=["Playbook Import"], 
 #   3. Add an entry below — that's what makes it discoverable in the UI
 
 PLATFORM_CATALOG = [
-    {"id": "splunk_soar",       "name": "Splunk SOAR",            "formats": ["TGZ", "JSON+PY"], "accept": ".tgz,.tar.gz,.gz,.json", "description": "Phantom-era archive (.tgz) or paired JSON + Python."},
     {"id": "xsoar",             "name": "Cortex XSOAR",           "formats": ["YAML", "JSON"],   "accept": ".yml,.yaml,.json",       "description": "Palo Alto XSOAR / Demisto playbook export."},
     {"id": "sentinel",          "name": "Microsoft Sentinel",     "formats": ["JSON"],           "accept": ".json",                  "description": "Azure Logic Apps automation rule export."},
     {"id": "chronicle_soar",    "name": "Chronicle SOAR",         "formats": ["JSON"],           "accept": ".json",                  "description": "Google Chronicle SOAR (Siemplify) workflow."},
@@ -91,11 +87,11 @@ class PlaybookImportRequest(BaseModel):
     content: str = Field(..., description="Raw playbook content (JSON or YAML)")
     python_code: Optional[str] = Field(
         default=None,
-        description="Optional Splunk SOAR Python code (when JSON and PY are uploaded separately)"
+        description="Optional Python code (when JSON and PY are uploaded separately)"
     )
     source_platform: str = Field(
         default="auto",
-        description="Source platform: splunk_soar, xsoar, tines, swimlane, chronicle_soar, qradar_soar, or auto"
+        description="Source platform: xsoar, tines, swimlane, chronicle_soar, qradar_soar, or auto"
     )
     name_override: Optional[str] = Field(
         default=None,
@@ -155,11 +151,10 @@ def extract_playbook_from_archive(content: str) -> Dict[str, str]:
     """
     Extract playbook content from archive files (.tgz, .tar.gz, .gz).
 
-    For Splunk SOAR: Extracts both .py and .json files (dual-file format)
-    For other platforms: Extracts the JSON/YAML file
+    Extracts the JSON/YAML file from the archive.
 
     Returns:
-        Dict with 'content' key (JSON/YAML) and optionally 'python_code' key
+        Dict with 'content' key (JSON/YAML)
         Or just the original content string if not an archive
     """
     try:
@@ -174,9 +169,8 @@ def extract_playbook_from_archive(content: str) -> Dict[str, str]:
         try:
             with tarfile.open(fileobj=io.BytesIO(binary_data), mode='r:gz') as tar:
                 json_content = None
-                python_content = None
 
-                # Extract both Python and JSON files (for Splunk SOAR dual-file format)
+                # Extract the JSON/YAML file from the archive
                 for member in tar.getmembers():
                     if not member.isfile():
                         continue
@@ -190,18 +184,9 @@ def extract_playbook_from_archive(content: str) -> Dict[str, str]:
                     # Collect JSON/YAML files
                     if member.name.endswith('.json') or member.name.endswith('.yml') or member.name.endswith('.yaml'):
                         json_content = file_content
-                    # Collect Python files
-                    elif member.name.endswith('.py'):
-                        python_content = file_content
 
-                # Return both files if found (Splunk SOAR format)
-                if json_content and python_content:
-                    return {
-                        'content': json_content,
-                        'python_code': python_content
-                    }
-                # Return just JSON if only that was found
-                elif json_content:
+                # Return JSON if found
+                if json_content:
                     return {'content': json_content}
                 # Fallback: return first file found
                 else:
@@ -233,87 +218,6 @@ def extract_playbook_from_archive(content: str) -> Dict[str, str]:
     return {'content': content}
 
 
-def _counter_to_list(counter: Counter) -> List[Dict[str, Any]]:
-    return [
-        {"name": key, "count": value}
-        for key, value in sorted(counter.items(), key=lambda item: (-item[1], item[0]))
-    ]
-
-
-def summarize_splunk_soar_source(content: str, python_code: Optional[str]) -> Dict[str, Any]:
-    summary: Dict[str, Any] = {"json": {}, "python": {}}
-
-    try:
-        data = json.loads(content)
-        coa_data = data.get("coa", {}).get("data", {})
-        nodes_dict = coa_data.get("nodes", {})
-        edges = coa_data.get("edges", [])
-
-        blocks = []
-        if isinstance(nodes_dict, dict) and nodes_dict:
-            for node_id, node_data in nodes_dict.items():
-                block = {"id": node_id}
-                if isinstance(node_data, dict):
-                    block.update(node_data.get("data", {}))
-                    block["type"] = node_data.get("type", block.get("type"))
-                blocks.append(block)
-        elif isinstance(data.get("blocks"), list):
-            blocks = data.get("blocks", [])
-
-        node_types = Counter()
-        actions = Counter()
-        connectors = Counter()
-        connector_configs = Counter()
-
-        for block in blocks:
-            block_type = block.get("block_type") or block.get("type") or "unknown"
-            node_types[block_type] += 1
-
-            action = block.get("action") or block.get("action_id")
-            if action:
-                actions[action] += 1
-
-            connector = block.get("connector") or block.get("app") or block.get("app_id")
-            if connector:
-                connectors[connector] += 1
-
-            configs = block.get("connectorConfigs") or block.get("connector_configs") or []
-            if isinstance(configs, list):
-                for cfg in configs:
-                    connector_configs[cfg] += 1
-
-        summary["json"] = {
-            "node_count": len(blocks),
-            "edge_count": len(edges),
-            "node_types": _counter_to_list(node_types),
-            "actions": _counter_to_list(actions),
-            "connectors": _counter_to_list(connectors),
-            "connector_configs": _counter_to_list(connector_configs),
-        }
-    except Exception as e:
-        summary["json"] = {"error": str(e)}
-
-    if python_code:
-        try:
-            functions = re.findall(r"@phantom\.playbook_block\(\)\s*\ndef\s+(\w+)\s*\(", python_code)
-            act_calls = re.findall(r"phantom\.act\(\s*\"([^\"]+)\"", python_code)
-            assets = re.findall(r"assets=\[(.*?)\]", python_code)
-            preview_lines = python_code.splitlines()[:140]
-            summary["python"] = {
-                "function_count": len(functions),
-                "functions": functions,
-                "action_calls": sorted(set(act_calls)),
-                "assets": sorted(set(a.strip().strip("\"'") for a in assets if a.strip())),
-                "preview": "\n".join(preview_lines),
-            }
-        except re.error as exc:
-            summary["python"] = {"error": f"Regex parse failed: {exc}"}
-        except Exception as exc:
-            summary["python"] = {"error": str(exc)}
-
-    return summary
-
-
 # ============================================================================
 # Converter Factory
 # ============================================================================
@@ -321,7 +225,7 @@ def summarize_splunk_soar_source(content: str, python_code: Optional[str]) -> Di
 def get_converter(platform: str):
     """Get the appropriate converter for a platform."""
     from services.playbook_converters import (
-        SplunkSOARConverter, XSOARConverter, TinesConverter, SwimlaneConverter,
+        XSOARConverter, TinesConverter, SwimlaneConverter,
         ChronicleSoarConverter, QRadarSOARConverter, SentinelConverter,
         FortiSOARConverter, InsightConnectConverter, TheHiveConverter,
         ShuffleConverter, TorqConverter, ServiceNowSecOpsConverter,
@@ -330,7 +234,6 @@ def get_converter(platform: str):
     )
 
     converters = {
-        'splunk_soar': SplunkSOARConverter(),
         'xsoar': XSOARConverter(),
         'tines': TinesConverter(),
         'swimlane': SwimlaneConverter(),
@@ -357,7 +260,7 @@ def detect_and_get_converter(content: str):
     """Auto-detect platform and return appropriate converter."""
     from services.playbook_converters.base import detect_platform, SourcePlatform
     from services.playbook_converters import (
-        SplunkSOARConverter, XSOARConverter, TinesConverter, SwimlaneConverter,
+        XSOARConverter, TinesConverter, SwimlaneConverter,
         ChronicleSoarConverter, QRadarSOARConverter, SentinelConverter,
         FortiSOARConverter, InsightConnectConverter, TheHiveConverter,
         ShuffleConverter, TorqConverter, ServiceNowSecOpsConverter,
@@ -368,7 +271,6 @@ def detect_and_get_converter(content: str):
     platform = detect_platform(content)
 
     converter_map = {
-        SourcePlatform.SPLUNK_SOAR: (SplunkSOARConverter, 'splunk_soar'),
         SourcePlatform.XSOAR: (XSOARConverter, 'xsoar'),
         SourcePlatform.TINES: (TinesConverter, 'tines'),
         SourcePlatform.SWIMLANE: (SwimlaneConverter, 'swimlane'),
@@ -449,7 +351,7 @@ async def preview_conversion(request: ConversionPreviewRequest):
 
     # Convert
     try:
-        # Pass python_code to converter if available (for Splunk SOAR)
+        # Pass python_code to converter if available
         if python_code and hasattr(converter, 'set_python_code'):
             converter.set_python_code(python_code)
 
@@ -489,9 +391,6 @@ async def preview_conversion(request: ConversionPreviewRequest):
                 "conversion_time_ms": report.conversion_time_ms
             }
         }
-
-        if platform == "splunk_soar":
-            response["source_summary"] = summarize_splunk_soar_source(content, python_code)
 
         return response
 
@@ -534,7 +433,7 @@ async def import_playbook(request: PlaybookImportRequest) -> ImportResultRespons
 
     # Convert
     try:
-        # Pass python_code to converter if available (for Splunk SOAR)
+        # Pass python_code to converter if available
         if python_code and hasattr(converter, 'set_python_code'):
             converter.set_python_code(python_code)
 
@@ -620,17 +519,6 @@ async def import_playbook(request: PlaybookImportRequest) -> ImportResultRespons
     except Exception as e:
         logger.error(f"Import failed: {e}")
         raise HTTPException(status_code=400, detail=str(e))
-
-
-@router.post("/splunk-soar")
-async def import_splunk_soar(request: PlaybookImportRequest) -> ImportResultResponse:
-    """
-    Import a Splunk SOAR (Phantom) playbook.
-
-    Explicitly uses the Splunk SOAR converter.
-    """
-    request.source_platform = "splunk_soar"
-    return await import_playbook(request)
 
 
 @router.post("/xsoar")
@@ -757,38 +645,6 @@ async def get_sample_playbooks():
     """
     return {
         "platforms": [
-            {
-                "platform": "splunk_soar",
-                "name": "Splunk SOAR (Phantom)",
-                "sample": {
-                    "name": "Sample Phishing Response",
-                    "playbook_type": "automation",
-                    "blocks": [
-                        {
-                            "id": "1",
-                            "block_type": "action",
-                            "name": "Get IP Reputation",
-                            "action": "ip_reputation",
-                            "app": "VirusTotal",
-                            "outputs": [{"target": "2"}]
-                        },
-                        {
-                            "id": "2",
-                            "block_type": "decision",
-                            "name": "Check Malicious",
-                            "conditions": [
-                                {"field": "$.result.malicious", "operator": ">", "value": 0, "target": "3"}
-                            ]
-                        },
-                        {
-                            "id": "3",
-                            "block_type": "action",
-                            "name": "Block IP",
-                            "action": "block_ip"
-                        }
-                    ]
-                }
-            },
             {
                 "platform": "xsoar",
                 "name": "Palo Alto XSOAR",

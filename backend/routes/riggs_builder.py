@@ -75,7 +75,7 @@ class ConvertSoarRequest(BaseModel):
     """Request to convert a SOAR playbook using Riggs AI."""
     content: str = Field(..., min_length=10, description="Raw playbook content (JSON or YAML)")
     source_platform: str = Field(default="auto", description="Source platform or 'auto' for detection")
-    python_code: Optional[str] = Field(None, description="Optional Python code (Splunk SOAR)")
+    python_code: Optional[str] = Field(None, description="Optional Python code accompanying the playbook")
     name_override: Optional[str] = Field(None, description="Override playbook name")
 
 
@@ -96,7 +96,7 @@ async def convert_soar_playbook(
     playbook, understands its intent, and generates an optimal native
     T1 Agentics playbook.
 
-    Supported platforms: Splunk SOAR, XSOAR, Tines, Swimlane,
+    Supported platforms: XSOAR, Tines, Swimlane,
     Chronicle SOAR, QRadar SOAR (or auto-detect).
     """
     import time
@@ -137,7 +137,7 @@ async def convert_soar_playbook(
 
         # --- get platform-specific parser ---
         from services.playbook_converters import (
-            SplunkSOARConverter, XSOARConverter, TinesConverter, SwimlaneConverter,
+            XSOARConverter, TinesConverter, SwimlaneConverter,
             ChronicleSoarConverter, QRadarSOARConverter, SentinelConverter,
             FortiSOARConverter, InsightConnectConverter, TheHiveConverter,
             ShuffleConverter, TorqConverter, ServiceNowSecOpsConverter,
@@ -146,7 +146,6 @@ async def convert_soar_playbook(
         )
 
         converters = {
-            "splunk_soar": SplunkSOARConverter,
             "xsoar": XSOARConverter,
             "tines": TinesConverter,
             "swimlane": SwimlaneConverter,
