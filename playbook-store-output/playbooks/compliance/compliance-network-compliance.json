@@ -1,0 +1,250 @@
+{
+  "name": "Network Compliance Verification",
+  "slug": "compliance-network-compliance",
+  "description": "Verifies network compliance by checking network segmentation, firewall ACLs, and routing policies against the organization's network security policy. Collects firewall rules and VLAN configurations, uses Riggs AI to identify segmentation violations and overly permissive rules, then routes findings based on severity. Critical segmentation failures trigger immediate remediation; minor deviations are logged for the next change window.",
+  "category": "compliance",
+  "subcategory": "network_compliance",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "15 minutes",
+  "tags": ["compliance", "network", "segmentation", "firewall", "acl", "network_security"],
+  "alert_types": ["compliance"],
+  "severity_filter": ["low", "medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["compliance", "network_audit"],
+    "trigger_type": "scheduled",
+    "schedule": "0 2 * * 0"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "palo_alto",
+      "name": "Palo Alto Networks",
+      "category": "firewall",
+      "reason": "Retrieve firewall rules, ACLs, and security zone configurations for compliance review"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create remediation tickets for network compliance violations"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Notify network and security teams of compliance findings"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Weekly Network Compliance Check",
+          "config": {
+            "trigger_type": "scheduled",
+            "schedule": "0 2 * * 0",
+            "description": "Triggers weekly network compliance verification against segmentation and ACL policies"
+          }
+        }
+      },
+      {
+        "id": "code_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "code",
+          "label": "Retrieve Firewall Rules & ACLs",
+          "config": {
+            "mode": "integration",
+            "integration_action": {
+              "connector_id": "palo_alto",
+              "action": "get_security_rules",
+              "parameters": {
+                "include_disabled": false,
+                "include_hit_count": true
+              }
+            },
+            "output_variable": "firewall_rules",
+            "description": "Retrieve all active firewall security rules, ACLs, and their hit counts"
+          }
+        }
+      },
+      {
+        "id": "code_2",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "code",
+          "label": "Load Network Segmentation Policy",
+          "config": {
+            "mode": "query",
+            "query": "SELECT zone_name, allowed_destinations, blocked_destinations, required_inspection, max_rule_permissiveness, compliance_framework FROM network_segmentation_policy WHERE active = true ORDER BY zone_name",
+            "output_variable": "segmentation_policy",
+            "description": "Load the defined network segmentation policy requirements for comparison"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 540 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI -- Network Compliance Analysis",
+          "config": {
+            "template_id": "cloud_security",
+            "additional_instructions": "Compare firewall rules against the network segmentation policy. Identify: any-any rules, overly broad source/destination ranges, rules allowing traffic between restricted zones, unused rules (zero hit count > 30 days), and rules missing logging. Check for PCI DSS network segmentation requirements if applicable.",
+            "description": "AI-powered analysis of network compliance against segmentation and ACL policies"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 700 },
+        "data": {
+          "kind": "decision",
+          "label": "Segmentation Violations Found?",
+          "config": {
+            "condition": "{{analyze_1.critical_violations}} > 0",
+            "description": "Routes based on whether critical network segmentation violations were detected"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "label": "Create Segmentation Violation Ticket",
+          "config": {
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_issue",
+              "parameters": {
+                "project": "COMPLIANCE",
+                "issue_type": "Bug",
+                "priority": "P1",
+                "summary": "Network Segmentation Violation: {{analyze_1.critical_violations}} critical findings",
+                "description": "NETWORK COMPLIANCE AUDIT -- SEGMENTATION VIOLATIONS\n\nCritical Violations: {{analyze_1.critical_violations}}\nOverly Permissive Rules: {{analyze_1.overly_permissive_count}}\nAny-Any Rules: {{analyze_1.any_any_count}}\nCross-Zone Violations: {{analyze_1.cross_zone_violations}}\n\nFindings:\n{{analyze_1.summary}}\n\nImmediate remediation required to restore network segmentation compliance.",
+                "labels": ["network-compliance", "segmentation", "firewall", "critical"]
+              }
+            },
+            "description": "Create a P1 ticket for critical network segmentation violations"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "label": "Alert Network Team on Slack",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#network-security",
+              "message": "NETWORK COMPLIANCE VIOLATION DETECTED\n\nCritical Segmentation Violations: {{analyze_1.critical_violations}}\nJira: {{respond_1.ticket_url}}\n\n{{analyze_1.summary}}\n\nImmediate firewall rule remediation required."
+            },
+            "description": "Alert network and security teams of critical segmentation violations"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 700, "y": 860 },
+        "data": {
+          "kind": "utility",
+          "label": "Log: Network Compliant",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "Weekly network compliance check complete. All firewall rules and segmentation policies are compliant. No critical findings. Unused rules flagged for cleanup: {{analyze_1.unused_rule_count}}"
+            },
+            "description": "Document compliant network audit result with minor observations"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1180 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "Network compliance verification complete -- segmentation and ACL policies evaluated"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_code1",
+        "source": "trigger_1",
+        "target": "code_1",
+        "type": "default"
+      },
+      {
+        "id": "e_code1_code2",
+        "source": "code_1",
+        "target": "code_2",
+        "type": "default"
+      },
+      {
+        "id": "e_code2_analyze",
+        "source": "code_2",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_analyze_decision",
+        "source": "analyze_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "respond_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "utility_1",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_respond1_respond2",
+        "source": "respond_1",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_respond2_end",
+        "source": "respond_2",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_utility1_end",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

@@ -1,0 +1,184 @@
+{
+  "name": "Brute Force Response",
+  "slug": "brute-force-response",
+  "description": "Automated response to brute force login attempts. Analyzes authentication logs with AI, evaluates failed attempt thresholds, and takes containment actions including account lockout, source IP blocking, and SOC notification. Designed for rapid containment of credential-stuffing and brute-force attacks.",
+  "category": "identity",
+  "subcategory": "brute_force",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "beginner",
+  "estimated_time": "5 minutes",
+  "tags": ["brute_force", "authentication", "lockout", "automated"],
+  "alert_types": ["brute_force", "authentication"],
+  "severity_filter": ["medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["brute_force", "authentication"],
+    "min_severity": "medium"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "microsoft_graph",
+      "name": "Microsoft Graph",
+      "category": "identity",
+      "reason": "Lock targeted user account and retrieve sign-in activity logs"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "bf-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "title": "Brute Force Alert",
+          "summary": "Fires on brute force or failed authentication alert",
+          "config": {
+            "trigger_type": "alert",
+            "alert_filter": "brute_force OR authentication"
+          }
+        }
+      },
+      {
+        "id": "bf-2",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "title": "AI Brute Force Analysis",
+          "summary": "Analyze authentication logs for brute force indicators",
+          "config": {
+            "mode": "ai_analysis",
+            "template_id": "brute_force",
+            "custom_instructions": "",
+            "alert_path": "$.trigger.alert",
+            "include_context": true
+          }
+        }
+      },
+      {
+        "id": "bf-3",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "title": "> 10 Failed Attempts?",
+          "summary": "Branch if failed login count exceeds threshold",
+          "config": {
+            "conditions": {
+              "operator": "AND",
+              "conditions": [
+                {
+                  "field": "$.trigger.alert.failed_attempts",
+                  "operator": "greater_than",
+                  "value": "10"
+                }
+              ],
+              "groups": []
+            },
+            "expression": "$.trigger.alert.failed_attempts > 10",
+            "default_branch": "no"
+          }
+        }
+      },
+      {
+        "id": "bf-4",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "respond",
+          "title": "Lock Account",
+          "summary": "Disable the targeted user account via identity provider",
+          "config": {
+            "response_type": "integration_action",
+            "integration_instance_id": "microsoft_graph",
+            "action_type": "disable_account",
+            "params": {
+              "user_id": "$.trigger.alert.target_user_id",
+              "reason": "Brute force attack detected — automated lockout"
+            },
+            "requires_approval": false,
+            "priority": "high"
+          }
+        }
+      },
+      {
+        "id": "bf-5",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "title": "Block Source IP",
+          "summary": "Block attacker source IP on perimeter firewall",
+          "config": {
+            "response_type": "integration_action",
+            "action_type": "block_ip",
+            "params": {
+              "ip_address": "$.trigger.alert.source_ip",
+              "duration_hours": 24,
+              "reason": "Brute force source IP"
+            },
+            "requires_approval": false,
+            "priority": "high"
+          }
+        }
+      },
+      {
+        "id": "bf-6",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "title": "Notify SOC on Slack",
+          "summary": "Send Slack notification with brute force details and actions taken",
+          "config": {
+            "response_type": "notification",
+            "channel": "slack",
+            "slack_channel": "#soc-alerts",
+            "message": "Brute force response executed. User {{$.trigger.alert.target_user_email}} locked. Source IP {{$.trigger.alert.source_ip}} blocked for 24h.",
+            "requires_approval": false,
+            "priority": "high"
+          }
+        }
+      },
+      {
+        "id": "bf-7",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "utility",
+          "title": "Add Monitoring Note",
+          "summary": "Log note that alert is being monitored, no action required",
+          "config": {
+            "operation": "add_note",
+            "note": "Brute force alert reviewed. Failed attempts below threshold. Continuing to monitor."
+          }
+        }
+      },
+      {
+        "id": "bf-8",
+        "type": "signal",
+        "position": { "x": 520, "y": 1020 },
+        "data": {
+          "kind": "end",
+          "title": "Playbook Complete",
+          "summary": "Brute force response finished",
+          "config": {
+            "disposition": "completed",
+            "summary": "Brute force response actions completed"
+          }
+        }
+      }
+    ],
+    "edges": [
+      { "id": "bf-e1", "source": "bf-1", "target": "bf-2", "animated": true, "type": "smoothstep" },
+      { "id": "bf-e2", "source": "bf-2", "target": "bf-3", "animated": true, "type": "smoothstep" },
+      { "id": "bf-e3", "source": "bf-3", "target": "bf-4", "sourceHandle": "yes", "label": "Yes", "animated": true, "type": "smoothstep" },
+      { "id": "bf-e4", "source": "bf-3", "target": "bf-7", "sourceHandle": "no", "label": "No", "animated": true, "type": "smoothstep" },
+      { "id": "bf-e5", "source": "bf-4", "target": "bf-5", "animated": true, "type": "smoothstep" },
+      { "id": "bf-e6", "source": "bf-5", "target": "bf-6", "animated": true, "type": "smoothstep" },
+      { "id": "bf-e7", "source": "bf-6", "target": "bf-8", "animated": true, "type": "smoothstep" },
+      { "id": "bf-e8", "source": "bf-7", "target": "bf-8", "animated": true, "type": "smoothstep" }
+    ]
+  }
+}

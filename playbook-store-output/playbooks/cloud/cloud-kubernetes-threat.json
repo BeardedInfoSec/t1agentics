@@ -1,0 +1,246 @@
+{
+  "name": "Kubernetes Threat Detection & Response",
+  "slug": "cloud-kubernetes-threat",
+  "description": "Detects and responds to threats within Kubernetes clusters. Riggs AI analyzes suspicious activity such as unauthorized pod creation, RBAC misuse, or anomalous API server calls. Confirmed threats trigger RBAC audit, namespace isolation, incident ticket creation, and team alerting. Non-threatening activity is documented with severity adjustment.",
+  "category": "cloud",
+  "subcategory": "kubernetes_security",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "advanced",
+  "estimated_time": "15 minutes",
+  "tags": ["cloud", "kubernetes", "rbac", "k8s", "namespace_isolation"],
+  "alert_types": ["cloud_security", "kubernetes_threat"],
+  "severity_filter": ["medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["cloud_security", "kubernetes_threat", "k8s_anomaly"],
+    "min_severity": "medium"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "kubernetes",
+      "name": "Kubernetes API",
+      "category": "cloud_infrastructure",
+      "reason": "Audit RBAC bindings, isolate namespaces, and inspect API server audit logs"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create incident tickets for confirmed Kubernetes threats"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Alert the platform engineering and security teams of Kubernetes threats"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Kubernetes Threat Alert",
+          "config": {
+            "alert_types": ["cloud_security", "kubernetes_threat", "k8s_anomaly"],
+            "description": "Triggers when suspicious Kubernetes activity is detected such as unauthorized pod creation, RBAC anomalies, or unusual API server calls"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — Cloud Security Assessment",
+          "config": {
+            "template_id": "cloud_security",
+            "additional_instructions": "Focus on Kubernetes-specific threats: RBAC abuse, unauthorized workloads, API server anomalies, service account misuse",
+            "description": "AI-powered analysis of Kubernetes threat indicators to determine severity and recommended response actions"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "label": "Threat Confirmed?",
+          "config": {
+            "condition": "{{analyze_1.verdict}} == 'malicious' || {{analyze_1.confidence}} >= 0.75",
+            "description": "Routes based on whether the AI assessment confirmed a genuine Kubernetes threat"
+          }
+        }
+      },
+      {
+        "id": "code_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "code",
+          "label": "Audit RBAC Bindings",
+          "config": {
+            "mode": "query",
+            "query": "List all ClusterRoleBindings and RoleBindings for service account={{trigger_1.alert.service_account}} and namespace={{trigger_1.alert.namespace}}, including recent role changes in last 24h",
+            "output_variable": "rbac_audit",
+            "description": "Audit RBAC bindings associated with the threat actor to identify excessive permissions or recent privilege grants"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "label": "Isolate Namespace",
+          "config": {
+            "integration_action": {
+              "connector_id": "kubernetes",
+              "action": "isolate_namespace",
+              "parameters": {
+                "namespace": "{{trigger_1.alert.namespace}}",
+                "method": "network_policy_deny_all",
+                "reason": "Kubernetes threat detected — isolating namespace pending investigation"
+              }
+            },
+            "description": "Apply deny-all network policy to the affected namespace to contain the threat and prevent lateral movement"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "label": "Create Incident Ticket",
+          "config": {
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_ticket",
+              "parameters": {
+                "project": "SEC",
+                "issue_type": "Incident",
+                "priority": "High",
+                "summary": "Kubernetes Threat: {{trigger_1.alert.namespace}} — {{trigger_1.alert.threat_type}}",
+                "description": "Confirmed Kubernetes threat detected.\n\nNamespace: {{trigger_1.alert.namespace}}\nService Account: {{trigger_1.alert.service_account}}\nThreat Type: {{trigger_1.alert.threat_type}}\n\nActions Taken:\n- RBAC bindings audited\n- Namespace isolated via network policy\n\nRBAC Audit Results:\n{{code_1.rbac_audit}}\n\nRiggs AI Assessment:\n{{analyze_1.summary}}"
+              }
+            },
+            "description": "Create an incident ticket documenting the Kubernetes threat and all response actions"
+          }
+        }
+      },
+      {
+        "id": "respond_3",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "label": "Alert Security & Platform Teams",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#cloud-security-alerts",
+              "message": "KUBERNETES THREAT DETECTED\nNamespace: {{trigger_1.alert.namespace}}\nThreat: {{trigger_1.alert.threat_type}}\nService Account: {{trigger_1.alert.service_account}}\nActions: RBAC audited, namespace isolated\nTicket: {{respond_2.ticket_url}}\n\nRiggs Assessment:\n{{analyze_1.summary}}"
+            },
+            "description": "Notify the security and platform engineering teams of the Kubernetes threat and containment actions"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "utility",
+          "label": "Add Note: No Threat Confirmed",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "Reviewed by Riggs AI (cloud_security template). Kubernetes activity determined non-threatening. Confidence: {{analyze_1.confidence}}. Assessment: {{analyze_1.summary}}"
+            },
+            "description": "Document that AI analysis did not confirm a Kubernetes threat"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1180 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "Kubernetes threat detection and response complete"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_analyze",
+        "source": "trigger_1",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_analyze_decision",
+        "source": "analyze_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "code_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "utility_1",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_rbac_isolate",
+        "source": "code_1",
+        "target": "respond_1",
+        "type": "default"
+      },
+      {
+        "id": "e_isolate_ticket",
+        "source": "respond_1",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_ticket_notify",
+        "source": "respond_2",
+        "target": "respond_3",
+        "type": "default"
+      },
+      {
+        "id": "e_notify_end",
+        "source": "respond_3",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_utility_end",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

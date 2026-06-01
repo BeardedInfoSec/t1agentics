@@ -1,0 +1,1036 @@
+{
+  "schema_version": 27,
+  "standard_lib_version": 85,
+  "action_runtime_version": 63,
+  "name": "Tag AWS resources based on Cyera data classification findings",
+  "description": "Monitor Cyera for data classification findings in AWS storage and automatically apply security tags to S3 buckets or RDS databases based on sensitivity. Update the issue status in Cyera once tagging is confirmed.",
+  "guid": "62001e4c09940ee4e863180fe15f8170",
+  "slug": "tag_aws_resources_based_on_cyera_data_classification_findings",
+  "agents": [
+    {
+      "type": "Agents::WebhookAgent",
+      "name": "Cyera Issue Trigger",
+      "disabled": false,
+      "description": null,
+      "guid": "15a58d3c66a2bf8ba935c5520a418005",
+      "origin_story_identifier": "cloud:d521f765a49c72507257a2620612ee96:e4effd4dc911e0e2b0eaeb96fe898bf9",
+      "options": {
+        "path": "f46ed5287c87219a342425d9697ebea0",
+        "secret": "a531f999a2bdc90e1d8b5ccf614b24a1",
+        "verbs": "get,post"
+      },
+      "reporting": {
+        "time_saved_value": 0,
+        "time_saved_unit": "minutes"
+      },
+      "monitoring": {
+        "monitor_all_events": false,
+        "monitor_failures": false,
+        "monitor_no_events_emitted": null
+      },
+      "template": {
+        "created_from_template_guid": null,
+        "created_from_template_version": null,
+        "template_tags": []
+      },
+      "width": null
+    },
+    {
+      "type": "Agents::HTTPRequestAgent",
+      "name": "Set AWS S3 Tag",
+      "disabled": false,
+      "description": "Set AWS S3 tag for a bucket. The agent requires AWS region of the bucket and bucket name. A successful request will result in an HTTP response status code of '200'.",
+      "guid": "4581095390651301a6c218cee59507a0",
+      "origin_story_identifier": "cloud:d521f765a49c72507257a2620612ee96:e4effd4dc911e0e2b0eaeb96fe898bf9",
+      "options": {
+        "url": "https://<<cyera_issue_trigger.body.data.data.datastoreName>>.s3.<<FIRST(get_datastores.body.results[0].regions)>>.amazonaws.com/?tagging",
+        "method": "put",
+        "content_type": "application/xml",
+        "headers": {
+          "Authorization": "<<CREDENTIAL.aws>>"
+        },
+        "payload": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<Tagging xmlns=\"http://s3.amazonaws.com/doc/2006-03-01/\">\n    <TagSet>\n        <Tag>\n            <Key>Classification</Key>\n            <Value><<get_datastores.body.results[0].sensitivityDisplayName>></Value>\n        </Tag>\n    </TagSet>\n</Tagging>"
+      },
+      "reporting": {
+        "time_saved_value": 0,
+        "time_saved_unit": "minutes"
+      },
+      "monitoring": {
+        "monitor_all_events": false,
+        "monitor_failures": false,
+        "monitor_no_events_emitted": null
+      },
+      "template": {
+        "created_from_template_guid": "71fb487fd95e801d654b386d35092444a4edce0708748d280e0c7b66ebb344af",
+        "created_from_template_version": 1,
+        "template_tags": []
+      },
+      "width": null,
+      "schedule": null
+    },
+    {
+      "type": "Agents::TriggerAgent",
+      "name": "S3",
+      "disabled": false,
+      "description": null,
+      "guid": "927f218ca2648a729224128872f37246",
+      "origin_story_identifier": "cloud:d521f765a49c72507257a2620612ee96:e4effd4dc911e0e2b0eaeb96fe898bf9",
+      "options": {
+        "rules": [
+          {
+            "type": "field==value",
+            "value": "s3",
+            "path": "<<cyera_issue_trigger.body.data.data.infrastructure>>"
+          }
+        ],
+        "must_match": 1
+      },
+      "reporting": {
+        "time_saved_value": 0,
+        "time_saved_unit": "minutes"
+      },
+      "monitoring": {
+        "monitor_all_events": false,
+        "monitor_failures": false,
+        "monitor_no_events_emitted": null
+      },
+      "template": {
+        "created_from_template_guid": null,
+        "created_from_template_version": null,
+        "template_tags": []
+      },
+      "width": null
+    },
+    {
+      "type": "Agents::TriggerAgent",
+      "name": "Confirm Tag Applied",
+      "disabled": false,
+      "description": null,
+      "guid": "a2f384c985f33f47dff5f249cf2e0cd9",
+      "origin_story_identifier": "cloud:d521f765a49c72507257a2620612ee96:e4effd4dc911e0e2b0eaeb96fe898bf9",
+      "options": {
+        "rules": [
+          {
+            "type": "field==value",
+            "value": "200",
+            "path": "<<set_aws_s3_tag.status>>"
+          }
+        ]
+      },
+      "reporting": {
+        "time_saved_value": 0,
+        "time_saved_unit": "minutes"
+      },
+      "monitoring": {
+        "monitor_all_events": false,
+        "monitor_failures": false,
+        "monitor_no_events_emitted": null
+      },
+      "template": {
+        "created_from_template_guid": null,
+        "created_from_template_version": null,
+        "template_tags": []
+      },
+      "width": null
+    },
+    {
+      "type": "Agents::EventTransformationAgent",
+      "name": "Delay 2 seconds",
+      "disabled": false,
+      "description": null,
+      "guid": "106966af1bb3de5c97a6c5c8c2457fdf",
+      "origin_story_identifier": "cloud:d521f765a49c72507257a2620612ee96:e4effd4dc911e0e2b0eaeb96fe898bf9",
+      "options": {
+        "mode": "delay",
+        "seconds": "2"
+      },
+      "reporting": {
+        "time_saved_value": 0,
+        "time_saved_unit": "minutes"
+      },
+      "monitoring": {
+        "monitor_all_events": false,
+        "monitor_failures": false,
+        "monitor_no_events_emitted": null
+      },
+      "template": {
+        "created_from_template_guid": null,
+        "created_from_template_version": null,
+        "template_tags": []
+      },
+      "width": null
+    },
+    {
+      "type": "Agents::TriggerAgent",
+      "name": "Tag Resource with Defined Classification",
+      "disabled": false,
+      "description": "Uses an issue created looking for a specific found data class to serve as the trigger",
+      "guid": "1e033150ef1ad1d22a1eed87ef80b592",
+      "origin_story_identifier": "cloud:d521f765a49c72507257a2620612ee96:e4effd4dc911e0e2b0eaeb96fe898bf9",
+      "options": {
+        "rules": [
+          {
+            "type": "field==value",
+            "value": "InProgress",
+            "path": "<<cyera_issue_trigger.body.data.data.targetStatus>>"
+          },
+          {
+            "type": "field==value",
+            "value": "Tag Resource with Defined Classification",
+            "path": "<<cyera_issue_trigger.body.data.data.name>>"
+          }
+        ]
+      },
+      "reporting": {
+        "time_saved_value": 0,
+        "time_saved_unit": "minutes"
+      },
+      "monitoring": {
+        "monitor_all_events": false,
+        "monitor_failures": false,
+        "monitor_no_events_emitted": null
+      },
+      "template": {
+        "created_from_template_guid": null,
+        "created_from_template_version": null,
+        "template_tags": []
+      },
+      "width": null
+    },
+    {
+      "type": "Agents::TriggerAgent",
+      "name": "RDS",
+      "disabled": false,
+      "description": null,
+      "guid": "f0634a91ce00dc50da8ec6493960dc3e",
+      "origin_story_identifier": "cloud:d521f765a49c72507257a2620612ee96:e4effd4dc911e0e2b0eaeb96fe898bf9",
+      "options": {
+        "rules": [
+          {
+            "type": "field==value",
+            "value": "rds",
+            "path": "<<get_datastores.body.results[0].infrastructure>>"
+          }
+        ]
+      },
+      "reporting": {
+        "time_saved_value": 0,
+        "time_saved_unit": "minutes"
+      },
+      "monitoring": {
+        "monitor_all_events": false,
+        "monitor_failures": false,
+        "monitor_no_events_emitted": null
+      },
+      "template": {
+        "created_from_template_guid": null,
+        "created_from_template_version": null,
+        "template_tags": []
+      },
+      "width": null
+    },
+    {
+      "type": "Agents::HTTPRequestAgent",
+      "name": "Set AWS RDS Tag",
+      "disabled": false,
+      "description": "Set AWS tag for a RDS instance. The agent requires AWS region of the instance and ARN. A successful request will result in an HTTP response status code of '200'.",
+      "guid": "920529b63f5fecb09f1739a998b29220",
+      "origin_story_identifier": "cloud:d521f765a49c72507257a2620612ee96:e4effd4dc911e0e2b0eaeb96fe898bf9",
+      "options": {
+        "url": "https://rds.<<FIRST(get_datastores.body.results[0].regions)>>.amazonaws.com",
+        "method": "post",
+        "content_type": "application/x-www-form-urlencoded; charset=utf-8",
+        "headers": {
+          "Authorization": "<<CREDENTIAL.aws>>"
+        },
+        "payload": "\"Action=AddTagsToResource\n&Version=2014-10-31\n&ResourceName=<<get_datastores.body.results[0].arn>>\n&Tags.Tag.1.Key=Classification\n&Tags.Tag.1.Value=<<get_datastores.body.results[0].sensitivityDisplayName>>\""
+      },
+      "reporting": {
+        "time_saved_value": 0,
+        "time_saved_unit": "minutes"
+      },
+      "monitoring": {
+        "monitor_all_events": false,
+        "monitor_failures": false,
+        "monitor_no_events_emitted": null
+      },
+      "template": {
+        "created_from_template_guid": "71fb487fd95e801d654b386d35092444a4edce0708748d280e0c7b66ebb344af",
+        "created_from_template_version": 1,
+        "template_tags": []
+      },
+      "width": null,
+      "schedule": null
+    },
+    {
+      "type": "Agents::TriggerAgent",
+      "name": "Confirm Tag Applied",
+      "disabled": false,
+      "description": null,
+      "guid": "850b6356d246313836d062e64d72bdf7",
+      "origin_story_identifier": "cloud:d521f765a49c72507257a2620612ee96:e4effd4dc911e0e2b0eaeb96fe898bf9",
+      "options": {
+        "rules": [
+          {
+            "type": "field==value",
+            "value": "200",
+            "path": "<<set_aws_rds_tag.status>>"
+          }
+        ]
+      },
+      "reporting": {
+        "time_saved_value": 0,
+        "time_saved_unit": "minutes"
+      },
+      "monitoring": {
+        "monitor_all_events": false,
+        "monitor_failures": false,
+        "monitor_no_events_emitted": null
+      },
+      "template": {
+        "created_from_template_guid": null,
+        "created_from_template_version": null,
+        "template_tags": []
+      },
+      "width": null
+    },
+    {
+      "type": "Agents::EventTransformationAgent",
+      "name": "Delay 2 seconds",
+      "disabled": false,
+      "description": null,
+      "guid": "ba7881e8e7df8c4a87189ee9b00ca1b4",
+      "origin_story_identifier": "cloud:d521f765a49c72507257a2620612ee96:e4effd4dc911e0e2b0eaeb96fe898bf9",
+      "options": {
+        "mode": "delay",
+        "seconds": "2"
+      },
+      "reporting": {
+        "time_saved_value": 0,
+        "time_saved_unit": "minutes"
+      },
+      "monitoring": {
+        "monitor_all_events": false,
+        "monitor_failures": false,
+        "monitor_no_events_emitted": null
+      },
+      "template": {
+        "created_from_template_guid": null,
+        "created_from_template_version": null,
+        "template_tags": []
+      },
+      "width": null
+    },
+    {
+      "type": "Agents::HTTPRequestAgent",
+      "name": "Get datastores",
+      "disabled": false,
+      "description": "Returns datastores configuration information including scan state, cloud provider information for a set of filters and is the key organizational unit in Cyera\n\nLink to documentation:\nhttps://api.cyera.io/#/\n",
+      "guid": "2bac5790b170c0e6eace3b6145d19e4e",
+      "origin_story_identifier": "cloud:d521f765a49c72507257a2620612ee96:e4effd4dc911e0e2b0eaeb96fe898bf9",
+      "options": {
+        "url": "https://<<INPUT.cyera_domain>>/v2/datastores",
+        "content_type": "application_json",
+        "method": "get",
+        "query_params": "=LOCAL.final_query",
+        "headers": {
+          "Authorization": "Bearer <<INPUT.cyera_credential>>"
+        },
+        "local": {
+          "query_map": {
+            "offset": "offset",
+            "limit": "limit",
+            "provider": "provider",
+            "infrastructure": "infrastructure",
+            "scanningStateStatus": "scanning_state_status",
+            "lastDataRefreshGte": "last_data_refresh_gte",
+            "lastDataRefreshLte": "last_data_refresh_lte",
+            "name": "name",
+            "dataType": "data_type",
+            "createdDate": "created_date",
+            "cloudProviderUrl": "cloud_provider_url",
+            "regions": "regions",
+            "datastoreSizeInGiB": "datastore_size_in_gi_b",
+            "projectIds": "project_ids",
+            "inPlatformIdentifier": "in_platform_identifier",
+            "uid": "uid"
+          },
+          "all_query_parameters": {
+            "offset": "=INPUT.offset",
+            "limit": "=INPUT.limit",
+            "provider": "=FORCE_ARRAY(INPUT.provider)[0]",
+            "infrastructure": "=FORCE_ARRAY(INPUT.infrastructure)",
+            "scanningStateStatus": "=FORCE_ARRAY(INPUT.scanning_state_status)",
+            "lastDataRefreshGte": "=INPUT.last_data_refresh_gte",
+            "lastDataRefreshLte": "=INPUT.last_data_refresh_lte",
+            "name": "=INPUT.name",
+            "dataType": "=FORCE_ARRAY(INPUT.data_type)[0]",
+            "createdDate": "=INPUT.created_date",
+            "cloudProviderUrl": "=INPUT.cloud_provider_url",
+            "regions": "=SPLIT(REMOVE(INPUT.regions, \" \"), \",\")",
+            "datastoreSizeInGiB": "=INPUT.datastore_size_in_gi_b",
+            "projectIds": "=SPLIT(REMOVE(INPUT.project_ids, \" \"), \",\")",
+            "inPlatformIdentifier": "=INPUT.in_platform_identifier",
+            "uid": "=SPLIT(REMOVE(INPUT.uid, \" \"), \",\")"
+          },
+          "filter_query": "=FILTER(\n  LOCAL.all_query_parameters,\n    LAMBDA(\n      k,\n      v,\n      NOT(\n    META.action.integration.action_inputs[\n      LOCAL.query_map[k]].is_collapsed)\n    )\n)",
+          "final_query": "=LOCAL.filter_query"
+        },
+        "params_encoder": "nested"
+      },
+      "reporting": {
+        "time_saved_value": 0,
+        "time_saved_unit": "minutes"
+      },
+      "monitoring": {
+        "monitor_all_events": false,
+        "monitor_failures": false,
+        "monitor_no_events_emitted": null
+      },
+      "template": {
+        "created_from_template_guid": "eb0f7370f9c170115601810a982038f2a3a5fe27fe744dbf6affa07dfed0eca5",
+        "created_from_template_version": null,
+        "template_tags": []
+      },
+      "width": null,
+      "schedule": null
+    },
+    {
+      "type": "Agents::EventTransformationAgent",
+      "name": "Extract Datastore Uid",
+      "disabled": false,
+      "description": null,
+      "guid": "f70c2df01c91720b4de2de3a280758cc",
+      "origin_story_identifier": "cloud:d521f765a49c72507257a2620612ee96:e4effd4dc911e0e2b0eaeb96fe898bf9",
+      "options": {
+        "mode": "message_only",
+        "loop": false,
+        "payload": {
+          "datastoreUid": "<<REPLACE(cyera_issue_trigger.body.data.data.datastoreUid, \"\\\"\", \"\")>>"
+        }
+      },
+      "reporting": {
+        "time_saved_value": 0,
+        "time_saved_unit": "minutes"
+      },
+      "monitoring": {
+        "monitor_all_events": false,
+        "monitor_failures": false,
+        "monitor_no_events_emitted": null
+      },
+      "template": {
+        "created_from_template_guid": null,
+        "created_from_template_version": null,
+        "template_tags": []
+      },
+      "width": null,
+      "schedule": null
+    },
+    {
+      "type": "Agents::HTTPRequestAgent",
+      "name": "Set issue status",
+      "disabled": false,
+      "description": "Set issue status\n\nLink to documentation:\nhttps://api.cyera.io/#/\n",
+      "guid": "0f41a9b5a68529d1c3edc3d4297bcb5c",
+      "origin_story_identifier": "cloud:d521f765a49c72507257a2620612ee96:e4effd4dc911e0e2b0eaeb96fe898bf9",
+      "options": {
+        "url": "https://<<INPUT.cyera_domain>>/v1/issues/<<INPUT.uid>>/status",
+        "content_type": "application_json",
+        "method": "put",
+        "payload": "=LOCAL.final_payload",
+        "headers": {
+          "Authorization": "Bearer <<INPUT.cyera_credential>>"
+        },
+        "local": {
+          "payload_map": {
+            "status": "status",
+            "resolution": "resolution",
+            "resolutionNote": "resolution_note"
+          },
+          "all_payload_parameters": {
+            "status": "=FORCE_ARRAY(INPUT.status)[0]",
+            "resolution": "=FORCE_ARRAY(INPUT.resolution)[0]",
+            "resolutionNote": "=INPUT.resolution_note"
+          },
+          "filter_payload": "=FILTER(\n  LOCAL.all_payload_parameters,\n    LAMBDA(\n      k,\n      v,\n      NOT(\n    META.action.integration.action_inputs[\n      LOCAL.payload_map[k]].is_collapsed)\n    )\n)",
+          "final_payload": "=LOCAL.filter_payload"
+        }
+      },
+      "reporting": {
+        "time_saved_value": 0,
+        "time_saved_unit": "minutes"
+      },
+      "monitoring": {
+        "monitor_all_events": false,
+        "monitor_failures": false,
+        "monitor_no_events_emitted": null
+      },
+      "template": {
+        "created_from_template_guid": "6debcdad457cae57b6b89d0016cfb8fbbf200a4808faf07bb2b81f717aaaf558",
+        "created_from_template_version": null,
+        "template_tags": []
+      },
+      "width": null,
+      "schedule": null
+    }
+  ],
+  "diagram_notes": [
+    {
+      "content": "When Cyera identifies a data resource containing information with sensitive data, this finding surfaced through a Cyera issue which is programmatically communicated to Tines.\nUpon receiving the sensitivity classification from Cyera, Tines automatically applies a corresponding cloud resource tag to the data asset or storage location hosting the identified information. The tag follows a standardized naming convention, such as:\n`Cyera_Sensitivity: <Sensitivity_Level>`\n\nFor example, if Cyera determines that a dataset has Restricted sensitivity classification, Tines will automatically assign the tag: `Cyera_Sensitivity: Restricted`.\nThis process ensures consistent, automated labeling of cloud assets based on data sensitivity, enabling downstream compliance enforcement, access control policies, and audit visibility across the environment.\n\n##  Technical Integration Requirements\n**Cyera**\n- Authentication: Must provide secure authentication details for Tines to connect to Cyera\n\n**Tines**\n- Cloud Provider Integration: Tines must have established, authenticated access (via IAM roles or credentials) to the target cloud environments (e.g., AWS, Azure, GCP) with the necessary permissions to read and write/modify resource tags.\n\n**Cloud Environment (AWS/Azure/GCP)**\n- Tagging Permissions: The IAM role/service principal used by Tines must have the tagging permissions (ec2:CreateTags, s3:PutBucketTagging, etc.) for the specific resource types being monitored (e.g., S3 buckets, RDS instances, Storage Accounts).",
+      "position": [
+        435,
+        195
+      ],
+      "guid": "c09ac380d8f209e9ea24e42ec5948468",
+      "width": 566
+    }
+  ],
+  "links": [
+    {
+      "source": 0,
+      "receiver": 5
+    },
+    {
+      "source": 1,
+      "receiver": 4
+    },
+    {
+      "source": 2,
+      "receiver": 1
+    },
+    {
+      "source": 3,
+      "receiver": 12
+    },
+    {
+      "source": 4,
+      "receiver": 3
+    },
+    {
+      "source": 5,
+      "receiver": 11
+    },
+    {
+      "source": 6,
+      "receiver": 7
+    },
+    {
+      "source": 7,
+      "receiver": 9
+    },
+    {
+      "source": 8,
+      "receiver": 12
+    },
+    {
+      "source": 9,
+      "receiver": 8
+    },
+    {
+      "source": 10,
+      "receiver": 2
+    },
+    {
+      "source": 10,
+      "receiver": 6
+    },
+    {
+      "source": 11,
+      "receiver": 10
+    }
+  ],
+  "diagram_layout": "{\"0f41a9b5a68529d1c3edc3d4297bcb5c\":[1185,750],\"106966af1bb3de5c97a6c5c8c2457fdf\":[1305,600],\"15a58d3c66a2bf8ba935c5520a418005\":[1050,165],\"1e033150ef1ad1d22a1eed87ef80b592\":[1050,240],\"2bac5790b170c0e6eace3b6145d19e4e\":[1050,405],\"4581095390651301a6c218cee59507a0\":[1305,540],\"850b6356d246313836d062e64d72bdf7\":[1050,675],\"920529b63f5fecb09f1739a998b29220\":[1050,540],\"927f218ca2648a729224128872f37246\":[1305,480],\"a2f384c985f33f47dff5f249cf2e0cd9\":[1305,675],\"ba7881e8e7df8c4a87189ee9b00ca1b4\":[1050,600],\"f0634a91ce00dc50da8ec6493960dc3e\":[1050,480],\"f70c2df01c91720b4de2de3a280758cc\":[1050,330]}",
+  "story_library_metadata": {
+    "tags": null,
+    "icons": [
+      "cyera",
+      "aws",
+      "✨"
+    ],
+    "visibility": "public"
+  },
+  "monitor_failures": false,
+  "synchronous_webhooks_enabled": false,
+  "integrations": [
+    {
+      "action_inputs": [
+        {
+          "name": "Cyera credential",
+          "description": "",
+          "required": true,
+          "type": "CREDENTIAL",
+          "ranking": 0,
+          "value": "\"\"",
+          "options": [
+            "Option 1",
+            "Option 2"
+          ],
+          "is_collapsed": false,
+          "sub_type": "HTML",
+          "multi_select_enabled": false,
+          "llm_json_schema": "{}"
+        },
+        {
+          "name": "Uid",
+          "description": "UUID",
+          "required": true,
+          "type": "TEXT",
+          "ranking": 1,
+          "value": "\"<<cyera_issue_trigger.body.data.eventUID>>\"",
+          "options": [
+            "Option 1",
+            "Option 2"
+          ],
+          "is_collapsed": false,
+          "sub_type": "HTML",
+          "multi_select_enabled": false,
+          "llm_json_schema": "{}"
+        },
+        {
+          "name": "Cyera domain",
+          "description": "Your Cyera domain (ex: api.cyera.io)",
+          "required": true,
+          "type": "TEXT",
+          "ranking": 2,
+          "value": "\"<<DEFAULT(INPUT.cyera_credential.info.metadata.domain, \\\"api.cyera.io\\\")>>\"",
+          "options": [
+            "Option 1",
+            "Option 2"
+          ],
+          "is_collapsed": false,
+          "sub_type": "HTML",
+          "multi_select_enabled": false,
+          "llm_json_schema": "{}"
+        },
+        {
+          "name": "Status",
+          "description": "Issue status",
+          "required": true,
+          "type": "OPTION",
+          "ranking": 3,
+          "value": "[\"Closed\"]",
+          "options": [
+            "Open",
+            "InProgress",
+            "Closed"
+          ],
+          "is_collapsed": false,
+          "sub_type": "HTML",
+          "multi_select_enabled": false,
+          "llm_json_schema": "{}"
+        },
+        {
+          "name": "Resolution",
+          "description": "Issue resolution reason, in case the issue is closed",
+          "required": false,
+          "type": "OPTION",
+          "ranking": 4,
+          "value": "\"\"",
+          "options": [
+            "AcceptRisk",
+            "FalsePositive",
+            "Fixed"
+          ],
+          "is_collapsed": true,
+          "sub_type": "HTML",
+          "multi_select_enabled": false,
+          "llm_json_schema": "{}"
+        },
+        {
+          "name": "Resolution note",
+          "description": "Issue resolution note, in case the issue is closed",
+          "required": false,
+          "type": "TEXT",
+          "ranking": 5,
+          "value": "\"\"",
+          "options": [
+            "Option 1",
+            "Option 2"
+          ],
+          "is_collapsed": true,
+          "sub_type": "HTML",
+          "multi_select_enabled": false,
+          "llm_json_schema": "{}"
+        }
+      ],
+      "action_guid": "0f41a9b5a68529d1c3edc3d4297bcb5c",
+      "product": "Cyera",
+      "action_options_keys": []
+    },
+    {
+      "action_inputs": [
+        {
+          "name": "Infrastructure",
+          "description": "List of infrastructures (delimited by comma separator \",\")",
+          "required": false,
+          "type": "OPTION",
+          "ranking": 0,
+          "value": "\"\"",
+          "options": [
+            "ec2",
+            "rds",
+            "s3",
+            "on-prem",
+            "elastic-cache",
+            "dynamo-db",
+            "bigquery",
+            "gcp-storage",
+            "gcp-cloud-sql",
+            "google-drive",
+            "azure-sql-database",
+            "azure-blob-storage",
+            "azure-file-share",
+            "azure-sql-managed-instance",
+            "Cloud SQL",
+            "azure-vm-sql",
+            "azure-database-server",
+            "redshift",
+            "OneDrive",
+            "snowflake",
+            "atlas-cluster",
+            "azure-vm",
+            "OpenSearch",
+            "databricks",
+            "cosmos-db",
+            "azure-redis-cache",
+            "on-prem-file-share",
+            "netapp-on-prem-smb-file-share",
+            "box",
+            "crdb",
+            "yugabyte-aeon",
+            "salesforce-unstructured"
+          ],
+          "is_collapsed": true,
+          "sub_type": "HTML",
+          "multi_select_enabled": true,
+          "llm_json_schema": "{}"
+        },
+        {
+          "name": "Provider",
+          "description": "Cloud Provider",
+          "required": false,
+          "type": "OPTION",
+          "ranking": 1,
+          "value": "\"\"",
+          "options": [
+            "AWS",
+            "Azure",
+            "GCP",
+            "Snowflake",
+            "Microsoft365",
+            "Atlas",
+            "Salesforce",
+            "Box",
+            "Google Workspace",
+            "Oracle Cloud",
+            "Mongo Atlas",
+            "Databricks",
+            "Dropbox",
+            "Jira",
+            "Github",
+            "Workday",
+            "On-prem",
+            "CockroachDB",
+            "Yugabyte Aeon",
+            "Okta"
+          ],
+          "is_collapsed": true,
+          "sub_type": "HTML",
+          "multi_select_enabled": false,
+          "llm_json_schema": "{}"
+        },
+        {
+          "name": "Limit",
+          "description": "Limit the number of results (Min: 1, Max: 1000)",
+          "required": true,
+          "type": "NUMBER",
+          "ranking": 2,
+          "value": "10",
+          "options": [
+            "Option 1",
+            "Option 2"
+          ],
+          "is_collapsed": false,
+          "sub_type": "HTML",
+          "multi_select_enabled": false,
+          "llm_json_schema": "{}"
+        },
+        {
+          "name": "Offset",
+          "description": "Offset within total existing results (Min: 0)",
+          "required": true,
+          "type": "NUMBER",
+          "ranking": 3,
+          "value": "0",
+          "options": [
+            "Option 1",
+            "Option 2"
+          ],
+          "is_collapsed": false,
+          "sub_type": "HTML",
+          "multi_select_enabled": false,
+          "llm_json_schema": "{}"
+        },
+        {
+          "name": "Cyera credential",
+          "description": "",
+          "required": true,
+          "type": "CREDENTIAL",
+          "ranking": 4,
+          "value": "\"\"",
+          "options": [
+            "Option 1",
+            "Option 2"
+          ],
+          "is_collapsed": false,
+          "sub_type": "HTML",
+          "multi_select_enabled": false,
+          "llm_json_schema": "{}"
+        },
+        {
+          "name": "Cyera domain",
+          "description": "Your Cyera domain (ex: api.cyera.io)",
+          "required": true,
+          "type": "TEXT",
+          "ranking": 5,
+          "value": "\"<<DEFAULT(INPUT.cyera_credential.info.metadata.domain, \\\"api.cyera.io\\\")>>\"",
+          "options": [
+            "Option 1",
+            "Option 2"
+          ],
+          "is_collapsed": false,
+          "sub_type": "HTML",
+          "multi_select_enabled": false,
+          "llm_json_schema": "{}"
+        },
+        {
+          "name": "Scanning state status",
+          "description": "List of scanning state status (delimited by comma separator \",\")",
+          "required": false,
+          "type": "OPTION",
+          "ranking": 6,
+          "value": "\"\"",
+          "options": [
+            "Scanned",
+            "Scanning",
+            "Unmonitored",
+            "Not Supported",
+            "Pending",
+            "No Permissions"
+          ],
+          "is_collapsed": true,
+          "sub_type": "HTML",
+          "multi_select_enabled": true,
+          "llm_json_schema": "{}"
+        },
+        {
+          "name": "Last data refresh gte",
+          "description": "Data scan date greater than or equal to",
+          "required": false,
+          "type": "DATE",
+          "ranking": 7,
+          "value": "\"\"",
+          "options": [
+            "Option 1",
+            "Option 2"
+          ],
+          "is_collapsed": true,
+          "sub_type": "HTML",
+          "multi_select_enabled": false,
+          "llm_json_schema": "{}"
+        },
+        {
+          "name": "Last data refresh lte",
+          "description": "Data scan date less than or equal to",
+          "required": false,
+          "type": "DATE",
+          "ranking": 8,
+          "value": "\"\"",
+          "options": [
+            "Option 1",
+            "Option 2"
+          ],
+          "is_collapsed": true,
+          "sub_type": "HTML",
+          "multi_select_enabled": false,
+          "llm_json_schema": "{}"
+        },
+        {
+          "name": "Name",
+          "description": "Datastore name (\"includes\" operator, case-insensitive)",
+          "required": false,
+          "type": "TEXT",
+          "ranking": 9,
+          "value": "\"\"",
+          "options": [
+            "Option 1",
+            "Option 2"
+          ],
+          "is_collapsed": true,
+          "sub_type": "HTML",
+          "multi_select_enabled": false,
+          "llm_json_schema": "{}"
+        },
+        {
+          "name": "Data type",
+          "description": "Datastore Data type",
+          "required": false,
+          "type": "OPTION",
+          "ranking": 10,
+          "value": "\"\"",
+          "options": [
+            "Structured",
+            "Unstructured",
+            "None"
+          ],
+          "is_collapsed": true,
+          "sub_type": "HTML",
+          "multi_select_enabled": false,
+          "llm_json_schema": "{}"
+        },
+        {
+          "name": "Created date",
+          "description": "Date where datastore was created (equals to, or later than)",
+          "required": false,
+          "type": "DATE",
+          "ranking": 11,
+          "value": "\"\"",
+          "options": [
+            "Option 1",
+            "Option 2"
+          ],
+          "is_collapsed": true,
+          "sub_type": "HTML",
+          "multi_select_enabled": false,
+          "llm_json_schema": "{}"
+        },
+        {
+          "name": "Cloud provider url",
+          "description": "Cloud Provider URL",
+          "required": false,
+          "type": "TEXT",
+          "ranking": 12,
+          "value": "\"\"",
+          "options": [
+            "Option 1",
+            "Option 2"
+          ],
+          "is_collapsed": true,
+          "sub_type": "HTML",
+          "multi_select_enabled": false,
+          "llm_json_schema": "{}"
+        },
+        {
+          "name": "Regions",
+          "description": "List of regions (delimited by comma separator \",\")",
+          "required": false,
+          "type": "TEXT",
+          "ranking": 13,
+          "value": "\"\"",
+          "options": [
+            "Option 1",
+            "Option 2"
+          ],
+          "is_collapsed": true,
+          "sub_type": "HTML",
+          "multi_select_enabled": false,
+          "llm_json_schema": "{}"
+        },
+        {
+          "name": "Datastore size in gi b",
+          "description": "The total size of the data in GiB (applies to unstructured datastores only)",
+          "required": false,
+          "type": "NUMBER",
+          "ranking": 14,
+          "value": "\"\"",
+          "options": [
+            "Option 1",
+            "Option 2"
+          ],
+          "is_collapsed": true,
+          "sub_type": "HTML",
+          "multi_select_enabled": false,
+          "llm_json_schema": "{}"
+        },
+        {
+          "name": "Project ids",
+          "description": "List of project ids (delimited by comma separator \",\")",
+          "required": false,
+          "type": "TEXT",
+          "ranking": 15,
+          "value": "\"\"",
+          "options": [
+            "Option 1",
+            "Option 2"
+          ],
+          "is_collapsed": true,
+          "sub_type": "HTML",
+          "multi_select_enabled": false,
+          "llm_json_schema": "{}"
+        },
+        {
+          "name": "In platform identifier",
+          "description": "Account's platform identifier (e.g AWS Account ID)",
+          "required": false,
+          "type": "TEXT",
+          "ranking": 16,
+          "value": "\"\"",
+          "options": [
+            "Option 1",
+            "Option 2"
+          ],
+          "is_collapsed": true,
+          "sub_type": "HTML",
+          "multi_select_enabled": false,
+          "llm_json_schema": "{}"
+        },
+        {
+          "name": "Uid",
+          "description": "Datastore UIDs (delimited by comma separator \",\")",
+          "required": false,
+          "type": "TEXT",
+          "ranking": 1073741832,
+          "value": "\"<<extract_datastore_uid.datastoreUid>>\"",
+          "options": [
+            "Option 1",
+            "Option 2"
+          ],
+          "is_collapsed": false,
+          "sub_type": "HTML",
+          "multi_select_enabled": false,
+          "llm_json_schema": "{}"
+        }
+      ],
+      "action_guid": "2bac5790b170c0e6eace3b6145d19e4e",
+      "product": "Cyera",
+      "action_options_keys": []
+    }
+  ],
+  "parent_only_send_to_story": false,
+  "send_to_story_timeout_enabled": false,
+  "send_to_story_timeout_duration_seconds": null,
+  "keep_events_for": 3600,
+  "reporting_status": true,
+  "send_to_story_enabled": false,
+  "entry_agent_guid": null,
+  "exit_agent_guids": [],
+  "api_entry_action_guids": [],
+  "api_exit_action_guids": [],
+  "send_to_story_access": null,
+  "send_to_story_access_source": 0,
+  "send_to_story_skill_use_requires_confirmation": true,
+  "pages": [],
+  "tags": [],
+  "time_saved_unit": "minutes",
+  "time_saved_value": 0,
+  "origin_story_identifier": "cloud:d521f765a49c72507257a2620612ee96:e4effd4dc911e0e2b0eaeb96fe898bf9",
+  "recipients": [
+    "sat-1671817431@no-reply.tines.com"
+  ],
+  "integration_product": null,
+  "integration_vendor": null,
+  "llm_product_instructions": "",
+  "send_to_stories": [],
+  "exported_at": "2025-12-17T10:48:33Z",
+  "icon": ":bar_chart:"
+}

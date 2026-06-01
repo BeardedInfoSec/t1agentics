@@ -1,0 +1,172 @@
+{
+  "id": "docker_scout",
+  "name": "Docker Scout",
+  "description": "Docker native container image analysis service for vulnerability detection, SBOM generation, and policy evaluation",
+  "version": "1.0.0",
+  "category": "container_security",
+  "vendor": "Docker",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "header_name": "Authorization",
+    "prefix": "Bearer ",
+    "location": "header",
+    "description": "Docker Hub PAT or Docker Scout API token"
+  },
+  "base_url": "https://dso.docker.com/v2",
+  "actions": [
+    {
+      "id": "get_image_vulnerabilities",
+      "name": "Get Image Vulnerabilities",
+      "description": "Retrieve CVEs and vulnerabilities for a container image",
+      "http_method": "GET",
+      "endpoint": "/images/{org}/{repo}/{tag}/vulnerabilities",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "org",
+          "type": "string",
+          "description": "Docker Hub organization or user namespace",
+          "required": true,
+          "location": "path"
+        },
+        {
+          "name": "repo",
+          "type": "string",
+          "description": "Repository name",
+          "required": true,
+          "location": "path"
+        },
+        {
+          "name": "tag",
+          "type": "string",
+          "description": "Image tag or digest",
+          "required": true,
+          "location": "path"
+        },
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Filter by severity: critical, high, medium, low",
+          "required": false,
+          "location": "query"
+        }
+      ]
+    },
+    {
+      "id": "get_image_sbom",
+      "name": "Get Image SBOM",
+      "description": "Retrieve the Software Bill of Materials for a container image",
+      "http_method": "GET",
+      "endpoint": "/images/{org}/{repo}/{tag}/sbom",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "org",
+          "type": "string",
+          "description": "Docker Hub organization or user namespace",
+          "required": true,
+          "location": "path"
+        },
+        {
+          "name": "repo",
+          "type": "string",
+          "description": "Repository name",
+          "required": true,
+          "location": "path"
+        },
+        {
+          "name": "tag",
+          "type": "string",
+          "description": "Image tag or digest",
+          "required": true,
+          "location": "path"
+        }
+      ]
+    },
+    {
+      "id": "get_image_packages",
+      "name": "Get Image Packages",
+      "description": "List all packages detected in a container image",
+      "http_method": "GET",
+      "endpoint": "/images/{org}/{repo}/{tag}/packages",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "org",
+          "type": "string",
+          "description": "Docker Hub organization",
+          "required": true,
+          "location": "path"
+        },
+        {
+          "name": "repo",
+          "type": "string",
+          "description": "Repository name",
+          "required": true,
+          "location": "path"
+        },
+        {
+          "name": "tag",
+          "type": "string",
+          "description": "Image tag",
+          "required": true,
+          "location": "path"
+        }
+      ]
+    },
+    {
+      "id": "evaluate_policy",
+      "name": "Evaluate Image Policy",
+      "description": "Evaluate an image against Docker Scout policy rules",
+      "http_method": "GET",
+      "endpoint": "/images/{org}/{repo}/{tag}/policy",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "org",
+          "type": "string",
+          "description": "Docker Hub organization",
+          "required": true,
+          "location": "path"
+        },
+        {
+          "name": "repo",
+          "type": "string",
+          "description": "Repository name",
+          "required": true,
+          "location": "path"
+        },
+        {
+          "name": "tag",
+          "type": "string",
+          "description": "Image tag",
+          "required": true,
+          "location": "path"
+        }
+      ]
+    },
+    {
+      "id": "list_repositories",
+      "name": "List Repositories",
+      "description": "List repositories with Scout analysis enabled for an organization",
+      "http_method": "GET",
+      "endpoint": "/orgs/{org}/repositories",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "org",
+          "type": "string",
+          "description": "Docker Hub organization name",
+          "required": true,
+          "location": "path"
+        }
+      ]
+    }
+  ]
+}

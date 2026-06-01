@@ -1,0 +1,259 @@
+{
+  "id": "tanium",
+  "name": "Tanium",
+  "description": "Integrates with Tanium Core Platform REST API v2 for real-time endpoint visibility, asset queries, threat response actions, and endpoint management",
+  "version": "1.0.0",
+  "category": "edr",
+  "vendor": "Tanium",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "session",
+    "location": "header"
+  },
+  "base_url": "https://{host}/api/v2",
+  "actions": [
+    {
+      "id": "list_endpoints",
+      "name": "List Endpoints",
+      "description": "Retrieve the list of managed endpoints (clients) registered with Tanium",
+      "http_method": "GET",
+      "endpoint": "/clients",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of endpoints to return",
+          "required": false,
+          "default": 50
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Starting offset for pagination",
+          "required": false,
+          "default": 0
+        }
+      ],
+      "observable_type": "hostname"
+    },
+    {
+      "id": "ask_question",
+      "name": "Ask Question",
+      "description": "Ask a Tanium question to gather real-time data from managed endpoints",
+      "http_method": "POST",
+      "endpoint": "/questions",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "query_text",
+          "type": "string",
+          "description": "The natural language or sensor-based question to ask (e.g., 'Get Computer Name from all machines')",
+          "required": true
+        },
+        {
+          "name": "expire_seconds",
+          "type": "number",
+          "description": "Number of seconds before the question expires",
+          "required": false,
+          "default": 600
+        }
+      ]
+    },
+    {
+      "id": "get_question_results",
+      "name": "Get Question Results",
+      "description": "Retrieve the results of a previously asked Tanium question",
+      "http_method": "GET",
+      "endpoint": "/result_data/question/{question_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "question_id",
+          "type": "number",
+          "description": "The ID of the question to retrieve results for",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "create_action",
+      "name": "Deploy Action",
+      "description": "Deploy an action (package) to one or more endpoints for remediation or configuration",
+      "http_method": "POST",
+      "endpoint": "/actions",
+      "action_type": "correct",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "package_name",
+          "type": "string",
+          "description": "Name of the package to deploy",
+          "required": true
+        },
+        {
+          "name": "target_group",
+          "type": "string",
+          "description": "Target computer group or action group for deployment",
+          "required": true
+        },
+        {
+          "name": "parameters",
+          "type": "string",
+          "description": "JSON object of package parameters",
+          "required": false
+        },
+        {
+          "name": "expire_seconds",
+          "type": "number",
+          "description": "Number of seconds before the action expires",
+          "required": false,
+          "default": 3600
+        }
+      ],
+      "observable_type": "hostname"
+    },
+    {
+      "id": "get_action_status",
+      "name": "Get Action Status",
+      "description": "Retrieve the status and results of a deployed action",
+      "http_method": "GET",
+      "endpoint": "/actions/{action_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "action_id",
+          "type": "number",
+          "description": "The ID of the action to check",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "quarantine_endpoint",
+      "name": "Quarantine Endpoint",
+      "description": "Quarantine an endpoint using Tanium Threat Response to isolate it from the network",
+      "http_method": "POST",
+      "endpoint": "/threat-response/quarantine",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "computer_name",
+          "type": "string",
+          "description": "Name of the computer to quarantine",
+          "required": true
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "Comment describing the reason for quarantine",
+          "required": false
+        }
+      ],
+      "observable_type": "hostname"
+    },
+    {
+      "id": "unquarantine_endpoint",
+      "name": "Unquarantine Endpoint",
+      "description": "Remove quarantine from a previously isolated endpoint",
+      "http_method": "POST",
+      "endpoint": "/threat-response/unquarantine",
+      "action_type": "correct",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "computer_name",
+          "type": "string",
+          "description": "Name of the computer to unquarantine",
+          "required": true
+        }
+      ],
+      "observable_type": "hostname"
+    },
+    {
+      "id": "list_alerts",
+      "name": "List Threat Response Alerts",
+      "description": "Retrieve alerts from Tanium Threat Response module",
+      "http_method": "GET",
+      "endpoint": "/threat-response/alerts",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of alerts to return",
+          "required": false,
+          "default": 50
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Starting offset for pagination",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "state",
+          "type": "string",
+          "description": "Filter by alert state (unresolved, inProgress, resolved)",
+          "required": false
+        },
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Filter by severity",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "search_file_hash",
+      "name": "Search File Hash",
+      "description": "Search for a specific file hash across all managed endpoints using Threat Response",
+      "http_method": "POST",
+      "endpoint": "/threat-response/intel/search",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Search type: md5, sha1, sha256",
+          "required": true
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "description": "The hash value to search for",
+          "required": true
+        }
+      ],
+      "observable_type": "hash"
+    },
+    {
+      "id": "list_saved_questions",
+      "name": "List Saved Questions",
+      "description": "Retrieve the list of saved questions available in Tanium",
+      "http_method": "GET",
+      "endpoint": "/saved_questions",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of saved questions to return",
+          "required": false,
+          "default": 50
+        }
+      ]
+    }
+  ]
+}

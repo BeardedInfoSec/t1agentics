@@ -1,0 +1,267 @@
+{
+  "name": "Serverless Function Abuse Detection",
+  "slug": "cloud-serverless-abuse",
+  "description": "Detects abuse of serverless functions (Lambda, Cloud Functions, Azure Functions). Riggs AI analyzes invocation patterns for cryptomining, data exfiltration, or unauthorized code execution. Confirmed abuse triggers function throttling, IAM role review, forensic investigation of invocation logs, incident ticket, and team notification. False positives receive a severity update and analyst note.",
+  "category": "cloud",
+  "subcategory": "serverless_security",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "15 minutes",
+  "tags": ["cloud", "serverless", "lambda", "abuse", "cryptomining"],
+  "alert_types": ["cloud_security", "serverless_anomaly"],
+  "severity_filter": ["medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["cloud_security", "serverless_anomaly", "lambda_abuse"],
+    "min_severity": "medium"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "aws_security_hub",
+      "name": "AWS Security Hub",
+      "category": "cloud_security",
+      "reason": "Source of serverless anomaly findings and Lambda configuration management"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create incident tickets for confirmed serverless abuse"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Notify the cloud security team of serverless abuse and response actions"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Serverless Anomaly Alert",
+          "config": {
+            "alert_types": ["cloud_security", "serverless_anomaly", "lambda_abuse"],
+            "description": "Triggers when anomalous serverless function behavior is detected such as unusual invocation rates, unexpected outbound connections, or high resource consumption"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — Cloud Security Assessment",
+          "config": {
+            "template_id": "cloud_security",
+            "additional_instructions": "Analyze serverless function abuse indicators: unusual invocation spikes, outbound data transfer, execution duration anomalies, unauthorized dependencies",
+            "description": "AI-powered analysis of serverless function behavior to determine if abuse such as cryptomining, data exfiltration, or unauthorized code execution is occurring"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "label": "Abuse Confirmed?",
+          "config": {
+            "condition": "{{analyze_1.verdict}} == 'malicious' || {{analyze_1.confidence}} >= 0.75",
+            "description": "Routes based on whether the AI assessment confirmed serverless function abuse"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "respond",
+          "label": "Throttle Function",
+          "config": {
+            "integration_action": {
+              "connector_id": "aws_security_hub",
+              "action": "throttle_lambda",
+              "parameters": {
+                "function_name": "{{trigger_1.alert.function_name}}",
+                "reserved_concurrency": 0,
+                "reason": "Serverless abuse detected — AI confidence: {{analyze_1.confidence}}"
+              }
+            },
+            "description": "Set reserved concurrency to zero to effectively disable the abused function while preserving it for forensic analysis"
+          }
+        }
+      },
+      {
+        "id": "code_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "code",
+          "label": "Review IAM Execution Role",
+          "config": {
+            "mode": "query",
+            "query": "IAM role policies for execution_role={{trigger_1.alert.execution_role}}: attached policies, inline policies, recent role assumption events, cross-service permissions",
+            "output_variable": "iam_review",
+            "description": "Review the IAM execution role attached to the serverless function to identify overprivileged permissions or recent suspicious role changes"
+          }
+        }
+      },
+      {
+        "id": "code_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "code",
+          "label": "Investigate Invocation Logs",
+          "config": {
+            "mode": "query",
+            "query": "CloudWatch Logs for function={{trigger_1.alert.function_name}} in the last 24 hours: invocation count, error rate, outbound connections, payload sizes",
+            "output_variable": "invocation_logs",
+            "description": "Pull invocation logs and metrics to build a forensic timeline of the abuse activity"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "label": "Create Incident Ticket",
+          "config": {
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_ticket",
+              "parameters": {
+                "project": "SEC",
+                "issue_type": "Incident",
+                "priority": "High",
+                "summary": "Serverless Abuse: {{trigger_1.alert.function_name}} — {{trigger_1.alert.abuse_type}}",
+                "description": "Confirmed serverless function abuse.\n\nFunction: {{trigger_1.alert.function_name}}\nAbuse Type: {{trigger_1.alert.abuse_type}}\nExecution Role: {{trigger_1.alert.execution_role}}\n\nActions Taken:\n- Function throttled (concurrency set to 0)\n- IAM role reviewed\n- Invocation logs extracted\n\nIAM Review:\n{{code_1.iam_review}}\n\nInvocation Analysis:\n{{code_2.invocation_logs}}\n\nRiggs AI Assessment:\n{{analyze_1.summary}}"
+              }
+            },
+            "description": "Create an incident ticket with complete forensic details of the serverless abuse"
+          }
+        }
+      },
+      {
+        "id": "respond_3",
+        "type": "signal",
+        "position": { "x": 340, "y": 1180 },
+        "data": {
+          "kind": "respond",
+          "label": "Notify Cloud Security Team",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#cloud-security-alerts",
+              "message": "SERVERLESS ABUSE DETECTED\nFunction: {{trigger_1.alert.function_name}}\nAbuse Type: {{trigger_1.alert.abuse_type}}\nActions: Function throttled, IAM reviewed, logs extracted\nTicket: {{respond_2.ticket_url}}\n\nRiggs Assessment:\n{{analyze_1.summary}}"
+            },
+            "description": "Notify the cloud security team of the serverless abuse and all containment actions"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "utility",
+          "label": "Add Note: No Abuse Confirmed",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "Reviewed by Riggs AI (cloud_security template). Serverless anomaly determined non-malicious — likely legitimate usage spike. Confidence: {{analyze_1.confidence}}. Assessment: {{analyze_1.summary}}"
+            },
+            "description": "Document that AI analysis did not confirm serverless abuse"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1340 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "Serverless function abuse detection and response complete"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_analyze",
+        "source": "trigger_1",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_analyze_decision",
+        "source": "analyze_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "respond_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "utility_1",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_throttle_iam",
+        "source": "respond_1",
+        "target": "code_1",
+        "type": "default"
+      },
+      {
+        "id": "e_iam_logs",
+        "source": "code_1",
+        "target": "code_2",
+        "type": "default"
+      },
+      {
+        "id": "e_logs_ticket",
+        "source": "code_2",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_ticket_notify",
+        "source": "respond_2",
+        "target": "respond_3",
+        "type": "default"
+      },
+      {
+        "id": "e_notify_end",
+        "source": "respond_3",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_utility_end",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

@@ -1,0 +1,171 @@
+{
+  "id": "aws_secrets_manager_aws_security",
+  "name": "AWS Secrets Manager",
+  "description": "AWS service for managing, retrieving, and rotating database credentials, API keys, and other secrets throughout their lifecycle",
+  "version": "1.0.0",
+  "category": "aws_security",
+  "vendor": "Amazon Web Services",
+  "auth_type": "aws",
+  "auth_config": {
+    "type": "aws",
+    "service": "secretsmanager",
+    "signing_version": "v4"
+  },
+  "base_url": "https://secretsmanager.{region}.amazonaws.com",
+  "actions": [
+    {
+      "id": "list_secrets",
+      "name": "List Secrets",
+      "description": "List all secrets stored in AWS Secrets Manager with optional filtering",
+      "http_method": "POST",
+      "endpoint": "/",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "Filters",
+          "type": "array",
+          "description": "Filter list (e.g., [{\"Key\": \"name\", \"Values\": [\"prod/\"]}]). Keys: description, name, tag-key, tag-value, primary-region, owning-service, all",
+          "required": false
+        },
+        {
+          "name": "MaxResults",
+          "type": "number",
+          "description": "Maximum secrets to return (1-100)",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "NextToken",
+          "type": "string",
+          "description": "Pagination token",
+          "required": false
+        },
+        {
+          "name": "SortOrder",
+          "type": "string",
+          "description": "Sort order (asc or desc)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "describe_secret",
+      "name": "Describe Secret",
+      "description": "Retrieve metadata about a secret including rotation configuration, tags, and version details (does not include secret value)",
+      "http_method": "POST",
+      "endpoint": "/",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "SecretId",
+          "type": "string",
+          "description": "Secret name or ARN",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_secret_value",
+      "name": "Get Secret Value",
+      "description": "Retrieve the encrypted value of a secret. Use with caution in automated workflows",
+      "http_method": "POST",
+      "endpoint": "/",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "SecretId",
+          "type": "string",
+          "description": "Secret name or ARN",
+          "required": true
+        },
+        {
+          "name": "VersionId",
+          "type": "string",
+          "description": "Specific version ID to retrieve",
+          "required": false
+        },
+        {
+          "name": "VersionStage",
+          "type": "string",
+          "description": "Version stage (AWSCURRENT, AWSPREVIOUS, AWSPENDING)",
+          "required": false,
+          "default": "AWSCURRENT"
+        }
+      ]
+    },
+    {
+      "id": "get_resource_policy",
+      "name": "Get Resource Policy",
+      "description": "Retrieve the resource-based IAM policy attached to a secret",
+      "http_method": "POST",
+      "endpoint": "/",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "SecretId",
+          "type": "string",
+          "description": "Secret name or ARN",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_secret_version_ids",
+      "name": "List Secret Version IDs",
+      "description": "List all versions of a secret and their staging labels",
+      "http_method": "POST",
+      "endpoint": "/",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "SecretId",
+          "type": "string",
+          "description": "Secret name or ARN",
+          "required": true
+        },
+        {
+          "name": "MaxResults",
+          "type": "number",
+          "description": "Maximum versions to return",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "IncludeDeprecated",
+          "type": "boolean",
+          "description": "Include versions with no staging labels",
+          "required": false,
+          "default": false
+        }
+      ]
+    },
+    {
+      "id": "rotate_secret",
+      "name": "Rotate Secret",
+      "description": "Trigger immediate rotation of a secret using its configured rotation Lambda function",
+      "http_method": "POST",
+      "endpoint": "/",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "SecretId",
+          "type": "string",
+          "description": "Secret name or ARN to rotate",
+          "required": true
+        },
+        {
+          "name": "RotationLambdaARN",
+          "type": "string",
+          "description": "ARN of the Lambda rotation function (uses existing if not specified)",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

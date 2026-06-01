@@ -1,0 +1,591 @@
+{
+  "id": "aws_iam_identity",
+  "name": "AWS IAM",
+  "description": "This app integrates with Amazon Web Services Identity Access Management (AWS IAM) to support various containment, corrective and investigate actions",
+  "version": "2.1.7",
+  "category": "identity",
+  "vendor": "AWS",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "get_user",
+      "name": "Get User",
+      "description": "Get details of all the groups and attached policies for the user",
+      "http_method": "GET",
+      "endpoint": "ListGroupsForUser",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "username",
+          "type": "string",
+          "description": "Username",
+          "required": true,
+          "contains": [
+            "user name",
+            "aws iam user name"
+          ]
+        },
+        {
+          "name": "credentials",
+          "type": "string",
+          "description": "Assumed role credentials",
+          "required": false,
+          "contains": [
+            "aws credentials"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_groups",
+      "name": "List Groups",
+      "description": "List groups of AWS IAM",
+      "http_method": "GET",
+      "endpoint": "ListGroups",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "group_path",
+          "type": "string",
+          "description": "Group path in AWS IAM",
+          "required": false,
+          "default": "/",
+          "contains": [
+            "aws iam group path"
+          ]
+        },
+        {
+          "name": "credentials",
+          "type": "string",
+          "description": "Assumed role credentials",
+          "required": false,
+          "contains": [
+            "aws credentials"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_users",
+      "name": "List Users",
+      "description": "List users of AWS IAM",
+      "http_method": "GET",
+      "endpoint": "ListUsers",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "user_path",
+          "type": "string",
+          "description": "Path of the user",
+          "required": false,
+          "default": "/",
+          "contains": [
+            "aws iam user path"
+          ]
+        },
+        {
+          "name": "group_name",
+          "type": "string",
+          "description": "Group name",
+          "required": false,
+          "contains": [
+            "aws iam group name"
+          ]
+        },
+        {
+          "name": "credentials",
+          "type": "string",
+          "description": "Assumed role credentials",
+          "required": false,
+          "contains": [
+            "aws credentials"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_roles",
+      "name": "List Roles",
+      "description": "List roles available in AWS IAM",
+      "http_method": "GET",
+      "endpoint": "ListRoles",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "credentials",
+          "type": "string",
+          "description": "Assumed role credentials",
+          "required": false,
+          "contains": [
+            "aws credentials"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "add_user",
+      "name": "Add User",
+      "description": "Add user to a group",
+      "http_method": "POST",
+      "endpoint": "AddUserToGroup",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "username",
+          "type": "string",
+          "description": "Username",
+          "required": true,
+          "contains": [
+            "user name",
+            "aws iam user name"
+          ]
+        },
+        {
+          "name": "group_name",
+          "type": "string",
+          "description": "Group name",
+          "required": true,
+          "contains": [
+            "aws iam group name"
+          ]
+        },
+        {
+          "name": "credentials",
+          "type": "string",
+          "description": "Assumed role credentials",
+          "required": false,
+          "contains": [
+            "aws credentials"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "remove_user",
+      "name": "Remove User",
+      "description": "Remove user from a group",
+      "http_method": "POST",
+      "endpoint": "RemoveUserFromGroup",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "username",
+          "type": "string",
+          "description": "Username",
+          "required": true,
+          "contains": [
+            "user name",
+            "aws iam user name"
+          ]
+        },
+        {
+          "name": "group_name",
+          "type": "string",
+          "description": "Group name",
+          "required": true,
+          "contains": [
+            "aws iam group name"
+          ]
+        },
+        {
+          "name": "credentials",
+          "type": "string",
+          "description": "Assumed role credentials",
+          "required": false,
+          "contains": [
+            "aws credentials"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "delete_user",
+      "name": "Delete User",
+      "description": "Delete user from AWS IAM account",
+      "http_method": "GET",
+      "endpoint": "DeleteUser",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "username",
+          "type": "string",
+          "description": "Username",
+          "required": true,
+          "contains": [
+            "user name",
+            "aws iam user name"
+          ]
+        },
+        {
+          "name": "credentials",
+          "type": "string",
+          "description": "Assumed role credentials",
+          "required": false,
+          "contains": [
+            "aws credentials"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "disable_user",
+      "name": "Disable User",
+      "description": "Disable login profile and access keys of a user",
+      "http_method": "POST",
+      "endpoint": "DeleteLoginProfile",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "username",
+          "type": "string",
+          "description": "Username",
+          "required": true,
+          "contains": [
+            "user name",
+            "aws iam user name"
+          ]
+        },
+        {
+          "name": "disable_access_keys",
+          "type": "boolean",
+          "description": "Disable access keys",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "credentials",
+          "type": "string",
+          "description": "Assumed role credentials",
+          "required": false,
+          "contains": [
+            "aws credentials"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "enable_user",
+      "name": "Enable User",
+      "description": "Enable login profile and access keys of a user",
+      "http_method": "POST",
+      "endpoint": "CreateLoginProfile",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "username",
+          "type": "string",
+          "description": "Username",
+          "required": true,
+          "contains": [
+            "user name",
+            "aws iam user name"
+          ]
+        },
+        {
+          "name": "password",
+          "type": "string",
+          "description": "Password",
+          "required": true
+        },
+        {
+          "name": "enable_access_keys",
+          "type": "boolean",
+          "description": "Enable access keys of user along with login profile",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "credentials",
+          "type": "string",
+          "description": "Assumed role credentials",
+          "required": false,
+          "contains": [
+            "aws credentials"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "add_role",
+      "name": "Add Role",
+      "description": "Add new role in AWS IAM account",
+      "http_method": "GET",
+      "endpoint": "CreateRole",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "role_name",
+          "type": "string",
+          "description": "Role name",
+          "required": true,
+          "contains": [
+            "aws iam role name"
+          ]
+        },
+        {
+          "name": "role_policy_document",
+          "type": "string",
+          "description": "JSON string mentioning trust relationship policy document with the role",
+          "required": true,
+          "contains": [
+            "aws iam role policy doc"
+          ]
+        },
+        {
+          "name": "role_path",
+          "type": "string",
+          "description": "Path to the role",
+          "required": false,
+          "default": "/",
+          "contains": [
+            "aws iam role path"
+          ]
+        },
+        {
+          "name": "credentials",
+          "type": "string",
+          "description": "Assumed role credentials",
+          "required": false,
+          "contains": [
+            "aws credentials"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "remove_role",
+      "name": "Remove Role",
+      "description": "Remove role from AWS IAM account",
+      "http_method": "GET",
+      "endpoint": "/actions/remove_role",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "role_name",
+          "type": "string",
+          "description": "Role name",
+          "required": true,
+          "contains": [
+            "aws iam role name"
+          ]
+        },
+        {
+          "name": "credentials",
+          "type": "string",
+          "description": "Assumed role credentials",
+          "required": false,
+          "contains": [
+            "aws credentials"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "attach_policy",
+      "name": "Attach Policy",
+      "description": "Attach managed policy to a role",
+      "http_method": "POST",
+      "endpoint": "/actions/attach_policy",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "role_name",
+          "type": "string",
+          "description": "Role name",
+          "required": true,
+          "contains": [
+            "aws iam role name"
+          ]
+        },
+        {
+          "name": "policy_arn",
+          "type": "string",
+          "description": "Policy ARN",
+          "required": true,
+          "contains": [
+            "aws iam policy arn"
+          ]
+        },
+        {
+          "name": "credentials",
+          "type": "string",
+          "description": "Assumed role credentials",
+          "required": false,
+          "contains": [
+            "aws credentials"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "detach_policy",
+      "name": "Detach Policy",
+      "description": "Detach managed policy from a role",
+      "http_method": "POST",
+      "endpoint": "/actions/detach_policy",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "role_name",
+          "type": "string",
+          "description": "Role name",
+          "required": true,
+          "contains": [
+            "aws iam role name"
+          ]
+        },
+        {
+          "name": "policy_arn",
+          "type": "string",
+          "description": "Policy ARN",
+          "required": true,
+          "contains": [
+            "aws iam policy arn"
+          ]
+        },
+        {
+          "name": "credentials",
+          "type": "string",
+          "description": "Assumed role credentials",
+          "required": false,
+          "contains": [
+            "aws credentials"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "assign_policy",
+      "name": "Assign Policy",
+      "description": "Assign managed policy to the user",
+      "http_method": "POST",
+      "endpoint": "/actions/assign_policy",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "username",
+          "type": "string",
+          "description": "Username",
+          "required": true,
+          "contains": [
+            "user name",
+            "aws iam user name"
+          ]
+        },
+        {
+          "name": "policy_arn",
+          "type": "string",
+          "description": "Policy ARN",
+          "required": true,
+          "contains": [
+            "aws iam policy arn"
+          ]
+        },
+        {
+          "name": "credentials",
+          "type": "string",
+          "description": "Assumed role credentials",
+          "required": false,
+          "contains": [
+            "aws credentials"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "remove_policy",
+      "name": "Remove Policy",
+      "description": "Remove managed policy association with the user",
+      "http_method": "POST",
+      "endpoint": "/actions/remove_policy",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "username",
+          "type": "string",
+          "description": "Username",
+          "required": true,
+          "contains": [
+            "user name",
+            "aws iam user name"
+          ]
+        },
+        {
+          "name": "policy_arn",
+          "type": "string",
+          "description": "Policy ARN",
+          "required": true,
+          "contains": [
+            "aws iam policy arn"
+          ]
+        },
+        {
+          "name": "credentials",
+          "type": "string",
+          "description": "Assumed role credentials",
+          "required": false,
+          "contains": [
+            "aws credentials"
+          ]
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "AWS IAM",
+    "original_type": "identity management",
+    "converted_at": "2025-12-18T16:25:28.583573",
+    "source_version": "2.1.7"
+  }
+}

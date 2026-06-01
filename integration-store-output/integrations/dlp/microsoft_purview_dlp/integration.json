@@ -1,0 +1,168 @@
+{
+  "id": "microsoft_purview_dlp",
+  "name": "Microsoft Purview DLP",
+  "description": "Integrates with Microsoft Purview Data Loss Prevention via Microsoft Graph Security API for DLP alert monitoring, policy management, and sensitive data governance",
+  "version": "1.0.0",
+  "category": "dlp",
+  "vendor": "Microsoft",
+  "auth_type": "oauth2_client",
+  "auth_config": {
+    "type": "oauth2_client",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "https://graph.microsoft.com/v1.0",
+  "actions": [
+    {
+      "id": "list_dlp_alerts",
+      "name": "List DLP Alerts",
+      "description": "Retrieve DLP alerts from Microsoft Purview through the Security API with filtering by severity, status, and date",
+      "http_method": "GET",
+      "endpoint": "/security/alerts_v2",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "$filter",
+          "type": "string",
+          "description": "OData filter expression (e.g., severity eq 'high' and serviceSource eq 'microsoftDataLossPrevention')",
+          "required": false
+        },
+        {
+          "name": "$top",
+          "type": "number",
+          "description": "Maximum number of alerts to return",
+          "required": false,
+          "default": 50
+        },
+        {
+          "name": "$orderby",
+          "type": "string",
+          "description": "Sort order (e.g., createdDateTime desc)",
+          "required": false
+        },
+        {
+          "name": "$skip",
+          "type": "number",
+          "description": "Number of records to skip for pagination",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_dlp_alert_details",
+      "name": "Get DLP Alert Details",
+      "description": "Retrieve detailed information about a specific DLP alert including matched sensitive information types",
+      "http_method": "GET",
+      "endpoint": "/security/alerts_v2/{alertId}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "alertId",
+          "type": "string",
+          "description": "Unique identifier of the DLP alert",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "update_dlp_alert",
+      "name": "Update DLP Alert",
+      "description": "Update the status, classification, or assigned-to properties of a DLP alert",
+      "http_method": "PATCH",
+      "endpoint": "/security/alerts_v2/{alertId}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "alertId",
+          "type": "string",
+          "description": "Unique identifier of the DLP alert to update",
+          "required": true
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "New status (new, inProgress, resolved)",
+          "required": false
+        },
+        {
+          "name": "classification",
+          "type": "string",
+          "description": "Alert classification (truePositive, falsePositive, benignPositive)",
+          "required": false
+        },
+        {
+          "name": "assignedTo",
+          "type": "string",
+          "description": "User principal name to assign the alert to",
+          "required": false
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "Comment to add to the alert",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_sensitive_info_types",
+      "name": "List Sensitive Info Types",
+      "description": "Retrieve all sensitive information type definitions used by DLP policies",
+      "http_method": "GET",
+      "endpoint": "/security/informationProtection/sensitivityLabels",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "process_content",
+      "name": "Process Content",
+      "description": "Submit content for DLP policy evaluation to determine if protection actions are required",
+      "http_method": "POST",
+      "endpoint": "/security/dataLossPreventionPolicies/processContent",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "content",
+          "type": "string",
+          "description": "Text content to evaluate against DLP policies",
+          "required": true
+        },
+        {
+          "name": "scope",
+          "type": "string",
+          "description": "Protection scope for evaluation",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_incidents",
+      "name": "List Security Incidents",
+      "description": "Retrieve security incidents that may contain DLP-related alerts and evidence",
+      "http_method": "GET",
+      "endpoint": "/security/incidents",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "$filter",
+          "type": "string",
+          "description": "OData filter expression for incident properties",
+          "required": false
+        },
+        {
+          "name": "$top",
+          "type": "number",
+          "description": "Maximum number of incidents to return",
+          "required": false,
+          "default": 50
+        }
+      ]
+    }
+  ]
+}

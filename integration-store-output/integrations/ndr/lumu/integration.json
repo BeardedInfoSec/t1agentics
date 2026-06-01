@@ -1,0 +1,207 @@
+{
+  "id": "lumu",
+  "name": "Lumu",
+  "description": "Continuous compromise assessment platform that measures confirmed instances of compromise in real time using network metadata analysis",
+  "version": "1.0.0",
+  "category": "ndr",
+  "vendor": "Lumu",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header",
+    "prefix": "Bearer"
+  },
+  "base_url": "https://api.lumu.io",
+  "actions": [
+    {
+      "id": "get_incidents",
+      "name": "Get Incidents",
+      "description": "Retrieve active compromise incidents from Lumu",
+      "http_method": "GET",
+      "endpoint": "/v1/incidents",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Filter by incident status (open, muted, closed)",
+          "required": false
+        },
+        {
+          "name": "adversary_types",
+          "type": "string",
+          "description": "Filter by adversary type (C2, Malware, DGA, Mining, Phishing, Spam)",
+          "required": false
+        },
+        {
+          "name": "from_date",
+          "type": "string",
+          "description": "Start date filter in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "to_date",
+          "type": "string",
+          "description": "End date filter in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "page",
+          "type": "number",
+          "description": "Page number for pagination",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of incidents to return",
+          "required": false,
+          "default": 50
+        }
+      ]
+    },
+    {
+      "id": "get_incident_details",
+      "name": "Get Incident Details",
+      "description": "Retrieve detailed information about a specific incident",
+      "http_method": "GET",
+      "endpoint": "/v1/incidents/{incident_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "incident_id",
+          "type": "string",
+          "description": "The incident UUID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_incident_context",
+      "name": "Get Incident Context",
+      "description": "Retrieve context and indicators of compromise associated with an incident",
+      "http_method": "GET",
+      "endpoint": "/v1/incidents/{incident_id}/context",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "incident_id",
+          "type": "string",
+          "description": "The incident UUID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_compromises",
+      "name": "Get Compromises",
+      "description": "Retrieve confirmed compromise contacts from Lumu",
+      "http_method": "GET",
+      "endpoint": "/v1/compromises",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "from_date",
+          "type": "string",
+          "description": "Start date filter in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "to_date",
+          "type": "string",
+          "description": "End date filter in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "page",
+          "type": "number",
+          "description": "Page number for pagination",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of compromises to return",
+          "required": false,
+          "default": 50
+        }
+      ]
+    },
+    {
+      "id": "mute_incident",
+      "name": "Mute Incident",
+      "description": "Mute an incident to suppress notifications while keeping it tracked",
+      "http_method": "PUT",
+      "endpoint": "/v1/incidents/{incident_id}/mute",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "incident_id",
+          "type": "string",
+          "description": "The incident UUID to mute",
+          "required": true
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "Comment explaining why the incident is being muted",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "close_incident",
+      "name": "Close Incident",
+      "description": "Close a confirmed compromise incident",
+      "http_method": "PUT",
+      "endpoint": "/v1/incidents/{incident_id}/close",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "incident_id",
+          "type": "string",
+          "description": "The incident UUID to close",
+          "required": true
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "Comment explaining the resolution",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "push_custom_collector_data",
+      "name": "Push Custom Collector Data",
+      "description": "Push DNS queries or proxy logs to Lumu for analysis via custom collector",
+      "http_method": "POST",
+      "endpoint": "/v1/collectors/{collector_id}/dns/queries",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "collector_id",
+          "type": "string",
+          "description": "The custom collector ID",
+          "required": true
+        },
+        {
+          "name": "queries",
+          "type": "array",
+          "description": "Array of DNS query objects to submit for analysis",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

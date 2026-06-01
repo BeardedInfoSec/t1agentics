@@ -1,0 +1,156 @@
+{
+  "id": "microsoft_purview",
+  "name": "Microsoft Purview",
+  "description": "Microsoft unified data governance and compliance platform providing data classification, DLP, information protection, and compliance management across Microsoft 365 and Azure",
+  "version": "1.0.0",
+  "category": "azure_security",
+  "vendor": "Microsoft Azure",
+  "auth_type": "oauth2_client",
+  "auth_config": {
+    "type": "oauth2_client",
+    "token_url": "https://login.microsoftonline.com/{tenantId}/oauth2/v2.0/token",
+    "scope": "https://graph.microsoft.com/.default",
+    "grant_type": "client_credentials"
+  },
+  "base_url": "https://graph.microsoft.com/v1.0",
+  "actions": [
+    {
+      "id": "list_sensitivity_labels",
+      "name": "List Sensitivity Labels",
+      "description": "List all sensitivity labels configured for information protection",
+      "http_method": "GET",
+      "endpoint": "/security/informationProtection/sensitivityLabels",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "$top",
+          "type": "number",
+          "description": "Maximum labels to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "list_dlp_policies",
+      "name": "List DLP Policies",
+      "description": "List Data Loss Prevention policies and their status",
+      "http_method": "GET",
+      "endpoint": "/security/dataLossPreventionPolicies",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "$top",
+          "type": "number",
+          "description": "Maximum policies to return",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "$filter",
+          "type": "string",
+          "description": "OData filter expression",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_alerts",
+      "name": "List Purview Alerts",
+      "description": "List compliance and DLP alerts from Microsoft Purview",
+      "http_method": "GET",
+      "endpoint": "/security/alerts_v2",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "$filter",
+          "type": "string",
+          "description": "OData filter (e.g., \"serviceSource eq 'microsoftDataLossPrevention'\")",
+          "required": false
+        },
+        {
+          "name": "$top",
+          "type": "number",
+          "description": "Maximum alerts to return",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "$orderby",
+          "type": "string",
+          "description": "Order by expression",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_retention_labels",
+      "name": "List Retention Labels",
+      "description": "List retention labels for data lifecycle management and records management",
+      "http_method": "GET",
+      "endpoint": "/security/labels/retentionLabels",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "$top",
+          "type": "number",
+          "description": "Maximum labels to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "list_ediscovery_cases",
+      "name": "List eDiscovery Cases",
+      "description": "List eDiscovery cases for legal hold and investigation",
+      "http_method": "GET",
+      "endpoint": "/security/cases/ediscoveryCases",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "$top",
+          "type": "number",
+          "description": "Maximum cases to return",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "$filter",
+          "type": "string",
+          "description": "OData filter expression",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_subject_rights_requests",
+      "name": "List Subject Rights Requests",
+      "description": "List data subject rights requests (GDPR, CCPA, etc.)",
+      "http_method": "GET",
+      "endpoint": "/privacy/subjectRightsRequests",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "$top",
+          "type": "number",
+          "description": "Maximum requests to return",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "$filter",
+          "type": "string",
+          "description": "OData filter expression",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,315 @@
+{
+  "name": "Multi-Tier Stakeholder Notification",
+  "slug": "ir-stakeholder-notification",
+  "description": "Delivers multi-tier stakeholder notifications based on incident type and severity. Riggs AI classifies the incident and recommends the notification tier. Tier 1 (data breach) triggers notifications to executive leadership, legal counsel, privacy officer, and affected business units via email, plus a Slack alert to the CISO. Tier 2 (operational disruption) notifies IT leadership and affected service owners. Tier 3 (security event) sends a standard SOC notification. Each notification tier creates a tracking ticket in Jira for audit compliance.",
+  "category": "incident_response",
+  "subcategory": "notification",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "8 minutes",
+  "tags": ["stakeholder", "notification", "tiered", "escalation", "compliance", "ciso", "legal"],
+  "alert_types": ["any"],
+  "severity_filter": ["medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["any"],
+    "min_severity": "medium"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Notify CISO, IT leadership, and SOC team via dedicated Slack channels"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create notification tracking tickets for audit compliance"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Incident Requires Stakeholder Notification",
+          "config": {
+            "alert_types": ["any"],
+            "description": "Triggers when an incident requires stakeholder notification based on type and severity"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — Classify Notification Tier",
+          "config": {
+            "template_id": "executive_summary",
+            "additional_instructions": "Classify this incident into a notification tier. Tier 1: data breach or regulatory impact (notify executives, legal, privacy). Tier 2: operational disruption (notify IT leadership, service owners). Tier 3: standard security event (SOC notification only).",
+            "description": "AI-powered incident classification to determine the appropriate stakeholder notification tier"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "label": "Tier 1 — Data Breach?",
+          "config": {
+            "condition": "{{analyze_1.notification_tier}} == 'tier_1'",
+            "description": "Check if the incident is classified as Tier 1 requiring executive, legal, and privacy officer notification"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "respond",
+          "label": "Notify Executives and Legal",
+          "config": {
+            "notify": {
+              "channel": "email",
+              "target": "{{config.executive_legal_distribution_list}}",
+              "message": "TIER 1 INCIDENT NOTIFICATION — POTENTIAL DATA BREACH\n\nIncident: {{trigger_1.alert.title}}\nSeverity: {{analyze_1.severity}}\nClassification: Data Breach / Regulatory Impact\n\nExecutive Summary:\n{{analyze_1.summary}}\n\nImmediate Actions Required:\n- Legal review of notification obligations\n- Privacy officer assessment of affected data\n- Business unit impact evaluation\n\nA follow-up briefing will be scheduled within 2 hours."
+            },
+            "description": "Send Tier 1 notification to executive leadership, legal counsel, and privacy officer"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "label": "Alert CISO on Slack",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#ciso-alerts",
+              "message": "TIER 1 DATA BREACH NOTIFICATION\n\nIncident: {{trigger_1.alert.title}}\nSeverity: {{analyze_1.severity}}\n\n{{analyze_1.summary}}\n\nExecutive and legal teams have been notified via email. Immediate response coordination required."
+            },
+            "description": "Send a direct Slack alert to the CISO channel for Tier 1 data breach incidents"
+          }
+        }
+      },
+      {
+        "id": "respond_3",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "label": "Create Tier 1 Tracking Ticket",
+          "config": {
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_issue",
+              "parameters": {
+                "project": "IR",
+                "issue_type": "Incident",
+                "priority": "P1 - Critical",
+                "summary": "TIER 1 NOTIFICATION: {{trigger_1.alert.title}}",
+                "description": "Tier 1 Stakeholder Notification Record\n\nIncident: {{trigger_1.alert.title}}\nNotification Tier: Tier 1 — Data Breach\n\nNotifications Sent:\n- Executive leadership (email)\n- Legal counsel (email)\n- Privacy officer (email)\n- CISO (#ciso-alerts Slack)\n\n{{analyze_1.summary}}"
+              }
+            },
+            "description": "Create a tracking ticket for Tier 1 notification audit trail"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "end",
+          "label": "End — Tier 1 Complete",
+          "config": {
+            "description": "Tier 1 data breach notification complete — executives, legal, privacy, and CISO all notified"
+          }
+        }
+      },
+      {
+        "id": "decision_2",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "decision",
+          "label": "Tier 2 — Operational Disruption?",
+          "config": {
+            "condition": "{{analyze_1.notification_tier}} == 'tier_2'",
+            "description": "Check if the incident is classified as Tier 2 requiring IT leadership and service owner notification"
+          }
+        }
+      },
+      {
+        "id": "respond_4",
+        "type": "signal",
+        "position": { "x": 520, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "label": "Notify IT Leadership",
+          "config": {
+            "notify": {
+              "channel": "email",
+              "target": "{{config.it_leadership_distribution_list}}",
+              "message": "TIER 2 INCIDENT NOTIFICATION — OPERATIONAL DISRUPTION\n\nIncident: {{trigger_1.alert.title}}\nSeverity: {{analyze_1.severity}}\nClassification: Operational Disruption\n\nSummary:\n{{analyze_1.summary}}\n\nAffected service owners have been notified. Please review impact to business operations and coordinate remediation."
+            },
+            "description": "Send Tier 2 notification to IT leadership and affected service owners"
+          }
+        }
+      },
+      {
+        "id": "respond_5",
+        "type": "signal",
+        "position": { "x": 520, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "label": "Post to IT Operations Slack",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#it-operations",
+              "message": "TIER 2 OPERATIONAL DISRUPTION\n\nIncident: {{trigger_1.alert.title}}\n\n{{analyze_1.summary}}\n\nIT leadership notified. Coordinate remediation in this channel."
+            },
+            "description": "Post Tier 2 notification to the IT operations Slack channel for coordination"
+          }
+        }
+      },
+      {
+        "id": "end_2",
+        "type": "signal",
+        "position": { "x": 520, "y": 1020 },
+        "data": {
+          "kind": "end",
+          "label": "End — Tier 2 Complete",
+          "config": {
+            "description": "Tier 2 operational disruption notification complete — IT leadership and service owners notified"
+          }
+        }
+      },
+      {
+        "id": "respond_6",
+        "type": "signal",
+        "position": { "x": 880, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "label": "SOC Standard Notification",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#soc-operations",
+              "message": "TIER 3 SECURITY EVENT\n\nIncident: {{trigger_1.alert.title}}\nSeverity: {{analyze_1.severity}}\n\n{{analyze_1.summary}}\n\nStandard handling — no external notification required."
+            },
+            "description": "Post Tier 3 standard security event notification to the SOC operations channel"
+          }
+        }
+      },
+      {
+        "id": "end_3",
+        "type": "signal",
+        "position": { "x": 880, "y": 860 },
+        "data": {
+          "kind": "end",
+          "label": "End — Tier 3 Complete",
+          "config": {
+            "description": "Tier 3 SOC notification complete — standard security event, no external stakeholders needed"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_analyze",
+        "source": "trigger_1",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_analyze_decision1",
+        "source": "analyze_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision1_yes",
+        "source": "decision_1",
+        "target": "respond_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision1_no",
+        "source": "decision_1",
+        "target": "decision_2",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_respond1_respond2",
+        "source": "respond_1",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_respond2_respond3",
+        "source": "respond_2",
+        "target": "respond_3",
+        "type": "default"
+      },
+      {
+        "id": "e_respond3_end1",
+        "source": "respond_3",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision2_yes",
+        "source": "decision_2",
+        "target": "respond_4",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision2_no",
+        "source": "decision_2",
+        "target": "respond_6",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_respond4_respond5",
+        "source": "respond_4",
+        "target": "respond_5",
+        "type": "default"
+      },
+      {
+        "id": "e_respond5_end2",
+        "source": "respond_5",
+        "target": "end_2",
+        "type": "default"
+      },
+      {
+        "id": "e_respond6_end3",
+        "source": "respond_6",
+        "target": "end_3",
+        "type": "default"
+      }
+    ]
+  }
+}

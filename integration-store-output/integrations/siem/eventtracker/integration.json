@@ -1,0 +1,182 @@
+{
+  "id": "eventtracker",
+  "name": "EventTracker",
+  "description": "Integrates with Netsurion EventTracker SIEM for alert management, event log retrieval, compliance reporting, and system health monitoring via the EventTracker REST API",
+  "version": "1.0.0",
+  "category": "siem",
+  "vendor": "Netsurion",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "prefix": "Bearer",
+    "location": "header"
+  },
+  "base_url": "https://{host}/api/v1",
+  "actions": [
+    {
+      "id": "list_alerts",
+      "name": "List Alerts",
+      "description": "Retrieve security alerts from EventTracker",
+      "http_method": "GET",
+      "endpoint": "/alerts",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Filter by severity (Critical, High, Medium, Low)",
+          "required": false
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Filter by status (New, Acknowledged, Resolved)",
+          "required": false
+        },
+        {
+          "name": "fromDate",
+          "type": "string",
+          "description": "Start date filter (ISO 8601)",
+          "required": false
+        },
+        {
+          "name": "toDate",
+          "type": "string",
+          "description": "End date filter",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum alerts to return",
+          "required": false,
+          "default": 50
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Offset for pagination",
+          "required": false,
+          "default": 0
+        }
+      ]
+    },
+    {
+      "id": "get_alert",
+      "name": "Get Alert Details",
+      "description": "Retrieve details for a specific alert",
+      "http_method": "GET",
+      "endpoint": "/alerts/{alertId}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "alertId",
+          "type": "string",
+          "description": "Alert ID to retrieve",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "update_alert",
+      "name": "Update Alert",
+      "description": "Update alert status or assignee",
+      "http_method": "PUT",
+      "endpoint": "/alerts/{alertId}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "alertId",
+          "type": "string",
+          "description": "Alert ID to update",
+          "required": true
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "New status (Acknowledged, Resolved, Dismissed)",
+          "required": false
+        },
+        {
+          "name": "assignee",
+          "type": "string",
+          "description": "User to assign to",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "search_events",
+      "name": "Search Events",
+      "description": "Search for events in EventTracker by criteria",
+      "http_method": "POST",
+      "endpoint": "/events/search",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Search query string",
+          "required": true
+        },
+        {
+          "name": "fromDate",
+          "type": "string",
+          "description": "Start date (ISO 8601)",
+          "required": true
+        },
+        {
+          "name": "toDate",
+          "type": "string",
+          "description": "End date",
+          "required": true
+        },
+        {
+          "name": "sources",
+          "type": "string",
+          "description": "Comma-separated list of event sources to search",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum events to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "get_log_sources",
+      "name": "Get Log Sources",
+      "description": "Retrieve configured log sources and their status",
+      "http_method": "GET",
+      "endpoint": "/logsources",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Filter by status (active, inactive)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_system_health",
+      "name": "Get System Health",
+      "description": "Retrieve system health and status information",
+      "http_method": "GET",
+      "endpoint": "/system/health",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    }
+  ]
+}

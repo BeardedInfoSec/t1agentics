@@ -1,0 +1,258 @@
+{
+  "id": "misp",
+  "name": "MISP",
+  "description": "Integrate with MISP (Malware Information Sharing Platform) to search events, attributes, and indicators of compromise across your threat intelligence sharing community",
+  "version": "1.0.0",
+  "category": "threat_intel",
+  "vendor": "MISP Project (open source)",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "https://{misp_instance_url}",
+  "actions": [
+    {
+      "id": "search_events",
+      "name": "Search Events",
+      "description": "Search MISP events using flexible filters including value, type, tags, and date ranges",
+      "http_method": "POST",
+      "endpoint": "/events/restSearch",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "value",
+          "type": "string",
+          "description": "Search value (IP, domain, hash, email, URL, etc.)",
+          "required": false,
+          "contains": ["ip", "domain", "hash", "url", "email"]
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Attribute type filter (e.g. ip-src, ip-dst, domain, md5, sha256, url)",
+          "required": false
+        },
+        {
+          "name": "tags",
+          "type": "string",
+          "description": "Tag(s) to filter events by (comma-separated for OR, pipe for AND)",
+          "required": false
+        },
+        {
+          "name": "publish_timestamp",
+          "type": "string",
+          "description": "Filter by publish timestamp (e.g. 14d for last 14 days, or epoch range)",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of results to return",
+          "required": false
+        },
+        {
+          "name": "returnFormat",
+          "type": "string",
+          "description": "Response format: json, xml, csv, stix, stix2 (default: json)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "search_attributes",
+      "name": "Search Attributes",
+      "description": "Search MISP attributes (individual IOCs) with fine-grained filters",
+      "http_method": "POST",
+      "endpoint": "/attributes/restSearch",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "value",
+          "type": "string",
+          "description": "Attribute value to search for (IP, domain, hash, etc.)",
+          "required": false,
+          "contains": ["ip", "domain", "hash", "url", "email"]
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Attribute type (ip-src, ip-dst, domain, hostname, md5, sha1, sha256, url, email-src)",
+          "required": false
+        },
+        {
+          "name": "category",
+          "type": "string",
+          "description": "Attribute category (Network activity, Payload delivery, External analysis, etc.)",
+          "required": false
+        },
+        {
+          "name": "to_ids",
+          "type": "boolean",
+          "description": "Filter to only IDS-exportable attributes",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of results",
+          "required": false
+        },
+        {
+          "name": "returnFormat",
+          "type": "string",
+          "description": "Response format: json, xml, csv, stix, stix2 (default: json)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_event",
+      "name": "Get Event",
+      "description": "Retrieve a specific MISP event by ID with all associated attributes and objects",
+      "http_method": "GET",
+      "endpoint": "/events/view/{event_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "event_id",
+          "type": "string",
+          "description": "MISP event ID to retrieve",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "add_attribute",
+      "name": "Add Attribute",
+      "description": "Add a new attribute (IOC) to an existing MISP event",
+      "http_method": "POST",
+      "endpoint": "/attributes/add/{event_id}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "event_id",
+          "type": "string",
+          "description": "MISP event ID to add the attribute to",
+          "required": true
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Attribute type (ip-src, ip-dst, domain, md5, sha256, url, etc.)",
+          "required": true
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "description": "Attribute value",
+          "required": true
+        },
+        {
+          "name": "category",
+          "type": "string",
+          "description": "Attribute category",
+          "required": false
+        },
+        {
+          "name": "to_ids",
+          "type": "boolean",
+          "description": "Whether the attribute should be used for IDS export (default: true)",
+          "required": false
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "Comment for the attribute",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "create_event",
+      "name": "Create Event",
+      "description": "Create a new MISP event for sharing threat intelligence",
+      "http_method": "POST",
+      "endpoint": "/events/add",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "info",
+          "type": "string",
+          "description": "Event description / title",
+          "required": true
+        },
+        {
+          "name": "distribution",
+          "type": "number",
+          "description": "Distribution level: 0=Organization, 1=Community, 2=Connected, 3=All, 4=Sharing group",
+          "required": false
+        },
+        {
+          "name": "threat_level_id",
+          "type": "number",
+          "description": "Threat level: 1=High, 2=Medium, 3=Low, 4=Undefined",
+          "required": false
+        },
+        {
+          "name": "analysis",
+          "type": "number",
+          "description": "Analysis level: 0=Initial, 1=Ongoing, 2=Completed",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "add_tag",
+      "name": "Add Tag",
+      "description": "Add a tag to a MISP event or attribute for categorization and filtering",
+      "http_method": "POST",
+      "endpoint": "/tags/attachTagToObject/{uuid}/{tag_name}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "uuid",
+          "type": "string",
+          "description": "UUID of the event or attribute to tag",
+          "required": true
+        },
+        {
+          "name": "tag_name",
+          "type": "string",
+          "description": "Tag name to attach (e.g. tlp:white, malware:ransomware)",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_statistics",
+      "name": "Get Statistics",
+      "description": "Retrieve MISP instance statistics including attribute and event counts",
+      "http_method": "GET",
+      "endpoint": "/attributes/attributeStatistics/{context}/{percentage}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "context",
+          "type": "string",
+          "description": "Statistics context: type or category",
+          "required": false
+        },
+        {
+          "name": "percentage",
+          "type": "number",
+          "description": "Return percentages (1) or counts (0)",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

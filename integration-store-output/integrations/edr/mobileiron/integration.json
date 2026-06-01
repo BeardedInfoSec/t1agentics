@@ -1,0 +1,128 @@
+{
+  "id": "mobileiron",
+  "name": "MobileIron",
+  "description": "This app allows endpoint management on MobileIron by implementing containment and investigative actions",
+  "version": "2.0.1",
+  "category": "edr",
+  "vendor": "MobileIron",
+  "auth_type": "basic_auth",
+  "auth_config": {
+    "type": "basic_auth",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "Using url: {base_url}",
+  "actions": [
+    {
+      "id": "list_devices",
+      "name": "List Devices",
+      "description": "Get a list of active devices",
+      "http_method": "GET",
+      "endpoint": "/actions/list_devices",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "start_index",
+          "type": "number",
+          "description": "The start index of a device",
+          "required": true,
+          "default": "0"
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Total number of devices to return",
+          "required": true,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "lock_device",
+      "name": "Lock Device",
+      "description": "Lock the device",
+      "http_method": "POST",
+      "endpoint": "/actions/lock_device",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "uuid",
+          "type": "string",
+          "description": "Device UUID",
+          "required": true,
+          "contains": [
+            "mobileiron device uuid"
+          ]
+        },
+        {
+          "name": "reason",
+          "type": "string",
+          "description": "Reason to lock",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "unlock_device",
+      "name": "Unlock Device",
+      "description": "Unlock the device",
+      "http_method": "POST",
+      "endpoint": "/actions/unlock_device",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "uuid",
+          "type": "string",
+          "description": "Device UUID",
+          "required": true,
+          "contains": [
+            "mobileiron device uuid"
+          ]
+        },
+        {
+          "name": "reason",
+          "type": "string",
+          "description": "Reason to lock",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_system_info",
+      "name": "Get System Info",
+      "description": "Get info about a device",
+      "http_method": "GET",
+      "endpoint": "/actions/get_system_info",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "uuid",
+          "type": "string",
+          "description": "Device UUID",
+          "required": true,
+          "contains": [
+            "mobileiron device uuid"
+          ]
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "MobileIron",
+    "original_type": "endpoint",
+    "converted_at": "2025-12-18T16:25:28.956059",
+    "source_version": "2.0.1"
+  }
+}

@@ -1,0 +1,241 @@
+{
+  "id": "fortigate",
+  "name": "FortiGate Firewall",
+  "description": "FortiGate Next-Generation Firewall management via FortiOS REST API for firewall policies, address objects, and traffic monitoring",
+  "version": "1.0.0",
+  "category": "firewall",
+  "vendor": "Fortinet",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "header_name": "Authorization",
+    "location": "header",
+    "token_prefix": "Bearer"
+  },
+  "base_url": "https://{host}/api/v2",
+  "actions": [
+    {
+      "id": "list_firewall_policies",
+      "name": "List Firewall Policies",
+      "description": "Retrieve all firewall policies configured on the FortiGate",
+      "http_method": "GET",
+      "endpoint": "/cmdb/firewall/policy",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "vdom",
+          "type": "string",
+          "description": "Virtual domain name (default: root)",
+          "required": false
+        },
+        {
+          "name": "format",
+          "type": "string",
+          "description": "Pipe-separated list of fields to return (e.g., name|policyid|action)",
+          "required": false
+        },
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "Filter expression (e.g., name=@VPN)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_firewall_policy",
+      "name": "Get Firewall Policy",
+      "description": "Retrieve a specific firewall policy by ID",
+      "http_method": "GET",
+      "endpoint": "/cmdb/firewall/policy/{policy_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "policy_id",
+          "type": "integer",
+          "description": "Numeric policy ID to retrieve",
+          "required": true
+        },
+        {
+          "name": "vdom",
+          "type": "string",
+          "description": "Virtual domain name",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "create_firewall_policy",
+      "name": "Create Firewall Policy",
+      "description": "Create a new firewall policy rule on the FortiGate",
+      "http_method": "POST",
+      "endpoint": "/cmdb/firewall/policy",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "vdom",
+          "type": "string",
+          "description": "Virtual domain name",
+          "required": false
+        },
+        {
+          "name": "body",
+          "type": "object",
+          "description": "Policy configuration including name, srcintf, dstintf, srcaddr, dstaddr, action, schedule, service",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_addresses",
+      "name": "List Address Objects",
+      "description": "Retrieve all firewall address objects",
+      "http_method": "GET",
+      "endpoint": "/cmdb/firewall/address",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "vdom",
+          "type": "string",
+          "description": "Virtual domain name",
+          "required": false
+        },
+        {
+          "name": "format",
+          "type": "string",
+          "description": "Pipe-separated list of fields to return",
+          "required": false
+        },
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "Filter expression for address objects",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "create_address",
+      "name": "Create Address Object",
+      "description": "Create a new firewall address object for use in policies (block IP)",
+      "http_method": "POST",
+      "endpoint": "/cmdb/firewall/address",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "vdom",
+          "type": "string",
+          "description": "Virtual domain name",
+          "required": false
+        },
+        {
+          "name": "body",
+          "type": "object",
+          "description": "Address object definition including name, type, subnet or fqdn",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "delete_address",
+      "name": "Delete Address Object",
+      "description": "Delete a firewall address object",
+      "http_method": "DELETE",
+      "endpoint": "/cmdb/firewall/address/{name}",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Name of the address object to delete",
+          "required": true
+        },
+        {
+          "name": "vdom",
+          "type": "string",
+          "description": "Virtual domain name",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_traffic_logs",
+      "name": "Get Traffic Logs",
+      "description": "Retrieve traffic log entries from FortiGate",
+      "http_method": "GET",
+      "endpoint": "/log/disk/traffic/forward",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "rows",
+          "type": "integer",
+          "description": "Number of log rows to return",
+          "required": false
+        },
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "Filter expression for log entries",
+          "required": false
+        },
+        {
+          "name": "serial_no",
+          "type": "string",
+          "description": "Serial number filter",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_interfaces",
+      "name": "List Network Interfaces",
+      "description": "Retrieve all network interfaces and their status",
+      "http_method": "GET",
+      "endpoint": "/cmdb/system/interface",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "vdom",
+          "type": "string",
+          "description": "Virtual domain name",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_system_status",
+      "name": "Get System Status",
+      "description": "Retrieve FortiGate system status and version information",
+      "http_method": "GET",
+      "endpoint": "/monitor/system/status",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "list_address_groups",
+      "name": "List Address Groups",
+      "description": "Retrieve all firewall address groups",
+      "http_method": "GET",
+      "endpoint": "/cmdb/firewall/addrgrp",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "vdom",
+          "type": "string",
+          "description": "Virtual domain name",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

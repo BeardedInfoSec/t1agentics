@@ -1,0 +1,230 @@
+{
+  "name": "MFA Fatigue / Push Bombing Detection",
+  "slug": "phishing-mfa-fatigue",
+  "description": "Detects and responds to MFA fatigue (push bombing) attacks where attackers repeatedly send MFA push notifications hoping the user will approve one out of frustration. Monitors for excessive MFA push requests to a single user, immediately locks the affected account, revokes active sessions, and notifies both the user and SOC. Includes AI analysis to assess whether the MFA bombardment is part of a broader credential compromise campaign.",
+  "category": "phishing",
+  "subcategory": "mfa_fatigue",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "10 minutes",
+  "tags": ["phishing", "mfa", "push-bombing", "fatigue", "credential-theft", "account-lockout", "2fa"],
+  "alert_types": ["phishing"],
+  "severity_filter": ["high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["mfa_fatigue", "push_bombing", "excessive_mfa", "suspicious_mfa"],
+    "min_severity": "high"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "active_directory",
+      "name": "Active Directory",
+      "category": "identity",
+      "reason": "Lock account and invalidate sessions for MFA fatigue target"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Notify SOC and affected user about the MFA fatigue attack"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "title": "MFA Fatigue Alert",
+          "summary": "Triggers on excessive MFA push requests or push bombing alerts",
+          "config": {
+            "trigger_type": "alert",
+            "alert_types": ["mfa_fatigue", "push_bombing", "excessive_mfa", "suspicious_mfa"]
+          }
+        }
+      },
+      {
+        "id": "code-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "code",
+          "title": "Analyze MFA Push Volume",
+          "summary": "Calculate push request frequency and identify the attack pattern",
+          "config": {
+            "mode": "script",
+            "script": {
+              "function_name": "main",
+              "inputs": [
+                { "name": "alert", "path": "$.trigger.alert" }
+              ],
+              "code": "def main(alert):\n    push_count = alert.get('push_count', alert.get('mfa_attempts', 0))\n    time_window = alert.get('time_window_minutes', 10)\n    affected_user = alert.get('user', alert.get('target_user', alert.get('username', '')))\n    source_ips = alert.get('source_ips', [])\n    if isinstance(source_ips, str):\n        source_ips = [ip.strip() for ip in source_ips.split(',')]\n    was_approved = alert.get('mfa_approved', alert.get('push_accepted', False))\n    return {\n        'affected_user': affected_user,\n        'push_count': push_count,\n        'time_window_minutes': time_window,\n        'pushes_per_minute': round(push_count / max(time_window, 1), 1),\n        'source_ips': list(set(source_ips)),\n        'was_approved': was_approved,\n        'severity': 'critical' if was_approved else 'high'\n    }"
+            }
+          }
+        }
+      },
+      {
+        "id": "analyze-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "analyze",
+          "title": "AI Credential Compromise Assessment",
+          "summary": "Assess whether MFA fatigue is part of a broader credential compromise",
+          "config": {
+            "mode": "ai_analysis",
+            "template_id": "credential_access",
+            "custom_instructions": "Analyze MFA fatigue attack context: determine if the attacker has valid credentials (which would be required to trigger MFA), check source IPs for impossible travel or known malicious infrastructure, assess whether any push was approved, and evaluate the risk of account compromise",
+            "alert_path": "$.trigger.alert",
+            "include_context": true
+          }
+        }
+      },
+      {
+        "id": "decision-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 540 },
+        "data": {
+          "kind": "decision",
+          "title": "Push Approved?",
+          "summary": "Did the user approve any of the MFA pushes?",
+          "config": {
+            "conditions": {
+              "operator": "AND",
+              "conditions": [
+                {
+                  "left": { "type": "path", "value": "$.nodes.code-1.result.was_approved" },
+                  "operator": "equals",
+                  "right": { "type": "value", "value": true }
+                }
+              ],
+              "groups": []
+            },
+            "expression": "$.nodes.code-1.result.was_approved == true",
+            "default_branch": "no"
+          }
+        }
+      },
+      {
+        "id": "respond-1",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "title": "Lock Account Immediately",
+          "summary": "Lock the compromised account — MFA push was approved by attacker",
+          "config": {
+            "response_type": "integration_action",
+            "action_type": "disable_account",
+            "target_path": "$.nodes.code-1.result.affected_user",
+            "requires_approval": false,
+            "priority": "critical",
+            "message": "CRITICAL: Locking account {{$.nodes.code-1.result.affected_user}} — MFA push was APPROVED during fatigue attack. Account likely compromised.",
+            "params": {
+              "user": "{{$.nodes.code-1.result.affected_user}}",
+              "invalidate_sessions": true,
+              "revoke_tokens": true
+            }
+          }
+        }
+      },
+      {
+        "id": "respond-2",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "title": "Notify SOC — Account Compromised",
+          "summary": "Critical alert to SOC — account compromised via MFA fatigue",
+          "config": {
+            "response_type": "notify",
+            "channel": "slack",
+            "slack_channel": "#soc-incidents",
+            "message": "CRITICAL: MFA FATIGUE — ACCOUNT COMPROMISED\n\nUser: {{$.nodes.code-1.result.affected_user}}\nMFA Push Approved: YES\nPush Count: {{$.nodes.code-1.result.push_count}} in {{$.nodes.code-1.result.time_window_minutes}} minutes\nSource IPs: {{$.nodes.code-1.result.source_ips}}\n\nAI Assessment: {{$.nodes.analyze-1.result.summary}}\n\nActions Taken:\n- Account LOCKED\n- All sessions revoked\n- All tokens invalidated\n\nIMMEDIATE ACTION REQUIRED:\n- Investigate attacker activity since MFA approval\n- Check for data exfiltration\n- Reset credentials before re-enabling account",
+            "priority": "critical"
+          }
+        }
+      },
+      {
+        "id": "respond-3",
+        "type": "signal",
+        "position": { "x": 700, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "title": "Temporary Account Lock",
+          "summary": "Temporarily lock account as precaution — no push was approved",
+          "config": {
+            "response_type": "integration_action",
+            "action_type": "temporary_lock",
+            "target_path": "$.nodes.code-1.result.affected_user",
+            "requires_approval": false,
+            "priority": "high",
+            "message": "Temporarily locking {{$.nodes.code-1.result.affected_user}} due to MFA fatigue attack (no push approved, precautionary)",
+            "params": {
+              "user": "{{$.nodes.code-1.result.affected_user}}",
+              "lock_duration_minutes": 60
+            }
+          }
+        }
+      },
+      {
+        "id": "respond-4",
+        "type": "signal",
+        "position": { "x": 700, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "title": "Notify User & SOC",
+          "summary": "Alert user about the MFA fatigue attempt and notify SOC",
+          "config": {
+            "response_type": "notify",
+            "channel": "slack",
+            "slack_channel": "#soc-alerts",
+            "message": "MFA FATIGUE ATTACK DETECTED (No Push Approved)\n\nUser: {{$.nodes.code-1.result.affected_user}}\nPush Count: {{$.nodes.code-1.result.push_count}} in {{$.nodes.code-1.result.time_window_minutes}} minutes\nSource IPs: {{$.nodes.code-1.result.source_ips}}\n\nAI Assessment: {{$.nodes.analyze-1.result.summary}}\n\nActions:\n- Account temporarily locked (60 min)\n- User being notified to NEVER approve unexpected MFA pushes\n- Recommend credential reset as attacker has valid password",
+            "priority": "high"
+          }
+        }
+      },
+      {
+        "id": "end-1",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "end",
+          "title": "End — Account Compromised & Locked",
+          "summary": "MFA approved by attacker, account locked, full investigation needed",
+          "config": {
+            "disposition": "true_positive",
+            "summary": "MFA fatigue attack succeeded — user approved push. Account locked, sessions revoked, SOC alerted for full investigation."
+          }
+        }
+      },
+      {
+        "id": "end-2",
+        "type": "signal",
+        "position": { "x": 700, "y": 1020 },
+        "data": {
+          "kind": "end",
+          "title": "End — Attack Blocked",
+          "summary": "MFA fatigue detected, no push approved, account temporarily locked",
+          "config": {
+            "disposition": "true_positive",
+            "summary": "MFA fatigue attack detected but no push was approved. Account temporarily locked, user and SOC notified. Credential reset recommended."
+          }
+        }
+      }
+    ],
+    "edges": [
+      { "id": "e1", "source": "trigger-1", "target": "code-1", "animated": true, "type": "smoothstep" },
+      { "id": "e2", "source": "code-1", "target": "analyze-1", "animated": true, "type": "smoothstep" },
+      { "id": "e3", "source": "analyze-1", "target": "decision-1", "animated": true, "type": "smoothstep" },
+      { "id": "e4", "source": "decision-1", "target": "respond-1", "sourceHandle": "yes", "label": "Yes", "animated": true, "type": "smoothstep" },
+      { "id": "e5", "source": "decision-1", "target": "respond-3", "sourceHandle": "no", "label": "No", "animated": true, "type": "smoothstep" },
+      { "id": "e6", "source": "respond-1", "target": "respond-2", "animated": true, "type": "smoothstep" },
+      { "id": "e7", "source": "respond-2", "target": "end-1", "animated": true, "type": "smoothstep" },
+      { "id": "e8", "source": "respond-3", "target": "respond-4", "animated": true, "type": "smoothstep" },
+      { "id": "e9", "source": "respond-4", "target": "end-2", "animated": true, "type": "smoothstep" }
+    ]
+  }
+}

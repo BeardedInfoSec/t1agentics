@@ -1,0 +1,296 @@
+{
+  "id": "symantec_endpoint",
+  "name": "Symantec Endpoint Security",
+  "description": "Integrates with Broadcom Symantec Endpoint Security REST APIs for device management, incident response, endpoint quarantine, and threat intelligence",
+  "version": "1.0.0",
+  "category": "edr",
+  "vendor": "Broadcom",
+  "auth_type": "oauth2_client",
+  "auth_config": {
+    "type": "oauth2_client",
+    "token_url": "https://api.sep.securitycloud.symantec.com/v1/oauth2/tokens"
+  },
+  "base_url": "https://api.sep.securitycloud.symantec.com/v1",
+  "actions": [
+    {
+      "id": "list_devices",
+      "name": "List Devices",
+      "description": "Retrieve the list of managed endpoint devices with filtering options",
+      "http_method": "GET",
+      "endpoint": "/devices",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of devices to return",
+          "required": false,
+          "default": 50
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Starting offset for pagination",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "os",
+          "type": "string",
+          "description": "Filter by operating system",
+          "required": false
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Filter by device name",
+          "required": false
+        }
+      ],
+      "observable_type": "hostname"
+    },
+    {
+      "id": "get_device",
+      "name": "Get Device Details",
+      "description": "Retrieve detailed information about a specific device",
+      "http_method": "GET",
+      "endpoint": "/devices/{device_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "device_id",
+          "type": "string",
+          "description": "The unique identifier of the device",
+          "required": true
+        }
+      ],
+      "observable_type": "hostname"
+    },
+    {
+      "id": "quarantine_device",
+      "name": "Quarantine Device",
+      "description": "Quarantine a device to isolate it from internal and external networks",
+      "http_method": "POST",
+      "endpoint": "/commands/quarantine",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "device_ids",
+          "type": "string",
+          "description": "JSON array of device IDs to quarantine",
+          "required": true
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "Comment describing the reason for quarantine",
+          "required": false
+        }
+      ],
+      "observable_type": "hostname"
+    },
+    {
+      "id": "unquarantine_device",
+      "name": "Unquarantine Device",
+      "description": "Remove quarantine from a previously isolated device",
+      "http_method": "POST",
+      "endpoint": "/commands/unquarantine",
+      "action_type": "correct",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "device_ids",
+          "type": "string",
+          "description": "JSON array of device IDs to unquarantine",
+          "required": true
+        }
+      ],
+      "observable_type": "hostname"
+    },
+    {
+      "id": "list_incidents",
+      "name": "List Incidents",
+      "description": "Retrieve EDR incidents from Symantec Endpoint Security",
+      "http_method": "GET",
+      "endpoint": "/incidents",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of incidents to return",
+          "required": false,
+          "default": 50
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Starting offset for pagination",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "priority",
+          "type": "string",
+          "description": "Filter by incident priority (high, medium, low)",
+          "required": false
+        },
+        {
+          "name": "state",
+          "type": "string",
+          "description": "Filter by incident state (open, inProgress, closed)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "update_incident",
+      "name": "Update Incident",
+      "description": "Update an incident (close, change resolution, add comments)",
+      "http_method": "PATCH",
+      "endpoint": "/incidents/{incident_id}",
+      "action_type": "correct",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "incident_id",
+          "type": "string",
+          "description": "The unique identifier of the incident",
+          "required": true
+        },
+        {
+          "name": "state",
+          "type": "string",
+          "description": "New state: open, inProgress, closed",
+          "required": false
+        },
+        {
+          "name": "resolution",
+          "type": "string",
+          "description": "Resolution type for closed incidents",
+          "required": false
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "Analyst comment to add to the incident",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_events",
+      "name": "List Events",
+      "description": "Retrieve security events (threat detections, policy violations) from managed endpoints",
+      "http_method": "GET",
+      "endpoint": "/events",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of events to return",
+          "required": false,
+          "default": 50
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Starting offset for pagination",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Filter by event type",
+          "required": false
+        },
+        {
+          "name": "start_date",
+          "type": "string",
+          "description": "Start date for event query (ISO 8601)",
+          "required": false
+        },
+        {
+          "name": "end_date",
+          "type": "string",
+          "description": "End date for event query (ISO 8601)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "scan_device",
+      "name": "Scan Device",
+      "description": "Initiate an on-demand scan on one or more managed devices",
+      "http_method": "POST",
+      "endpoint": "/commands/scan",
+      "action_type": "correct",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "device_ids",
+          "type": "string",
+          "description": "JSON array of device IDs to scan",
+          "required": true
+        },
+        {
+          "name": "scan_type",
+          "type": "string",
+          "description": "Type of scan: quick or full",
+          "required": false,
+          "default": "quick"
+        }
+      ],
+      "observable_type": "hostname"
+    },
+    {
+      "id": "get_file_info",
+      "name": "Get File Information",
+      "description": "Retrieve threat intelligence information for a file by its hash",
+      "http_method": "GET",
+      "endpoint": "/threat-intel/files/{file_hash}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "file_hash",
+          "type": "string",
+          "description": "SHA256 hash of the file to look up",
+          "required": true
+        }
+      ],
+      "observable_type": "hash"
+    },
+    {
+      "id": "add_deny_list_entry",
+      "name": "Add to Deny List",
+      "description": "Add a file hash to the deny list to block execution across all managed endpoints",
+      "http_method": "POST",
+      "endpoint": "/policies/deny-list",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "sha256",
+          "type": "string",
+          "description": "SHA256 hash of the file to block",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Description of why the file was added to the deny list",
+          "required": false
+        }
+      ],
+      "observable_type": "hash"
+    }
+  ]
+}

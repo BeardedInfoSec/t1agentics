@@ -1,0 +1,211 @@
+{
+  "id": "threatconnect",
+  "name": "ThreatConnect",
+  "description": "Integrate with ThreatConnect TIP to search indicators, groups, cases, and intelligence across your threat library using the v3 API",
+  "version": "1.0.0",
+  "category": "threat_intel",
+  "vendor": "ThreatConnect",
+  "auth_type": "custom_header",
+  "auth_config": {
+    "type": "custom_header",
+    "header_name": "Authorization",
+    "location": "header",
+    "note": "HMAC-based auth: header value is TC {ACCESS_ID}:{HMAC_SIGNATURE}. Requires Timestamp header with epoch seconds."
+  },
+  "base_url": "https://app.threatconnect.com/api",
+  "actions": [
+    {
+      "id": "search_indicators",
+      "name": "Search Indicators",
+      "description": "Search ThreatConnect indicators with flexible TQL filters for IP, domain, hash, URL, and other IOC types",
+      "http_method": "GET",
+      "endpoint": "/v3/indicators",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "tql",
+          "type": "string",
+          "description": "ThreatConnect Query Language filter (e.g. summary EQ '8.8.8.8' or typeName EQ 'File')",
+          "required": false
+        },
+        {
+          "name": "resultStart",
+          "type": "number",
+          "description": "Starting result index for pagination",
+          "required": false
+        },
+        {
+          "name": "resultLimit",
+          "type": "number",
+          "description": "Maximum number of results to return (default 100, max 10000)",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "type": "string",
+          "description": "Additional fields to include in response",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "enrich_indicator",
+      "name": "Enrich Indicator",
+      "description": "Enrich a specific indicator using ThreatConnect's intelligence aggregation",
+      "http_method": "POST",
+      "endpoint": "/v3/indicators/enrich",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "summary",
+          "type": "string",
+          "description": "Indicator value (IP, domain, hash, URL, etc.)",
+          "required": true,
+          "contains": ["ip", "domain", "hash", "url", "email"]
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Indicator type (Address, Host, File, URL, EmailAddress)",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "search_groups",
+      "name": "Search Groups",
+      "description": "Search ThreatConnect groups (threat reports, incidents, campaigns, adversaries, documents)",
+      "http_method": "GET",
+      "endpoint": "/v3/groups",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "tql",
+          "type": "string",
+          "description": "TQL filter expression (e.g. typeName EQ 'Report' AND dateAdded GT '2024-01-01')",
+          "required": false
+        },
+        {
+          "name": "resultLimit",
+          "type": "number",
+          "description": "Maximum number of results",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "type": "string",
+          "description": "Additional fields to include",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "search_cases",
+      "name": "Search Cases",
+      "description": "Search ThreatConnect cases for incident tracking and investigation management",
+      "http_method": "GET",
+      "endpoint": "/v3/cases",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "tql",
+          "type": "string",
+          "description": "TQL filter expression for case search",
+          "required": false
+        },
+        {
+          "name": "resultLimit",
+          "type": "number",
+          "description": "Maximum number of results",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_indicator_by_id",
+      "name": "Get Indicator by ID",
+      "description": "Retrieve a specific indicator by its ThreatConnect ID with full context",
+      "http_method": "GET",
+      "endpoint": "/v3/indicators/{id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "ThreatConnect indicator ID",
+          "required": true
+        },
+        {
+          "name": "fields",
+          "type": "string",
+          "description": "Additional fields to include (e.g. associatedGroups,attributes,tags)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "create_indicator",
+      "name": "Create Indicator",
+      "description": "Create a new indicator in ThreatConnect with optional tags and attributes",
+      "http_method": "POST",
+      "endpoint": "/v3/indicators",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Indicator type (Address, Host, File, URL, EmailAddress)",
+          "required": true
+        },
+        {
+          "name": "summary",
+          "type": "string",
+          "description": "Indicator value",
+          "required": true,
+          "contains": ["ip", "domain", "hash", "url", "email"]
+        },
+        {
+          "name": "rating",
+          "type": "number",
+          "description": "Threat rating (0-5)",
+          "required": false
+        },
+        {
+          "name": "confidence",
+          "type": "number",
+          "description": "Confidence level (0-100)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_tags",
+      "name": "List Tags",
+      "description": "List available tags in ThreatConnect for categorization and filtering",
+      "http_method": "GET",
+      "endpoint": "/v3/tags",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "tql",
+          "type": "string",
+          "description": "TQL filter expression for tag search",
+          "required": false
+        },
+        {
+          "name": "resultLimit",
+          "type": "number",
+          "description": "Maximum number of results",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

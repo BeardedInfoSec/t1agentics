@@ -1,0 +1,245 @@
+{
+  "name": "API Security Testing Automation",
+  "slug": "devsecops-api-security-test",
+  "description": "Automated API security testing workflow triggered on API definition changes or scheduled scans. Riggs AI analyzes OWASP API Top 10 findings, evaluates authentication and authorization controls, checks for data exposure risks, and generates a comprehensive security report. Critical findings trigger immediate remediation tickets.",
+  "category": "devsecops",
+  "subcategory": "api_security",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "advanced",
+  "estimated_time": "15 minutes",
+  "tags": ["devsecops", "api-security", "owasp", "api-top-10", "authentication", "authorization", "data-exposure"],
+  "alert_types": ["api_security_finding", "api_scan"],
+  "severity_filter": ["low", "medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["api_security_finding", "api_scan", "openapi_change", "api_vulnerability"],
+    "min_severity": "low"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create remediation tickets for API security findings"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Notify the API team and security team about critical API vulnerabilities"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "title": "API Security Scan Completed",
+          "summary": "Triggers when an API security scan completes or API definition changes are detected",
+          "config": {
+            "trigger_type": "alert",
+            "alert_types": ["api_security_finding", "api_scan", "openapi_change", "api_vulnerability"],
+            "description": "Ingests API security scan results from tools like OWASP ZAP API scan, 42Crunch, APIsec, or custom API fuzzing tools"
+          }
+        }
+      },
+      {
+        "id": "analyze-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "title": "AI API Security Assessment",
+          "summary": "Riggs AI evaluates API security findings against OWASP API Top 10",
+          "config": {
+            "template_id": "vuln_risk",
+            "additional_instructions": "Analyze API security scan results against the OWASP API Top 10: check for broken object-level authorization (BOLA), broken authentication, excessive data exposure, lack of rate limiting, broken function-level authorization, mass assignment, security misconfiguration, injection, improper asset management, and insufficient logging. Prioritize findings by exploitability and business impact.",
+            "description": "AI-powered API security assessment against OWASP API Top 10 categories"
+          }
+        }
+      },
+      {
+        "id": "decision-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "title": "Critical API Vulnerabilities?",
+          "summary": "Check if any critical API security vulnerabilities were found",
+          "config": {
+            "conditions": {
+              "operator": "AND",
+              "conditions": [
+                {
+                  "left": { "type": "path", "value": "$.nodes.analyze-1.result.critical_count" },
+                  "operator": "greater_than",
+                  "right": { "type": "value", "value": 0 }
+                }
+              ],
+              "groups": []
+            },
+            "expression": "$.nodes.analyze-1.result.critical_count > 0",
+            "default_branch": "no"
+          }
+        }
+      },
+      {
+        "id": "respond-1",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "respond",
+          "title": "Create Critical Fix Ticket",
+          "summary": "Create a P1 Jira ticket for critical API security findings",
+          "config": {
+            "response_type": "integration_action",
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_issue",
+              "parameters": {
+                "project": "{{trigger-1.alert.jira_project | default('APPSEC')}}",
+                "issue_type": "Bug",
+                "priority": "P1",
+                "summary": "API SECURITY: {{analyze-1.result.critical_count}} critical findings — {{trigger-1.alert.api_name}}",
+                "description": "Critical API security vulnerabilities detected.\n\nAPI: {{trigger-1.alert.api_name}}\nBase URL: {{trigger-1.alert.api_base_url}}\nSpec: {{trigger-1.alert.openapi_spec}}\nCritical Findings: {{analyze-1.result.critical_count}}\nHigh Findings: {{analyze-1.result.high_count}}\n\nOWASP API Top 10 Categories Affected:\n{{analyze-1.result.owasp_categories}}\n\nRiggs Assessment:\n{{analyze-1.result.summary}}\n\nRemediation:\n{{analyze-1.result.remediation}}",
+                "labels": ["api-security", "owasp-api-top10", "critical"]
+              }
+            },
+            "description": "Create a P1 Jira ticket for critical API security vulnerabilities"
+          }
+        }
+      },
+      {
+        "id": "respond-2",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "title": "Alert API & Security Teams",
+          "summary": "Notify both the API team and security team about critical findings",
+          "config": {
+            "response_type": "notify",
+            "channel": "slack",
+            "slack_channel": "#devsecops-critical",
+            "message": "CRITICAL API SECURITY FINDINGS\n\nAPI: {{trigger-1.alert.api_name}}\nBase URL: {{trigger-1.alert.api_base_url}}\nCritical: {{analyze-1.result.critical_count}} | High: {{analyze-1.result.high_count}}\nJira: {{respond-1.ticket_url}}\n\nOWASP Categories:\n{{analyze-1.result.owasp_categories}}\n\n{{analyze-1.result.summary}}\n\nImmediate remediation required.",
+            "priority": "critical"
+          }
+        }
+      },
+      {
+        "id": "utility-1",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "utility",
+          "title": "Set SLA: 24 Hours",
+          "summary": "Set a 24-hour remediation SLA for critical API findings",
+          "config": {
+            "action": "set_sla",
+            "parameters": {
+              "sla_hours": 24,
+              "sla_label": "Critical API Security Remediation"
+            },
+            "description": "Set a 24-hour SLA timer for critical API security vulnerability remediation"
+          }
+        }
+      },
+      {
+        "id": "decision-2",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "decision",
+          "title": "Any High/Medium Findings?",
+          "summary": "Check if there are high or medium severity API findings to report",
+          "config": {
+            "conditions": {
+              "operator": "AND",
+              "conditions": [
+                {
+                  "left": { "type": "path", "value": "$.nodes.analyze-1.result.total_findings" },
+                  "operator": "greater_than",
+                  "right": { "type": "value", "value": 0 }
+                }
+              ],
+              "groups": []
+            },
+            "expression": "$.nodes.analyze-1.result.total_findings > 0",
+            "default_branch": "no"
+          }
+        }
+      },
+      {
+        "id": "respond-3",
+        "type": "signal",
+        "position": { "x": 600, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "title": "Generate Security Report",
+          "summary": "Create a comprehensive API security report as a Jira task",
+          "config": {
+            "response_type": "integration_action",
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_issue",
+              "parameters": {
+                "project": "{{trigger-1.alert.jira_project | default('APPSEC')}}",
+                "issue_type": "Task",
+                "priority": "P3",
+                "summary": "API Security Report: {{trigger-1.alert.api_name}} — {{analyze-1.result.total_findings}} findings",
+                "description": "API Security Scan Report\n\nAPI: {{trigger-1.alert.api_name}}\nBase URL: {{trigger-1.alert.api_base_url}}\nScan Date: {{trigger-1.alert.scan_date}}\n\nSummary:\n- High: {{analyze-1.result.high_count}}\n- Medium: {{analyze-1.result.medium_count}}\n- Low: {{analyze-1.result.low_count}}\n\nRiggs Assessment:\n{{analyze-1.result.summary}}\n\nRemediation Recommendations:\n{{analyze-1.result.remediation}}",
+                "labels": ["api-security", "security-report"]
+              }
+            },
+            "description": "Create a Jira task with the comprehensive API security report"
+          }
+        }
+      },
+      {
+        "id": "utility-2",
+        "type": "signal",
+        "position": { "x": 860, "y": 540 },
+        "data": {
+          "kind": "utility",
+          "title": "All Clear — No Findings",
+          "summary": "API security scan completed with no findings",
+          "config": {
+            "operation": "update_status",
+            "status": "approved",
+            "note": "API security scan for {{trigger-1.alert.api_name}} completed with zero findings. API passes OWASP API Top 10 checks."
+          }
+        }
+      },
+      {
+        "id": "end-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1020 },
+        "data": {
+          "kind": "end",
+          "title": "End",
+          "summary": "API security testing workflow complete",
+          "config": {
+            "disposition": "evaluated",
+            "summary": "API security testing automation complete."
+          }
+        }
+      }
+    ],
+    "edges": [
+      { "id": "e1", "source": "trigger-1", "target": "analyze-1", "animated": true, "type": "smoothstep" },
+      { "id": "e2", "source": "analyze-1", "target": "decision-1", "animated": true, "type": "smoothstep" },
+      { "id": "e3", "source": "decision-1", "target": "respond-1", "sourceHandle": "yes", "label": "Yes", "animated": true, "type": "smoothstep" },
+      { "id": "e4", "source": "decision-1", "target": "decision-2", "sourceHandle": "no", "label": "No", "animated": true, "type": "smoothstep" },
+      { "id": "e5", "source": "respond-1", "target": "respond-2", "animated": true, "type": "smoothstep" },
+      { "id": "e6", "source": "respond-2", "target": "utility-1", "animated": true, "type": "smoothstep" },
+      { "id": "e7", "source": "utility-1", "target": "end-1", "animated": true, "type": "smoothstep" },
+      { "id": "e8", "source": "decision-2", "target": "respond-3", "sourceHandle": "yes", "label": "Yes", "animated": true, "type": "smoothstep" },
+      { "id": "e9", "source": "decision-2", "target": "utility-2", "sourceHandle": "no", "label": "No", "animated": true, "type": "smoothstep" },
+      { "id": "e10", "source": "respond-3", "target": "end-1", "animated": true, "type": "smoothstep" },
+      { "id": "e11", "source": "utility-2", "target": "end-1", "animated": true, "type": "smoothstep" }
+    ]
+  }
+}

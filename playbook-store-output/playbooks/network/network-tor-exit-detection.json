@@ -1,0 +1,255 @@
+{
+  "name": "Tor Exit Node Communication Detection",
+  "slug": "network-tor-exit-detection",
+  "description": "Detects and investigates network communication with known Tor exit nodes, which may indicate anonymized data exfiltration, policy violations, or threat actor activity. Riggs AI correlates the Tor traffic against the user's role, data accessed, and organizational policy. Policy violations or suspected exfiltration trigger traffic blocking, user investigation, manager notification, and compliance ticket creation. Authorized Tor usage (e.g., threat intelligence research) is documented and exempted.",
+  "category": "network",
+  "subcategory": "anonymization_detection",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "12 minutes",
+  "tags": ["tor", "anonymization", "exfiltration", "policy_violation", "network"],
+  "alert_types": ["network", "tor", "anonymization"],
+  "severity_filter": ["medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["network", "tor_exit_node", "tor_communication", "anonymizer_detected"],
+    "min_severity": "medium"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "palo_alto_ngfw",
+      "name": "Palo Alto NGFW",
+      "category": "network",
+      "reason": "Block Tor exit node communication and enforce network policy"
+    },
+    {
+      "connector_id": "crowdstrike",
+      "name": "CrowdStrike Falcon",
+      "category": "edr",
+      "reason": "Investigate endpoint process responsible for Tor communication"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create compliance or investigation ticket"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Notify security team and user's manager of Tor usage"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Tor Exit Node Communication",
+          "config": {
+            "alert_types": ["network", "tor_exit_node", "tor_communication", "anonymizer_detected"],
+            "description": "Triggers when network monitoring detects communication with known Tor exit nodes or anonymization services"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — Tor Traffic Analysis",
+          "config": {
+            "template_id": "data_exfil",
+            "additional_instructions": "Analyze the Tor communication: identify the source user/host, data volume transferred, accessed resources, user's department/role, and whether Tor usage is authorized per policy. Determine if this is data exfiltration, policy violation, or authorized use.",
+            "description": "AI-powered analysis of Tor traffic context including user role, data volume, resource access patterns, and policy compliance"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "label": "Unauthorized Tor Usage?",
+          "config": {
+            "condition": "{{analyze_1.verdict}} in ['MALICIOUS', 'SUSPICIOUS'] or {{analyze_1.policy_violation}} == true",
+            "description": "Routes based on whether the Tor usage is unauthorized, a policy violation, or indicative of data exfiltration"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "respond",
+          "label": "Block Tor Traffic on Firewall",
+          "config": {
+            "integration_action": {
+              "connector_id": "palo_alto_ngfw",
+              "action": "block_ip",
+              "parameters": {
+                "ip_address": "{{trigger_1.alert.destination_ip}}",
+                "rule_name": "T1-Tor-Block-{{trigger_1.alert.alert_id}}",
+                "direction": "outbound",
+                "comment": "Tor exit node blocked — User: {{trigger_1.alert.username}}, Alert: {{trigger_1.alert.alert_id}}"
+              }
+            },
+            "description": "Blocks outbound traffic to the Tor exit node to stop ongoing anonymized communication"
+          }
+        }
+      },
+      {
+        "id": "analyze_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — User Activity Investigation",
+          "config": {
+            "template_id": "data_exfil",
+            "additional_instructions": "Investigate the user's recent endpoint and network activity. Check for data staging, large file access, removable media usage, and other exfiltration indicators. Identify what data may have been sent through the Tor tunnel.",
+            "description": "AI-powered investigation of the user's recent activity to identify data that may have been exfiltrated through the Tor connection"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "label": "Create Investigation Ticket",
+          "config": {
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_issue",
+              "parameters": {
+                "project": "SEC",
+                "issue_type": "Investigation",
+                "priority": "P2",
+                "summary": "Tor Exit Node Usage — {{trigger_1.alert.username}} ({{trigger_1.alert.hostname}})",
+                "description": "TOR EXIT NODE COMMUNICATION DETECTED\n\nUser: {{trigger_1.alert.username}}\nHost: {{trigger_1.alert.hostname}} ({{trigger_1.alert.source_ip}})\nTor Exit Node: {{trigger_1.alert.destination_ip}}\nData Volume: {{trigger_1.alert.bytes_transferred}}\nDuration: {{trigger_1.alert.session_duration}}\n\nPolicy Violation: {{analyze_1.policy_violation}}\nExfiltration Risk: {{analyze_1.exfil_risk}}\n\nUser Activity Investigation:\n{{analyze_2.summary}}\n\nActions: Tor traffic blocked on firewall\nRequires HR/management coordination for user interview."
+              }
+            },
+            "description": "Creates an investigation ticket with full Tor usage context and user activity analysis for security and HR follow-up"
+          }
+        }
+      },
+      {
+        "id": "respond_3",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "label": "Notify Security & Manager",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#security-alerts",
+              "message": "TOR EXIT NODE USAGE DETECTED\n\nUser: {{trigger_1.alert.username}}\nHost: {{trigger_1.alert.hostname}}\nData Transferred: {{trigger_1.alert.bytes_transferred}}\nExfiltration Risk: {{analyze_1.exfil_risk}}\n\nActions: Tor traffic blocked\nTicket: {{respond_2.ticket_key}}\n\nUser activity investigation attached to ticket.",
+              "priority": "high"
+            },
+            "description": "Notifies the security team and triggers manager notification about the unauthorized Tor usage"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "utility",
+          "label": "Document Authorized Usage",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "Tor communication by {{trigger_1.alert.username}} reviewed — Verdict: {{analyze_1.verdict}}. Usage determined to be authorized ({{analyze_1.authorization_reason}}). Documented and exempted from future alerts for this user/destination.",
+              "close_alert": true,
+              "add_exception": true
+            },
+            "description": "Documents authorized Tor usage (e.g., threat intel research) and creates an exception to prevent future false positive alerts"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1180 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "Tor exit node communication detection workflow complete"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_analyze",
+        "source": "trigger_1",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_analyze_decision",
+        "source": "analyze_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "respond_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "utility_1",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_block_investigate",
+        "source": "respond_1",
+        "target": "analyze_2",
+        "type": "default"
+      },
+      {
+        "id": "e_investigate_ticket",
+        "source": "analyze_2",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_ticket_notify",
+        "source": "respond_2",
+        "target": "respond_3",
+        "type": "default"
+      },
+      {
+        "id": "e_notify_end",
+        "source": "respond_3",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_utility_end",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

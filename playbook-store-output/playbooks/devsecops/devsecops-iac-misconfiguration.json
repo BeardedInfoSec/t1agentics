@@ -1,0 +1,249 @@
+{
+  "name": "IaC Misconfiguration Detection & Fix",
+  "slug": "devsecops-iac-misconfiguration",
+  "description": "Automated detection and remediation workflow for Infrastructure-as-Code misconfigurations in Terraform, CloudFormation, Kubernetes manifests, and Helm charts. Riggs AI analyzes the misconfiguration against cloud security benchmarks (CIS, AWS Well-Architected), determines the risk level, and either auto-generates a fix PR for common issues or escalates complex misconfigurations to the platform engineering team.",
+  "category": "devsecops",
+  "subcategory": "iac_security",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "10 minutes",
+  "tags": ["devsecops", "iac", "terraform", "cloudformation", "kubernetes", "misconfiguration", "cis-benchmark"],
+  "alert_types": ["iac_misconfiguration", "cloud_misconfiguration"],
+  "severity_filter": ["low", "medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["iac_misconfiguration", "cloud_misconfiguration", "checkov_alert", "tfsec_alert", "kics_alert"],
+    "min_severity": "medium"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "github",
+      "name": "GitHub",
+      "category": "scm",
+      "reason": "Create pull requests with IaC fixes and add review comments to existing PRs"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create tickets for complex IaC misconfigurations requiring manual remediation"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Notify the platform engineering team about critical infrastructure misconfigurations"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "title": "IaC Misconfiguration Detected",
+          "summary": "Triggers when an IaC scanner finds a security misconfiguration",
+          "config": {
+            "trigger_type": "alert",
+            "alert_types": ["iac_misconfiguration", "cloud_misconfiguration", "checkov_alert", "tfsec_alert", "kics_alert"],
+            "description": "Ingests IaC misconfiguration findings from Checkov, tfsec, KICS, or Bridgecrew"
+          }
+        }
+      },
+      {
+        "id": "analyze-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "title": "AI Misconfiguration Risk Analysis",
+          "summary": "Riggs AI assesses the IaC misconfiguration against security benchmarks",
+          "config": {
+            "template_id": "vuln_risk",
+            "additional_instructions": "Evaluate the IaC misconfiguration: check CIS benchmark violation, assess the real-world attack surface this creates (public exposure, privilege escalation, data exfiltration risk), whether this affects production infrastructure, and whether an automated fix is safe to apply. Consider blast radius of the misconfigured resource.",
+            "description": "AI-powered IaC misconfiguration risk assessment against CIS and cloud security benchmarks"
+          }
+        }
+      },
+      {
+        "id": "decision-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "title": "Critical Risk to Production?",
+          "summary": "Check if the misconfiguration poses a critical risk to production infrastructure",
+          "config": {
+            "conditions": {
+              "operator": "AND",
+              "conditions": [
+                {
+                  "left": { "type": "path", "value": "$.nodes.analyze-1.result.severity" },
+                  "operator": "in",
+                  "right": { "type": "value", "value": ["critical", "high"] }
+                },
+                {
+                  "left": { "type": "path", "value": "$.nodes.analyze-1.result.affects_production" },
+                  "operator": "equals",
+                  "right": { "type": "value", "value": true }
+                }
+              ],
+              "groups": []
+            },
+            "expression": "$.nodes.analyze-1.result.severity in [\"critical\", \"high\"] and $.nodes.analyze-1.result.affects_production == true",
+            "default_branch": "no"
+          }
+        }
+      },
+      {
+        "id": "respond-1",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "respond",
+          "title": "Alert Platform Engineering",
+          "summary": "Immediately notify the platform engineering team about the critical misconfig",
+          "config": {
+            "response_type": "notify",
+            "channel": "slack",
+            "slack_channel": "#platform-security",
+            "message": "CRITICAL IaC Misconfiguration — Production Risk\n\nResource: {{trigger-1.alert.resource_type}} ({{trigger-1.alert.resource_name}})\nFile: {{trigger-1.alert.file_path}}:{{trigger-1.alert.line_number}}\nRepo: {{trigger-1.alert.repository}}\nBenchmark: {{trigger-1.alert.benchmark_id}}\nRule: {{trigger-1.alert.rule_id}}\n\n{{analyze-1.result.summary}}\n\nImmediate review required — this misconfiguration exposes production infrastructure.",
+            "priority": "critical"
+          }
+        }
+      },
+      {
+        "id": "respond-2",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "title": "Create Remediation Ticket",
+          "summary": "Create a high-priority Jira ticket for the critical IaC misconfiguration",
+          "config": {
+            "response_type": "integration_action",
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_issue",
+              "parameters": {
+                "project": "{{trigger-1.alert.jira_project | default('PLATFORM')}}",
+                "issue_type": "Bug",
+                "priority": "P1",
+                "summary": "IaC MISCONFIG: {{trigger-1.alert.benchmark_id}} — {{trigger-1.alert.resource_type}} in {{trigger-1.alert.file_path}}",
+                "description": "Critical IaC misconfiguration detected.\n\nResource: {{trigger-1.alert.resource_type}} ({{trigger-1.alert.resource_name}})\nFile: {{trigger-1.alert.file_path}}:{{trigger-1.alert.line_number}}\nRepo: {{trigger-1.alert.repository}}\nBenchmark: {{trigger-1.alert.benchmark_id}}\nIaC Framework: {{trigger-1.alert.iac_framework}}\n\nRiggs Assessment:\n{{analyze-1.result.summary}}\n\nRemediation:\n{{analyze-1.result.remediation}}",
+                "labels": ["iac-misconfig", "{{trigger-1.alert.iac_framework}}", "production-risk"]
+              }
+            },
+            "description": "Create a P1 Jira ticket for critical IaC misconfiguration"
+          }
+        }
+      },
+      {
+        "id": "decision-2",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "decision",
+          "title": "Auto-Fix Available?",
+          "summary": "Check if an automated fix can be safely applied for this misconfiguration",
+          "config": {
+            "conditions": {
+              "operator": "AND",
+              "conditions": [
+                {
+                  "left": { "type": "path", "value": "$.nodes.analyze-1.result.auto_fix_available" },
+                  "operator": "equals",
+                  "right": { "type": "value", "value": true }
+                }
+              ],
+              "groups": []
+            },
+            "expression": "$.nodes.analyze-1.result.auto_fix_available == true",
+            "default_branch": "no"
+          }
+        }
+      },
+      {
+        "id": "respond-3",
+        "type": "signal",
+        "position": { "x": 600, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "title": "Create Fix PR",
+          "summary": "Auto-generate a pull request with the IaC fix",
+          "config": {
+            "response_type": "integration_action",
+            "integration_action": {
+              "connector_id": "github",
+              "action": "create_pull_request",
+              "parameters": {
+                "repository": "{{trigger-1.alert.repository}}",
+                "title": "fix(iac): {{trigger-1.alert.benchmark_id}} — {{trigger-1.alert.resource_type}} misconfiguration",
+                "body": "Automated IaC fix for {{trigger-1.alert.benchmark_id}}.\n\nResource: {{trigger-1.alert.resource_type}}\nFile: {{trigger-1.alert.file_path}}\n\n{{analyze-1.result.remediation}}",
+                "branch": "fix/iac-{{trigger-1.alert.rule_id}}"
+              }
+            },
+            "description": "Create a pull request with the automated IaC misconfiguration fix"
+          }
+        }
+      },
+      {
+        "id": "utility-1",
+        "type": "signal",
+        "position": { "x": 860, "y": 700 },
+        "data": {
+          "kind": "utility",
+          "title": "Log for Backlog",
+          "summary": "No auto-fix available — log the non-critical finding for backlog",
+          "config": {
+            "operation": "update_status",
+            "status": "acknowledged",
+            "note": "IaC misconfiguration logged for backlog remediation. Resource: {{trigger-1.alert.resource_type}}, Rule: {{trigger-1.alert.rule_id}}. No automated fix available."
+          }
+        }
+      },
+      {
+        "id": "end-1",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "end",
+          "title": "End — Critical Escalated",
+          "summary": "Critical IaC misconfiguration escalated to platform engineering",
+          "config": {
+            "disposition": "true_positive",
+            "summary": "Critical IaC misconfiguration escalated. Ticket created and platform engineering notified."
+          }
+        }
+      },
+      {
+        "id": "end-2",
+        "type": "signal",
+        "position": { "x": 700, "y": 860 },
+        "data": {
+          "kind": "end",
+          "title": "End — Fix PR or Logged",
+          "summary": "Non-critical IaC misconfiguration handled via PR or backlog",
+          "config": {
+            "disposition": "remediated",
+            "summary": "IaC misconfiguration handled. Fix PR created or logged for backlog remediation."
+          }
+        }
+      }
+    ],
+    "edges": [
+      { "id": "e1", "source": "trigger-1", "target": "analyze-1", "animated": true, "type": "smoothstep" },
+      { "id": "e2", "source": "analyze-1", "target": "decision-1", "animated": true, "type": "smoothstep" },
+      { "id": "e3", "source": "decision-1", "target": "respond-1", "sourceHandle": "yes", "label": "Yes", "animated": true, "type": "smoothstep" },
+      { "id": "e4", "source": "decision-1", "target": "decision-2", "sourceHandle": "no", "label": "No", "animated": true, "type": "smoothstep" },
+      { "id": "e5", "source": "respond-1", "target": "respond-2", "animated": true, "type": "smoothstep" },
+      { "id": "e6", "source": "respond-2", "target": "end-1", "animated": true, "type": "smoothstep" },
+      { "id": "e7", "source": "decision-2", "target": "respond-3", "sourceHandle": "yes", "label": "Yes", "animated": true, "type": "smoothstep" },
+      { "id": "e8", "source": "decision-2", "target": "utility-1", "sourceHandle": "no", "label": "No", "animated": true, "type": "smoothstep" },
+      { "id": "e9", "source": "respond-3", "target": "end-2", "animated": true, "type": "smoothstep" },
+      { "id": "e10", "source": "utility-1", "target": "end-2", "animated": true, "type": "smoothstep" }
+    ]
+  }
+}

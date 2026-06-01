@@ -1,0 +1,149 @@
+{
+  "id": "spiderfoot",
+  "name": "SpiderFoot",
+  "description": "SpiderFoot is an open-source OSINT automation tool that integrates with over 200 data sources to perform reconnaissance, attack surface mapping, and threat intelligence gathering. SpiderFoot HX provides a cloud-hosted version with a full REST API.",
+  "version": "1.0.0",
+  "category": "threat_intel",
+  "vendor": "SpiderFoot (open source)",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "param_name": "apikey",
+    "location": "query"
+  },
+  "base_url": "https://your-instance.hx.spiderfoot.net/api",
+  "actions": [
+    {
+      "id": "start_scan",
+      "name": "Start Scan",
+      "description": "Initiate a new SpiderFoot OSINT scan against a specified target (IP, domain, email, hostname, or other entity type).",
+      "http_method": "POST",
+      "endpoint": "/startscan",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "scanname",
+          "type": "string",
+          "description": "Name for this scan",
+          "required": true
+        },
+        {
+          "name": "scantarget",
+          "type": "string",
+          "description": "The target to scan (IP address, domain, email, hostname, etc.)",
+          "required": true,
+          "contains": ["ip", "domain", "email"]
+        },
+        {
+          "name": "usecase",
+          "type": "string",
+          "description": "Scan use case: 'all', 'passive', 'investigate', 'footprint'",
+          "required": false
+        },
+        {
+          "name": "modules",
+          "type": "string",
+          "description": "Comma-separated list of specific modules to use",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "scan_list",
+      "name": "List Scans",
+      "description": "Get a list of all scans that exist in the SpiderFoot instance, including their status, target, and timestamps.",
+      "http_method": "GET",
+      "endpoint": "/scanlist",
+      "action_type": "generic",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "scan_status",
+      "name": "Get Scan Status",
+      "description": "Check the current status of a specific scan including target, name, start time, end time, and completion state.",
+      "http_method": "GET",
+      "endpoint": "/scanstatus",
+      "action_type": "generic",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "The scan ID to check status for",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "scan_summary",
+      "name": "Get Scan Summary",
+      "description": "Return a summary of results for a completed scan including counts of each data element type discovered.",
+      "http_method": "GET",
+      "endpoint": "/scansummary",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "The scan ID to get summary for",
+          "required": true
+        },
+        {
+          "name": "by",
+          "type": "string",
+          "description": "Summarize by 'type' or 'module'",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "scan_results",
+      "name": "Get Scan Results",
+      "description": "Retrieve all results from a completed scan, optionally filtered by data element type or source module.",
+      "http_method": "GET",
+      "endpoint": "/scanresults",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "The scan ID to retrieve results for",
+          "required": true
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Filter by element type (e.g., 'IP_ADDRESS', 'DOMAIN_NAME', 'EMAILADDR')",
+          "required": false
+        },
+        {
+          "name": "module",
+          "type": "string",
+          "description": "Filter by source module name",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "stop_scan",
+      "name": "Stop Scan",
+      "description": "Abort a currently running scan.",
+      "http_method": "GET",
+      "endpoint": "/stopscan",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "The scan ID to stop",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

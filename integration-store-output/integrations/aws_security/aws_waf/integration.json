@@ -1,0 +1,190 @@
+{
+  "id": "aws_waf",
+  "name": "AWS WAF",
+  "description": "AWS Web Application Firewall service protecting web applications from common exploits with customizable rules for filtering malicious web traffic",
+  "version": "1.0.0",
+  "category": "aws_security",
+  "vendor": "Amazon Web Services",
+  "auth_type": "aws",
+  "auth_config": {
+    "type": "aws",
+    "service": "wafv2",
+    "signing_version": "v4"
+  },
+  "base_url": "https://wafv2.{region}.amazonaws.com",
+  "actions": [
+    {
+      "id": "list_web_acls",
+      "name": "List Web ACLs",
+      "description": "List all WAF web ACLs in the account and region",
+      "http_method": "POST",
+      "endpoint": "/",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "Scope",
+          "type": "string",
+          "description": "Scope of the web ACL (REGIONAL or CLOUDFRONT)",
+          "required": true
+        },
+        {
+          "name": "Limit",
+          "type": "number",
+          "description": "Maximum results to return",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "NextMarker",
+          "type": "string",
+          "description": "Pagination marker",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_web_acl",
+      "name": "Get Web ACL Details",
+      "description": "Retrieve details and rules for a specific web ACL",
+      "http_method": "POST",
+      "endpoint": "/",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "Name",
+          "type": "string",
+          "description": "Web ACL name",
+          "required": true
+        },
+        {
+          "name": "Scope",
+          "type": "string",
+          "description": "Scope of the web ACL (REGIONAL or CLOUDFRONT)",
+          "required": true
+        },
+        {
+          "name": "Id",
+          "type": "string",
+          "description": "Web ACL ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_ip_sets",
+      "name": "List IP Sets",
+      "description": "List WAF IP sets used in rules for IP-based filtering",
+      "http_method": "POST",
+      "endpoint": "/",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "Scope",
+          "type": "string",
+          "description": "Scope (REGIONAL or CLOUDFRONT)",
+          "required": true
+        },
+        {
+          "name": "Limit",
+          "type": "number",
+          "description": "Maximum results to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "get_sampled_requests",
+      "name": "Get Sampled Requests",
+      "description": "Retrieve a sample of web requests matching a specific rule in a web ACL",
+      "http_method": "POST",
+      "endpoint": "/",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "WebAclArn",
+          "type": "string",
+          "description": "ARN of the web ACL",
+          "required": true
+        },
+        {
+          "name": "RuleMetricName",
+          "type": "string",
+          "description": "Metric name of the rule to sample",
+          "required": true
+        },
+        {
+          "name": "Scope",
+          "type": "string",
+          "description": "Scope (REGIONAL or CLOUDFRONT)",
+          "required": true
+        },
+        {
+          "name": "TimeWindow",
+          "type": "object",
+          "description": "Time window object with StartTime and EndTime",
+          "required": true
+        },
+        {
+          "name": "MaxItems",
+          "type": "number",
+          "description": "Maximum sample requests to return (1-500)",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "list_rule_groups",
+      "name": "List Rule Groups",
+      "description": "List WAF rule groups available for use in web ACLs",
+      "http_method": "POST",
+      "endpoint": "/",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "Scope",
+          "type": "string",
+          "description": "Scope (REGIONAL or CLOUDFRONT)",
+          "required": true
+        },
+        {
+          "name": "Limit",
+          "type": "number",
+          "description": "Maximum results to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "list_logging_configurations",
+      "name": "List Logging Configurations",
+      "description": "List WAF logging configurations for web ACLs",
+      "http_method": "POST",
+      "endpoint": "/",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "Scope",
+          "type": "string",
+          "description": "Scope (REGIONAL or CLOUDFRONT)",
+          "required": true
+        },
+        {
+          "name": "Limit",
+          "type": "number",
+          "description": "Maximum results to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    }
+  ]
+}

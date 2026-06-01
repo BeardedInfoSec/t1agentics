@@ -1,0 +1,255 @@
+{
+  "name": "Certificate Expiry Monitoring",
+  "slug": "itops-certificate-expiry",
+  "description": "Scheduled certificate expiry monitoring that scans all tracked certificates, identifies those expiring within 30 or 7 days, and routes accordingly. Certificates expiring within 7 days trigger an automatic renewal attempt via the certificate manager integration. Certificates expiring within 30 days generate a planning ticket. All actions are reported to the infrastructure team on Slack.",
+  "category": "it_operations",
+  "subcategory": "certificates",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "10 minutes",
+  "tags": ["certificate", "expiry", "tls", "ssl", "scheduled", "auto_renew", "monitoring"],
+  "alert_types": [],
+  "severity_filter": [],
+  "trigger_conditions": {
+    "alert_types": [],
+    "trigger_type": "schedule",
+    "schedule": "0 8 * * *"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "cert_manager",
+      "name": "Certificate Manager",
+      "category": "infrastructure",
+      "reason": "Scan certificate inventory and trigger automated renewals for expiring certificates"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create planning tickets for certificates approaching expiry within 30 days"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Notify the infrastructure team of certificate expiry status and renewal actions"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Daily Certificate Scan",
+          "config": {
+            "trigger_type": "schedule",
+            "schedule": "0 8 * * *",
+            "description": "Runs daily at 8 AM to scan all tracked certificates for upcoming expiry"
+          }
+        }
+      },
+      {
+        "id": "code_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "code",
+          "label": "Query Expiring Certificates",
+          "config": {
+            "mode": "query",
+            "query": "SELECT cert_id, domain, issuer, expiry_date, DATEDIFF(expiry_date, NOW()) AS days_remaining, auto_renew_eligible FROM certificates WHERE expiry_date <= DATE_ADD(NOW(), INTERVAL 30 DAY) AND status = 'active' ORDER BY expiry_date ASC",
+            "output_variable": "expiring_certs",
+            "description": "Find all certificates expiring within the next 30 days, ordered by soonest expiry"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "label": "Any Certs Expiring?",
+          "config": {
+            "condition": "{{code_1.expiring_certs.length}} > 0",
+            "description": "Check if any certificates are expiring within the next 30 days"
+          }
+        }
+      },
+      {
+        "id": "decision_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "decision",
+          "label": "Any Expiring Within 7 Days?",
+          "config": {
+            "condition": "{{code_1.expiring_certs}} | any(days_remaining <= 7)",
+            "description": "Determine if any certificates are critically close to expiry (7 days or less)"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "label": "Auto-Renew Critical Certs",
+          "config": {
+            "integration_action": {
+              "connector_id": "cert_manager",
+              "action": "renew_certificate",
+              "parameters": {
+                "certificates": "{{code_1.expiring_certs | filter(days_remaining <= 7)}}",
+                "reason": "Automated renewal — certificate expiring within 7 days"
+              }
+            },
+            "description": "Trigger automated renewal for all certificates expiring within 7 days that are eligible for auto-renewal"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "label": "Notify Team — Urgent Renewals",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#infra-alerts",
+              "message": "CERTIFICATE EXPIRY — URGENT\nCertificates expiring within 7 days:\n{{code_1.expiring_certs | filter(days_remaining <= 7) | map(domain + ' — ' + days_remaining + ' days')}}\n\nAuto-renewal attempted for eligible certificates. Please verify renewal status and manually renew any that failed."
+            },
+            "description": "Send urgent Slack notification about certificates expiring within 7 days and auto-renewal status"
+          }
+        }
+      },
+      {
+        "id": "respond_3",
+        "type": "signal",
+        "position": { "x": 700, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "label": "Create Planning Ticket",
+          "config": {
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_issue",
+              "parameters": {
+                "project": "OPS",
+                "issue_type": "Task",
+                "summary": "Certificate Renewals Due — {{code_1.expiring_certs.length}} certs within 30 days",
+                "description": "The following certificates are expiring within 30 days and require renewal planning:\n\n{{code_1.expiring_certs | map(domain + ' — Expires: ' + expiry_date + ' (' + days_remaining + ' days)')}}\n\nPlease schedule renewals accordingly."
+              }
+            },
+            "description": "Create a planning ticket for certificates expiring within 30 days that are not yet critical"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 700, "y": 380 },
+        "data": {
+          "kind": "utility",
+          "label": "Log: No Expiring Certs",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "Daily certificate scan completed at {{trigger_1.timestamp}}. No certificates expiring within 30 days."
+            },
+            "description": "Log that no certificates are approaching expiry for audit trail"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1020 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "Certificate expiry monitoring workflow complete"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_code",
+        "source": "trigger_1",
+        "target": "code_1",
+        "type": "default"
+      },
+      {
+        "id": "e_code_decision1",
+        "source": "code_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision1_yes",
+        "source": "decision_1",
+        "target": "decision_2",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision1_no",
+        "source": "decision_1",
+        "target": "utility_1",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_decision2_yes",
+        "source": "decision_2",
+        "target": "respond_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision2_no",
+        "source": "decision_2",
+        "target": "respond_3",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_renew_notify",
+        "source": "respond_1",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_notify_end",
+        "source": "respond_2",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_planning_end",
+        "source": "respond_3",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_nocerts_end",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

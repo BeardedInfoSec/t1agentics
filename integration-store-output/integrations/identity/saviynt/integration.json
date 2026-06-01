@@ -1,0 +1,238 @@
+{
+  "id": "saviynt",
+  "name": "Saviynt Enterprise Identity Cloud",
+  "description": "Identity governance and administration through Saviynt EIC REST API for managing users, accounts, entitlements, roles, and access certifications",
+  "version": "1.0.0",
+  "category": "identity",
+  "vendor": "Saviynt",
+  "auth_type": "oauth2_client",
+  "auth_config": {
+    "type": "oauth2_client",
+    "token_url": "https://{tenant}.saviyntcloud.com/ECM/api/login",
+    "grant_type": "client_credentials"
+  },
+  "base_url": "https://{tenant}.saviyntcloud.com/ECM/api/v5",
+  "actions": [
+    {
+      "id": "list_users",
+      "name": "List Users",
+      "description": "Search and list users in the Saviynt platform",
+      "http_method": "POST",
+      "endpoint": "/getUser",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "username",
+          "type": "string",
+          "description": "Filter by username",
+          "required": false
+        },
+        {
+          "name": "email",
+          "type": "string",
+          "description": "Filter by email address",
+          "required": false
+        },
+        {
+          "name": "max",
+          "type": "number",
+          "description": "Maximum number of results",
+          "required": false
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Offset for pagination",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_user",
+      "name": "Get User Details",
+      "description": "Retrieve detailed information about a specific user",
+      "http_method": "POST",
+      "endpoint": "/getUser",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "username",
+          "type": "string",
+          "description": "Username to retrieve",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "disable_user",
+      "name": "Disable User",
+      "description": "Disable a user account in Saviynt",
+      "http_method": "POST",
+      "endpoint": "/updateUser",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "username",
+          "type": "string",
+          "description": "Username to disable",
+          "required": true
+        },
+        {
+          "name": "statuskey",
+          "type": "string",
+          "description": "Status key value (Inactive)",
+          "required": true,
+          "default": "Inactive"
+        }
+      ]
+    },
+    {
+      "id": "enable_user",
+      "name": "Enable User",
+      "description": "Enable a previously disabled user account",
+      "http_method": "POST",
+      "endpoint": "/updateUser",
+      "action_type": "correct",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "username",
+          "type": "string",
+          "description": "Username to enable",
+          "required": true
+        },
+        {
+          "name": "statuskey",
+          "type": "string",
+          "description": "Status key value (Active)",
+          "required": true,
+          "default": "Active"
+        }
+      ]
+    },
+    {
+      "id": "list_accounts",
+      "name": "List Accounts",
+      "description": "List accounts associated with users across connected systems",
+      "http_method": "POST",
+      "endpoint": "/getAccounts",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "username",
+          "type": "string",
+          "description": "Filter by username",
+          "required": false
+        },
+        {
+          "name": "endpoint",
+          "type": "string",
+          "description": "Filter by endpoint/source system name",
+          "required": false
+        },
+        {
+          "name": "max",
+          "type": "number",
+          "description": "Maximum number of results",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_entitlements",
+      "name": "List Entitlements",
+      "description": "List entitlements for governance review",
+      "http_method": "POST",
+      "endpoint": "/getEntitlements",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "entitlementtype",
+          "type": "string",
+          "description": "Filter by entitlement type",
+          "required": false
+        },
+        {
+          "name": "endpoint",
+          "type": "string",
+          "description": "Filter by endpoint name",
+          "required": false
+        },
+        {
+          "name": "max",
+          "type": "number",
+          "description": "Maximum number of results",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_roles",
+      "name": "List Roles",
+      "description": "List roles defined in Saviynt for governance",
+      "http_method": "POST",
+      "endpoint": "/getRoles",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "rolename",
+          "type": "string",
+          "description": "Filter by role name",
+          "required": false
+        },
+        {
+          "name": "max",
+          "type": "number",
+          "description": "Maximum number of results",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_user_access",
+      "name": "Get User Access",
+      "description": "Get all access (roles, entitlements, accounts) for a specific user",
+      "http_method": "POST",
+      "endpoint": "/getUserAccess",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "username",
+          "type": "string",
+          "description": "Username to get access for",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "reset_password",
+      "name": "Reset Password",
+      "description": "Reset the password for a user account",
+      "http_method": "POST",
+      "endpoint": "/changePassword",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "username",
+          "type": "string",
+          "description": "Username",
+          "required": true
+        },
+        {
+          "name": "newpassword",
+          "type": "string",
+          "description": "New password",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

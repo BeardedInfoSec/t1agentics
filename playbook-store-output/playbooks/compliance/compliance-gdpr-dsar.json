@@ -1,0 +1,258 @@
+{
+  "name": "GDPR Data Subject Access Request",
+  "slug": "compliance-gdpr-dsar",
+  "description": "Handles GDPR Data Subject Access Requests (DSAR) end-to-end. When a DSAR is received, the playbook verifies the requestor's identity, searches all data systems for the subject's personal data, uses Riggs AI to compile and review the data package, obtains DPO approval, and delivers the response to the data subject. Tracks the 30-day regulatory deadline with an SLA timer.",
+  "category": "compliance",
+  "subcategory": "gdpr",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "advanced",
+  "estimated_time": "45 minutes",
+  "tags": ["compliance", "gdpr", "dsar", "data_subject", "privacy", "personal_data", "right_of_access"],
+  "alert_types": [],
+  "severity_filter": [],
+  "trigger_conditions": {
+    "alert_types": [],
+    "trigger_type": "manual"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Track DSAR request lifecycle and compliance deadline"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Notify DPO and compliance team of DSAR progress"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "DSAR Request Received",
+          "config": {
+            "trigger_type": "manual",
+            "description": "Manually triggered when a Data Subject Access Request is received from an individual"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "utility",
+          "label": "Set SLA: 30 Days",
+          "config": {
+            "action": "set_sla",
+            "parameters": {
+              "sla_hours": 720,
+              "sla_label": "GDPR DSAR Response Deadline"
+            },
+            "description": "Set 30-day SLA timer per GDPR Article 12(3) response deadline"
+          }
+        }
+      },
+      {
+        "id": "code_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "code",
+          "label": "Search All Data Systems for Subject",
+          "config": {
+            "mode": "query",
+            "query": "SELECT system_name, data_category, record_count, last_updated FROM data_inventory WHERE data_subject_email = '{{trigger_1.subject_email}}' OR data_subject_id = '{{trigger_1.subject_id}}' ORDER BY system_name",
+            "output_variable": "data_inventory_results",
+            "description": "Query all data systems for personal data belonging to the data subject"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 540 },
+        "data": {
+          "kind": "decision",
+          "label": "Personal Data Found?",
+          "config": {
+            "condition": "{{code_1.data_inventory_results.length}} > 0",
+            "description": "Routes based on whether personal data was found for the data subject"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI -- Compile DSAR Response",
+          "config": {
+            "template_id": "executive_summary",
+            "additional_instructions": "Compile a GDPR-compliant data subject access response. Include all personal data categories found, processing purposes, retention periods, third-party recipients, and data subject rights. Ensure the response meets Article 15 requirements.",
+            "description": "AI-powered compilation of DSAR response package meeting GDPR Article 15 requirements"
+          }
+        }
+      },
+      {
+        "id": "approval_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "approval",
+          "label": "DPO Approval",
+          "config": {
+            "approvers": ["data_protection_officer"],
+            "approval_message": "DSAR response package ready for review. Please verify completeness and accuracy before delivery to data subject.\n\nSubject: {{trigger_1.subject_email}}\nSystems with data: {{code_1.data_inventory_results.length}}\n\n{{analyze_1.summary}}",
+            "timeout_hours": 72,
+            "description": "Data Protection Officer reviews and approves the DSAR response before delivery"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "label": "Deliver DSAR Response via Email",
+          "config": {
+            "notify": {
+              "channel": "email",
+              "target": "{{trigger_1.subject_email}}",
+              "message": "Dear {{trigger_1.subject_name}},\n\nIn response to your Data Subject Access Request dated {{trigger_1.request_date}}, please find enclosed all personal data we hold about you.\n\n{{analyze_1.summary}}\n\nIf you have any questions regarding this response, please contact our Data Protection Officer.\n\nRegards,\nCompliance Team"
+            },
+            "description": "Deliver the approved DSAR response to the data subject"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 700, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "label": "Notify: No Data Found",
+          "config": {
+            "notify": {
+              "channel": "email",
+              "target": "{{trigger_1.subject_email}}",
+              "message": "Dear {{trigger_1.subject_name}},\n\nIn response to your Data Subject Access Request dated {{trigger_1.request_date}}, we have conducted a thorough search of our systems and have found no personal data associated with your identity.\n\nIf you believe this is in error, please contact our Data Protection Officer.\n\nRegards,\nCompliance Team"
+            },
+            "description": "Inform data subject that no personal data was found in our systems"
+          }
+        }
+      },
+      {
+        "id": "respond_3",
+        "type": "signal",
+        "position": { "x": 520, "y": 1180 },
+        "data": {
+          "kind": "respond",
+          "label": "Create DSAR Completion Ticket",
+          "config": {
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_issue",
+              "parameters": {
+                "project": "COMPLIANCE",
+                "issue_type": "Task",
+                "summary": "DSAR Completed: {{trigger_1.subject_email}}",
+                "description": "DSAR fulfillment complete.\n\nSubject: {{trigger_1.subject_email}}\nRequest Date: {{trigger_1.request_date}}\nCompletion Date: {{now}}\nApproved by: {{approval_1.approver}}\n\nResponse delivered successfully.",
+                "labels": ["gdpr", "dsar", "completed"]
+              }
+            },
+            "description": "Create a Jira ticket documenting the completed DSAR for audit trail"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1340 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "GDPR DSAR fulfillment complete -- response delivered and documented"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_utility",
+        "source": "trigger_1",
+        "target": "utility_1",
+        "type": "default"
+      },
+      {
+        "id": "e_utility_code",
+        "source": "utility_1",
+        "target": "code_1",
+        "type": "default"
+      },
+      {
+        "id": "e_code_decision",
+        "source": "code_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "analyze_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "respond_2",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_analyze_approval",
+        "source": "analyze_1",
+        "target": "approval_1",
+        "type": "default"
+      },
+      {
+        "id": "e_approval_respond1",
+        "source": "approval_1",
+        "target": "respond_1",
+        "type": "default"
+      },
+      {
+        "id": "e_respond1_respond3",
+        "source": "respond_1",
+        "target": "respond_3",
+        "type": "default"
+      },
+      {
+        "id": "e_respond2_respond3",
+        "source": "respond_2",
+        "target": "respond_3",
+        "type": "default"
+      },
+      {
+        "id": "e_respond3_end",
+        "source": "respond_3",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

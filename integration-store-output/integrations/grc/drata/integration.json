@@ -1,0 +1,99 @@
+{
+  "id": "drata",
+  "name": "Drata",
+  "description": "Integrates with Drata Public API for compliance automation including controls management, evidence collection, and monitoring test oversight",
+  "version": "1.0.0",
+  "category": "grc",
+  "vendor": "Drata",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "https://public-api.drata.com",
+  "actions": [
+    {
+      "id": "list_controls",
+      "name": "List Controls",
+      "description": "List all compliance controls in Drata",
+      "http_method": "GET",
+      "endpoint": "/controls",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "page", "type": "number", "description": "Page number", "required": false, "default": 1},
+        {"name": "limit", "type": "number", "description": "Results per page (max 100)", "required": false, "default": 25},
+        {"name": "frameworkId", "type": "number", "description": "Filter by framework ID", "required": false}
+      ]
+    },
+    {
+      "id": "get_control",
+      "name": "Get Control",
+      "description": "Retrieve details of a specific control",
+      "http_method": "GET",
+      "endpoint": "/controls/{control_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "control_id", "type": "number", "description": "Control ID", "required": true}
+      ]
+    },
+    {
+      "id": "list_monitoring_tests",
+      "name": "List Monitoring Tests",
+      "description": "List monitoring tests and their pass/fail status",
+      "http_method": "GET",
+      "endpoint": "/monitoring-tests",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "page", "type": "number", "description": "Page number", "required": false, "default": 1},
+        {"name": "limit", "type": "number", "description": "Results per page", "required": false, "default": 25},
+        {"name": "controlId", "type": "number", "description": "Filter by control ID", "required": false},
+        {"name": "status", "type": "string", "description": "Filter by status (PASSING, FAILING, NOT_MONITORED)", "required": false}
+      ]
+    },
+    {
+      "id": "list_evidence",
+      "name": "List Evidence",
+      "description": "List evidence documents in the evidence library",
+      "http_method": "GET",
+      "endpoint": "/evidence-library",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "page", "type": "number", "description": "Page number", "required": false, "default": 1},
+        {"name": "limit", "type": "number", "description": "Results per page", "required": false, "default": 25}
+      ]
+    },
+    {
+      "id": "upload_evidence",
+      "name": "Upload Evidence",
+      "description": "Upload evidence document for a personnel record",
+      "http_method": "POST",
+      "endpoint": "/personnel/{personnel_id}/evidence",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "personnel_id", "type": "number", "description": "Personnel ID to upload evidence for", "required": true},
+        {"name": "file", "type": "string", "description": "File to upload as evidence", "required": true},
+        {"name": "type", "type": "string", "description": "Evidence type", "required": true}
+      ]
+    },
+    {
+      "id": "list_personnel",
+      "name": "List Personnel",
+      "description": "List personnel records in Drata",
+      "http_method": "GET",
+      "endpoint": "/personnel",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "page", "type": "number", "description": "Page number", "required": false, "default": 1},
+        {"name": "limit", "type": "number", "description": "Results per page", "required": false, "default": 25},
+        {"name": "complianceStatus", "type": "string", "description": "Filter by compliance status", "required": false}
+      ]
+    }
+  ]
+}

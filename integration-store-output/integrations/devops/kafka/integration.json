@@ -1,0 +1,109 @@
+{
+  "id": "kafka",
+  "name": "Kafka",
+  "description": "This app implements ingesting and sending data on the Apache Kafka messaging system",
+  "version": "2.0.8",
+  "category": "devops",
+  "vendor": "Apache",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "on_poll",
+      "name": "On Poll",
+      "description": "Ingest messages from Kafka",
+      "http_method": "POST",
+      "endpoint": "/actions/on_poll",
+      "action_type": "ingest",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "start_time",
+          "type": "number",
+          "description": "Parameter ignored in this app",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "number",
+          "description": "Parameter ignored in this app",
+          "required": false
+        },
+        {
+          "name": "container_id",
+          "type": "string",
+          "description": "Parameter ignored in this app",
+          "required": false
+        },
+        {
+          "name": "container_count",
+          "type": "number",
+          "description": "Parameter ignored in this app",
+          "required": false
+        },
+        {
+          "name": "artifact_count",
+          "type": "number",
+          "description": "Maximum number of messages to ingest during poll now",
+          "required": false,
+          "default": 1
+        }
+      ]
+    },
+    {
+      "id": "post_data",
+      "name": "Post Data",
+      "description": "Post data to a Kafka topic",
+      "http_method": "GET",
+      "endpoint": "/actions/post_data",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "data_type",
+          "type": "string",
+          "description": "The type of the data being posted (can be string or JSON)",
+          "required": true,
+          "default": "string"
+        },
+        {
+          "name": "data",
+          "type": "string",
+          "description": "The data to post",
+          "required": true
+        },
+        {
+          "name": "topic",
+          "type": "string",
+          "description": "The topic to post the data to",
+          "required": true,
+          "contains": [
+            "kafka topic"
+          ]
+        },
+        {
+          "name": "timeout",
+          "type": "number",
+          "description": "How long (in seconds) to wait for message to be acknowledged by server",
+          "required": false,
+          "default": 0
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Kafka",
+    "original_type": "devops",
+    "converted_at": "2025-12-18T16:25:28.896701",
+    "source_version": "2.0.8"
+  }
+}

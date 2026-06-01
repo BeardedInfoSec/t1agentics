@@ -1,0 +1,258 @@
+{
+  "name": "Compromised Account Lockout",
+  "slug": "compromised-account-lockout",
+  "description": "Comprehensive response workflow for confirmed or suspected account compromise. Performs AI-driven credential access analysis, executes full account lockdown including disabling the account, revoking all sessions and tokens, forcing password reset with MFA re-enrollment, creates a tracking ticket, and notifies the SOC. Designed for advanced incident responders handling credential theft scenarios.",
+  "category": "identity",
+  "subcategory": "compromised_account",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "advanced",
+  "estimated_time": "20 minutes",
+  "tags": ["compromised_account", "credential_theft", "lockout", "identity"],
+  "alert_types": ["compromised_account", "credential_theft", "credential_access"],
+  "severity_filter": ["high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["compromised_account", "credential_theft", "credential_access"],
+    "min_severity": "high"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "microsoft_graph",
+      "name": "Microsoft Graph",
+      "category": "identity",
+      "reason": "Disable account, revoke sessions/tokens, reset password, and force MFA re-enrollment"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create incident ticket for user notification and remediation tracking"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Notify SOC team of containment actions taken"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "ca-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "title": "Compromised Account Alert",
+          "summary": "Fires on credential theft or compromised account alert",
+          "config": {
+            "trigger_type": "alert",
+            "alert_filter": "compromised_account OR credential_theft OR credential_access"
+          }
+        }
+      },
+      {
+        "id": "ca-2",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "title": "AI Credential Access Analysis",
+          "summary": "Analyze alert for credential compromise indicators",
+          "config": {
+            "mode": "ai_analysis",
+            "template_id": "credential_access",
+            "custom_instructions": "",
+            "alert_path": "$.trigger.alert",
+            "include_context": true
+          }
+        }
+      },
+      {
+        "id": "ca-3",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "title": "Account Compromised?",
+          "summary": "Branch based on whether the account is confirmed compromised",
+          "config": {
+            "conditions": {
+              "operator": "AND",
+              "conditions": [
+                {
+                  "field": "$.nodes.ca-2.result.compromised",
+                  "operator": "equals",
+                  "value": "true"
+                }
+              ],
+              "groups": []
+            },
+            "expression": "$.nodes.ca-2.result.compromised == true",
+            "default_branch": "no"
+          }
+        }
+      },
+      {
+        "id": "ca-4",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "respond",
+          "title": "Disable Account",
+          "summary": "Immediately disable the compromised user account",
+          "config": {
+            "response_type": "integration_action",
+            "integration_instance_id": "microsoft_graph",
+            "action_type": "disable_account",
+            "params": {
+              "user_id": "$.trigger.alert.target_user_id",
+              "reason": "Account compromise detected — immediate lockout"
+            },
+            "requires_approval": false,
+            "priority": "critical"
+          }
+        }
+      },
+      {
+        "id": "ca-5",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "title": "Revoke All Sessions & Tokens",
+          "summary": "Revoke all active sessions, OAuth tokens, and refresh tokens",
+          "config": {
+            "response_type": "integration_action",
+            "integration_instance_id": "microsoft_graph",
+            "action_type": "revoke_tokens",
+            "params": {
+              "user_id": "$.trigger.alert.target_user_id",
+              "revoke_all": true,
+              "include_refresh_tokens": true
+            },
+            "requires_approval": false,
+            "priority": "critical"
+          }
+        }
+      },
+      {
+        "id": "ca-6",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "title": "Reset Password & Force MFA",
+          "summary": "Force password reset and require MFA re-enrollment on next login",
+          "config": {
+            "response_type": "integration_action",
+            "integration_instance_id": "microsoft_graph",
+            "action_type": "reset_password",
+            "params": {
+              "user_id": "$.trigger.alert.target_user_id",
+              "force_change_on_login": true,
+              "require_mfa_reenrollment": true,
+              "reason": "Credential compromise — password reset with MFA re-enrollment required"
+            },
+            "requires_approval": false,
+            "priority": "critical"
+          }
+        }
+      },
+      {
+        "id": "ca-7",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "title": "Create Notification Ticket",
+          "summary": "Create Jira ticket to track user notification and account recovery",
+          "config": {
+            "response_type": "create_ticket",
+            "system": "jira",
+            "project_key": "SEC",
+            "issue_type": "Incident",
+            "title": "Account Compromise: {{$.trigger.alert.target_user_email}} — User Notification Required",
+            "description": "Account {{$.trigger.alert.target_user_email}} has been locked due to confirmed compromise. Actions taken: account disabled, all sessions revoked, password reset with MFA re-enrollment. User must be notified and guided through account recovery process.",
+            "priority": "high",
+            "requires_approval": false
+          }
+        }
+      },
+      {
+        "id": "ca-8",
+        "type": "signal",
+        "position": { "x": 340, "y": 1180 },
+        "data": {
+          "kind": "utility",
+          "title": "Update Status: Contained",
+          "summary": "Mark the alert as contained after all lockout actions complete",
+          "config": {
+            "operation": "update_status",
+            "status": "contained",
+            "note": "Account locked, sessions revoked, password reset, MFA re-enrollment forced. Ticket created for user notification."
+          }
+        }
+      },
+      {
+        "id": "ca-9",
+        "type": "signal",
+        "position": { "x": 340, "y": 1340 },
+        "data": {
+          "kind": "respond",
+          "title": "Notify SOC",
+          "summary": "Send Slack notification to SOC with full containment summary",
+          "config": {
+            "response_type": "notification",
+            "channel": "slack",
+            "slack_channel": "#soc-alerts",
+            "message": "Account compromise contained. User: {{$.trigger.alert.target_user_email}}. Actions: account disabled, all tokens revoked, password reset with MFA re-enrollment. Jira ticket created for user notification.",
+            "requires_approval": false,
+            "priority": "critical"
+          }
+        }
+      },
+      {
+        "id": "ca-10",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "utility",
+          "title": "Note: No Compromise Found",
+          "summary": "Document that the alert was reviewed and no compromise was confirmed",
+          "config": {
+            "operation": "add_note",
+            "note": "Credential access alert reviewed via AI analysis. No confirmed compromise detected. Alert closed as reviewed."
+          }
+        }
+      },
+      {
+        "id": "ca-11",
+        "type": "signal",
+        "position": { "x": 520, "y": 1500 },
+        "data": {
+          "kind": "end",
+          "title": "Playbook Complete",
+          "summary": "Compromised account lockout response finished",
+          "config": {
+            "disposition": "completed",
+            "summary": "Compromised account lockout response completed"
+          }
+        }
+      }
+    ],
+    "edges": [
+      { "id": "ca-e1", "source": "ca-1", "target": "ca-2", "animated": true, "type": "smoothstep" },
+      { "id": "ca-e2", "source": "ca-2", "target": "ca-3", "animated": true, "type": "smoothstep" },
+      { "id": "ca-e3", "source": "ca-3", "target": "ca-4", "sourceHandle": "yes", "label": "Yes", "animated": true, "type": "smoothstep" },
+      { "id": "ca-e4", "source": "ca-3", "target": "ca-10", "sourceHandle": "no", "label": "No", "animated": true, "type": "smoothstep" },
+      { "id": "ca-e5", "source": "ca-4", "target": "ca-5", "animated": true, "type": "smoothstep" },
+      { "id": "ca-e6", "source": "ca-5", "target": "ca-6", "animated": true, "type": "smoothstep" },
+      { "id": "ca-e7", "source": "ca-6", "target": "ca-7", "animated": true, "type": "smoothstep" },
+      { "id": "ca-e8", "source": "ca-7", "target": "ca-8", "animated": true, "type": "smoothstep" },
+      { "id": "ca-e9", "source": "ca-8", "target": "ca-9", "animated": true, "type": "smoothstep" },
+      { "id": "ca-e10", "source": "ca-9", "target": "ca-11", "animated": true, "type": "smoothstep" },
+      { "id": "ca-e11", "source": "ca-10", "target": "ca-11", "animated": true, "type": "smoothstep" }
+    ]
+  }
+}

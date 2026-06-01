@@ -1,0 +1,194 @@
+{
+  "id": "shodan_monitor",
+  "name": "Shodan Monitor",
+  "description": "Internet intelligence platform providing real-time monitoring of internet-facing assets, banner grabbing, service detection, and vulnerability identification across the entire IPv4 space",
+  "version": "1.0.0",
+  "category": "asm",
+  "vendor": "Shodan",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "param_name": "key",
+    "location": "query"
+  },
+  "base_url": "https://api.shodan.io",
+  "actions": [
+    {
+      "id": "search_hosts",
+      "name": "Search Hosts",
+      "description": "Search the Shodan database for internet-facing hosts matching query filters",
+      "http_method": "GET",
+      "endpoint": "/shodan/host/search",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Shodan search query with optional filters (e.g., 'apache org:\"Company Name\"')",
+          "required": true
+        },
+        {
+          "name": "facets",
+          "type": "string",
+          "description": "Comma-separated list of facets for aggregation (e.g., 'port,country')",
+          "required": false
+        },
+        {
+          "name": "page",
+          "type": "integer",
+          "description": "Page number for results pagination",
+          "required": false
+        },
+        {
+          "name": "minify",
+          "type": "boolean",
+          "description": "Return only summary information for each result",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_host",
+      "name": "Get Host Details",
+      "description": "Retrieve all services, banners, and metadata found on a specific IP address",
+      "http_method": "GET",
+      "endpoint": "/shodan/host/{ip}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "IP address of the host to look up",
+          "required": true
+        },
+        {
+          "name": "history",
+          "type": "boolean",
+          "description": "Include historical data for the host",
+          "required": false
+        },
+        {
+          "name": "minify",
+          "type": "boolean",
+          "description": "Return only summary information",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "host_count",
+      "name": "Host Count",
+      "description": "Get the total number of hosts matching a search query without consuming query credits",
+      "http_method": "GET",
+      "endpoint": "/shodan/host/count",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Shodan search query",
+          "required": true
+        },
+        {
+          "name": "facets",
+          "type": "string",
+          "description": "Comma-separated list of facets for aggregation",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_protocols",
+      "name": "List Scan Protocols",
+      "description": "Retrieve all protocols that can be used when launching an internet scan",
+      "http_method": "GET",
+      "endpoint": "/shodan/protocols",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "scan_ip",
+      "name": "Request Scan",
+      "description": "Request Shodan to scan a specific IP or network CIDR on demand",
+      "http_method": "POST",
+      "endpoint": "/shodan/scan",
+      "action_type": "action",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "ips",
+          "type": "string",
+          "description": "Comma-separated list of IPs or CIDRs to scan (e.g., '1.1.1.1,8.8.8.0/24')",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "search_exploits",
+      "name": "Search Exploits",
+      "description": "Search for known exploits across multiple databases including CVE and Metasploit",
+      "http_method": "GET",
+      "endpoint": "/api/search",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Exploit search query (e.g., CVE ID or software name)",
+          "required": true
+        },
+        {
+          "name": "facets",
+          "type": "string",
+          "description": "Comma-separated list of facets for aggregation",
+          "required": false
+        },
+        {
+          "name": "page",
+          "type": "integer",
+          "description": "Page number for pagination",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "dns_lookup",
+      "name": "DNS Lookup",
+      "description": "Resolve domain names to IP addresses",
+      "http_method": "GET",
+      "endpoint": "/dns/resolve",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "hostnames",
+          "type": "string",
+          "description": "Comma-separated list of hostnames to resolve",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "reverse_dns",
+      "name": "Reverse DNS Lookup",
+      "description": "Look up hostnames associated with IP addresses",
+      "http_method": "GET",
+      "endpoint": "/dns/reverse",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "ips",
+          "type": "string",
+          "description": "Comma-separated list of IP addresses for reverse lookup",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,297 @@
+{
+  "id": "infisical",
+  "name": "Infisical",
+  "description": "Open-source secrets management through Infisical REST API for managing secrets, projects, environments, and access controls",
+  "version": "1.0.0",
+  "category": "secrets_management",
+  "vendor": "Infisical",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "token_url": "https://app.infisical.com/api/v1/auth/universal-auth/login",
+    "header_name": "Authorization",
+    "header_prefix": "Bearer",
+    "location": "header"
+  },
+  "base_url": "https://app.infisical.com/api",
+  "actions": [
+    {
+      "id": "list_secrets",
+      "name": "List Secrets",
+      "description": "List all secrets in a specific project and environment",
+      "http_method": "GET",
+      "endpoint": "/v3/secrets/raw",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "workspaceId",
+          "type": "string",
+          "description": "Project (workspace) ID",
+          "required": true
+        },
+        {
+          "name": "environment",
+          "type": "string",
+          "description": "Environment slug (dev, staging, prod)",
+          "required": true
+        },
+        {
+          "name": "secretPath",
+          "type": "string",
+          "description": "Path to secrets folder (default /)",
+          "required": false,
+          "default": "/"
+        }
+      ]
+    },
+    {
+      "id": "get_secret",
+      "name": "Get Secret",
+      "description": "Retrieve a specific secret by name",
+      "http_method": "GET",
+      "endpoint": "/v3/secrets/raw/{secretName}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "secretName",
+          "type": "string",
+          "description": "Name of the secret",
+          "required": true
+        },
+        {
+          "name": "workspaceId",
+          "type": "string",
+          "description": "Project (workspace) ID",
+          "required": true
+        },
+        {
+          "name": "environment",
+          "type": "string",
+          "description": "Environment slug",
+          "required": true
+        },
+        {
+          "name": "secretPath",
+          "type": "string",
+          "description": "Path to secrets folder",
+          "required": false,
+          "default": "/"
+        }
+      ]
+    },
+    {
+      "id": "create_secret",
+      "name": "Create Secret",
+      "description": "Create a new secret in a project environment",
+      "http_method": "POST",
+      "endpoint": "/v3/secrets/raw/{secretName}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "secretName",
+          "type": "string",
+          "description": "Name of the secret",
+          "required": true
+        },
+        {
+          "name": "workspaceId",
+          "type": "string",
+          "description": "Project (workspace) ID",
+          "required": true
+        },
+        {
+          "name": "environment",
+          "type": "string",
+          "description": "Environment slug",
+          "required": true
+        },
+        {
+          "name": "secretValue",
+          "type": "string",
+          "description": "Value of the secret",
+          "required": true
+        },
+        {
+          "name": "secretPath",
+          "type": "string",
+          "description": "Path to secrets folder",
+          "required": false,
+          "default": "/"
+        },
+        {
+          "name": "secretComment",
+          "type": "string",
+          "description": "Comment for the secret",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "update_secret",
+      "name": "Update Secret",
+      "description": "Update an existing secret value",
+      "http_method": "PATCH",
+      "endpoint": "/v3/secrets/raw/{secretName}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "secretName",
+          "type": "string",
+          "description": "Name of the secret to update",
+          "required": true
+        },
+        {
+          "name": "workspaceId",
+          "type": "string",
+          "description": "Project (workspace) ID",
+          "required": true
+        },
+        {
+          "name": "environment",
+          "type": "string",
+          "description": "Environment slug",
+          "required": true
+        },
+        {
+          "name": "secretValue",
+          "type": "string",
+          "description": "New value for the secret",
+          "required": true
+        },
+        {
+          "name": "secretPath",
+          "type": "string",
+          "description": "Path to secrets folder",
+          "required": false,
+          "default": "/"
+        }
+      ]
+    },
+    {
+      "id": "delete_secret",
+      "name": "Delete Secret",
+      "description": "Delete a secret from a project environment",
+      "http_method": "DELETE",
+      "endpoint": "/v3/secrets/raw/{secretName}",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "secretName",
+          "type": "string",
+          "description": "Name of the secret to delete",
+          "required": true
+        },
+        {
+          "name": "workspaceId",
+          "type": "string",
+          "description": "Project (workspace) ID",
+          "required": true
+        },
+        {
+          "name": "environment",
+          "type": "string",
+          "description": "Environment slug",
+          "required": true
+        },
+        {
+          "name": "secretPath",
+          "type": "string",
+          "description": "Path to secrets folder",
+          "required": false,
+          "default": "/"
+        }
+      ]
+    },
+    {
+      "id": "list_projects",
+      "name": "List Projects",
+      "description": "List all projects (workspaces) the identity has access to",
+      "http_method": "GET",
+      "endpoint": "/v1/workspace",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "list_environments",
+      "name": "List Environments",
+      "description": "List all environments in a project",
+      "http_method": "GET",
+      "endpoint": "/v1/workspace/{workspaceId}/environments",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "workspaceId",
+          "type": "string",
+          "description": "Project (workspace) ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_secret_folders",
+      "name": "List Secret Folders",
+      "description": "List secret folders within an environment",
+      "http_method": "GET",
+      "endpoint": "/v1/folders",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "workspaceId",
+          "type": "string",
+          "description": "Project (workspace) ID",
+          "required": true
+        },
+        {
+          "name": "environment",
+          "type": "string",
+          "description": "Environment slug",
+          "required": true
+        },
+        {
+          "name": "path",
+          "type": "string",
+          "description": "Parent folder path",
+          "required": false,
+          "default": "/"
+        }
+      ]
+    },
+    {
+      "id": "get_secret_audit_logs",
+      "name": "Get Secret Audit Logs",
+      "description": "Retrieve audit logs for secret access and modifications",
+      "http_method": "GET",
+      "endpoint": "/v1/workspace/{workspaceId}/audit-logs",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "workspaceId",
+          "type": "string",
+          "description": "Project (workspace) ID",
+          "required": true
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of results",
+          "required": false
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Offset for pagination",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

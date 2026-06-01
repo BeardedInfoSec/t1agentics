@@ -1,0 +1,267 @@
+{
+  "name": "Cloud Snapshot Exfiltration Detection",
+  "slug": "cloud-snapshot-exfil",
+  "description": "Detects unauthorized sharing or copying of cloud snapshots (EBS, RDS, disk snapshots) to external accounts. Riggs AI analyzes the snapshot sharing event to determine if it represents data exfiltration via snapshot. Confirmed exfiltration triggers immediate removal of external sharing permissions, investigation of the actor and all shared snapshots, incident ticket creation, and emergency team notification. Authorized sharing receives documentation.",
+  "category": "cloud",
+  "subcategory": "data_protection",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "advanced",
+  "estimated_time": "15 minutes",
+  "tags": ["cloud", "snapshot", "exfiltration", "ebs", "data_theft"],
+  "alert_types": ["cloud_security", "snapshot_exfiltration"],
+  "severity_filter": ["high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["cloud_security", "snapshot_exfiltration", "snapshot_shared"],
+    "min_severity": "high"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "aws_security_hub",
+      "name": "AWS Security Hub",
+      "category": "cloud_security",
+      "reason": "Source of snapshot sharing findings and API for managing snapshot permissions"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create incident tickets for confirmed snapshot exfiltration"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Emergency notification to security team of snapshot exfiltration"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Snapshot Sharing Alert",
+          "config": {
+            "alert_types": ["cloud_security", "snapshot_exfiltration", "snapshot_shared"],
+            "description": "Triggers when a cloud snapshot (EBS, RDS, or disk) is shared with an external account or made public"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — Data Exfiltration Assessment",
+          "config": {
+            "template_id": "data_exfil",
+            "additional_instructions": "Evaluate snapshot sharing: is the target account in our organization, does the snapshot contain sensitive data, is the sharing actor authorized for snapshot management, is this a known exfiltration technique",
+            "description": "AI-powered analysis of snapshot sharing to determine if it represents data exfiltration via cloud snapshot sharing to an attacker-controlled account"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "label": "Exfiltration Confirmed?",
+          "config": {
+            "condition": "{{analyze_1.verdict}} == 'exfiltration' || {{analyze_1.confidence}} >= 0.8",
+            "description": "Routes based on whether the AI assessment confirmed snapshot exfiltration"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "respond",
+          "label": "Remove External Sharing",
+          "config": {
+            "integration_action": {
+              "connector_id": "aws_security_hub",
+              "action": "revoke_snapshot_sharing",
+              "parameters": {
+                "snapshot_id": "{{trigger_1.alert.snapshot_id}}",
+                "revoke_account": "{{trigger_1.alert.target_account_id}}",
+                "make_private": true,
+                "reason": "Snapshot exfiltration detected — removing all external sharing permissions"
+              }
+            },
+            "description": "Immediately revoke the external account's access to the snapshot and make it private"
+          }
+        }
+      },
+      {
+        "id": "code_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "code",
+          "label": "Investigate Actor & All Shared Snapshots",
+          "config": {
+            "mode": "query",
+            "query": "CloudTrail ModifySnapshotAttribute and ModifyDBSnapshotAttribute events by actor={{trigger_1.alert.actor}} in last 30 days: all snapshots shared, target accounts, snapshot sizes, associated volumes/instances",
+            "output_variable": "sharing_investigation",
+            "description": "Investigate the actor to find all snapshots they have shared externally to determine the full scope of potential data exfiltration"
+          }
+        }
+      },
+      {
+        "id": "analyze_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — Executive Summary",
+          "config": {
+            "template_id": "executive_summary",
+            "additional_instructions": "Summarize the snapshot exfiltration incident: what data was exposed, how many snapshots were shared, blast radius, and recommended next steps for leadership",
+            "description": "Generate an executive summary of the snapshot exfiltration incident for leadership briefing"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "label": "Create Incident Ticket",
+          "config": {
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_ticket",
+              "parameters": {
+                "project": "SEC",
+                "issue_type": "Incident",
+                "priority": "Critical",
+                "summary": "Snapshot Exfiltration: {{trigger_1.alert.snapshot_id}} shared to {{trigger_1.alert.target_account_id}}",
+                "description": "Confirmed cloud snapshot exfiltration detected.\n\nSnapshot: {{trigger_1.alert.snapshot_id}}\nTarget Account: {{trigger_1.alert.target_account_id}}\nActor: {{trigger_1.alert.actor}}\nSnapshot Size: {{trigger_1.alert.snapshot_size}}\n\nActions Taken:\n- External sharing revoked, snapshot made private\n- Actor sharing history investigated (30 days)\n- Executive summary generated\n\nSharing Investigation:\n{{code_1.sharing_investigation}}\n\nExecutive Summary:\n{{analyze_2.summary}}\n\nRiggs AI Assessment:\n{{analyze_1.summary}}\n\nNext Steps: Determine data classification of snapshot contents, assess if target account copied the snapshot before sharing was revoked, consider IAM credential rotation for the actor."
+              }
+            },
+            "description": "Create a critical incident ticket with full exfiltration scope and executive summary"
+          }
+        }
+      },
+      {
+        "id": "respond_3",
+        "type": "signal",
+        "position": { "x": 340, "y": 1180 },
+        "data": {
+          "kind": "respond",
+          "label": "Emergency Team Notification",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#security-incidents",
+              "message": "CRITICAL: SNAPSHOT EXFILTRATION DETECTED\nSnapshot: {{trigger_1.alert.snapshot_id}}\nShared To: {{trigger_1.alert.target_account_id}}\nActor: {{trigger_1.alert.actor}}\nSize: {{trigger_1.alert.snapshot_size}}\nActions: Sharing revoked, actor investigated\nTicket: {{respond_2.ticket_url}}\n\nExecutive Summary:\n{{analyze_2.summary}}"
+            },
+            "description": "Send emergency notification to the security team about the snapshot exfiltration"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "utility",
+          "label": "Add Note: Authorized Sharing",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "Reviewed by Riggs AI (data_exfil template). Snapshot sharing determined to be authorized — target account is within the organization trust boundary. Assessment: {{analyze_1.summary}}"
+            },
+            "description": "Document that the snapshot sharing was determined to be authorized"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1340 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "Cloud snapshot exfiltration detection and response complete"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_analyze",
+        "source": "trigger_1",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_analyze_decision",
+        "source": "analyze_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "respond_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "utility_1",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_revoke_investigate",
+        "source": "respond_1",
+        "target": "code_1",
+        "type": "default"
+      },
+      {
+        "id": "e_investigate_summary",
+        "source": "code_1",
+        "target": "analyze_2",
+        "type": "default"
+      },
+      {
+        "id": "e_summary_ticket",
+        "source": "analyze_2",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_ticket_notify",
+        "source": "respond_2",
+        "target": "respond_3",
+        "type": "default"
+      },
+      {
+        "id": "e_notify_end",
+        "source": "respond_3",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_utility_end",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

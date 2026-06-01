@@ -1,0 +1,202 @@
+{
+  "name": "Stale Permissions Review",
+  "slug": "identity-stale-permissions-review",
+  "description": "Scheduled playbook that reviews and identifies stale permissions across the organization. Scans for users with permissions they haven't exercised in 90+ days, uses AI to recommend removals based on role and usage patterns, creates ITSM tickets for permission cleanup, and generates a compliance summary for access governance.",
+  "category": "identity",
+  "subcategory": "access_review",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "25 minutes",
+  "tags": ["stale_permissions", "access_review", "least_privilege", "compliance", "scheduled"],
+  "alert_types": ["scheduled"],
+  "severity_filter": ["low", "medium"],
+  "trigger_conditions": {
+    "alert_types": ["scheduled"],
+    "min_severity": "low"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "microsoft_graph",
+      "name": "Microsoft Graph",
+      "category": "identity",
+      "reason": "Query permission usage and group membership activity"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create cleanup tickets for stale permission removal"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "sp-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "title": "Scheduled Permissions Review",
+          "summary": "Runs on a monthly schedule to scan for stale permissions",
+          "config": {
+            "trigger_type": "schedule",
+            "schedule": "0 8 1 * *",
+            "description": "Monthly 1st of month 8 AM stale permissions review"
+          }
+        }
+      },
+      {
+        "id": "sp-2",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "code",
+          "title": "Scan Stale Permissions",
+          "summary": "Query identity provider for permissions unused in 90+ days",
+          "config": {
+            "language": "python",
+            "code": "from datetime import datetime, timedelta\nthreshold = datetime.utcnow() - timedelta(days=90)\nresult = {'threshold_date': threshold.isoformat(), 'stale_entries': context.get('permission_usage_report', []), 'total_scanned': len(context.get('permission_usage_report', []))}"
+          }
+        }
+      },
+      {
+        "id": "sp-3",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "analyze",
+          "title": "AI Permission Removal Recommendations",
+          "summary": "Analyze stale permissions and recommend removals based on role context",
+          "config": {
+            "mode": "ai_analysis",
+            "template_id": "insider_threat",
+            "custom_instructions": "",
+            "alert_path": "$.nodes.sp-2.result",
+            "include_context": true
+          }
+        }
+      },
+      {
+        "id": "sp-4",
+        "type": "signal",
+        "position": { "x": 520, "y": 540 },
+        "data": {
+          "kind": "decision",
+          "title": "Stale Permissions Found?",
+          "summary": "Branch if AI identified permissions recommended for removal",
+          "config": {
+            "conditions": {
+              "operator": "AND",
+              "conditions": [
+                {
+                  "field": "$.nodes.sp-3.result.recommendations_count",
+                  "operator": "greater_than",
+                  "value": "0"
+                }
+              ],
+              "groups": []
+            },
+            "expression": "$.nodes.sp-3.result.recommendations_count > 0",
+            "default_branch": "no"
+          }
+        }
+      },
+      {
+        "id": "sp-5",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "title": "Create Cleanup Tickets",
+          "summary": "Create Jira tickets for each stale permission removal recommendation",
+          "config": {
+            "response_type": "create_ticket",
+            "system": "jira",
+            "project_key": "IAM",
+            "issue_type": "Task",
+            "title": "Stale Permissions Cleanup — {{$.nodes.sp-3.result.recommendations_count}} Recommendations",
+            "description": "Monthly stale permissions review identified {{$.nodes.sp-3.result.recommendations_count}} permissions unused for 90+ days. AI-recommended removals attached. Please review and execute permission removals per least-privilege policy.",
+            "priority": "medium",
+            "requires_approval": false
+          }
+        }
+      },
+      {
+        "id": "sp-6",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "analyze",
+          "title": "Generate Compliance Summary",
+          "summary": "AI-generated compliance summary of the permissions review cycle",
+          "config": {
+            "mode": "ai_analysis",
+            "template_id": "executive_summary",
+            "custom_instructions": "",
+            "alert_path": "$.nodes.sp-3.result",
+            "include_context": true
+          }
+        }
+      },
+      {
+        "id": "sp-7",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "title": "Send Compliance Report",
+          "summary": "Email the permissions review summary to IT governance and compliance teams",
+          "config": {
+            "response_type": "notification",
+            "channel": "email",
+            "email_recipients": "it-governance@company.com, compliance@company.com",
+            "email_subject": "Monthly Stale Permissions Review — {{$.nodes.sp-3.result.recommendations_count}} Recommendations",
+            "message": "{{$.nodes.sp-6.result.summary}}",
+            "requires_approval": false,
+            "priority": "medium"
+          }
+        }
+      },
+      {
+        "id": "sp-8",
+        "type": "signal",
+        "position": { "x": 700, "y": 700 },
+        "data": {
+          "kind": "utility",
+          "title": "Log Clean Review",
+          "summary": "Log that no stale permissions were found this cycle",
+          "config": {
+            "operation": "add_note",
+            "note": "Monthly stale permissions review completed. No stale permissions identified. All permissions within active usage thresholds."
+          }
+        }
+      },
+      {
+        "id": "sp-9",
+        "type": "signal",
+        "position": { "x": 520, "y": 1180 },
+        "data": {
+          "kind": "end",
+          "title": "Playbook Complete",
+          "summary": "Stale permissions review finished",
+          "config": {
+            "disposition": "completed",
+            "summary": "Stale permissions review cycle completed"
+          }
+        }
+      }
+    ],
+    "edges": [
+      { "id": "sp-e1", "source": "sp-1", "target": "sp-2", "animated": true, "type": "smoothstep" },
+      { "id": "sp-e2", "source": "sp-2", "target": "sp-3", "animated": true, "type": "smoothstep" },
+      { "id": "sp-e3", "source": "sp-3", "target": "sp-4", "animated": true, "type": "smoothstep" },
+      { "id": "sp-e4", "source": "sp-4", "target": "sp-5", "sourceHandle": "yes", "label": "Yes", "animated": true, "type": "smoothstep" },
+      { "id": "sp-e5", "source": "sp-4", "target": "sp-8", "sourceHandle": "no", "label": "No", "animated": true, "type": "smoothstep" },
+      { "id": "sp-e6", "source": "sp-5", "target": "sp-6", "animated": true, "type": "smoothstep" },
+      { "id": "sp-e7", "source": "sp-6", "target": "sp-7", "animated": true, "type": "smoothstep" },
+      { "id": "sp-e8", "source": "sp-7", "target": "sp-9", "animated": true, "type": "smoothstep" },
+      { "id": "sp-e9", "source": "sp-8", "target": "sp-9", "animated": true, "type": "smoothstep" }
+    ]
+  }
+}

@@ -1,0 +1,157 @@
+{
+  "id": "anchore",
+  "name": "Anchore Enterprise",
+  "description": "Container security platform for deep image inspection, vulnerability scanning, policy-based compliance, and SBOM management",
+  "version": "1.0.0",
+  "category": "container_security",
+  "vendor": "Anchore",
+  "auth_type": "basic",
+  "auth_config": {
+    "type": "basic",
+    "header_name": "Authorization",
+    "location": "header",
+    "description": "HTTP Basic Auth with username and password, or use _api_key as username with API key as password"
+  },
+  "base_url": "https://{host}/v2",
+  "actions": [
+    {
+      "id": "list_images",
+      "name": "List Images",
+      "description": "List all analyzed container images in the system",
+      "http_method": "GET",
+      "endpoint": "/images",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "image_status",
+          "type": "string",
+          "description": "Filter by status: active, deleting, all",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "analysis_status",
+          "type": "string",
+          "description": "Filter by analysis status: not_analyzed, analyzing, analyzed, analysis_failed",
+          "required": false,
+          "location": "query"
+        }
+      ]
+    },
+    {
+      "id": "add_image",
+      "name": "Add Image for Analysis",
+      "description": "Submit a container image for vulnerability analysis and SBOM generation",
+      "http_method": "POST",
+      "endpoint": "/images",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "tag",
+          "type": "string",
+          "description": "Full image tag (e.g., docker.io/library/nginx:latest)",
+          "required": true,
+          "location": "body"
+        },
+        {
+          "name": "force",
+          "type": "boolean",
+          "description": "Force re-analysis if image already exists",
+          "required": false,
+          "location": "body"
+        }
+      ]
+    },
+    {
+      "id": "get_image_vulnerabilities",
+      "name": "Get Image Vulnerabilities",
+      "description": "Retrieve all known vulnerabilities for an analyzed image",
+      "http_method": "GET",
+      "endpoint": "/images/{image_digest}/vulnerabilities",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "image_digest",
+          "type": "string",
+          "description": "Image digest (sha256:...)",
+          "required": true,
+          "location": "path"
+        },
+        {
+          "name": "force_refresh",
+          "type": "boolean",
+          "description": "Force refresh of vulnerability data",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Filter by severity: Critical, High, Medium, Low, Negligible",
+          "required": false,
+          "location": "query"
+        }
+      ]
+    },
+    {
+      "id": "evaluate_policy",
+      "name": "Evaluate Policy",
+      "description": "Check if an image passes or fails a specific policy bundle evaluation",
+      "http_method": "GET",
+      "endpoint": "/images/{image_digest}/check",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "image_digest",
+          "type": "string",
+          "description": "Image digest",
+          "required": true,
+          "location": "path"
+        },
+        {
+          "name": "tag",
+          "type": "string",
+          "description": "Image tag to evaluate against",
+          "required": true,
+          "location": "query"
+        },
+        {
+          "name": "policyId",
+          "type": "string",
+          "description": "Policy bundle ID to evaluate",
+          "required": false,
+          "location": "query"
+        }
+      ]
+    },
+    {
+      "id": "get_image_sbom",
+      "name": "Get Image SBOM",
+      "description": "Retrieve the Software Bill of Materials for an analyzed image",
+      "http_method": "GET",
+      "endpoint": "/images/{image_digest}/sbom",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "image_digest",
+          "type": "string",
+          "description": "Image digest",
+          "required": true,
+          "location": "path"
+        },
+        {
+          "name": "format",
+          "type": "string",
+          "description": "SBOM format: spdx, cyclonedx, native",
+          "required": false,
+          "location": "query"
+        }
+      ]
+    }
+  ]
+}

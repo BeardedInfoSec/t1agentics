@@ -1,0 +1,227 @@
+{
+  "name": "Post-Incident Review",
+  "slug": "post-incident-review",
+  "description": "Generates a comprehensive post-incident review (PIR) report after an incident has been resolved. A code node collects the investigation timeline, actions taken, and IOCs found. Riggs AI then produces a detailed PIR covering timeline reconstruction, root cause analysis, impact assessment, lessons learned, and recommendations for improving detection and response. The report goes through IR lead approval before being filed as a Jira ticket, distributed to stakeholders via email, and shared with the SOC team on Slack.",
+  "category": "incident_response",
+  "subcategory": "review",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "20 minutes",
+  "tags": ["post_incident", "review", "lessons_learned", "pir", "report"],
+  "alert_types": [],
+  "severity_filter": [],
+  "trigger_conditions": {
+    "alert_types": [],
+    "trigger_type": "manual"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create post-incident review document ticket for formal record keeping"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Share lessons learned and PIR summary with the SOC team"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Manual Trigger — Post-Incident Review",
+          "config": {
+            "trigger_type": "manual",
+            "description": "Manually triggered after an incident has been resolved to initiate the post-incident review process"
+          }
+        }
+      },
+      {
+        "id": "code_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "code",
+          "label": "Collect Investigation Data",
+          "config": {
+            "mode": "query",
+            "query": "SELECT al.timestamp, al.action, al.actor, al.details FROM audit_log al WHERE al.investigation_id = '{{trigger_1.investigation_id}}' ORDER BY al.timestamp ASC",
+            "output_variable": "investigation_data",
+            "description": "Collect the full investigation timeline, all actions taken, IOCs discovered, and enrichment results for the PIR"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — Post-Incident Review",
+          "config": {
+            "template_id": "executive_summary",
+            "additional_instructions": "Generate a comprehensive post-incident review: timeline, root cause analysis, impact assessment, lessons learned, and recommendations for improving detection and response.",
+            "description": "AI-powered post-incident review generation covering all aspects of the incident lifecycle"
+          }
+        }
+      },
+      {
+        "id": "approval_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 540 },
+        "data": {
+          "kind": "approval",
+          "label": "IR Lead Approval",
+          "config": {
+            "approvers": ["ir_lead"],
+            "approval_message": "Please review the AI-generated post-incident review report for accuracy and completeness before distribution to stakeholders.",
+            "timeout_hours": 48,
+            "description": "IR lead reviews and approves the post-incident review report before it is distributed"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "label": "Create PIR Ticket in Jira",
+          "config": {
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_issue",
+              "parameters": {
+                "project": "IR",
+                "issue_type": "Post-Incident Review",
+                "summary": "PIR: {{trigger_1.investigation_title}}",
+                "description": "Post-Incident Review Report\n\nInvestigation: {{trigger_1.investigation_title}}\nApproved by: {{approval_1.approver}}\n\n{{analyze_1.summary}}"
+              }
+            },
+            "description": "Create a formal post-incident review document ticket in Jira for record keeping and tracking"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 520, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "label": "Distribute PIR via Email",
+          "config": {
+            "notify": {
+              "channel": "email",
+              "target": "{{config.stakeholder_distribution_list}}",
+              "message": "POST-INCIDENT REVIEW — {{trigger_1.investigation_title}}\n\nApproved by: {{approval_1.approver}}\nJira Ticket: {{respond_1.issue_key}}\n\n{{analyze_1.summary}}\n\nThis report has been reviewed and approved by the IR lead. Please direct any questions or feedback to the incident response team."
+            },
+            "description": "Distribute the approved post-incident review report to all stakeholders via email"
+          }
+        }
+      },
+      {
+        "id": "respond_3",
+        "type": "signal",
+        "position": { "x": 520, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "label": "Post Lessons Learned to Slack",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#soc-operations",
+              "message": "POST-INCIDENT REVIEW PUBLISHED\n\nIncident: {{trigger_1.investigation_title}}\nJira: {{respond_1.issue_key}}\n\nKey Lessons Learned:\n{{analyze_1.summary}}\n\nFull PIR has been distributed to stakeholders via email."
+            },
+            "description": "Share lessons learned and key takeaways from the PIR with the SOC team on Slack"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1180 },
+        "data": {
+          "kind": "utility",
+          "label": "Set Status: Closed",
+          "config": {
+            "action": "update_status",
+            "parameters": {
+              "status": "closed"
+            },
+            "description": "Mark the investigation as closed after the post-incident review has been completed and distributed"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1340 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "Post-incident review complete — report approved, filed, and distributed to stakeholders"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_code",
+        "source": "trigger_1",
+        "target": "code_1",
+        "type": "default"
+      },
+      {
+        "id": "e_code_analyze",
+        "source": "code_1",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_analyze_approval",
+        "source": "analyze_1",
+        "target": "approval_1",
+        "type": "default"
+      },
+      {
+        "id": "e_approval_jira",
+        "source": "approval_1",
+        "target": "respond_1",
+        "type": "default"
+      },
+      {
+        "id": "e_jira_email",
+        "source": "respond_1",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_email_slack",
+        "source": "respond_2",
+        "target": "respond_3",
+        "type": "default"
+      },
+      {
+        "id": "e_slack_utility",
+        "source": "respond_3",
+        "target": "utility_1",
+        "type": "default"
+      },
+      {
+        "id": "e_utility_end",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

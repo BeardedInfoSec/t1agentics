@@ -1,0 +1,309 @@
+{
+  "id": "tanium_rest",
+  "name": "Tanium REST",
+  "description": "This app supports investigative and generic actions on Tanium",
+  "version": "2.3.3",
+  "category": "edr",
+  "vendor": "Tanium",
+  "auth_type": "basic_auth",
+  "auth_config": {
+    "type": "basic_auth",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "list_processes",
+      "name": "List Processes",
+      "description": "List the running processes of the devices registered on the Tanium server",
+      "http_method": "GET",
+      "endpoint": "/actions/list_processes",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "sensor",
+          "type": "string",
+          "description": "Sensor which will list all the processes",
+          "required": true,
+          "default": "Process Details"
+        },
+        {
+          "name": "group_name",
+          "type": "string",
+          "description": "Computer group name of which the processes will be listed",
+          "required": false
+        },
+        {
+          "name": "timeout_seconds",
+          "type": "number",
+          "description": "The number of seconds before the question expires",
+          "required": true,
+          "default": 600
+        }
+      ]
+    },
+    {
+      "id": "parse_question",
+      "name": "Parse Question",
+      "description": "Parses the supplied text into a valid Tanium query string",
+      "http_method": "GET",
+      "endpoint": "/actions/parse_question",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "query_text",
+          "type": "string",
+          "description": "Query text to parse",
+          "required": true,
+          "contains": [
+            "taniumrest question text"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_questions",
+      "name": "List Questions",
+      "description": "Retrieves either a history of the most recent questions or a list of saved questions",
+      "http_method": "GET",
+      "endpoint": "/actions/list_questions",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "list_saved_questions",
+          "type": "boolean",
+          "description": "Retrieve Saved Questions",
+          "required": false,
+          "default": true
+        }
+      ]
+    },
+    {
+      "id": "terminate_process",
+      "name": "Terminate Process",
+      "description": "Kill a running process of the devices registered on the Tanium server",
+      "http_method": "GET",
+      "endpoint": "/actions/terminate_process",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "action_name",
+          "type": "string",
+          "description": "Name of the action",
+          "required": true
+        },
+        {
+          "name": "action_group",
+          "type": "string",
+          "description": "Group of the action",
+          "required": true
+        },
+        {
+          "name": "package_name",
+          "type": "string",
+          "description": "Package name that will be executed",
+          "required": true
+        },
+        {
+          "name": "package_parameters",
+          "type": "string",
+          "description": "Package parameters of the corresponding package",
+          "required": false
+        },
+        {
+          "name": "group_name",
+          "type": "string",
+          "description": "Computer group name of which the process will be terminated",
+          "required": false
+        },
+        {
+          "name": "distribute_seconds",
+          "type": "number",
+          "description": "The number of seconds over which to deploy the action",
+          "required": false
+        },
+        {
+          "name": "issue_seconds",
+          "type": "number",
+          "description": "The number of seconds to reissue an action from the saved action",
+          "required": false
+        },
+        {
+          "name": "expire_seconds",
+          "type": "number",
+          "description": "The duration from the start time before the action expires",
+          "required": true,
+          "default": 600
+        }
+      ]
+    },
+    {
+      "id": "execute_action",
+      "name": "Execute Action",
+      "description": "Execute an action on the Tanium server",
+      "http_method": "GET",
+      "endpoint": "/actions/execute_action",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "action_name",
+          "type": "string",
+          "description": "Creates a name for the action executed",
+          "required": true
+        },
+        {
+          "name": "action_group",
+          "type": "string",
+          "description": "Group of the action",
+          "required": true,
+          "default": "Default"
+        },
+        {
+          "name": "package_name",
+          "type": "string",
+          "description": "Name of the Tanium package to be executed",
+          "required": true
+        },
+        {
+          "name": "package_parameters",
+          "type": "string",
+          "description": "Parameter inputs of the corresponding package. Provide JSON format (i.e. {\"$1\": \"Standard_Collection\", \"$2\": \"SCP\"})",
+          "required": false
+        },
+        {
+          "name": "group_name",
+          "type": "string",
+          "description": "The Tanium Computer Group name on which the action will be executed. If left blank, will execute on all registered IP addresses/hostnames in your Tanium instance",
+          "required": false,
+          "contains": [
+            "taniumrest group definition"
+          ]
+        },
+        {
+          "name": "distribute_seconds",
+          "type": "number",
+          "description": "The number of seconds over which to deploy the action",
+          "required": false
+        },
+        {
+          "name": "issue_seconds",
+          "type": "number",
+          "description": "The number of seconds to reissue an action from the saved action",
+          "required": false
+        },
+        {
+          "name": "expire_seconds",
+          "type": "number",
+          "description": "The duration from the start time before the action expires",
+          "required": true,
+          "default": 600
+        }
+      ]
+    },
+    {
+      "id": "run_query",
+      "name": "Run Query",
+      "description": "Run a search query on the devices registered on the Tanium server",
+      "http_method": "GET",
+      "endpoint": "/actions/run_query",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "query_text",
+          "type": "string",
+          "description": "Query to run (in Tanium Question Syntax)",
+          "required": true,
+          "contains": [
+            "taniumrest question text"
+          ]
+        },
+        {
+          "name": "group_name",
+          "type": "string",
+          "description": "The Tanium Computer Group name on which the query will be executed (manual query only)",
+          "required": false
+        },
+        {
+          "name": "is_saved_question",
+          "type": "boolean",
+          "description": "Check this box if the query text parameter refers to a 'Saved Question' on your Tanium",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "timeout_seconds",
+          "type": "number",
+          "description": "The number of seconds before the question expires (manual query only)",
+          "required": true,
+          "default": 600
+        },
+        {
+          "name": "wait_for_results_processing",
+          "type": "boolean",
+          "description": "Flag to wait for endpoint to return full results",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "return_when_n_results_available",
+          "type": "number",
+          "description": "Return results as soon as 'n' answers are available",
+          "required": false
+        },
+        {
+          "name": "wait_for_n_results_available",
+          "type": "number",
+          "description": "Wait until 'n' results are present, even if hit the percent complete threshold",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_question_results",
+      "name": "Get Question Results",
+      "description": "Return the results for an already asked question",
+      "http_method": "GET",
+      "endpoint": "/actions/get_question_results",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "question_id",
+          "type": "number",
+          "description": "The ID of the question",
+          "required": true,
+          "contains": [
+            "taniumrest question id"
+          ]
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Tanium REST",
+    "original_type": "endpoint",
+    "converted_at": "2025-12-18T16:25:29.191759",
+    "source_version": "2.3.3"
+  }
+}

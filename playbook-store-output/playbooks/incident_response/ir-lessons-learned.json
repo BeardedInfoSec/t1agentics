@@ -1,0 +1,206 @@
+{
+  "name": "Lessons Learned Documentation",
+  "slug": "ir-lessons-learned",
+  "description": "Automates the lessons learned process after an incident is resolved. A code node collects the full investigation timeline, response actions, and outcome metrics (MTTD, MTTR). Riggs AI generates a comprehensive lessons learned report identifying what worked well, what needs improvement, and specific recommendations for detection rule tuning, process updates, and training gaps. The report goes through IR lead approval, then a survey link is distributed to all responders for additional input. The final report is filed in Jira and shared with the security team via Slack.",
+  "category": "incident_response",
+  "subcategory": "improvement",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "20 minutes",
+  "tags": ["lessons_learned", "improvement", "report", "survey", "mttd", "mttr", "process"],
+  "alert_types": [],
+  "severity_filter": [],
+  "trigger_conditions": {
+    "alert_types": [],
+    "trigger_type": "manual"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create lessons learned report ticket and track improvement action items"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Distribute responder survey and share final lessons learned report"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Manual Trigger — Lessons Learned",
+          "config": {
+            "trigger_type": "manual",
+            "description": "Manually triggered after an incident is resolved to initiate the lessons learned documentation process"
+          }
+        }
+      },
+      {
+        "id": "code_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "code",
+          "label": "Collect Response Metrics",
+          "config": {
+            "mode": "query",
+            "query": "SELECT al.timestamp, al.action, al.actor, al.details, al.duration_minutes FROM audit_log al WHERE al.investigation_id = '{{trigger_1.investigation_id}}' ORDER BY al.timestamp ASC",
+            "output_variable": "response_data",
+            "description": "Collect the full investigation timeline, all response actions, responder participation, and timing metrics"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — Lessons Learned Report",
+          "config": {
+            "template_id": "executive_summary",
+            "additional_instructions": "Generate a lessons learned report covering: 1) Incident timeline summary, 2) What worked well, 3) What needs improvement, 4) Detection gaps identified, 5) Response process bottlenecks, 6) Recommendations for detection rule tuning, process updates, and training. Calculate MTTD and MTTR from the timeline data.",
+            "description": "AI-powered lessons learned report generation with actionable improvement recommendations"
+          }
+        }
+      },
+      {
+        "id": "approval_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 540 },
+        "data": {
+          "kind": "approval",
+          "label": "IR Lead — Review Report",
+          "config": {
+            "approvers": ["ir_lead"],
+            "approval_message": "Please review the AI-generated lessons learned report for accuracy and completeness. Add any additional observations before the report is distributed and the responder survey is sent.\n\nReport Preview:\n{{analyze_1.summary}}",
+            "timeout_hours": 72,
+            "description": "IR lead reviews the lessons learned report for accuracy before distribution to responders"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "label": "Send Responder Survey",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#incident-responders",
+              "message": "LESSONS LEARNED — RESPONDER SURVEY\n\nIncident: {{trigger_1.investigation_title}}\n\nThe lessons learned report has been drafted and approved. Please provide your feedback:\n\nSurvey Link: {{config.survey_base_url}}/lessons-learned/{{trigger_1.investigation_id}}\n\nYour input helps us improve our detection and response capabilities. Please complete the survey within 5 business days.\n\nKey areas to reflect on:\n- Were you notified in time?\n- Did you have the right tools and access?\n- What would you do differently?"
+            },
+            "description": "Distribute the responder feedback survey to all participants for additional lessons learned input"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 520, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "label": "File Report in Jira",
+          "config": {
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_issue",
+              "parameters": {
+                "project": "IR",
+                "issue_type": "Task",
+                "priority": "P3 - Medium",
+                "summary": "LESSONS LEARNED: {{trigger_1.investigation_title}}",
+                "description": "Lessons Learned Report\n\nIncident: {{trigger_1.investigation_title}}\nApproved by: {{approval_1.approver}}\nResponder Survey: Distributed\n\n{{analyze_1.summary}}\n\nAction Items:\n- [ ] Update detection rules per recommendations\n- [ ] Revise response procedures as identified\n- [ ] Schedule training for identified gaps\n- [ ] Review and close within 30 days"
+              }
+            },
+            "description": "Create a Jira ticket to formally track the lessons learned report and improvement action items"
+          }
+        }
+      },
+      {
+        "id": "respond_3",
+        "type": "signal",
+        "position": { "x": 520, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "label": "Share Report with Security Team",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#soc-operations",
+              "message": "LESSONS LEARNED REPORT PUBLISHED\n\nIncident: {{trigger_1.investigation_title}}\nJira: {{respond_2.issue_key}}\n\nKey Takeaways:\n{{analyze_1.summary}}\n\nThe full report is available in the Jira ticket. A responder survey has been sent to all participants."
+            },
+            "description": "Share the published lessons learned report with the broader security team on Slack"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1180 },
+        "data": {
+          "kind": "end",
+          "label": "End — Lessons Learned Complete",
+          "config": {
+            "description": "Lessons learned process complete — report approved, survey distributed, filed in Jira, and shared with security team"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_code",
+        "source": "trigger_1",
+        "target": "code_1",
+        "type": "default"
+      },
+      {
+        "id": "e_code_analyze",
+        "source": "code_1",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_analyze_approval",
+        "source": "analyze_1",
+        "target": "approval_1",
+        "type": "default"
+      },
+      {
+        "id": "e_approval_respond1",
+        "source": "approval_1",
+        "target": "respond_1",
+        "type": "default"
+      },
+      {
+        "id": "e_respond1_respond2",
+        "source": "respond_1",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_respond2_respond3",
+        "source": "respond_2",
+        "target": "respond_3",
+        "type": "default"
+      },
+      {
+        "id": "e_respond3_end",
+        "source": "respond_3",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

@@ -1,0 +1,249 @@
+{
+  "name": "Periodic Access Review",
+  "slug": "compliance-access-review",
+  "description": "Performs a scheduled periodic access review across user accounts. A code node queries the IAM provider for all active users and their privilege levels. The playbook loops over each user, using Riggs AI to assess whether current privileges align with the user's role and responsibilities. Excess privileges are flagged, a Jira ticket is created for remediation, and the compliance team is notified on Slack with a summary of all findings.",
+  "category": "compliance",
+  "subcategory": "access_review",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "30 minutes",
+  "tags": ["compliance", "access_review", "iam", "privilege", "least_privilege", "periodic_review"],
+  "alert_types": [],
+  "severity_filter": [],
+  "trigger_conditions": {
+    "alert_types": [],
+    "trigger_type": "scheduled",
+    "schedule": "0 8 1 * *"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "microsoft_graph",
+      "name": "Microsoft Graph",
+      "category": "identity",
+      "reason": "Query active directory for user accounts, roles, and privilege assignments"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create remediation tickets for users with excess privileges"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Notify compliance team with access review summary"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Scheduled Access Review",
+          "config": {
+            "trigger_type": "scheduled",
+            "schedule": "0 8 1 * *",
+            "description": "Triggers on the first of each month to initiate periodic access review"
+          }
+        }
+      },
+      {
+        "id": "code_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "code",
+          "label": "Fetch All Active Users & Privileges",
+          "config": {
+            "mode": "query",
+            "query": "SELECT u.user_id, u.email, u.department, u.role, u.last_login, GROUP_CONCAT(p.privilege_name) AS privileges FROM users u JOIN user_privileges p ON u.user_id = p.user_id WHERE u.status = 'active' GROUP BY u.user_id ORDER BY u.department",
+            "output_variable": "user_list",
+            "description": "Query IAM provider for all active user accounts with their current privilege assignments"
+          }
+        }
+      },
+      {
+        "id": "loop_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "loop",
+          "label": "Loop Over Each User",
+          "config": {
+            "collection": "{{code_1.user_list}}",
+            "iterator_variable": "current_user",
+            "description": "Iterate over each active user to evaluate privilege alignment"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 540 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI -- Privilege Assessment",
+          "config": {
+            "template_id": "insider_threat",
+            "additional_instructions": "Evaluate whether this user's current privileges are appropriate for their role and department. Flag any excess or dormant privileges that violate least-privilege principles.",
+            "description": "AI-powered assessment of whether user privileges align with role requirements"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 700 },
+        "data": {
+          "kind": "decision",
+          "label": "Excess Privileges Found?",
+          "config": {
+            "condition": "{{analyze_1.excess_privileges_detected}} == true",
+            "description": "Routes users with excess privileges to the remediation track"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "label": "Create Remediation Ticket",
+          "config": {
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_issue",
+              "parameters": {
+                "project": "COMPLIANCE",
+                "issue_type": "Task",
+                "priority": "P2",
+                "summary": "Access Review: Excess privileges for {{current_user.email}}",
+                "description": "Access Review Finding\n\nUser: {{current_user.email}}\nDepartment: {{current_user.department}}\nRole: {{current_user.role}}\nCurrent Privileges: {{current_user.privileges}}\n\nRiggs Assessment:\n{{analyze_1.summary}}\n\nAction Required: Remove excess privileges to align with least-privilege policy.",
+                "labels": ["access-review", "excess-privilege", "compliance"]
+              }
+            },
+            "description": "Create a Jira ticket to track remediation of excess privileges for this user"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 700, "y": 860 },
+        "data": {
+          "kind": "utility",
+          "label": "Log: Privileges Compliant",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "User {{current_user.email}} passed access review -- privileges aligned with role."
+            },
+            "description": "Record that this user's privileges are compliant with policy"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 520, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "label": "Notify Compliance Team on Slack",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#compliance-reviews",
+              "message": "PERIODIC ACCESS REVIEW COMPLETE\n\nTotal Users Reviewed: {{code_1.user_list.length}}\nExcess Privileges Found: {{loop_1.flagged_count}}\nRemediation Tickets Created: {{loop_1.flagged_count}}\n\nAll findings have been logged and tickets created in Jira. Please review and assign remediation owners."
+            },
+            "description": "Notify compliance team with a summary of the access review findings"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1180 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "Periodic access review complete -- all users evaluated, findings documented"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_code",
+        "source": "trigger_1",
+        "target": "code_1",
+        "type": "default"
+      },
+      {
+        "id": "e_code_loop",
+        "source": "code_1",
+        "target": "loop_1",
+        "type": "default"
+      },
+      {
+        "id": "e_loop_analyze",
+        "source": "loop_1",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_analyze_decision",
+        "source": "analyze_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "respond_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "utility_1",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_respond1_loop",
+        "source": "respond_1",
+        "target": "loop_1",
+        "type": "default"
+      },
+      {
+        "id": "e_utility1_loop",
+        "source": "utility_1",
+        "target": "loop_1",
+        "type": "default"
+      },
+      {
+        "id": "e_loop_notify",
+        "source": "loop_1",
+        "target": "respond_2",
+        "type": "default",
+        "sourceHandle": "done"
+      },
+      {
+        "id": "e_notify_end",
+        "source": "respond_2",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

@@ -1,0 +1,176 @@
+{
+  "id": "owasp_zap",
+  "name": "OWASP ZAP",
+  "description": "Open source DAST web application security scanner for finding vulnerabilities through active and passive scanning",
+  "version": "1.0.0",
+  "category": "code_security",
+  "vendor": "OWASP",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "X-ZAP-API-Key",
+    "location": "header",
+    "alt_param": "apikey",
+    "alt_location": "query"
+  },
+  "base_url": "https://{host}:8080/JSON",
+  "actions": [
+    {
+      "id": "list_alerts",
+      "name": "List Alerts",
+      "description": "Retrieve all alerts (vulnerabilities) found during scans with optional filtering",
+      "http_method": "GET",
+      "endpoint": "/alert/view/alerts/",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "baseurl",
+          "type": "string",
+          "description": "Filter alerts by base URL of the scanned target",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "start",
+          "type": "integer",
+          "description": "Pagination start index",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "count",
+          "type": "integer",
+          "description": "Number of alerts to return",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "riskId",
+          "type": "string",
+          "description": "Filter by risk level: 0=Info, 1=Low, 2=Medium, 3=High",
+          "required": false,
+          "location": "query"
+        }
+      ]
+    },
+    {
+      "id": "get_alert",
+      "name": "Get Alert Details",
+      "description": "Retrieve details of a specific alert by ID",
+      "http_method": "GET",
+      "endpoint": "/alert/view/alert/",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "integer",
+          "description": "Alert ID",
+          "required": true,
+          "location": "query"
+        }
+      ]
+    },
+    {
+      "id": "get_alerts_summary",
+      "name": "Get Alerts Summary",
+      "description": "Get a summary count of alerts grouped by risk level",
+      "http_method": "GET",
+      "endpoint": "/alert/view/alertsSummary/",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "baseurl",
+          "type": "string",
+          "description": "Filter by target base URL",
+          "required": false,
+          "location": "query"
+        }
+      ]
+    },
+    {
+      "id": "get_scan_status",
+      "name": "Get Active Scan Status",
+      "description": "Check the progress of an active scan (0-100%)",
+      "http_method": "GET",
+      "endpoint": "/ascan/view/status/",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "scanId",
+          "type": "integer",
+          "description": "Active scan ID",
+          "required": true,
+          "location": "query"
+        }
+      ]
+    },
+    {
+      "id": "start_active_scan",
+      "name": "Start Active Scan",
+      "description": "Launch an active vulnerability scan against a target URL",
+      "http_method": "GET",
+      "endpoint": "/ascan/action/scan/",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "Target URL to scan",
+          "required": true,
+          "location": "query"
+        },
+        {
+          "name": "recurse",
+          "type": "boolean",
+          "description": "Whether to scan recursively",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "scanPolicyName",
+          "type": "string",
+          "description": "Name of the scan policy to use",
+          "required": false,
+          "location": "query"
+        }
+      ]
+    },
+    {
+      "id": "start_spider",
+      "name": "Start Spider Scan",
+      "description": "Start a spider crawl to discover pages and endpoints on a target",
+      "http_method": "GET",
+      "endpoint": "/spider/action/scan/",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "Target URL to spider",
+          "required": true,
+          "location": "query"
+        },
+        {
+          "name": "maxchildren",
+          "type": "integer",
+          "description": "Maximum children to crawl per node",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "recurse",
+          "type": "boolean",
+          "description": "Whether to recurse into subfolders",
+          "required": false,
+          "location": "query"
+        }
+      ]
+    }
+  ]
+}

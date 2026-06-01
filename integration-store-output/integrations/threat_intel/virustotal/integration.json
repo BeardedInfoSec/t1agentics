@@ -1,0 +1,222 @@
+{
+  "id": "virustotal",
+  "name": "VirusTotal",
+  "description": "This app integrates with the VirusTotal cloud to implement investigative and reputation actions using v2 APIs",
+  "version": "2.2.7",
+  "category": "threat_intel",
+  "vendor": "VirusTotal",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "https://www.virustotal.com/vtapi/v2/",
+  "actions": [
+    {
+      "id": "lookup_file",
+      "name": "File Reputation",
+      "description": "Queries VirusTotal for file reputation info",
+      "http_method": "GET",
+      "endpoint": "/actions/lookup_file",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "hash",
+          "type": "string",
+          "description": "File hash to query",
+          "required": true,
+          "contains": [
+            "hash",
+            "sha256",
+            "sha1",
+            "md5"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "lookup_url",
+      "name": "Url Reputation",
+      "description": "Queries VirusTotal for URL info",
+      "http_method": "GET",
+      "endpoint": "url/report",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "URL to query",
+          "required": true,
+          "contains": [
+            "url"
+          ]
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "lookup_domain",
+      "name": "Domain Reputation",
+      "description": "Queries VirusTotal for domain info",
+      "http_method": "GET",
+      "endpoint": "domain/report",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "domain",
+          "type": "string",
+          "description": "Domain to query",
+          "required": true,
+          "contains": [
+            "domain"
+          ]
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "lookup_ip",
+      "name": "Ip Reputation",
+      "description": "Queries VirusTotal for IP info",
+      "http_method": "GET",
+      "endpoint": "ip-address/report",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "IP to query",
+          "required": true,
+          "contains": [
+            "ip",
+            "ipv6"
+          ]
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "get_file",
+      "name": "Get File",
+      "description": "Downloads a file from VirusTotal, and adds it to the vault",
+      "http_method": "GET",
+      "endpoint": "file/download",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "hash",
+          "type": "string",
+          "description": "Hash of file to get",
+          "required": true,
+          "contains": [
+            "hash",
+            "sha256",
+            "sha1",
+            "md5"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "get_report",
+      "name": "Get Report",
+      "description": "Get the results using the scan id from a detonate file or detonate url action",
+      "http_method": "GET",
+      "endpoint": "/actions/get_report",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "scan_id",
+          "type": "string",
+          "description": "Scan ID",
+          "required": true,
+          "contains": [
+            "virustotal scan id"
+          ]
+        },
+        {
+          "name": "report_type",
+          "type": "string",
+          "description": "Type of report to download",
+          "required": true,
+          "default": "file"
+        }
+      ]
+    },
+    {
+      "id": "detonate_file",
+      "name": "Detonate File",
+      "description": "Upload a file to Virus Total and retrieve the analysis results",
+      "http_method": "GET",
+      "endpoint": "url/scan",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "vault_id",
+          "type": "string",
+          "description": "The Vault ID of the file to scan",
+          "required": true,
+          "contains": [
+            "vault id",
+            "sha1"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "detonate_url",
+      "name": "Detonate Url",
+      "description": "Load a URL to Virus Total and retrieve analysis results",
+      "http_method": "GET",
+      "endpoint": "url/scan",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "URL to detonate",
+          "required": true,
+          "contains": [
+            "url",
+            "domain"
+          ]
+        }
+      ],
+      "observable_type": "url"
+    }
+  ],
+  "source_metadata": {
+    "original_name": "VirusTotal",
+    "original_type": "reputation",
+    "converted_at": "2025-12-18T16:25:29.278934",
+    "source_version": "2.2.7"
+  }
+}

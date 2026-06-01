@@ -1,0 +1,280 @@
+{
+  "id": "eset_inspect",
+  "name": "ESET Inspect",
+  "description": "Integrates with ESET Inspect REST API for endpoint detection and response, detection management, computer isolation, and rule configuration",
+  "version": "1.0.0",
+  "category": "edr",
+  "vendor": "ESET",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "header_name": "Authorization",
+    "prefix": "Bearer",
+    "token_url": "https://{server_host}/api/v1/authenticate"
+  },
+  "base_url": "https://{server_host}",
+  "actions": [
+    {
+      "id": "list_detections",
+      "name": "List Detections",
+      "description": "Retrieve a list of detections with pagination and filtering",
+      "http_method": "GET",
+      "endpoint": "/api/v1/detections",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "$top",
+          "type": "number",
+          "description": "Maximum number of detections to return",
+          "required": false,
+          "default": 50
+        },
+        {
+          "name": "$skip",
+          "type": "number",
+          "description": "Number of records to skip for pagination",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "$filter",
+          "type": "string",
+          "description": "OData filter expression (e.g., severityScore ge 80)",
+          "required": false
+        },
+        {
+          "name": "$orderby",
+          "type": "string",
+          "description": "Sort order (e.g., creationTime desc)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_detection",
+      "name": "Get Detection Details",
+      "description": "Retrieve detailed information about a specific detection",
+      "http_method": "GET",
+      "endpoint": "/api/v1/detections/{detection_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "detection_id",
+          "type": "number",
+          "description": "The unique identifier of the detection",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "update_detection",
+      "name": "Update Detection",
+      "description": "Update the status or note of a detection (resolve, mark as false positive, etc.)",
+      "http_method": "PUT",
+      "endpoint": "/api/v1/detections/{detection_id}",
+      "action_type": "correct",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "detection_id",
+          "type": "number",
+          "description": "The unique identifier of the detection",
+          "required": true
+        },
+        {
+          "name": "resolved",
+          "type": "boolean",
+          "description": "Set to true to mark the detection as resolved",
+          "required": false
+        },
+        {
+          "name": "note",
+          "type": "string",
+          "description": "Analyst note to add to the detection",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_computers",
+      "name": "List Computers",
+      "description": "Retrieve a list of computers (endpoints) managed by ESET Inspect",
+      "http_method": "GET",
+      "endpoint": "/api/v1/machines",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "$top",
+          "type": "number",
+          "description": "Maximum number of computers to return",
+          "required": false,
+          "default": 50
+        },
+        {
+          "name": "$skip",
+          "type": "number",
+          "description": "Number of records to skip for pagination",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "$filter",
+          "type": "string",
+          "description": "OData filter expression",
+          "required": false
+        }
+      ],
+      "observable_type": "hostname"
+    },
+    {
+      "id": "isolate_computer",
+      "name": "Isolate Computer",
+      "description": "Isolate a computer from the network to contain a potential threat",
+      "http_method": "PUT",
+      "endpoint": "/api/v1/machines/{machine_id}/isolate",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "machine_id",
+          "type": "number",
+          "description": "The unique identifier of the computer to isolate",
+          "required": true
+        }
+      ],
+      "observable_type": "hostname"
+    },
+    {
+      "id": "unisolate_computer",
+      "name": "Release Computer from Isolation",
+      "description": "Remove network isolation from a computer",
+      "http_method": "PUT",
+      "endpoint": "/api/v1/machines/{machine_id}/unisolate",
+      "action_type": "correct",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "machine_id",
+          "type": "number",
+          "description": "The unique identifier of the computer to unisolate",
+          "required": true
+        }
+      ],
+      "observable_type": "hostname"
+    },
+    {
+      "id": "list_executables",
+      "name": "List Executables",
+      "description": "Retrieve a list of executables observed across managed endpoints",
+      "http_method": "GET",
+      "endpoint": "/api/v1/executables",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "$top",
+          "type": "number",
+          "description": "Maximum number of executables to return",
+          "required": false,
+          "default": 50
+        },
+        {
+          "name": "$skip",
+          "type": "number",
+          "description": "Number of records to skip",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "$filter",
+          "type": "string",
+          "description": "OData filter expression (e.g., sha256 eq '...')",
+          "required": false
+        }
+      ],
+      "observable_type": "hash"
+    },
+    {
+      "id": "block_executable",
+      "name": "Block Executable",
+      "description": "Add an executable to the blocked hashes list to prevent future execution",
+      "http_method": "POST",
+      "endpoint": "/api/v1/exclusions/blockedHashes",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "sha256",
+          "type": "string",
+          "description": "SHA256 hash of the executable to block",
+          "required": true
+        },
+        {
+          "name": "note",
+          "type": "string",
+          "description": "Note describing why the executable was blocked",
+          "required": false
+        }
+      ],
+      "observable_type": "hash"
+    },
+    {
+      "id": "list_rules",
+      "name": "List Rules",
+      "description": "Retrieve the list of detection rules configured in ESET Inspect",
+      "http_method": "GET",
+      "endpoint": "/api/v1/rules",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "$top",
+          "type": "number",
+          "description": "Maximum number of rules to return",
+          "required": false,
+          "default": 50
+        },
+        {
+          "name": "$skip",
+          "type": "number",
+          "description": "Number of records to skip",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "$filter",
+          "type": "string",
+          "description": "OData filter expression",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "kill_process",
+      "name": "Kill Process",
+      "description": "Terminate a running process on a managed computer",
+      "http_method": "POST",
+      "endpoint": "/api/v1/machines/{machine_id}/killProcess",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "machine_id",
+          "type": "number",
+          "description": "The unique identifier of the computer",
+          "required": true
+        },
+        {
+          "name": "processId",
+          "type": "number",
+          "description": "The process ID (PID) to terminate",
+          "required": true
+        }
+      ],
+      "observable_type": "hostname"
+    }
+  ]
+}

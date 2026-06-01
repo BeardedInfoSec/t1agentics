@@ -1,0 +1,167 @@
+{
+  "id": "servicenow_secops",
+  "name": "ServiceNow Security Operations",
+  "description": "ServiceNow Security Operations (SecOps) platform for security incident response, vulnerability management, and automated response task orchestration via the Table API.",
+  "version": "1.0.0",
+  "category": "soar",
+  "vendor": "ServiceNow",
+  "auth_type": "basic",
+  "auth_config": {
+    "type": "basic",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "https://{instance}.service-now.com/api",
+  "actions": [
+    {
+      "id": "list_security_incidents",
+      "name": "List Security Incidents",
+      "description": "Retrieve a list of security incidents from the sn_si_incident table.",
+      "http_method": "GET",
+      "endpoint": "/now/table/sn_si_incident",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "sysparm_query", "type": "string", "description": "Encoded query string to filter results.", "required": false},
+        {"name": "sysparm_limit", "type": "integer", "description": "Maximum records to return.", "required": false},
+        {"name": "sysparm_offset", "type": "integer", "description": "Number of records to skip.", "required": false},
+        {"name": "sysparm_fields", "type": "string", "description": "Comma-separated list of fields to return.", "required": false},
+        {"name": "sysparm_display_value", "type": "string", "description": "Return display values: 'true', 'false', or 'all'.", "required": false}
+      ]
+    },
+    {
+      "id": "get_security_incident",
+      "name": "Get Security Incident",
+      "description": "Retrieve details of a specific security incident by sys_id.",
+      "http_method": "GET",
+      "endpoint": "/now/table/sn_si_incident/{sys_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "sys_id", "type": "string", "description": "The sys_id of the security incident.", "required": true},
+        {"name": "sysparm_fields", "type": "string", "description": "Comma-separated fields to return.", "required": false},
+        {"name": "sysparm_display_value", "type": "string", "description": "Return display values.", "required": false}
+      ]
+    },
+    {
+      "id": "create_security_incident",
+      "name": "Create Security Incident",
+      "description": "Create a new security incident in ServiceNow SecOps.",
+      "http_method": "POST",
+      "endpoint": "/now/table/sn_si_incident",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "short_description", "type": "string", "description": "Short description/title of the incident.", "required": true},
+        {"name": "description", "type": "string", "description": "Detailed description.", "required": false},
+        {"name": "category", "type": "string", "description": "Incident category.", "required": false},
+        {"name": "subcategory", "type": "string", "description": "Incident subcategory.", "required": false},
+        {"name": "priority", "type": "integer", "description": "Priority: 1 (Critical), 2 (High), 3 (Moderate), 4 (Low).", "required": false},
+        {"name": "severity", "type": "integer", "description": "Severity: 1 (High), 2 (Medium), 3 (Low).", "required": false},
+        {"name": "assigned_to", "type": "string", "description": "User sys_id to assign to.", "required": false},
+        {"name": "assignment_group", "type": "string", "description": "Group sys_id to assign to.", "required": false},
+        {"name": "contact_type", "type": "string", "description": "Contact type (e.g., 'IDS', 'Email', 'Self-service').", "required": false}
+      ]
+    },
+    {
+      "id": "update_security_incident",
+      "name": "Update Security Incident",
+      "description": "Update an existing security incident.",
+      "http_method": "PATCH",
+      "endpoint": "/now/table/sn_si_incident/{sys_id}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "sys_id", "type": "string", "description": "The sys_id of the incident.", "required": true},
+        {"name": "state", "type": "integer", "description": "Incident state value.", "required": false},
+        {"name": "priority", "type": "integer", "description": "Updated priority.", "required": false},
+        {"name": "assigned_to", "type": "string", "description": "Updated assignee sys_id.", "required": false},
+        {"name": "close_code", "type": "string", "description": "Close code for resolution.", "required": false},
+        {"name": "close_notes", "type": "string", "description": "Closure notes.", "required": false}
+      ]
+    },
+    {
+      "id": "close_security_incident",
+      "name": "Close Security Incident",
+      "description": "Close a security incident with resolution details.",
+      "http_method": "PATCH",
+      "endpoint": "/now/table/sn_si_incident/{sys_id}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "sys_id", "type": "string", "description": "The sys_id of the incident.", "required": true},
+        {"name": "state", "type": "integer", "description": "Set to closed state value (typically 7).", "required": true},
+        {"name": "close_code", "type": "string", "description": "Close code (e.g., 'Solved (Permanently)', 'Not Solved', 'Solved (Workaround)').", "required": true},
+        {"name": "close_notes", "type": "string", "description": "Notes explaining the resolution.", "required": true}
+      ]
+    },
+    {
+      "id": "list_response_tasks",
+      "name": "List Response Tasks",
+      "description": "Retrieve response tasks associated with security incidents.",
+      "http_method": "GET",
+      "endpoint": "/now/table/sn_si_task",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "sysparm_query", "type": "string", "description": "Encoded query to filter tasks.", "required": false},
+        {"name": "sysparm_limit", "type": "integer", "description": "Maximum records to return.", "required": false}
+      ]
+    },
+    {
+      "id": "create_response_task",
+      "name": "Create Response Task",
+      "description": "Create a response task linked to a security incident.",
+      "http_method": "POST",
+      "endpoint": "/now/table/sn_si_task",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "parent", "type": "string", "description": "Parent security incident sys_id.", "required": true},
+        {"name": "short_description", "type": "string", "description": "Task description.", "required": true},
+        {"name": "assigned_to", "type": "string", "description": "Assignee sys_id.", "required": false},
+        {"name": "priority", "type": "integer", "description": "Task priority.", "required": false}
+      ]
+    },
+    {
+      "id": "add_work_note",
+      "name": "Add Work Note",
+      "description": "Add a work note to a security incident.",
+      "http_method": "PATCH",
+      "endpoint": "/now/table/sn_si_incident/{sys_id}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "sys_id", "type": "string", "description": "The sys_id of the incident.", "required": true},
+        {"name": "work_notes", "type": "string", "description": "Work note content.", "required": true}
+      ]
+    },
+    {
+      "id": "list_observables",
+      "name": "List Observables",
+      "description": "Retrieve observables (IOCs) linked to security incidents.",
+      "http_method": "GET",
+      "endpoint": "/now/table/sn_ti_observable",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "sysparm_query", "type": "string", "description": "Encoded query to filter observables.", "required": false},
+        {"name": "sysparm_limit", "type": "integer", "description": "Maximum records to return.", "required": false}
+      ]
+    },
+    {
+      "id": "create_observable",
+      "name": "Create Observable",
+      "description": "Create an observable (IOC) and optionally link it to an incident.",
+      "http_method": "POST",
+      "endpoint": "/now/table/sn_ti_observable",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "type", "type": "string", "description": "Observable type (e.g., 'IP Address', 'Domain', 'File Hash').", "required": true},
+        {"name": "value", "type": "string", "description": "Observable value.", "required": true},
+        {"name": "source_incident", "type": "string", "description": "Source incident sys_id.", "required": false}
+      ]
+    }
+  ]
+}

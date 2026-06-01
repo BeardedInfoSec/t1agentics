@@ -1,0 +1,185 @@
+{
+  "id": "wiz",
+  "name": "Wiz",
+  "description": "Cloud security platform providing CNAPP, CSPM, CWPP, and DSPM capabilities via GraphQL API for comprehensive cloud risk assessment",
+  "version": "1.0.0",
+  "category": "cloud_security",
+  "vendor": "Wiz",
+  "auth_type": "oauth2_client",
+  "auth_config": {
+    "type": "oauth2_client",
+    "token_url": "https://auth.app.wiz.io/oauth/token",
+    "scope": "read:all",
+    "grant_type": "client_credentials"
+  },
+  "base_url": "https://api.{datacenter}.app.wiz.io",
+  "actions": [
+    {
+      "id": "list_issues",
+      "name": "List Issues",
+      "description": "Query cloud security issues using GraphQL with optional filters for severity, status, and resource type",
+      "http_method": "POST",
+      "endpoint": "/graphql",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "GraphQL query string. Use the Issues query to retrieve security issues",
+          "required": true,
+          "default": "query Issues($first: Int, $filterBy: IssueFilters) { issues(first: $first, filterBy: $filterBy) { nodes { id severity status entitySnapshot { name type cloudPlatform } sourceRule { name } } pageInfo { hasNextPage endCursor } } }"
+        },
+        {
+          "name": "variables",
+          "type": "object",
+          "description": "GraphQL variables for filtering (e.g., {\"first\": 50, \"filterBy\": {\"severity\": [\"CRITICAL\"]}})",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_issue_details",
+      "name": "Get Issue Details",
+      "description": "Retrieve detailed information about a specific cloud security issue by ID",
+      "http_method": "POST",
+      "endpoint": "/graphql",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "GraphQL query to fetch issue details",
+          "required": true,
+          "default": "query IssueDetails($id: ID!) { issue(id: $id) { id severity status entitySnapshot { name type cloudPlatform region subscriptionId } sourceRule { name description remediationInstructions } notes { text createdAt } } }"
+        },
+        {
+          "name": "variables",
+          "type": "object",
+          "description": "GraphQL variables containing the issue ID (e.g., {\"id\": \"issue-id\"})",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "search_resources",
+      "name": "Search Resources",
+      "description": "Search cloud resources and their security posture across all connected cloud accounts",
+      "http_method": "POST",
+      "endpoint": "/graphql",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "GraphQL query to search graph entities",
+          "required": true,
+          "default": "query GraphSearch($query: GraphEntityQueryInput!, $first: Int) { graphSearch(query: $query, first: $first) { nodes { entities { id name type properties cloudPlatform } } pageInfo { hasNextPage endCursor } } }"
+        },
+        {
+          "name": "variables",
+          "type": "object",
+          "description": "GraphQL variables with search criteria (e.g., {\"query\": {\"type\": [\"VIRTUAL_MACHINE\"]}, \"first\": 50})",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_vulnerabilities",
+      "name": "List Vulnerabilities",
+      "description": "Query vulnerabilities discovered across cloud workloads with severity and CVE filtering",
+      "http_method": "POST",
+      "endpoint": "/graphql",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "GraphQL query for vulnerability findings",
+          "required": true,
+          "default": "query VulnerabilityFindings($first: Int, $filterBy: VulnerabilityFindingFilters) { vulnerabilityFindings(first: $first, filterBy: $filterBy) { nodes { id name CVEDescription CVSSSeverity score hasExploit hasFix firstDetectedAt } pageInfo { hasNextPage endCursor } } }"
+        },
+        {
+          "name": "variables",
+          "type": "object",
+          "description": "GraphQL variables for filtering (e.g., {\"first\": 50, \"filterBy\": {\"CVSSSeverity\": [\"CRITICAL\"]}})",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_compliance_status",
+      "name": "Get Compliance Status",
+      "description": "Retrieve compliance framework assessment results and pass/fail status across cloud accounts",
+      "http_method": "POST",
+      "endpoint": "/graphql",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "GraphQL query for compliance frameworks",
+          "required": true,
+          "default": "query ComplianceFrameworks($first: Int) { complianceFrameworks(first: $first) { nodes { id name builtin enabledForProject { id name } securitySubCategories { title complianceStatus } } } }"
+        },
+        {
+          "name": "variables",
+          "type": "object",
+          "description": "GraphQL variables for pagination and filtering",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_cloud_accounts",
+      "name": "List Cloud Accounts",
+      "description": "List all connected cloud accounts (AWS, Azure, GCP) and their onboarding status",
+      "http_method": "POST",
+      "endpoint": "/graphql",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "GraphQL query for cloud accounts",
+          "required": true,
+          "default": "query CloudAccounts($first: Int) { cloudAccounts(first: $first) { nodes { id name cloudProvider externalId status linkedProjects { id name } } } }"
+        },
+        {
+          "name": "variables",
+          "type": "object",
+          "description": "GraphQL variables for pagination",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "run_graphql_query",
+      "name": "Run GraphQL Query",
+      "description": "Execute a custom GraphQL query against the Wiz API for advanced use cases",
+      "http_method": "POST",
+      "endpoint": "/graphql",
+      "action_type": "generic",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Custom GraphQL query string",
+          "required": true
+        },
+        {
+          "name": "variables",
+          "type": "object",
+          "description": "GraphQL variables object",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

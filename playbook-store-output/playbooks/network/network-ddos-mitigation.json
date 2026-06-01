@@ -1,0 +1,262 @@
+{
+  "name": "DDoS Detection & Mitigation",
+  "slug": "network-ddos-mitigation",
+  "description": "Detects and responds to Distributed Denial of Service (DDoS) attacks targeting network infrastructure. Riggs AI analyzes traffic patterns to confirm the attack type (volumetric, protocol, or application-layer). Confirmed attacks trigger automated mitigation via CDN/WAF rate limiting, upstream ISP blackhole routing requests, NOC team notification, and incident ticket creation. False positives from legitimate traffic spikes are annotated and closed.",
+  "category": "network",
+  "subcategory": "availability",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "advanced",
+  "estimated_time": "15 minutes",
+  "tags": ["ddos", "mitigation", "network", "availability", "incident_response"],
+  "alert_types": ["network", "ddos", "availability"],
+  "severity_filter": ["high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["network", "ddos", "traffic_spike", "syn_flood", "udp_flood", "http_flood"],
+    "min_severity": "high"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "cloudflare",
+      "name": "Cloudflare",
+      "category": "cdn_waf",
+      "reason": "Activate DDoS mitigation rules and rate limiting at the edge"
+    },
+    {
+      "connector_id": "palo_alto_ngfw",
+      "name": "Palo Alto NGFW",
+      "category": "network",
+      "reason": "Apply emergency traffic filtering rules to mitigate attack traffic"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create incident ticket for NOC tracking and post-incident review"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Notify NOC team of active DDoS attack and mitigation status"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "DDoS / Traffic Spike Alert",
+          "config": {
+            "alert_types": ["network", "ddos", "traffic_spike", "syn_flood", "udp_flood", "http_flood"],
+            "description": "Triggers when network monitoring detects abnormal traffic volume or patterns consistent with a DDoS attack"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — DDoS Traffic Analysis",
+          "config": {
+            "template_id": "ioc_correlation",
+            "additional_instructions": "Analyze traffic patterns to determine attack type (volumetric, protocol, application-layer). Identify source IPs/ranges, target services, and traffic volume. Distinguish from legitimate spikes.",
+            "description": "AI-powered analysis of traffic patterns to classify the DDoS attack type, identify source ranges, and assess impact on target services"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "label": "DDoS Attack Confirmed?",
+          "config": {
+            "condition": "{{analyze_1.verdict}} in ['MALICIOUS', 'SUSPICIOUS']",
+            "description": "Routes based on whether Riggs AI confirmed the traffic pattern is a genuine DDoS attack versus a legitimate traffic spike"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "respond",
+          "label": "Activate CDN/WAF Mitigation",
+          "config": {
+            "integration_action": {
+              "connector_id": "cloudflare",
+              "action": "enable_ddos_protection",
+              "parameters": {
+                "mode": "under_attack",
+                "rate_limit_threshold": "{{analyze_1.recommended_threshold}}",
+                "challenge_mode": true,
+                "comment": "DDoS mitigation activated — Attack type: {{analyze_1.threat_type}}, Alert: {{trigger_1.alert.alert_id}}"
+              }
+            },
+            "description": "Activates Cloudflare Under Attack mode with rate limiting to filter malicious traffic at the edge before it reaches origin servers"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "label": "Apply Firewall Traffic Filters",
+          "config": {
+            "integration_action": {
+              "connector_id": "palo_alto_ngfw",
+              "action": "apply_dos_protection",
+              "parameters": {
+                "source_ranges": "{{analyze_1.source_ranges}}",
+                "target_service": "{{trigger_1.alert.target_service}}",
+                "rule_name": "T1-DDoS-Mitigate-{{trigger_1.alert.alert_id}}",
+                "comment": "Emergency DDoS filter — {{analyze_1.threat_type}} attack from {{analyze_1.source_count}} sources"
+              }
+            },
+            "description": "Applies emergency firewall rules to drop traffic from identified attack source ranges and protect the targeted service"
+          }
+        }
+      },
+      {
+        "id": "respond_3",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "label": "Notify NOC on Slack",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#noc-alerts",
+              "message": "DDOS ATTACK — MITIGATION ACTIVE\n\nAttack Type: {{analyze_1.threat_type}}\nTarget: {{trigger_1.alert.target_service}}\nSource Count: {{analyze_1.source_count}} IPs\nPeak Traffic: {{trigger_1.alert.peak_bandwidth}}\n\nActions Taken:\n- Cloudflare Under Attack mode enabled\n- Firewall traffic filters applied\n\nAlert ID: {{trigger_1.alert.alert_id}}\n\nNOC team: Monitor service availability and escalate if mitigation is insufficient.",
+              "priority": "critical"
+            },
+            "description": "Sends critical notification to the NOC Slack channel with attack details and mitigation actions taken"
+          }
+        }
+      },
+      {
+        "id": "respond_4",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "label": "Create Incident Ticket",
+          "config": {
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_issue",
+              "parameters": {
+                "project": "NOC",
+                "issue_type": "Incident",
+                "priority": "P1",
+                "summary": "DDoS ATTACK — {{analyze_1.threat_type}} targeting {{trigger_1.alert.target_service}}",
+                "description": "ACTIVE DDOS ATTACK\n\nAttack Type: {{analyze_1.threat_type}}\nTarget Service: {{trigger_1.alert.target_service}}\nPeak Bandwidth: {{trigger_1.alert.peak_bandwidth}}\nSource IPs: {{analyze_1.source_count}}\n\nMitigation Applied:\n- Cloudflare Under Attack mode activated\n- Firewall filters for source ranges\n\nRiggs AI Analysis:\n{{analyze_1.summary}}"
+              }
+            },
+            "description": "Creates a P1 incident ticket in Jira for NOC tracking, post-incident review, and compliance documentation"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "utility",
+          "label": "Annotate: Legitimate Traffic Spike",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "Traffic spike analyzed by Riggs AI and determined to be legitimate (not DDoS). Verdict: {{analyze_1.verdict}}. Source pattern consistent with normal usage. No mitigation required.",
+              "close_alert": true
+            },
+            "description": "Annotates the alert as a legitimate traffic spike and closes it when DDoS is not confirmed"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1180 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "DDoS detection and mitigation workflow complete"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_analyze",
+        "source": "trigger_1",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_analyze_decision",
+        "source": "analyze_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "respond_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "utility_1",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_mitigate_firewall",
+        "source": "respond_1",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_firewall_notify",
+        "source": "respond_2",
+        "target": "respond_3",
+        "type": "default"
+      },
+      {
+        "id": "e_notify_ticket",
+        "source": "respond_3",
+        "target": "respond_4",
+        "type": "default"
+      },
+      {
+        "id": "e_ticket_end",
+        "source": "respond_4",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_utility_end",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

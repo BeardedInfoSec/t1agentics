@@ -1,0 +1,166 @@
+{
+  "id": "commvault",
+  "name": "Commvault Command Center",
+  "description": "Integrates with Commvault Command Center REST API for backup job management, client monitoring, subclient configuration, and recovery operations across enterprise data environments",
+  "version": "1.0.0",
+  "category": "backup",
+  "vendor": "Commvault",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "header_name": "Authtoken",
+    "location": "header"
+  },
+  "base_url": "https://{host}/commandcenter/api",
+  "actions": [
+    {
+      "id": "list_jobs",
+      "name": "List Backup Jobs",
+      "description": "Retrieve all backup jobs with their status, completion time, and associated clients",
+      "http_method": "GET",
+      "endpoint": "/Job",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "clientName",
+          "type": "string",
+          "description": "Filter jobs by client name",
+          "required": false
+        },
+        {
+          "name": "jobFilter",
+          "type": "string",
+          "description": "Filter by job type (Backup, Restore, DataAging, AuxCopy)",
+          "required": false
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Filter by job status (Completed, Running, Failed, Waiting, Suspended)",
+          "required": false
+        },
+        {
+          "name": "completedJobLookupTime",
+          "type": "number",
+          "description": "Retrieve jobs completed within the last N hours",
+          "required": false,
+          "default": 24
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of jobs to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "get_job_details",
+      "name": "Get Job Details",
+      "description": "Retrieve detailed information about a specific backup job including progress, errors, and performance metrics",
+      "http_method": "GET",
+      "endpoint": "/Job/{jobId}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "jobId",
+          "type": "number",
+          "description": "Unique identifier of the backup job",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_clients",
+      "name": "List Clients",
+      "description": "Retrieve all registered clients (servers, VMs, cloud resources) and their backup status",
+      "http_method": "GET",
+      "endpoint": "/Client",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Filter by client status (Ready, Offline, Deconfigured)",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of clients to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "get_client_hierarchy",
+      "name": "Get Client Hierarchy",
+      "description": "Retrieve the full client hierarchy showing subclients with available backup data for restore",
+      "http_method": "GET",
+      "endpoint": "/Client/{clientId}/hierarchy",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "clientId",
+          "type": "number",
+          "description": "Unique identifier of the client",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "trigger_backup",
+      "name": "Trigger Backup",
+      "description": "Initiate an immediate backup job for a specified subclient",
+      "http_method": "POST",
+      "endpoint": "/Subclient/{subclientId}/action/backup",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "subclientId",
+          "type": "number",
+          "description": "Unique identifier of the subclient to back up",
+          "required": true
+        },
+        {
+          "name": "backupLevel",
+          "type": "string",
+          "description": "Backup level (Full, Incremental, Differential, Synthetic_Full)",
+          "required": false,
+          "default": "Incremental"
+        }
+      ]
+    },
+    {
+      "id": "list_alerts",
+      "name": "List Alerts",
+      "description": "Retrieve system alerts for backup failures, capacity warnings, and operational issues",
+      "http_method": "GET",
+      "endpoint": "/AlertRule",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Filter by alert severity (Critical, Warning, Information)",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of alerts to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    }
+  ]
+}

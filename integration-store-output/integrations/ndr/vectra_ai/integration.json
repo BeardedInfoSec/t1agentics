@@ -1,0 +1,300 @@
+{
+  "id": "vectra_ai",
+  "name": "Vectra AI",
+  "description": "AI-driven network detection and response platform that uses behavioral analysis to detect and respond to cyberattacks in real time",
+  "version": "1.0.0",
+  "category": "ndr",
+  "vendor": "Vectra AI",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header",
+    "prefix": "Token"
+  },
+  "base_url": "https://{host}/api/v2.5",
+  "actions": [
+    {
+      "id": "get_detections",
+      "name": "Get Detections",
+      "description": "Retrieve detections matching specified filter criteria",
+      "http_method": "GET",
+      "endpoint": "/detections",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "state",
+          "type": "string",
+          "description": "Filter by detection state (active, fixed)",
+          "required": false
+        },
+        {
+          "name": "threat",
+          "type": "number",
+          "description": "Minimum threat score (0-100)",
+          "required": false
+        },
+        {
+          "name": "certainty",
+          "type": "number",
+          "description": "Minimum certainty score (0-100)",
+          "required": false
+        },
+        {
+          "name": "detection_type",
+          "type": "string",
+          "description": "Filter by detection type",
+          "required": false
+        },
+        {
+          "name": "detection_category",
+          "type": "string",
+          "description": "Filter by detection category",
+          "required": false
+        },
+        {
+          "name": "page",
+          "type": "number",
+          "description": "Page number for pagination",
+          "required": false
+        },
+        {
+          "name": "page_size",
+          "type": "number",
+          "description": "Number of results per page",
+          "required": false,
+          "default": 50
+        }
+      ]
+    },
+    {
+      "id": "get_detection",
+      "name": "Get Detection Details",
+      "description": "Retrieve detailed information about a specific detection",
+      "http_method": "GET",
+      "endpoint": "/detections/{detection_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "detection_id",
+          "type": "number",
+          "description": "The detection ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_hosts",
+      "name": "Get Hosts",
+      "description": "Retrieve hosts and their threat and certainty scores",
+      "http_method": "GET",
+      "endpoint": "/hosts",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "state",
+          "type": "string",
+          "description": "Filter by host state (active, inactive)",
+          "required": false
+        },
+        {
+          "name": "threat",
+          "type": "number",
+          "description": "Minimum threat score (0-100)",
+          "required": false
+        },
+        {
+          "name": "certainty",
+          "type": "number",
+          "description": "Minimum certainty score (0-100)",
+          "required": false
+        },
+        {
+          "name": "last_source",
+          "type": "string",
+          "description": "Filter by IP address of the host",
+          "required": false
+        },
+        {
+          "name": "page",
+          "type": "number",
+          "description": "Page number for pagination",
+          "required": false
+        },
+        {
+          "name": "page_size",
+          "type": "number",
+          "description": "Number of results per page",
+          "required": false,
+          "default": 50
+        }
+      ]
+    },
+    {
+      "id": "get_host",
+      "name": "Get Host Details",
+      "description": "Retrieve detailed information about a specific host",
+      "http_method": "GET",
+      "endpoint": "/hosts/{host_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "host_id",
+          "type": "number",
+          "description": "The host ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_accounts",
+      "name": "Get Accounts",
+      "description": "Retrieve accounts and their associated threat and certainty scores",
+      "http_method": "GET",
+      "endpoint": "/accounts",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "state",
+          "type": "string",
+          "description": "Filter by account state (active, inactive)",
+          "required": false
+        },
+        {
+          "name": "threat",
+          "type": "number",
+          "description": "Minimum threat score (0-100)",
+          "required": false
+        },
+        {
+          "name": "certainty",
+          "type": "number",
+          "description": "Minimum certainty score (0-100)",
+          "required": false
+        },
+        {
+          "name": "page",
+          "type": "number",
+          "description": "Page number for pagination",
+          "required": false
+        },
+        {
+          "name": "page_size",
+          "type": "number",
+          "description": "Number of results per page",
+          "required": false,
+          "default": 50
+        }
+      ]
+    },
+    {
+      "id": "get_account",
+      "name": "Get Account Details",
+      "description": "Retrieve detailed information about a specific account",
+      "http_method": "GET",
+      "endpoint": "/accounts/{account_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "account_id",
+          "type": "number",
+          "description": "The account ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "mark_detection_fixed",
+      "name": "Mark Detection as Fixed",
+      "description": "Mark a detection as fixed to indicate it has been resolved",
+      "http_method": "PATCH",
+      "endpoint": "/detections/{detection_id}",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "detection_id",
+          "type": "number",
+          "description": "The detection ID to mark as fixed",
+          "required": true
+        },
+        {
+          "name": "state",
+          "type": "string",
+          "description": "Set to 'fixed' to resolve the detection",
+          "required": true,
+          "default": "fixed"
+        }
+      ]
+    },
+    {
+      "id": "add_tags",
+      "name": "Add Tags to Host",
+      "description": "Add tags to a host for categorization and tracking",
+      "http_method": "PATCH",
+      "endpoint": "/hosts/{host_id}/tags",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "host_id",
+          "type": "number",
+          "description": "The host ID",
+          "required": true
+        },
+        {
+          "name": "tags",
+          "type": "array",
+          "description": "Array of tag strings to add",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_health",
+      "name": "Get System Health",
+      "description": "Retrieve system health and sensor status information",
+      "http_method": "GET",
+      "endpoint": "/health",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "search",
+      "name": "Advanced Search",
+      "description": "Perform an advanced search across detections, hosts, and accounts",
+      "http_method": "GET",
+      "endpoint": "/search",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "query_string",
+          "type": "string",
+          "description": "Lucene-style search query",
+          "required": true
+        },
+        {
+          "name": "page",
+          "type": "number",
+          "description": "Page number for pagination",
+          "required": false
+        },
+        {
+          "name": "page_size",
+          "type": "number",
+          "description": "Number of results per page",
+          "required": false,
+          "default": 50
+        }
+      ]
+    }
+  ]
+}

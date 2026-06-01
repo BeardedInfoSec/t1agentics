@@ -1,0 +1,172 @@
+{
+  "name": "SOC Shift Handoff Report",
+  "slug": "shift-handoff",
+  "description": "Generates a comprehensive shift handoff report for SOC team transitions. A code node gathers all open investigations and their current statuses, then Riggs AI produces an executive summary covering open investigations, pending actions, escalated incidents, and items needing attention for the incoming shift. The report is distributed via email to the incoming shift and posted to the SOC Slack channel.",
+  "category": "incident_response",
+  "subcategory": "operations",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "beginner",
+  "estimated_time": "10 minutes",
+  "tags": ["shift_handoff", "report", "soc", "operations"],
+  "alert_types": [],
+  "severity_filter": [],
+  "trigger_conditions": {
+    "alert_types": [],
+    "trigger_type": "manual"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Post shift handoff summary to the SOC operations channel"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Manual Trigger — Shift Handoff",
+          "config": {
+            "trigger_type": "manual",
+            "description": "Manually triggered at the end of a shift to generate the handoff report for the incoming team"
+          }
+        }
+      },
+      {
+        "id": "code_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "code",
+          "label": "Gather Open Investigations",
+          "config": {
+            "mode": "query",
+            "query": "SELECT id, title, status, severity, assignee, updated_at FROM investigations WHERE status NOT IN ('closed', 'resolved') ORDER BY severity DESC, updated_at DESC",
+            "output_variable": "open_investigations",
+            "description": "Collect all open investigations and their current status, severity, and assignee for the handoff report"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — Shift Handoff Summary",
+          "config": {
+            "template_id": "executive_summary",
+            "additional_instructions": "Generate a shift handoff report: summarize all open investigations, pending actions, escalated incidents, and items needing attention for the incoming shift.",
+            "description": "AI-powered executive summary tailored for SOC shift transitions, covering all active work items"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 540 },
+        "data": {
+          "kind": "respond",
+          "label": "Email Handoff Report to Incoming Shift",
+          "config": {
+            "notify": {
+              "channel": "email",
+              "target": "{{config.incoming_shift_email}}",
+              "message": "SOC SHIFT HANDOFF REPORT\nGenerated: {{trigger_1.timestamp}}\nOutgoing Shift: {{trigger_1.user.name}}\n\n{{analyze_1.summary}}\n\nOpen Investigations: {{code_1.open_investigations.length}}\n\nPlease review all items marked as requiring immediate attention."
+            },
+            "description": "Send the complete shift handoff report to the incoming shift team via email"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 520, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "label": "Post Summary to SOC Slack",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#soc-operations",
+              "message": "SHIFT HANDOFF REPORT\nOutgoing: {{trigger_1.user.name}} | Time: {{trigger_1.timestamp}}\n\n{{analyze_1.summary}}\n\nOpen Investigations: {{code_1.open_investigations.length}}\n\nFull report sent to incoming shift via email."
+            },
+            "description": "Post a shift handoff summary to the SOC operations Slack channel for visibility"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 860 },
+        "data": {
+          "kind": "utility",
+          "label": "Add Note: Handoff Completed",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "Shift handoff completed by {{trigger_1.user.name}} at {{trigger_1.timestamp}}. Report distributed to incoming shift and posted to #soc-operations."
+            },
+            "description": "Record that the shift handoff was completed for audit trail purposes"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1020 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "Shift handoff report generated and distributed successfully"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_code",
+        "source": "trigger_1",
+        "target": "code_1",
+        "type": "default"
+      },
+      {
+        "id": "e_code_analyze",
+        "source": "code_1",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_analyze_email",
+        "source": "analyze_1",
+        "target": "respond_1",
+        "type": "default"
+      },
+      {
+        "id": "e_email_slack",
+        "source": "respond_1",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_slack_utility",
+        "source": "respond_2",
+        "target": "utility_1",
+        "type": "default"
+      },
+      {
+        "id": "e_utility_end",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

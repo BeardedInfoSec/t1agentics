@@ -1,0 +1,120 @@
+{
+  "template_id": "data-leak-accidental-disclosure",
+  "name": "Data Leak / Accidental Disclosure Self-Report",
+  "description": "Internal form for employees to self-report accidental data disclosures — emailing customer data to the wrong recipient, posting credentials in a public channel, pushing secrets to a public repo, sharing a document with too-broad permissions, etc. Time-sensitive: faster reporting means we can contain impact (recall emails, rotate credentials, take down repos). High severity by default.",
+  "title": "Report an Accidental Data Disclosure",
+  "intro": "Thanks for coming here. Self-reporting takes courage and it's exactly the right move — the sooner we know, the more we can contain. We routinely catch and clean up things like this; people are not punished for honest mistakes that they report.\n\nA few things to keep in mind:\n\n- **Speed matters more than detail.** Submit what you know now. You can update us later.\n- **Don't try to fix it alone.** Tell us what's happened and what you've already tried, but don't keep deleting/recalling on your own — sometimes those actions destroy evidence we need.\n- **No blame.** Mistakes happen. We're here to help limit the impact.",
+  "submit_message": "Got it — this report is now in our high-priority queue and an analyst will reach out within a few minutes. Don't take any further recovery actions until we connect. Thanks for reporting fast.",
+  "fields": [
+    {
+      "key": "reporter_email",
+      "label": "Your email",
+      "type": "email",
+      "required": true,
+      "help": "We'll contact you within minutes to help contain this. Please stay reachable.",
+      "placeholder": "you@company.com",
+      "sample_value": "priya.patel@northwindcloud.com"
+    },
+    {
+      "key": "what_was_disclosed",
+      "label": "What was disclosed?",
+      "type": "textarea",
+      "required": true,
+      "help": "Describe what data, credentials, or document went out. Approximate volume and sensitivity is enough — we'll get the details on the call.",
+      "placeholder": "e.g., customer list, API keys, internal document...",
+      "sample_value": "Accidentally sent the Q1 customer list (about 1,200 rows including names, emails, and account tier) to john.smith@gmail.com instead of john.smith@northwindcloud.com about 20 minutes ago."
+    },
+    {
+      "key": "disclosure_type",
+      "label": "How did it get out?",
+      "type": "select",
+      "required": true,
+      "help": "Pick the closest match.",
+      "options": [
+        "Email sent to wrong recipient (external)",
+        "Email sent to wrong recipient (internal but unauthorized)",
+        "Credentials or API key posted in a public channel (Slack, Teams)",
+        "Secrets or credentials pushed to a public code repository",
+        "Document shared with too-broad permissions (public link, wrong group)",
+        "File uploaded to a personal or wrong cloud account",
+        "Data printed and left somewhere / lost",
+        "Verbally disclosed to someone who shouldn't have heard it",
+        "Other"
+      ],
+      "sample_value": "Email sent to wrong recipient (external)"
+    },
+    {
+      "key": "recipient_or_destination",
+      "label": "Who or where did it go to?",
+      "type": "text",
+      "required": true,
+      "help": "Email address, channel name, repo URL, person's name — whatever applies. If you don't know exactly, give your best description.",
+      "placeholder": "e.g., john.smith@gmail.com, #marketing public channel, github.com/...",
+      "sample_value": "john.smith@gmail.com (intended recipient was john.smith@northwindcloud.com)"
+    },
+    {
+      "key": "when_happened",
+      "label": "When did it happen?",
+      "type": "datetime",
+      "required": true,
+      "help": "Approximate is fine. Every minute counts for recall windows.",
+      "sample_value": "2026-05-11T10:35:00"
+    },
+    {
+      "key": "sensitivity_level",
+      "label": "How sensitive is the data?",
+      "type": "select",
+      "required": false,
+      "help": "Your best guess. We'll confirm on the call.",
+      "options": [
+        "Customer or employee personal data (PII)",
+        "Payment / financial data",
+        "Health data (PHI)",
+        "Credentials, API keys, or secrets",
+        "Internal-only business documents",
+        "Source code or proprietary IP",
+        "Not sure"
+      ],
+      "sample_value": "Customer or employee personal data (PII)"
+    },
+    {
+      "key": "actions_already_taken",
+      "label": "What have you already done?",
+      "type": "multiselect",
+      "required": false,
+      "help": "Pick anything you've already tried. If you haven't done anything yet, that's fine — leave it blank.",
+      "options": [
+        "Tried to recall the email",
+        "Asked the wrong recipient to delete it",
+        "Deleted the message / post / file",
+        "Took down the public repo or made it private",
+        "Rotated the exposed credential / API key",
+        "Notified my manager",
+        "Notified the affected customer / person",
+        "Nothing yet — reporting first"
+      ],
+      "sample_value": [
+        "Tried to recall the email"
+      ]
+    },
+    {
+      "key": "additional_context",
+      "label": "Anything else we should know?",
+      "type": "textarea",
+      "required": false,
+      "help": "Optional. Anything about how it happened, who else knows, or context that helps us respond.",
+      "placeholder": "Optional notes",
+      "sample_value": "The recipient is a personal Gmail belonging to someone with the same name as our customer success rep. I don't know them. Outlook recall says 'pending' but I'm not sure if it worked."
+    }
+  ],
+  "alert_template": {
+    "title": "Data disclosure self-reported by {{reporter_email}}",
+    "description": "TIME-SENSITIVE: Employee self-reported an accidental data disclosure. Containment window is open — contact reporter immediately.\n\nReporter: {{reporter_email}}\nWhen: {{when_happened}}\nDisclosure type: {{disclosure_type}}\nDestination: {{recipient_or_destination}}\nSensitivity: {{sensitivity_level}}\nActions already taken: {{actions_already_taken}}\n\nWhat was disclosed:\n{{what_was_disclosed}}\n\nAdditional context:\n{{additional_context}}\n\nPriority actions: confirm/extend email recall, evaluate credential rotation, determine notification obligations (regulatory, customer).",
+    "severity": "high",
+    "source": "intake_form",
+    "category": "data_disclosure"
+  },
+  "icon": "Database",
+  "category": "Insider / Policy",
+  "estimated_minutes": 5
+}

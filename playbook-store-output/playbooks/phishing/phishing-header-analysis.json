@@ -1,0 +1,211 @@
+{
+  "name": "Phishing Email Header Analysis",
+  "slug": "phishing-header-analysis",
+  "description": "Deep email header authentication analysis workflow. Extracts and validates SPF, DKIM, and DMARC records from email headers to detect spoofing and impersonation attempts. Emails failing authentication checks are blocked at the mail gateway, reported to the abuse contact of the spoofed domain, and logged for threat intelligence. Emails passing all authentication checks are cleared and the alert is closed. Essential for organizations strengthening email authentication posture.",
+  "category": "phishing",
+  "subcategory": "header_analysis",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "8 minutes",
+  "tags": ["phishing", "email-headers", "spf", "dkim", "dmarc", "spoofing", "authentication"],
+  "alert_types": ["phishing"],
+  "severity_filter": ["medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["phishing", "suspicious_email", "email_spoofing", "dmarc_failure"],
+    "min_severity": "medium"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "email_gateway",
+      "name": "Email Gateway",
+      "category": "email_security",
+      "reason": "Block spoofed sender at the mail gateway level"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "title": "Email Authentication Alert",
+          "summary": "Triggers on phishing, spoofing, or DMARC failure alerts",
+          "config": {
+            "trigger_type": "alert",
+            "alert_types": ["phishing", "suspicious_email", "email_spoofing", "dmarc_failure"]
+          }
+        }
+      },
+      {
+        "id": "code-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "code",
+          "title": "Parse Email Headers",
+          "summary": "Extract SPF, DKIM, DMARC results and key header fields",
+          "config": {
+            "mode": "script",
+            "script": {
+              "function_name": "main",
+              "inputs": [
+                { "name": "alert", "path": "$.trigger.alert" }
+              ],
+              "code": "def main(alert):\n    headers = alert.get('headers', {})\n    auth_results = headers.get('Authentication-Results', headers.get('authentication_results', ''))\n    spf_result = 'none'\n    dkim_result = 'none'\n    dmarc_result = 'none'\n    if 'spf=pass' in auth_results.lower():\n        spf_result = 'pass'\n    elif 'spf=fail' in auth_results.lower() or 'spf=softfail' in auth_results.lower():\n        spf_result = 'fail'\n    if 'dkim=pass' in auth_results.lower():\n        dkim_result = 'pass'\n    elif 'dkim=fail' in auth_results.lower():\n        dkim_result = 'fail'\n    if 'dmarc=pass' in auth_results.lower():\n        dmarc_result = 'pass'\n    elif 'dmarc=fail' in auth_results.lower():\n        dmarc_result = 'fail'\n    all_pass = spf_result == 'pass' and dkim_result == 'pass' and dmarc_result == 'pass'\n    any_fail = spf_result == 'fail' or dkim_result == 'fail' or dmarc_result == 'fail'\n    return {\n        'spf': spf_result,\n        'dkim': dkim_result,\n        'dmarc': dmarc_result,\n        'all_pass': all_pass,\n        'any_fail': any_fail,\n        'return_path': headers.get('Return-Path', ''),\n        'received_from': headers.get('Received', ''),\n        'reply_to': headers.get('Reply-To', ''),\n        'from': headers.get('From', alert.get('sender', ''))\n    }"
+            }
+          }
+        }
+      },
+      {
+        "id": "analyze-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "analyze",
+          "title": "AI Header Analysis",
+          "summary": "AI evaluates header anomalies, routing path, and spoofing indicators",
+          "config": {
+            "mode": "ai_analysis",
+            "template_id": "phishing_triage",
+            "custom_instructions": "Focus on email header authentication failures (SPF, DKIM, DMARC), mismatched Return-Path vs From, suspicious Received hops, and Reply-To discrepancies",
+            "alert_path": "$.trigger.alert",
+            "include_context": true
+          }
+        }
+      },
+      {
+        "id": "decision-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 540 },
+        "data": {
+          "kind": "decision",
+          "title": "Auth Failure Detected?",
+          "summary": "Did any email authentication check (SPF/DKIM/DMARC) fail?",
+          "config": {
+            "conditions": {
+              "operator": "AND",
+              "conditions": [
+                {
+                  "left": { "type": "path", "value": "$.nodes.code-1.result.any_fail" },
+                  "operator": "equals",
+                  "right": { "type": "value", "value": true }
+                }
+              ],
+              "groups": []
+            },
+            "expression": "$.nodes.code-1.result.any_fail == true",
+            "default_branch": "no"
+          }
+        }
+      },
+      {
+        "id": "respond-1",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "title": "Block Sender at Gateway",
+          "summary": "Block the spoofed sender at the email gateway",
+          "config": {
+            "response_type": "integration_action",
+            "action_type": "block_sender",
+            "target_path": "$.trigger.alert.sender",
+            "requires_approval": true,
+            "priority": "high",
+            "message": "Blocking sender {{$.trigger.alert.sender}} at email gateway — SPF: {{$.nodes.code-1.result.spf}}, DKIM: {{$.nodes.code-1.result.dkim}}, DMARC: {{$.nodes.code-1.result.dmarc}}"
+          }
+        }
+      },
+      {
+        "id": "respond-2",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "title": "Report to Abuse Contact",
+          "summary": "Send abuse report to the spoofed domain's abuse contact",
+          "config": {
+            "response_type": "notify",
+            "channel": "email",
+            "message": "Email spoofing detected from your domain.\n\nSpoofed sender: {{$.trigger.alert.sender}}\nSPF: {{$.nodes.code-1.result.spf}}\nDKIM: {{$.nodes.code-1.result.dkim}}\nDMARC: {{$.nodes.code-1.result.dmarc}}\nReturn-Path: {{$.nodes.code-1.result.return_path}}\n\nPlease investigate and take corrective action.",
+            "priority": "medium"
+          }
+        }
+      },
+      {
+        "id": "respond-3",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "title": "Notify SOC",
+          "summary": "Alert SOC team with header analysis results",
+          "config": {
+            "response_type": "notify",
+            "channel": "slack",
+            "slack_channel": "#soc-alerts",
+            "message": "EMAIL SPOOFING DETECTED\n\nSender: {{$.trigger.alert.sender}}\nSPF: {{$.nodes.code-1.result.spf}}\nDKIM: {{$.nodes.code-1.result.dkim}}\nDMARC: {{$.nodes.code-1.result.dmarc}}\nReply-To: {{$.nodes.code-1.result.reply_to}}\n\nAI Analysis: {{$.nodes.analyze-1.result.summary}}\n\nActions: Sender blocked at gateway, abuse report sent.",
+            "priority": "high"
+          }
+        }
+      },
+      {
+        "id": "utility-1",
+        "type": "signal",
+        "position": { "x": 700, "y": 700 },
+        "data": {
+          "kind": "utility",
+          "title": "Close Alert — Auth Passed",
+          "summary": "All email authentication checks passed, close the alert",
+          "config": {
+            "operation": "update_status",
+            "status": "closed",
+            "note": "Email passed all authentication checks — SPF: pass, DKIM: pass, DMARC: pass. No spoofing detected."
+          }
+        }
+      },
+      {
+        "id": "end-1",
+        "type": "signal",
+        "position": { "x": 340, "y": 1180 },
+        "data": {
+          "kind": "end",
+          "title": "End — Spoofing Blocked",
+          "summary": "Spoofed sender blocked, abuse reported, SOC notified",
+          "config": {
+            "disposition": "true_positive",
+            "summary": "Email spoofing confirmed via header authentication failures. Sender blocked at gateway, abuse report sent, SOC notified."
+          }
+        }
+      },
+      {
+        "id": "end-2",
+        "type": "signal",
+        "position": { "x": 700, "y": 860 },
+        "data": {
+          "kind": "end",
+          "title": "End — Auth Passed",
+          "summary": "Email authentication passed, alert closed",
+          "config": {
+            "disposition": "false_positive",
+            "summary": "Email passed SPF, DKIM, and DMARC authentication. No spoofing indicators found."
+          }
+        }
+      }
+    ],
+    "edges": [
+      { "id": "e1", "source": "trigger-1", "target": "code-1", "animated": true, "type": "smoothstep" },
+      { "id": "e2", "source": "code-1", "target": "analyze-1", "animated": true, "type": "smoothstep" },
+      { "id": "e3", "source": "analyze-1", "target": "decision-1", "animated": true, "type": "smoothstep" },
+      { "id": "e4", "source": "decision-1", "target": "respond-1", "sourceHandle": "yes", "label": "Yes", "animated": true, "type": "smoothstep" },
+      { "id": "e5", "source": "decision-1", "target": "utility-1", "sourceHandle": "no", "label": "No", "animated": true, "type": "smoothstep" },
+      { "id": "e6", "source": "respond-1", "target": "respond-2", "animated": true, "type": "smoothstep" },
+      { "id": "e7", "source": "respond-2", "target": "respond-3", "animated": true, "type": "smoothstep" },
+      { "id": "e8", "source": "respond-3", "target": "end-1", "animated": true, "type": "smoothstep" },
+      { "id": "e9", "source": "utility-1", "target": "end-2", "animated": true, "type": "smoothstep" }
+    ]
+  }
+}

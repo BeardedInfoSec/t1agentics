@@ -1,0 +1,193 @@
+{
+  "id": "aws_guardduty",
+  "name": "AWS GuardDuty",
+  "description": "AWS threat detection service that continuously monitors for malicious activity and unauthorized behavior across AWS accounts, workloads, and data",
+  "version": "1.0.0",
+  "category": "aws_security",
+  "vendor": "Amazon Web Services",
+  "auth_type": "aws",
+  "auth_config": {
+    "type": "aws",
+    "service": "guardduty",
+    "signing_version": "v4"
+  },
+  "base_url": "https://guardduty.{region}.amazonaws.com",
+  "actions": [
+    {
+      "id": "list_detectors",
+      "name": "List Detectors",
+      "description": "List all GuardDuty detector IDs in the current AWS account and region",
+      "http_method": "GET",
+      "endpoint": "/detector",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "maxResults",
+          "type": "number",
+          "description": "Maximum number of results to return (1-50)",
+          "required": false,
+          "default": 50
+        },
+        {
+          "name": "nextToken",
+          "type": "string",
+          "description": "Pagination token for next page of results",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_detector",
+      "name": "Get Detector Details",
+      "description": "Retrieve details of a specific GuardDuty detector including status and features",
+      "http_method": "GET",
+      "endpoint": "/detector/{detectorId}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "detectorId",
+          "type": "string",
+          "description": "The unique ID of the detector",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_findings",
+      "name": "List Findings",
+      "description": "List GuardDuty findings with optional filter criteria for a specific detector",
+      "http_method": "POST",
+      "endpoint": "/detector/{detectorId}/findings",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "detectorId",
+          "type": "string",
+          "description": "The detector ID to list findings for",
+          "required": true
+        },
+        {
+          "name": "findingCriteria",
+          "type": "object",
+          "description": "Filter criteria (e.g., {\"criterion\": {\"severity\": {\"gte\": 7}}})",
+          "required": false
+        },
+        {
+          "name": "sortCriteria",
+          "type": "object",
+          "description": "Sort criteria (e.g., {\"attributeName\": \"severity\", \"orderBy\": \"DESC\"})",
+          "required": false
+        },
+        {
+          "name": "maxResults",
+          "type": "number",
+          "description": "Maximum results to return (1-50)",
+          "required": false,
+          "default": 50
+        }
+      ]
+    },
+    {
+      "id": "get_findings",
+      "name": "Get Finding Details",
+      "description": "Retrieve detailed information for one or more GuardDuty findings by ID",
+      "http_method": "POST",
+      "endpoint": "/detector/{detectorId}/findings/get",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "detectorId",
+          "type": "string",
+          "description": "The detector ID",
+          "required": true
+        },
+        {
+          "name": "findingIds",
+          "type": "array",
+          "description": "Array of finding IDs to retrieve (max 50)",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_findings_statistics",
+      "name": "Get Findings Statistics",
+      "description": "Retrieve statistics about GuardDuty findings grouped by severity or type",
+      "http_method": "POST",
+      "endpoint": "/detector/{detectorId}/findings/statistics",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "detectorId",
+          "type": "string",
+          "description": "The detector ID",
+          "required": true
+        },
+        {
+          "name": "findingStatisticTypes",
+          "type": "array",
+          "description": "Types of statistics to retrieve (e.g., [\"COUNT_BY_SEVERITY\"])",
+          "required": true
+        },
+        {
+          "name": "findingCriteria",
+          "type": "object",
+          "description": "Filter criteria for statistics calculation",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_members",
+      "name": "List Members",
+      "description": "List member accounts associated with the GuardDuty administrator account",
+      "http_method": "GET",
+      "endpoint": "/detector/{detectorId}/member",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "detectorId",
+          "type": "string",
+          "description": "The detector ID",
+          "required": true
+        },
+        {
+          "name": "maxResults",
+          "type": "number",
+          "description": "Maximum results to return",
+          "required": false,
+          "default": 50
+        }
+      ]
+    },
+    {
+      "id": "archive_findings",
+      "name": "Archive Findings",
+      "description": "Archive GuardDuty findings by their IDs",
+      "http_method": "POST",
+      "endpoint": "/detector/{detectorId}/findings/archive",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "detectorId",
+          "type": "string",
+          "description": "The detector ID",
+          "required": true
+        },
+        {
+          "name": "findingIds",
+          "type": "array",
+          "description": "Array of finding IDs to archive",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

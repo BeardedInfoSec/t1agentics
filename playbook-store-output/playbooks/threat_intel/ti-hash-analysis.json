@@ -1,0 +1,279 @@
+{
+  "name": "Multi-Source Hash Analysis",
+  "slug": "ti-hash-analysis",
+  "description": "Performs comprehensive file hash analysis across multiple threat intelligence sources. When a suspicious hash alert arrives, the playbook enriches the hash via VirusTotal for detection ratios and malware family identification, then submits to a sandbox for behavioral analysis. AI correlates the results to determine malicious confidence, identify malware families, and map to MITRE ATT&CK techniques. Confirmed malicious hashes trigger endpoint quarantine, blocklist addition, and SOC notification. Benign hashes are documented and closed.",
+  "category": "threat_intel",
+  "subcategory": "hash_analysis",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "15 minutes",
+  "tags": ["hash", "malware", "virustotal", "sandbox", "threat_intel", "analysis"],
+  "alert_types": ["threat_intel", "malware"],
+  "severity_filter": ["low", "medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["threat_intel", "suspicious_hash", "malware_alert", "hash_match"],
+    "min_severity": "low"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "virustotal",
+      "name": "VirusTotal",
+      "category": "threat_intel",
+      "reason": "Retrieve detection ratios, malware family labels, and community reputation for file hashes"
+    },
+    {
+      "connector_id": "sandbox",
+      "name": "Malware Sandbox",
+      "category": "sandbox",
+      "reason": "Submit hash for behavioral detonation analysis to identify runtime behaviors and network indicators"
+    },
+    {
+      "connector_id": "crowdstrike",
+      "name": "CrowdStrike Falcon",
+      "category": "edr",
+      "reason": "Quarantine files matching confirmed malicious hashes on endpoints"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Suspicious Hash Alert Received",
+          "config": {
+            "alert_types": ["threat_intel", "suspicious_hash", "malware_alert", "hash_match"],
+            "description": "Triggers when a suspicious file hash alert is ingested from threat feeds, EDR, or manual submission"
+          }
+        }
+      },
+      {
+        "id": "code_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "code",
+          "label": "Extract Hash Values",
+          "config": {
+            "code": "import re\n\nalert = inputs.get('alert', {})\nraw_text = str(alert)\n\nsha256_pattern = r'\\b[a-fA-F0-9]{64}\\b'\nsha1_pattern = r'\\b[a-fA-F0-9]{40}\\b'\nmd5_pattern = r'\\b[a-fA-F0-9]{32}\\b'\n\nsha256_hashes = list(set(re.findall(sha256_pattern, raw_text)))\nsha1_hashes = list(set(re.findall(sha1_pattern, raw_text)))\nmd5_hashes = list(set(re.findall(md5_pattern, raw_text)))\n\n# Deduplicate: sha1 matches may overlap with sha256 substrings\nsha1_clean = [h for h in sha1_hashes if h not in [s[:40] for s in sha256_hashes]]\n\nprimary_hash = sha256_hashes[0] if sha256_hashes else (sha1_clean[0] if sha1_clean else (md5_hashes[0] if md5_hashes else None))\nhash_type = 'sha256' if sha256_hashes else ('sha1' if sha1_clean else ('md5' if md5_hashes else 'unknown'))\n\nresult = {\n    'primary_hash': primary_hash,\n    'hash_type': hash_type,\n    'sha256_hashes': sha256_hashes,\n    'sha1_hashes': sha1_clean,\n    'md5_hashes': md5_hashes,\n    'total_unique': len(sha256_hashes) + len(sha1_clean) + len(md5_hashes),\n    'file_name': alert.get('file_name', 'unknown')\n}",
+            "inputs": {
+              "alert": "{{trigger_1.alert}}"
+            },
+            "description": "Extracts and categorizes all file hashes (SHA256, SHA1, MD5) from the alert data"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "analyze",
+          "label": "Enrich Hash — VirusTotal",
+          "config": {
+            "mode": "enrich",
+            "observable_type": "hash",
+            "data_path": "$.code_1.outputs.result.primary_hash",
+            "sources": ["virustotal"],
+            "description": "Enriches the primary hash via VirusTotal to retrieve detection ratios, malware family labels, first/last seen dates, and community reputation"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 540 },
+        "data": {
+          "kind": "respond",
+          "label": "Submit to Sandbox for Detonation",
+          "config": {
+            "integration_action": {
+              "connector_id": "sandbox",
+              "action": "submit_hash",
+              "parameters": {
+                "hash": "{{code_1.outputs.result.primary_hash}}",
+                "hash_type": "{{code_1.outputs.result.hash_type}}",
+                "analysis_type": "full",
+                "timeout_seconds": 300
+              }
+            },
+            "description": "Submits the hash to the malware sandbox for behavioral detonation analysis including process activity, network communication, and file system changes"
+          }
+        }
+      },
+      {
+        "id": "analyze_2",
+        "type": "signal",
+        "position": { "x": 520, "y": 700 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — Malware Verdict",
+          "config": {
+            "template_id": "malware_assessment",
+            "additional_instructions": "Correlate VirusTotal detection results with sandbox behavioral analysis. Determine malicious confidence, identify malware family, map to MITRE ATT&CK techniques, and assess potential impact if executed on endpoint.",
+            "description": "AI-powered correlation of VT results and sandbox analysis to determine final malware verdict with ATT&CK mapping"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 860 },
+        "data": {
+          "kind": "decision",
+          "label": "Confirmed Malicious?",
+          "config": {
+            "condition": "{{analyze_2.verdict}} == 'malicious' or {{analyze_2.confidence}} >= 75",
+            "description": "Routes based on whether the combined VT and sandbox analysis confirms the hash as malicious"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "label": "Quarantine on Endpoints",
+          "config": {
+            "integration_action": {
+              "connector_id": "crowdstrike",
+              "action": "quarantine_hash",
+              "parameters": {
+                "hash": "{{code_1.outputs.result.primary_hash}}",
+                "hash_type": "{{code_1.outputs.result.hash_type}}",
+                "action": "quarantine",
+                "scope": "all_endpoints"
+              }
+            },
+            "description": "Quarantines any files matching the malicious hash on all endpoints via CrowdStrike EDR"
+          }
+        }
+      },
+      {
+        "id": "respond_3",
+        "type": "signal",
+        "position": { "x": 340, "y": 1180 },
+        "data": {
+          "kind": "respond",
+          "label": "Add Hash to Blocklist & Notify SOC",
+          "config": {
+            "integration_action": {
+              "action": "edl_add",
+              "parameters": {
+                "list_name": "malicious_hashes",
+                "indicator": "{{code_1.outputs.result.primary_hash}}",
+                "indicator_type": "hash",
+                "source": "ti-hash-analysis",
+                "expiry_days": 180
+              }
+            },
+            "notify": {
+              "channel": "slack",
+              "target": "#soc-alerts",
+              "message": "MALICIOUS HASH CONFIRMED\nHash: {{code_1.outputs.result.primary_hash}} ({{code_1.outputs.result.hash_type}})\nFile: {{code_1.outputs.result.file_name}}\nVerdict: {{analyze_2.verdict}} ({{analyze_2.confidence}}% confidence)\nMalware Family: {{analyze_2.malware_family}}\n\nActions: Quarantined on endpoints, added to blocklist.\n\n{{analyze_2.summary}}"
+            },
+            "description": "Adds the malicious hash to the blocklist and notifies the SOC team with full analysis results"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 700, "y": 1020 },
+        "data": {
+          "kind": "utility",
+          "label": "Note: Hash Assessed Benign",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "Multi-source hash analysis completed.\n\nHash: {{code_1.outputs.result.primary_hash}} ({{code_1.outputs.result.hash_type}})\nFile: {{code_1.outputs.result.file_name}}\nVerdict: Benign / Inconclusive\n\nNo blocking action required.\n\nRiggs AI Summary:\n{{analyze_2.summary}}"
+            },
+            "description": "Documents the benign hash analysis result with no blocking action taken"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1340 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "Multi-source hash analysis complete"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_extract",
+        "source": "trigger_1",
+        "target": "code_1",
+        "type": "default"
+      },
+      {
+        "id": "e_extract_vt",
+        "source": "code_1",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_vt_sandbox",
+        "source": "analyze_1",
+        "target": "respond_1",
+        "type": "default"
+      },
+      {
+        "id": "e_sandbox_ai",
+        "source": "respond_1",
+        "target": "analyze_2",
+        "type": "default"
+      },
+      {
+        "id": "e_ai_decision",
+        "source": "analyze_2",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "respond_2",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "utility_1",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_quarantine_blocklist",
+        "source": "respond_2",
+        "target": "respond_3",
+        "type": "default"
+      },
+      {
+        "id": "e_blocklist_end",
+        "source": "respond_3",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_benign_end",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

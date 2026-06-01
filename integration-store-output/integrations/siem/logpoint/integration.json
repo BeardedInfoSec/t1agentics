@@ -1,0 +1,219 @@
+{
+  "id": "logpoint",
+  "name": "Logpoint",
+  "description": "Integrates with Logpoint SIEM for log search, incident management, alert retrieval, and dashboard monitoring via the Logpoint REST API",
+  "version": "1.0.0",
+  "category": "siem",
+  "vendor": "Logpoint",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "https://{host}",
+  "actions": [
+    {
+      "id": "search_logs",
+      "name": "Search Logs",
+      "description": "Execute a log search query using Logpoint search syntax",
+      "http_method": "POST",
+      "endpoint": "/api/search",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Logpoint search query string",
+          "required": true
+        },
+        {
+          "name": "time_range",
+          "type": "string",
+          "description": "Time range for the search (e.g., Last 24 hours, Last 7 days)",
+          "required": false,
+          "default": "Last 24 hours"
+        },
+        {
+          "name": "repos",
+          "type": "array",
+          "description": "Array of repository names to search in",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum results to return",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "timeout",
+          "type": "number",
+          "description": "Query timeout in seconds",
+          "required": false,
+          "default": 60
+        }
+      ]
+    },
+    {
+      "id": "list_incidents",
+      "name": "List Incidents",
+      "description": "Retrieve incidents from Logpoint incident management",
+      "http_method": "GET",
+      "endpoint": "/api/incidents",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Filter by incident status (Open, Closed, Resolved)",
+          "required": false
+        },
+        {
+          "name": "assignee",
+          "type": "string",
+          "description": "Filter by assigned user",
+          "required": false
+        },
+        {
+          "name": "from_date",
+          "type": "string",
+          "description": "Start date filter",
+          "required": false
+        },
+        {
+          "name": "to_date",
+          "type": "string",
+          "description": "End date filter",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum incidents to return",
+          "required": false,
+          "default": 50
+        }
+      ]
+    },
+    {
+      "id": "get_incident",
+      "name": "Get Incident Details",
+      "description": "Retrieve details for a specific incident",
+      "http_method": "GET",
+      "endpoint": "/api/incidents/{incidentId}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "incidentId",
+          "type": "string",
+          "description": "Incident ID to retrieve",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "update_incident",
+      "name": "Update Incident",
+      "description": "Update incident status, assignee, or add comments",
+      "http_method": "PUT",
+      "endpoint": "/api/incidents/{incidentId}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "incidentId",
+          "type": "string",
+          "description": "Incident ID to update",
+          "required": true
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "New status (Open, Closed, Resolved)",
+          "required": false
+        },
+        {
+          "name": "assignee",
+          "type": "string",
+          "description": "User to assign incident to",
+          "required": false
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "Comment to add",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_alerts",
+      "name": "Get Alerts",
+      "description": "Retrieve triggered alerts from Logpoint",
+      "http_method": "GET",
+      "endpoint": "/api/alerts",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "from_date",
+          "type": "string",
+          "description": "Start date for alert retrieval",
+          "required": false
+        },
+        {
+          "name": "to_date",
+          "type": "string",
+          "description": "End date for alert retrieval",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum alerts to return",
+          "required": false,
+          "default": 50
+        }
+      ]
+    },
+    {
+      "id": "get_alert_rules",
+      "name": "Get Alert Rules",
+      "description": "Retrieve configured alert rules",
+      "http_method": "GET",
+      "endpoint": "/api/alert_rules",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "enabled",
+          "type": "boolean",
+          "description": "Filter by enabled/disabled state",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_log_sources",
+      "name": "List Log Sources",
+      "description": "Retrieve configured log sources",
+      "http_method": "GET",
+      "endpoint": "/api/devices",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Filter by device/source status",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

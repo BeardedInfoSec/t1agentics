@@ -1,0 +1,207 @@
+{
+  "name": "Phishing URL Analysis",
+  "slug": "phishing-url-analysis",
+  "description": "Extracts and analyzes URLs from phishing email alerts using threat intelligence enrichment. URLs are checked against VirusTotal and URLhaus for reputation scoring. High-risk URLs are automatically blocked on the web proxy and the SOC is notified. Clean URLs result in alert closure. Ideal for environments with proxy-based URL filtering.",
+  "category": "phishing",
+  "subcategory": "url_analysis",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "10 minutes",
+  "tags": ["phishing", "url", "enrichment", "virustotal", "urlhaus", "threat-intel", "proxy"],
+  "alert_types": ["phishing"],
+  "severity_filter": ["medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["phishing", "suspicious_email", "suspicious_url"],
+    "min_severity": "medium"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "virustotal",
+      "name": "VirusTotal",
+      "category": "threat_intel",
+      "reason": "URL reputation lookup and malicious score"
+    },
+    {
+      "connector_id": "urlhaus",
+      "name": "URLhaus",
+      "category": "threat_intel",
+      "reason": "Known malicious URL database check"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "title": "Phishing Alert Received",
+          "summary": "Triggers on phishing alert containing URLs",
+          "config": {
+            "trigger_type": "alert",
+            "alert_types": ["phishing", "suspicious_email", "suspicious_url"]
+          }
+        }
+      },
+      {
+        "id": "code-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "code",
+          "title": "Extract URLs",
+          "summary": "Parse and extract all URLs from the email body and headers",
+          "config": {
+            "mode": "extract",
+            "input_path": "$.trigger.alert",
+            "transform_type": "extract",
+            "transform_config": {
+              "output_path": "$.extracted.urls",
+              "filter_path": "$.trigger.alert.body",
+              "filter_value": ""
+            },
+            "script": {
+              "function_name": "main",
+              "inputs": [
+                { "name": "alert", "path": "$.trigger.alert" }
+              ],
+              "code": "import re\n\ndef main(alert):\n    body = alert.get('body', '') + ' ' + alert.get('html_body', '')\n    headers = str(alert.get('headers', {}))\n    text = body + ' ' + headers\n    url_pattern = r'https?://[^\\s<>\"\\')]+'\n    urls = list(set(re.findall(url_pattern, text)))\n    return {'urls': urls, 'url_count': len(urls)}"
+            }
+          }
+        }
+      },
+      {
+        "id": "analyze-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "analyze",
+          "title": "Enrich URLs — Threat Intel",
+          "summary": "Check extracted URLs against VirusTotal and URLhaus",
+          "config": {
+            "mode": "enrich",
+            "observable_type": "url",
+            "observable_path": "$.nodes.code-1.result.urls",
+            "sources": ["virustotal", "urlhaus"],
+            "aggregate_results": true
+          }
+        }
+      },
+      {
+        "id": "decision-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 540 },
+        "data": {
+          "kind": "decision",
+          "title": "Malicious Score > 70?",
+          "summary": "Branch if any URL has a threat score above 70",
+          "config": {
+            "conditions": {
+              "operator": "AND",
+              "conditions": [
+                {
+                  "left": { "type": "path", "value": "$.nodes.analyze-1.result.max_score" },
+                  "operator": "greater",
+                  "right": { "type": "value", "value": "70" }
+                }
+              ],
+              "groups": []
+            },
+            "expression": "$.nodes.analyze-1.result.max_score > 70",
+            "default_branch": "no"
+          }
+        }
+      },
+      {
+        "id": "respond-1",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "title": "Block URL on Proxy",
+          "summary": "Add malicious URLs to web proxy blocklist",
+          "config": {
+            "response_type": "integration_action",
+            "action_type": "block_url",
+            "target_path": "$.nodes.code-1.result.urls",
+            "requires_approval": true,
+            "priority": "high",
+            "message": "Blocking {{$.nodes.code-1.result.url_count}} malicious URL(s) from phishing alert on web proxy"
+          }
+        }
+      },
+      {
+        "id": "respond-2",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "title": "Notify SOC — URLs Blocked",
+          "summary": "Send notification with blocked URL details",
+          "config": {
+            "response_type": "notify",
+            "channel": "slack",
+            "slack_channel": "#soc-alerts",
+            "message": "Phishing URL(s) blocked on proxy.\nAlert: {{$.trigger.alert.name}}\nURLs found: {{$.nodes.code-1.result.url_count}}\nMax threat score: {{$.nodes.analyze-1.result.max_score}}\nSources: VirusTotal, URLhaus",
+            "priority": "high"
+          }
+        }
+      },
+      {
+        "id": "utility-1",
+        "type": "signal",
+        "position": { "x": 700, "y": 700 },
+        "data": {
+          "kind": "utility",
+          "title": "Close Alert — Clean URLs",
+          "summary": "No malicious URLs detected, close the alert",
+          "config": {
+            "operation": "update_status",
+            "status": "closed",
+            "note": "All extracted URLs scored below threshold (70). No malicious indicators found via VirusTotal/URLhaus."
+          }
+        }
+      },
+      {
+        "id": "end-1",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "end",
+          "title": "End — URLs Blocked",
+          "summary": "Malicious URLs blocked and SOC notified",
+          "config": {
+            "disposition": "true_positive",
+            "summary": "Phishing URLs identified, blocked on proxy, and SOC notified."
+          }
+        }
+      },
+      {
+        "id": "end-2",
+        "type": "signal",
+        "position": { "x": 700, "y": 860 },
+        "data": {
+          "kind": "end",
+          "title": "End — Clean",
+          "summary": "URLs clean, alert closed",
+          "config": {
+            "disposition": "false_positive",
+            "summary": "No malicious URLs found. Alert closed."
+          }
+        }
+      }
+    ],
+    "edges": [
+      { "id": "e1", "source": "trigger-1", "target": "code-1", "animated": true, "type": "smoothstep" },
+      { "id": "e2", "source": "code-1", "target": "analyze-1", "animated": true, "type": "smoothstep" },
+      { "id": "e3", "source": "analyze-1", "target": "decision-1", "animated": true, "type": "smoothstep" },
+      { "id": "e4", "source": "decision-1", "target": "respond-1", "sourceHandle": "yes", "label": "Yes", "animated": true, "type": "smoothstep" },
+      { "id": "e5", "source": "decision-1", "target": "utility-1", "sourceHandle": "no", "label": "No", "animated": true, "type": "smoothstep" },
+      { "id": "e6", "source": "respond-1", "target": "respond-2", "animated": true, "type": "smoothstep" },
+      { "id": "e7", "source": "respond-2", "target": "end-1", "animated": true, "type": "smoothstep" },
+      { "id": "e8", "source": "utility-1", "target": "end-2", "animated": true, "type": "smoothstep" }
+    ]
+  }
+}

@@ -1,0 +1,145 @@
+{
+  "id": "detectify",
+  "name": "Detectify",
+  "description": "External attack surface management and application security testing platform providing continuous monitoring, automated scanning, and crowdsource-powered vulnerability detection",
+  "version": "1.0.0",
+  "category": "asm",
+  "vendor": "Detectify",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "X-Detectify-Key",
+    "location": "header"
+  },
+  "base_url": "https://api.detectify.com/rest/v2",
+  "actions": [
+    {
+      "id": "list_root_assets",
+      "name": "List Root Assets",
+      "description": "Retrieve all root-level assets (domains) being monitored",
+      "http_method": "GET",
+      "endpoint": "/assets/",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "get_asset_details",
+      "name": "Get Asset Details",
+      "description": "Retrieve detailed information about a specific asset by token",
+      "http_method": "GET",
+      "endpoint": "/assets/{asset_token}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "asset_token",
+          "type": "string",
+          "description": "The unique token identifier of the asset",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_scan_profiles",
+      "name": "List Scan Profiles",
+      "description": "Retrieve all application scan profiles for the team",
+      "http_method": "GET",
+      "endpoint": "/profiles/",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "get_scan_profile",
+      "name": "Get Scan Profile Details",
+      "description": "Retrieve details and settings for a specific scan profile",
+      "http_method": "GET",
+      "endpoint": "/profiles/{scan_profile_token}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "scan_profile_token",
+          "type": "string",
+          "description": "The unique token of the scan profile",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "start_scan",
+      "name": "Start Scan",
+      "description": "Initiate a new application scan for a specific scan profile",
+      "http_method": "POST",
+      "endpoint": "/profiles/{scan_profile_token}/start/",
+      "action_type": "action",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "scan_profile_token",
+          "type": "string",
+          "description": "The unique token of the scan profile to start scanning",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_scan_status",
+      "name": "Get Scan Status",
+      "description": "Retrieve the current status of an application scan for a scan profile",
+      "http_method": "GET",
+      "endpoint": "/profiles/{scan_profile_token}/status/",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "scan_profile_token",
+          "type": "string",
+          "description": "The unique token of the scan profile",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_findings",
+      "name": "List Findings",
+      "description": "Retrieve security findings from both surface monitoring and application scans",
+      "http_method": "GET",
+      "endpoint": "/findings/",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "asset_token",
+          "type": "string",
+          "description": "Filter findings by asset token",
+          "required": false
+        },
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Filter by severity (high, medium, low, information)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_subdomains",
+      "name": "List Subdomains",
+      "description": "Retrieve discovered subdomains for a specific root asset",
+      "http_method": "GET",
+      "endpoint": "/assets/{asset_token}/subdomains/",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "asset_token",
+          "type": "string",
+          "description": "The unique token of the root asset",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

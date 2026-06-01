@@ -1,0 +1,110 @@
+{
+  "id": "bmc_helix",
+  "name": "BMC Helix ITSM",
+  "description": "Integrates with BMC Helix ITSM simplified REST API for incident management, change management, and IT service operations",
+  "version": "1.0.0",
+  "category": "ticketing",
+  "vendor": "BMC Software",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "https://{host}/api/com.bmc.dsm.itsm.itsm-rest-api",
+  "actions": [
+    {
+      "id": "create_incident",
+      "name": "Create Incident",
+      "description": "Create a new incident in BMC Helix ITSM",
+      "http_method": "POST",
+      "endpoint": "/incident",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "First_Name", "type": "string", "description": "First name of the submitter", "required": true},
+        {"name": "Last_Name", "type": "string", "description": "Last name of the submitter", "required": true},
+        {"name": "Description", "type": "string", "description": "Short description of the incident", "required": true},
+        {"name": "Detailed_Decription", "type": "string", "description": "Detailed description of the incident", "required": false},
+        {"name": "Impact", "type": "string", "description": "Impact level (1-Extensive/Widespread, 2-Significant/Large, 3-Moderate/Limited, 4-Minor/Localized)", "required": false},
+        {"name": "Urgency", "type": "string", "description": "Urgency level (1-Critical, 2-High, 3-Medium, 4-Low)", "required": false},
+        {"name": "Status", "type": "string", "description": "Incident status (New, Assigned, In Progress, Pending, Resolved, Closed, Cancelled)", "required": false},
+        {"name": "Assigned_Group", "type": "string", "description": "Support group to assign", "required": false},
+        {"name": "Assignee", "type": "string", "description": "Person to assign the incident to", "required": false},
+        {"name": "Service_Type", "type": "string", "description": "Service type (User Service Restoration, Infrastructure Event)", "required": false}
+      ]
+    },
+    {
+      "id": "get_incident",
+      "name": "Get Incident",
+      "description": "Retrieve a specific BMC Helix incident by ID",
+      "http_method": "GET",
+      "endpoint": "/incident/{incident_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "incident_id", "type": "string", "description": "Incident number (e.g. INC000000000123)", "required": true}
+      ]
+    },
+    {
+      "id": "update_incident",
+      "name": "Update Incident",
+      "description": "Update an existing BMC Helix incident",
+      "http_method": "PUT",
+      "endpoint": "/incident/{incident_id}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "incident_id", "type": "string", "description": "Incident number to update", "required": true},
+        {"name": "Status", "type": "string", "description": "Updated status", "required": false},
+        {"name": "Description", "type": "string", "description": "Updated description", "required": false},
+        {"name": "Assignee", "type": "string", "description": "New assignee", "required": false},
+        {"name": "Resolution", "type": "string", "description": "Resolution description", "required": false},
+        {"name": "Status_Reason", "type": "string", "description": "Reason for status change", "required": false}
+      ]
+    },
+    {
+      "id": "search_incidents",
+      "name": "Search Incidents",
+      "description": "Search for incidents using filter criteria",
+      "http_method": "GET",
+      "endpoint": "/incident/search",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "filter", "type": "string", "description": "Search filter expression", "required": false},
+        {"name": "limit", "type": "number", "description": "Maximum number of results to return", "required": false, "default": 50},
+        {"name": "offset", "type": "number", "description": "Starting record index", "required": false, "default": 0}
+      ]
+    },
+    {
+      "id": "add_worklog",
+      "name": "Add Work Log",
+      "description": "Add a work log entry to an incident",
+      "http_method": "POST",
+      "endpoint": "/incident/{incident_id}/worklog",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "incident_id", "type": "string", "description": "Incident number", "required": true},
+        {"name": "Description", "type": "string", "description": "Work log description", "required": true},
+        {"name": "Detailed_Description", "type": "string", "description": "Detailed work log notes", "required": false},
+        {"name": "Work_Log_Type", "type": "string", "description": "Type of work log entry", "required": false}
+      ]
+    },
+    {
+      "id": "close_incident",
+      "name": "Close Incident",
+      "description": "Close a BMC Helix incident with resolution details",
+      "http_method": "PUT",
+      "endpoint": "/incident/{incident_id}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "incident_id", "type": "string", "description": "Incident number to close", "required": true},
+        {"name": "Resolution", "type": "string", "description": "Resolution description", "required": true},
+        {"name": "Status_Reason", "type": "string", "description": "Reason for closure", "required": true}
+      ]
+    }
+  ]
+}

@@ -1,0 +1,233 @@
+{
+  "name": "Data Encryption Enforcement",
+  "slug": "dlp-encryption-enforcement",
+  "description": "Detects unencrypted sensitive data and enforces encryption policies. Riggs AI analyzes alerts from DLP and endpoint monitoring systems to identify sensitive data stored without proper encryption (at-rest or in-transit). Confirmed violations trigger automated encryption application where possible, a remediation ticket for manual encryption cases, and compliance team notification. Tracks encryption compliance across the organization.",
+  "category": "data_protection",
+  "subcategory": "encryption",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "12 minutes",
+  "tags": ["dlp", "encryption", "compliance", "data_at_rest", "data_in_transit", "pci"],
+  "alert_types": ["dlp", "encryption_violation", "unencrypted_data"],
+  "severity_filter": ["medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["dlp", "encryption_violation", "unencrypted_sensitive_data", "tls_violation", "disk_encryption_missing"],
+    "min_severity": "medium"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create remediation tickets for encryption enforcement actions"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Notify compliance team and resource owners of encryption violations"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "enc-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "title": "Encryption Violation Alert",
+          "summary": "Triggers on alerts for unencrypted sensitive data detected by DLP or endpoint monitoring",
+          "config": {
+            "trigger_type": "alert",
+            "alert_types": ["dlp", "encryption_violation", "unencrypted_sensitive_data", "tls_violation", "disk_encryption_missing"]
+          }
+        }
+      },
+      {
+        "id": "enc-2",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "title": "AI Encryption Gap Analysis",
+          "summary": "Riggs AI analyzes the unencrypted data to classify sensitivity and determine encryption requirements",
+          "config": {
+            "mode": "ai_analysis",
+            "template_id": "data_exfil",
+            "custom_instructions": "Identify the type of encryption violation (at-rest, in-transit, or both). Classify data sensitivity and applicable compliance requirements (PCI-DSS, HIPAA, GDPR). Determine if automated encryption can be applied or if manual remediation is needed.",
+            "alert_path": "$.trigger.alert",
+            "include_context": true
+          }
+        }
+      },
+      {
+        "id": "enc-3",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "title": "Encryption Required?",
+          "summary": "Branch based on whether the data requires encryption per policy",
+          "config": {
+            "conditions": {
+              "operator": "AND",
+              "conditions": [
+                {
+                  "field": "$.nodes.enc-2.result.verdict",
+                  "operator": "in",
+                  "value": ["MALICIOUS", "SUSPICIOUS"]
+                }
+              ],
+              "groups": []
+            },
+            "expression": "$.nodes.enc-2.result.verdict in ['MALICIOUS', 'SUSPICIOUS']",
+            "default_branch": "no"
+          }
+        }
+      },
+      {
+        "id": "enc-4",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "decision",
+          "title": "Auto-Encryption Possible?",
+          "summary": "Check if encryption can be applied automatically or requires manual action",
+          "config": {
+            "conditions": {
+              "operator": "AND",
+              "conditions": [
+                {
+                  "field": "$.nodes.enc-2.result.auto_encrypt_possible",
+                  "operator": "equals",
+                  "value": true
+                }
+              ],
+              "groups": []
+            },
+            "expression": "$.nodes.enc-2.result.auto_encrypt_possible == true",
+            "default_branch": "no"
+          }
+        }
+      },
+      {
+        "id": "enc-5",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "title": "Apply Encryption",
+          "summary": "Automatically apply encryption to the unencrypted sensitive data",
+          "config": {
+            "response_type": "integration_action",
+            "action_type": "apply_encryption",
+            "params": {
+              "resource_id": "$.trigger.alert.resource_id",
+              "encryption_type": "$.nodes.enc-2.result.recommended_encryption",
+              "algorithm": "AES-256",
+              "reason": "Encryption enforcement — sensitive data found unencrypted"
+            },
+            "requires_approval": false,
+            "priority": "high"
+          }
+        }
+      },
+      {
+        "id": "enc-6",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "utility",
+          "title": "Update Status: Encrypted",
+          "summary": "Mark the resource as encrypted and update compliance tracking",
+          "config": {
+            "operation": "update_status",
+            "status": "remediated",
+            "note": "Encryption automatically applied to {{$.trigger.alert.resource_name}}. Algorithm: AES-256. Compliance requirement: {{$.nodes.enc-2.result.compliance_framework}}."
+          }
+        }
+      },
+      {
+        "id": "enc-7",
+        "type": "signal",
+        "position": { "x": 700, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "title": "Create Manual Encryption Ticket",
+          "summary": "Create a Jira ticket for manual encryption remediation by the resource owner",
+          "config": {
+            "response_type": "create_ticket",
+            "system": "jira",
+            "project_key": "COMP",
+            "issue_type": "Task",
+            "title": "Encryption Required: {{$.trigger.alert.resource_name}} — {{$.nodes.enc-2.result.encryption_type}}",
+            "description": "Unencrypted sensitive data detected requiring manual encryption remediation.\n\nResource: {{$.trigger.alert.resource_name}}\nLocation: {{$.trigger.alert.resource_path}}\nData Classification: {{$.nodes.enc-2.result.data_classification}}\nEncryption Type Needed: {{$.nodes.enc-2.result.encryption_type}}\nCompliance Framework: {{$.nodes.enc-2.result.compliance_framework}}\n\nAuto-encryption was not possible for this resource. Manual remediation required.\n\nRecommended Actions:\n{{$.nodes.enc-2.result.remediation_steps}}\n\nDeadline: 48 hours per encryption policy.",
+            "priority": "high",
+            "requires_approval": false
+          }
+        }
+      },
+      {
+        "id": "enc-8",
+        "type": "signal",
+        "position": { "x": 520, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "title": "Notify Compliance Team",
+          "summary": "Alert compliance team about the encryption violation and remediation status",
+          "config": {
+            "response_type": "notification",
+            "channel": "slack",
+            "slack_channel": "#compliance-alerts",
+            "message": "ENCRYPTION VIOLATION DETECTED\n\nResource: {{$.trigger.alert.resource_name}}\nClassification: {{$.nodes.enc-2.result.data_classification}}\nEncryption Type: {{$.nodes.enc-2.result.encryption_type}}\nCompliance: {{$.nodes.enc-2.result.compliance_framework}}\n\nStatus: Remediation in progress. Resource owner has been notified.",
+            "priority": "high"
+          }
+        }
+      },
+      {
+        "id": "enc-9",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "utility",
+          "title": "Close Alert — Properly Encrypted",
+          "summary": "Data is properly encrypted or non-sensitive, close alert",
+          "config": {
+            "operation": "add_note",
+            "note": "Encryption violation alert reviewed by Riggs AI. Data is either properly encrypted, exempt from encryption requirements, or classified as non-sensitive. Verdict: {{$.nodes.enc-2.result.verdict}}. Closing alert.",
+            "close_alert": true
+          }
+        }
+      },
+      {
+        "id": "enc-10",
+        "type": "signal",
+        "position": { "x": 520, "y": 1180 },
+        "data": {
+          "kind": "end",
+          "title": "Playbook Complete",
+          "summary": "Data encryption enforcement workflow finished",
+          "config": {
+            "disposition": "completed",
+            "summary": "Data encryption enforcement and remediation completed"
+          }
+        }
+      }
+    ],
+    "edges": [
+      { "id": "enc-e1", "source": "enc-1", "target": "enc-2", "animated": true, "type": "smoothstep" },
+      { "id": "enc-e2", "source": "enc-2", "target": "enc-3", "animated": true, "type": "smoothstep" },
+      { "id": "enc-e3", "source": "enc-3", "target": "enc-4", "sourceHandle": "yes", "label": "Yes", "animated": true, "type": "smoothstep" },
+      { "id": "enc-e4", "source": "enc-3", "target": "enc-9", "sourceHandle": "no", "label": "No", "animated": true, "type": "smoothstep" },
+      { "id": "enc-e5", "source": "enc-4", "target": "enc-5", "sourceHandle": "yes", "label": "Yes", "animated": true, "type": "smoothstep" },
+      { "id": "enc-e6", "source": "enc-4", "target": "enc-7", "sourceHandle": "no", "label": "No", "animated": true, "type": "smoothstep" },
+      { "id": "enc-e7", "source": "enc-5", "target": "enc-6", "animated": true, "type": "smoothstep" },
+      { "id": "enc-e8", "source": "enc-6", "target": "enc-8", "animated": true, "type": "smoothstep" },
+      { "id": "enc-e9", "source": "enc-7", "target": "enc-8", "animated": true, "type": "smoothstep" },
+      { "id": "enc-e10", "source": "enc-8", "target": "enc-10", "animated": true, "type": "smoothstep" },
+      { "id": "enc-e11", "source": "enc-9", "target": "enc-10", "animated": true, "type": "smoothstep" }
+    ]
+  }
+}

@@ -1,0 +1,78 @@
+{
+  "id": "microsoft_sccm",
+  "name": "Microsoft SCCM",
+  "description": "This app integrates with Microsoft System Center Configuration Manager (SCCM) to execute investigative and generic actions",
+  "version": "2.3.3",
+  "category": "edr",
+  "vendor": "Microsoft",
+  "auth_type": "basic_auth",
+  "auth_config": {
+    "type": "basic_auth",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "deploy_patch",
+      "name": "Deploy Patch",
+      "description": "Deploy patch",
+      "http_method": "GET",
+      "endpoint": "/actions/deploy_patch",
+      "action_type": "generic",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "software_patch_name",
+          "type": "string",
+          "description": "Software Patch Name",
+          "required": true,
+          "contains": [
+            "sccm software patch name"
+          ]
+        },
+        {
+          "name": "device_group_name",
+          "type": "string",
+          "description": "Device Group Name",
+          "required": true,
+          "contains": [
+            "sccm device group name"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_patches",
+      "name": "List Patches",
+      "description": "List all software patches",
+      "http_method": "GET",
+      "endpoint": "/actions/list_patches",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "list_device_groups",
+      "name": "List Device Groups",
+      "description": "List all device groups",
+      "http_method": "GET",
+      "endpoint": "/actions/list_device_groups",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Microsoft SCCM",
+    "original_type": "endpoint",
+    "converted_at": "2025-12-18T16:25:28.944059",
+    "source_version": "2.3.3"
+  }
+}

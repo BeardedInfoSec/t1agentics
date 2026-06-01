@@ -1,0 +1,112 @@
+{
+  "template_id": "account-compromise-suspected",
+  "name": "Account Compromise Suspected",
+  "description": "Internal form for employees who think their work account may have been accessed by someone else. Submissions are treated as high severity by Riggs and routed to the on-call analyst immediately.",
+  "title": "Report Suspected Account Compromise",
+  "intro": "Reporting this is the right move. If something feels wrong with your account — an unexpected login alert, a password reset you didn't request, an MFA prompt at 3am, files moved around — we want to hear about it. You are not in trouble, and you don't need to be certain. Filling this out takes about 4 minutes.\n\n**Important:** after you submit, if you can no longer sign in to your account or you think the attacker still has access, also call IT or Security on the hotline. We will move faster on a phone call than email.",
+  "submit_message": "Thanks. Security will reach out within 15 minutes. Do not change your password again until we tell you — we may want to capture evidence first. If you get locked out or notice anything new, call the IT hotline.",
+  "fields": [
+    {
+      "key": "reporter_email",
+      "label": "Your email",
+      "type": "email",
+      "required": true,
+      "help": "Use a personal or alternate email if you can't currently access your work email.",
+      "placeholder": "you@company.com",
+      "sample_value": "rachel.lin@northwindcloud.com"
+    },
+    {
+      "key": "account_username",
+      "label": "Which account is affected?",
+      "type": "text",
+      "required": true,
+      "help": "Your work username, SSO login, or email for the account you think was accessed.",
+      "placeholder": "username or login email",
+      "sample_value": "rachel.lin"
+    },
+    {
+      "key": "what_happened",
+      "label": "What did you notice?",
+      "type": "multiselect",
+      "required": true,
+      "help": "Pick everything that applies. If you're not sure, pick anything close.",
+      "options": [
+        "Got a 'new sign-in' or 'unusual activity' alert",
+        "Password was changed and I didn't change it",
+        "MFA prompt I didn't initiate",
+        "Locked out of my account",
+        "Emails I didn't send are in my Sent folder",
+        "Mailbox rules or forwarding I didn't set up",
+        "Files moved, renamed, or deleted that I didn't touch",
+        "Someone told me they got a weird message from me",
+        "Other / not sure"
+      ],
+      "sample_value": ["Got a 'new sign-in' or 'unusual activity' alert", "MFA prompt I didn't initiate"]
+    },
+    {
+      "key": "first_noticed_at",
+      "label": "When did you first notice?",
+      "type": "datetime",
+      "required": false,
+      "help": "Approximate is fine — we'll line it up with login logs.",
+      "sample_value": "2026-05-11T03:42:00"
+    },
+    {
+      "key": "suspicious_login_location",
+      "label": "Any unfamiliar location, device, or browser shown?",
+      "type": "text",
+      "required": false,
+      "help": "Copy anything from the alert email or sign-in history page if you can.",
+      "placeholder": "e.g. Lagos, Nigeria - Firefox on Windows",
+      "sample_value": "Lagos, Nigeria - Mozilla Firefox on Windows"
+    },
+    {
+      "key": "still_have_access",
+      "label": "Can you still sign in to the account right now?",
+      "type": "select",
+      "required": true,
+      "help": "Tells us how urgently we need to act.",
+      "options": [
+        "Yes, I'm signed in normally",
+        "Yes, but it's behaving strangely",
+        "No, I'm locked out",
+        "Not sure / haven't tried"
+      ],
+      "sample_value": "Yes, but it's behaving strangely"
+    },
+    {
+      "key": "actions_taken",
+      "label": "Did you do anything already?",
+      "type": "multiselect",
+      "required": false,
+      "help": "Be honest — nothing is wrong, we just need to know.",
+      "options": [
+        "Changed my password",
+        "Signed out of all sessions",
+        "Removed an unknown device",
+        "Ran an antivirus scan",
+        "Nothing yet"
+      ],
+      "sample_value": ["Changed my password"]
+    },
+    {
+      "key": "additional_notes",
+      "label": "Anything else we should know?",
+      "type": "textarea",
+      "required": false,
+      "help": "Optional. Other apps acting weird, any phishing emails recently, anyone else affected.",
+      "placeholder": "Optional context",
+      "sample_value": "I clicked a Microsoft login link in an email two days ago that looked off. Might be related."
+    }
+  ],
+  "alert_template": {
+    "title": "Suspected account compromise: {{account_username}} reported by {{reporter_email}}",
+    "description": "User {{reporter_email}} reports possible compromise of account '{{account_username}}'.\n\nFirst noticed: {{first_noticed_at}}\nIndicators: {{what_happened}}\nUnfamiliar login signal: {{suspicious_login_location}}\nCurrent access state: {{still_have_access}}\nActions already taken: {{actions_taken}}\n\nAdditional context: {{additional_notes}}",
+    "severity": "high",
+    "source": "intake_form",
+    "category": "credential_theft"
+  },
+  "icon": "ShieldAlert",
+  "category": "Identity / Access",
+  "estimated_minutes": 4
+}

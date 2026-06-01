@@ -1,0 +1,267 @@
+{
+  "name": "Cloud API Abuse Detection & Response",
+  "slug": "cloud-api-abuse",
+  "description": "Detects abusive or anomalous cloud API call patterns such as enumeration, mass data access, or API rate abuse. Riggs AI analyzes the API call patterns to determine if they represent reconnaissance, data harvesting, or credential testing. Confirmed abuse triggers API throttling, investigation of data accessed during the abuse window, credential review, incident ticket creation, and team notification. Legitimate API usage spikes receive documentation.",
+  "category": "cloud",
+  "subcategory": "api_security",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "15 minutes",
+  "tags": ["cloud", "api_abuse", "enumeration", "reconnaissance", "throttling"],
+  "alert_types": ["cloud_security", "api_abuse"],
+  "severity_filter": ["medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["cloud_security", "api_abuse", "api_anomaly"],
+    "min_severity": "medium"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "aws_security_hub",
+      "name": "AWS Security Hub",
+      "category": "cloud_security",
+      "reason": "Source of API abuse findings and API management for throttling"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create incident tickets for confirmed cloud API abuse events"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Notify the security team of API abuse detection and response actions"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Cloud API Abuse Alert",
+          "config": {
+            "alert_types": ["cloud_security", "api_abuse", "api_anomaly"],
+            "description": "Triggers when anomalous API call patterns are detected such as mass enumeration of resources, unusual API calls from a principal, or API rate limit violations"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — Cloud Security Assessment",
+          "config": {
+            "template_id": "cloud_security",
+            "additional_instructions": "Analyze API abuse patterns: enumeration of S3 buckets, EC2 instances, IAM users; bulk GetObject calls; unusual Describe/List API volumes; source IP reputation",
+            "description": "AI-powered analysis of cloud API call patterns to determine if the activity represents abuse, reconnaissance, or legitimate automation"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "label": "API Abuse Confirmed?",
+          "config": {
+            "condition": "{{analyze_1.verdict}} == 'malicious' || {{analyze_1.confidence}} >= 0.75",
+            "description": "Routes based on whether the AI assessment confirmed malicious API abuse"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "respond",
+          "label": "Throttle API Access",
+          "config": {
+            "integration_action": {
+              "connector_id": "aws_security_hub",
+              "action": "apply_scp_deny",
+              "parameters": {
+                "principal": "{{trigger_1.alert.principal_id}}",
+                "denied_actions": "{{trigger_1.alert.abused_api_calls}}",
+                "reason": "Cloud API abuse detected — throttling principal's API access"
+              }
+            },
+            "description": "Apply a service control policy or IAM inline deny to throttle the abusing principal's API access"
+          }
+        }
+      },
+      {
+        "id": "code_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "code",
+          "label": "Investigate Data Access",
+          "config": {
+            "mode": "query",
+            "query": "CloudTrail data events for principal={{trigger_1.alert.principal_id}} in last 24 hours: GetObject, PutObject, CopyObject calls, data volumes, bucket names, object keys accessed",
+            "output_variable": "data_access_investigation",
+            "description": "Investigate all data access performed by the abusing principal to determine if data was exfiltrated during the abuse window"
+          }
+        }
+      },
+      {
+        "id": "code_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "code",
+          "label": "Review Principal Credentials",
+          "config": {
+            "mode": "query",
+            "query": "IAM credential report for principal={{trigger_1.alert.principal_id}}: access key age, last rotation, MFA status, last used regions, console login history",
+            "output_variable": "credential_review",
+            "description": "Review the abusing principal's credentials to determine if they may be compromised or need rotation"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "label": "Create Incident Ticket",
+          "config": {
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_ticket",
+              "parameters": {
+                "project": "SEC",
+                "issue_type": "Incident",
+                "priority": "High",
+                "summary": "Cloud API Abuse: {{trigger_1.alert.principal_id}} — {{trigger_1.alert.abuse_type}}",
+                "description": "Confirmed cloud API abuse detected.\n\nPrincipal: {{trigger_1.alert.principal_id}}\nAbuse Type: {{trigger_1.alert.abuse_type}}\nAPI Calls: {{trigger_1.alert.abused_api_calls}}\nVolume: {{trigger_1.alert.call_count}} calls in {{trigger_1.alert.time_window}}\n\nActions Taken:\n- API access throttled via SCP/IAM deny\n- Data access investigated\n- Credentials reviewed\n\nData Access Investigation:\n{{code_1.data_access_investigation}}\n\nCredential Review:\n{{code_2.credential_review}}\n\nRiggs AI Assessment:\n{{analyze_1.summary}}"
+              }
+            },
+            "description": "Create an incident ticket with full API abuse details, data access investigation, and credential review"
+          }
+        }
+      },
+      {
+        "id": "respond_3",
+        "type": "signal",
+        "position": { "x": 340, "y": 1180 },
+        "data": {
+          "kind": "respond",
+          "label": "Notify Security Team",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#cloud-security-alerts",
+              "message": "CLOUD API ABUSE DETECTED\nPrincipal: {{trigger_1.alert.principal_id}}\nAbuse: {{trigger_1.alert.abuse_type}}\nVolume: {{trigger_1.alert.call_count}} calls\nActions: API throttled, data access investigated, credentials reviewed\nTicket: {{respond_2.ticket_url}}\n\nRiggs Assessment:\n{{analyze_1.summary}}"
+            },
+            "description": "Notify the security team of the API abuse and all response actions"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "utility",
+          "label": "Add Note: Legitimate API Usage",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "Reviewed by Riggs AI (cloud_security template). API call spike determined to be legitimate automation or deployment activity. Assessment: {{analyze_1.summary}}"
+            },
+            "description": "Document that the API usage spike was determined to be legitimate"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1340 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "Cloud API abuse detection and response complete"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_analyze",
+        "source": "trigger_1",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_analyze_decision",
+        "source": "analyze_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "respond_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "utility_1",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_throttle_investigate",
+        "source": "respond_1",
+        "target": "code_1",
+        "type": "default"
+      },
+      {
+        "id": "e_investigate_credentials",
+        "source": "code_1",
+        "target": "code_2",
+        "type": "default"
+      },
+      {
+        "id": "e_credentials_ticket",
+        "source": "code_2",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_ticket_notify",
+        "source": "respond_2",
+        "target": "respond_3",
+        "type": "default"
+      },
+      {
+        "id": "e_notify_end",
+        "source": "respond_3",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_utility_end",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

@@ -1,0 +1,247 @@
+{
+  "name": "Firewall Block Malicious IP",
+  "slug": "firewall-block-malicious-ip",
+  "description": "Enriches a flagged IP address across multiple threat intelligence sources (VirusTotal, AbuseIPDB, GreyNoise), then routes based on reputation score. If the IP is confirmed malicious, the workflow requests analyst approval before pushing a firewall block rule, adding the IP to the External Dynamic List (EDL), and notifying the SOC on Slack. Benign IPs are annotated and closed without action.",
+  "category": "network",
+  "subcategory": "firewall_management",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "10 minutes",
+  "tags": ["firewall", "ip_block", "network", "containment"],
+  "alert_types": ["network", "firewall"],
+  "severity_filter": ["medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["network", "firewall", "malicious_ip", "intrusion_attempt"],
+    "min_severity": "medium"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "virustotal",
+      "name": "VirusTotal",
+      "category": "threat_intel",
+      "reason": "IP reputation lookup and malicious activity scoring"
+    },
+    {
+      "connector_id": "abuseipdb",
+      "name": "AbuseIPDB",
+      "category": "threat_intel",
+      "reason": "Abuse confidence score and report history for the flagged IP"
+    },
+    {
+      "connector_id": "palo_alto_ngfw",
+      "name": "Palo Alto NGFW",
+      "category": "network",
+      "reason": "Push firewall block rule to deny traffic from the malicious IP"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Malicious IP Alert",
+          "config": {
+            "alert_types": ["network", "firewall", "malicious_ip", "intrusion_attempt"],
+            "description": "Triggers when a potentially malicious IP is flagged by network monitoring or firewall alerts"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "label": "Enrich IP — Threat Intel",
+          "config": {
+            "template_id": "ioc_correlation",
+            "additional_instructions": "Enrich the flagged IP using VirusTotal, AbuseIPDB, and GreyNoise. Aggregate reputation scores and determine a combined malicious confidence rating.",
+            "description": "Queries VirusTotal, AbuseIPDB, and GreyNoise to build a comprehensive reputation profile for the flagged IP address"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "label": "Reputation Score Bad?",
+          "config": {
+            "condition": "{{analyze_1.verdict}} in ['MALICIOUS', 'SUSPICIOUS']",
+            "description": "Routes based on whether the aggregated threat intelligence indicates malicious or suspicious activity"
+          }
+        }
+      },
+      {
+        "id": "approval_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "approval",
+          "label": "Analyst Approves Block",
+          "config": {
+            "approver_role": "soc_analyst",
+            "timeout_minutes": 30,
+            "message": "IP {{trigger_1.alert.source_ip}} flagged as malicious.\n\nVerdict: {{analyze_1.verdict}} (Confidence: {{analyze_1.confidence}})\nFindings: {{analyze_1.key_findings}}\n\nApprove firewall block?",
+            "description": "Requires SOC analyst approval before executing the firewall block to prevent accidental disruption"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "label": "Block IP on Firewall",
+          "config": {
+            "integration_action": {
+              "connector_id": "palo_alto_ngfw",
+              "action": "block_ip",
+              "parameters": {
+                "ip_address": "{{trigger_1.alert.source_ip}}",
+                "rule_name": "T1-Block-{{trigger_1.alert.alert_id}}",
+                "direction": "both",
+                "comment": "Blocked by T1 playbook — Verdict: {{analyze_1.verdict}}, Alert: {{trigger_1.alert.alert_id}}"
+              }
+            },
+            "description": "Adds a deny rule on the Palo Alto NGFW to block all traffic from the malicious IP"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "label": "Add IP to EDL Blocklist",
+          "config": {
+            "utility_action": {
+              "action": "add_to_edl",
+              "parameters": {
+                "indicator": "{{trigger_1.alert.source_ip}}",
+                "list_name": "malicious-ip-blocklist",
+                "indicator_type": "ip",
+                "expiry_days": 90,
+                "comment": "Auto-added via firewall block playbook — {{trigger_1.alert.alert_id}}"
+              }
+            },
+            "description": "Adds the malicious IP to the External Dynamic List so all perimeter devices automatically block it"
+          }
+        }
+      },
+      {
+        "id": "respond_3",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "label": "Notify SOC on Slack",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#soc-alerts",
+              "message": "FIREWALL BLOCK EXECUTED\nIP: {{trigger_1.alert.source_ip}}\nVerdict: {{analyze_1.verdict}} (Confidence: {{analyze_1.confidence}})\nAction: Blocked on NGFW + added to EDL blocklist\nApproved by: {{approval_1.approver}}\nAlert ID: {{trigger_1.alert.alert_id}}\n\nKey Findings:\n{{analyze_1.key_findings}}"
+            },
+            "description": "Sends a summary notification to the SOC Slack channel confirming the block action and enrichment results"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "utility",
+          "label": "Add Note: Benign IP",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "IP {{trigger_1.alert.source_ip}} enriched and determined benign. Verdict: {{analyze_1.verdict}}. No block action required. Closing alert.",
+              "close_alert": true
+            },
+            "description": "Annotates the alert as benign based on threat intelligence enrichment and closes it without action"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1180 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "Firewall block malicious IP workflow complete"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_analyze",
+        "source": "trigger_1",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_analyze_decision",
+        "source": "analyze_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "approval_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "utility_1",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_approval_block",
+        "source": "approval_1",
+        "target": "respond_1",
+        "type": "default"
+      },
+      {
+        "id": "e_block_edl",
+        "source": "respond_1",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_edl_notify",
+        "source": "respond_2",
+        "target": "respond_3",
+        "type": "default"
+      },
+      {
+        "id": "e_notify_end",
+        "source": "respond_3",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_utility_end",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

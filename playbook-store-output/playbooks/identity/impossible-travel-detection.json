@@ -1,0 +1,253 @@
+{
+  "name": "Impossible Travel Detection",
+  "slug": "impossible-travel-detection",
+  "description": "Detects and responds to impossible travel login anomalies. Uses AI to analyze suspicious login patterns, disables active sessions for flagged accounts, routes through analyst approval for compromise confirmation, and executes full credential reset with token revocation when confirmed. Handles false positives gracefully with status updates.",
+  "category": "identity",
+  "subcategory": "suspicious_login",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "15 minutes",
+  "tags": ["impossible_travel", "suspicious_login", "identity", "geo"],
+  "alert_types": ["impossible_travel", "suspicious_login"],
+  "severity_filter": ["medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["impossible_travel", "suspicious_login"],
+    "min_severity": "medium"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "microsoft_graph",
+      "name": "Microsoft Graph",
+      "category": "identity",
+      "reason": "Disable user sessions, reset passwords, and revoke OAuth tokens"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "it-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "title": "Impossible Travel Alert",
+          "summary": "Fires on impossible travel or suspicious login alert",
+          "config": {
+            "trigger_type": "alert",
+            "alert_filter": "impossible_travel OR suspicious_login"
+          }
+        }
+      },
+      {
+        "id": "it-2",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "title": "AI Suspicious Login Analysis",
+          "summary": "Analyze login geo-data and velocity for impossible travel",
+          "config": {
+            "mode": "ai_analysis",
+            "template_id": "suspicious_login",
+            "custom_instructions": "",
+            "alert_path": "$.trigger.alert",
+            "include_context": true
+          }
+        }
+      },
+      {
+        "id": "it-3",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "title": "Travel Physically Impossible?",
+          "summary": "Branch based on whether login locations are physically impossible",
+          "config": {
+            "conditions": {
+              "operator": "AND",
+              "conditions": [
+                {
+                  "field": "$.nodes.it-2.result.impossible_travel",
+                  "operator": "equals",
+                  "value": "true"
+                }
+              ],
+              "groups": []
+            },
+            "expression": "$.nodes.it-2.result.impossible_travel == true",
+            "default_branch": "no"
+          }
+        }
+      },
+      {
+        "id": "it-4",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "respond",
+          "title": "Disable User Session",
+          "summary": "Terminate active sessions via identity provider",
+          "config": {
+            "response_type": "integration_action",
+            "integration_instance_id": "microsoft_graph",
+            "action_type": "revoke_sessions",
+            "params": {
+              "user_id": "$.trigger.alert.target_user_id",
+              "reason": "Impossible travel detected — session disabled pending investigation"
+            },
+            "requires_approval": false,
+            "priority": "high"
+          }
+        }
+      },
+      {
+        "id": "it-5",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "approval",
+          "title": "Analyst Confirms Compromise",
+          "summary": "SOC analyst reviews evidence and confirms or denies account compromise",
+          "config": {
+            "message": "Impossible travel detected for {{$.trigger.alert.target_user_email}}. Sessions have been disabled. Please review the evidence and confirm whether the account is compromised.",
+            "assign_to": "team",
+            "timeout_minutes": "60",
+            "auto_decision": "none",
+            "escalation": "soc_lead"
+          }
+        }
+      },
+      {
+        "id": "it-6",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "decision",
+          "title": "Confirmed Compromised?",
+          "summary": "Branch based on analyst confirmation of compromise",
+          "config": {
+            "conditions": {
+              "operator": "AND",
+              "conditions": [
+                {
+                  "field": "$.nodes.it-5.result.approved",
+                  "operator": "equals",
+                  "value": "true"
+                }
+              ],
+              "groups": []
+            },
+            "expression": "$.nodes.it-5.result.approved == true",
+            "default_branch": "no"
+          }
+        }
+      },
+      {
+        "id": "it-7",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "title": "Reset Password",
+          "summary": "Force password reset for the compromised account",
+          "config": {
+            "response_type": "integration_action",
+            "integration_instance_id": "microsoft_graph",
+            "action_type": "reset_password",
+            "params": {
+              "user_id": "$.trigger.alert.target_user_id",
+              "force_change_on_login": true
+            },
+            "requires_approval": false,
+            "priority": "high"
+          }
+        }
+      },
+      {
+        "id": "it-8",
+        "type": "signal",
+        "position": { "x": 340, "y": 1180 },
+        "data": {
+          "kind": "respond",
+          "title": "Revoke All Tokens",
+          "summary": "Revoke all OAuth and refresh tokens for the compromised user",
+          "config": {
+            "response_type": "integration_action",
+            "integration_instance_id": "microsoft_graph",
+            "action_type": "revoke_tokens",
+            "params": {
+              "user_id": "$.trigger.alert.target_user_id",
+              "revoke_all": true
+            },
+            "requires_approval": false,
+            "priority": "high"
+          }
+        }
+      },
+      {
+        "id": "it-9",
+        "type": "signal",
+        "position": { "x": 340, "y": 1340 },
+        "data": {
+          "kind": "respond",
+          "title": "Notify User via Email",
+          "summary": "Inform the user their account was compromised and credentials were reset",
+          "config": {
+            "response_type": "notification",
+            "channel": "email",
+            "email_recipients": "{{$.trigger.alert.target_user_email}}",
+            "email_subject": "Security Alert: Your account credentials have been reset",
+            "message": "Suspicious login activity was detected on your account from an impossible travel location. Your password has been reset and all active sessions have been revoked. Please contact IT Security if you did not initiate this activity.",
+            "requires_approval": false,
+            "priority": "high"
+          }
+        }
+      },
+      {
+        "id": "it-10",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "utility",
+          "title": "Mark False Positive",
+          "summary": "Update alert status to false positive — travel was legitimate",
+          "config": {
+            "operation": "update_status",
+            "status": "false_positive",
+            "note": "Impossible travel alert reviewed. Travel determined to be physically possible or expected. No action required."
+          }
+        }
+      },
+      {
+        "id": "it-11",
+        "type": "signal",
+        "position": { "x": 520, "y": 1500 },
+        "data": {
+          "kind": "end",
+          "title": "Playbook Complete",
+          "summary": "Impossible travel investigation finished",
+          "config": {
+            "disposition": "completed",
+            "summary": "Impossible travel detection response completed"
+          }
+        }
+      }
+    ],
+    "edges": [
+      { "id": "it-e1", "source": "it-1", "target": "it-2", "animated": true, "type": "smoothstep" },
+      { "id": "it-e2", "source": "it-2", "target": "it-3", "animated": true, "type": "smoothstep" },
+      { "id": "it-e3", "source": "it-3", "target": "it-4", "sourceHandle": "yes", "label": "Yes", "animated": true, "type": "smoothstep" },
+      { "id": "it-e4", "source": "it-3", "target": "it-10", "sourceHandle": "no", "label": "No", "animated": true, "type": "smoothstep" },
+      { "id": "it-e5", "source": "it-4", "target": "it-5", "animated": true, "type": "smoothstep" },
+      { "id": "it-e6", "source": "it-5", "target": "it-6", "animated": true, "type": "smoothstep" },
+      { "id": "it-e7", "source": "it-6", "target": "it-7", "sourceHandle": "yes", "label": "Yes", "animated": true, "type": "smoothstep" },
+      { "id": "it-e8", "source": "it-6", "target": "it-10", "sourceHandle": "no", "label": "No", "animated": true, "type": "smoothstep" },
+      { "id": "it-e9", "source": "it-7", "target": "it-8", "animated": true, "type": "smoothstep" },
+      { "id": "it-e10", "source": "it-8", "target": "it-9", "animated": true, "type": "smoothstep" },
+      { "id": "it-e11", "source": "it-9", "target": "it-11", "animated": true, "type": "smoothstep" },
+      { "id": "it-e12", "source": "it-10", "target": "it-11", "animated": true, "type": "smoothstep" }
+    ]
+  }
+}

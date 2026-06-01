@@ -1,0 +1,161 @@
+{
+  "id": "check_point_cloudguard",
+  "name": "Check Point CloudGuard",
+  "description": "Cloud security posture management and workload protection platform providing compliance, threat detection, and asset visibility via REST API",
+  "version": "1.0.0",
+  "category": "cloud_security",
+  "vendor": "Check Point",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "prefix": "Basic",
+    "location": "header",
+    "note": "Base64 encode API_KEY_ID:API_KEY_SECRET for Basic auth"
+  },
+  "base_url": "https://api.dome9.com/v2",
+  "actions": [
+    {
+      "id": "list_findings",
+      "name": "List Findings",
+      "description": "Retrieve security findings from posture assessments across cloud accounts",
+      "http_method": "GET",
+      "endpoint": "/Compliance/Finding",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Filter by severity (High, Medium, Low)",
+          "required": false
+        },
+        {
+          "name": "cloudAccountId",
+          "type": "string",
+          "description": "Filter by cloud account ID",
+          "required": false
+        },
+        {
+          "name": "bundleId",
+          "type": "number",
+          "description": "Filter by compliance ruleset bundle ID",
+          "required": false
+        },
+        {
+          "name": "pageSize",
+          "type": "number",
+          "description": "Number of results per page",
+          "required": false,
+          "default": 50
+        }
+      ]
+    },
+    {
+      "id": "run_assessment",
+      "name": "Run Assessment",
+      "description": "Execute a compliance assessment against a specific ruleset bundle for a cloud account",
+      "http_method": "POST",
+      "endpoint": "/Assessment/run",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "number",
+          "description": "Ruleset bundle ID to assess against",
+          "required": true
+        },
+        {
+          "name": "cloudAccountId",
+          "type": "string",
+          "description": "Cloud account ID to assess",
+          "required": true
+        },
+        {
+          "name": "cloudAccountType",
+          "type": "string",
+          "description": "Cloud account type (AWS, Azure, GCP)",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_cloud_accounts",
+      "name": "List Cloud Accounts",
+      "description": "List all connected cloud accounts and their protection status",
+      "http_method": "GET",
+      "endpoint": "/CloudAccounts",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "get_cloud_account",
+      "name": "Get Cloud Account Details",
+      "description": "Get details of a specific onboarded cloud account",
+      "http_method": "GET",
+      "endpoint": "/CloudAccounts/{id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Cloud account ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_rulesets",
+      "name": "List Rulesets",
+      "description": "List all compliance rulesets (bundles) available for assessments",
+      "http_method": "GET",
+      "endpoint": "/CompliancePolicy",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "list_security_groups",
+      "name": "List Security Groups",
+      "description": "List cloud network security groups and their configurations",
+      "http_method": "GET",
+      "endpoint": "/CloudSecurityGroup",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "cloudAccountId",
+          "type": "string",
+          "description": "Filter by cloud account ID",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_alerts",
+      "name": "Get Alerts",
+      "description": "Retrieve intelligence alerts and threat notifications",
+      "http_method": "GET",
+      "endpoint": "/Alerts",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Filter by severity (High, Medium, Low)",
+          "required": false
+        },
+        {
+          "name": "acknowledged",
+          "type": "boolean",
+          "description": "Filter by acknowledged status",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

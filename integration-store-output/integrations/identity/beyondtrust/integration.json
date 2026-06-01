@@ -1,0 +1,245 @@
+{
+  "id": "beyondtrust",
+  "name": "BeyondTrust Password Safe",
+  "description": "Privileged account and session management through BeyondTrust BeyondInsight and Password Safe REST API",
+  "version": "1.0.0",
+  "category": "identity",
+  "vendor": "BeyondTrust",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header",
+    "auth_endpoint": "/Auth/SignAppIn"
+  },
+  "base_url": "https://{host}/BeyondTrust/api/public/v3",
+  "actions": [
+    {
+      "id": "list_managed_accounts",
+      "name": "List Managed Accounts",
+      "description": "List all managed accounts in Password Safe",
+      "http_method": "GET",
+      "endpoint": "/ManagedAccounts",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "systemName",
+          "type": "string",
+          "description": "Filter by system name",
+          "required": false
+        },
+        {
+          "name": "accountName",
+          "type": "string",
+          "description": "Filter by account name",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_managed_account",
+      "name": "Get Managed Account",
+      "description": "Retrieve details of a specific managed account",
+      "http_method": "GET",
+      "endpoint": "/ManagedAccounts/{accountId}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "accountId",
+          "type": "string",
+          "description": "Managed account ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "request_password",
+      "name": "Request Password",
+      "description": "Create a password release request for a managed account",
+      "http_method": "POST",
+      "endpoint": "/Requests",
+      "action_type": "investigate",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "AccountId",
+          "type": "number",
+          "description": "ID of the managed account",
+          "required": true
+        },
+        {
+          "name": "Reason",
+          "type": "string",
+          "description": "Reason for the password request",
+          "required": false
+        },
+        {
+          "name": "DurationMinutes",
+          "type": "number",
+          "description": "Duration in minutes for the password checkout",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "retrieve_password",
+      "name": "Retrieve Password",
+      "description": "Retrieve the password for an approved request",
+      "http_method": "GET",
+      "endpoint": "/Credentials/{requestId}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "requestId",
+          "type": "string",
+          "description": "Request ID for the approved password release",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "checkin_password",
+      "name": "Check In Password",
+      "description": "Check in a previously checked-out password",
+      "http_method": "PUT",
+      "endpoint": "/Requests/{requestId}/Checkin",
+      "action_type": "correct",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "requestId",
+          "type": "string",
+          "description": "Request ID to check in",
+          "required": true
+        },
+        {
+          "name": "Reason",
+          "type": "string",
+          "description": "Reason for check-in",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_managed_systems",
+      "name": "List Managed Systems",
+      "description": "List all managed systems in Password Safe",
+      "http_method": "GET",
+      "endpoint": "/ManagedSystems",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "get_managed_system",
+      "name": "Get Managed System",
+      "description": "Retrieve details of a specific managed system",
+      "http_method": "GET",
+      "endpoint": "/ManagedSystems/{systemId}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "systemId",
+          "type": "string",
+          "description": "Managed system ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_sessions",
+      "name": "List Sessions",
+      "description": "List all privileged sessions",
+      "http_method": "GET",
+      "endpoint": "/Sessions",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Filter by session status (Active, Completed, etc.)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_session",
+      "name": "Get Session Details",
+      "description": "Retrieve details of a specific privileged session",
+      "http_method": "GET",
+      "endpoint": "/Sessions/{sessionId}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "sessionId",
+          "type": "string",
+          "description": "Session ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "terminate_session",
+      "name": "Terminate Session",
+      "description": "Terminate an active privileged session",
+      "http_method": "POST",
+      "endpoint": "/Sessions/{sessionId}/Terminate",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "sessionId",
+          "type": "string",
+          "description": "Session ID to terminate",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_requests",
+      "name": "List Password Requests",
+      "description": "List all password release requests",
+      "http_method": "GET",
+      "endpoint": "/Requests",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Filter by request status",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "change_password",
+      "name": "Change Managed Account Password",
+      "description": "Trigger an immediate password change for a managed account",
+      "http_method": "PUT",
+      "endpoint": "/ManagedAccounts/{accountId}/Credentials",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "accountId",
+          "type": "string",
+          "description": "Managed account ID",
+          "required": true
+        },
+        {
+          "name": "Password",
+          "type": "string",
+          "description": "New password value (optional, auto-generated if not provided)",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

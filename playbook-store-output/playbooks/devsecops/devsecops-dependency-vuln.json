@@ -1,0 +1,249 @@
+{
+  "name": "Dependency Vulnerability Response",
+  "slug": "devsecops-dependency-vuln",
+  "description": "Automated response workflow for dependency vulnerability alerts from package managers (npm, pip, Maven, Go modules). Riggs AI assesses the vulnerability severity and whether an exploit exists, then either auto-creates a PR to bump the vulnerable dependency or blocks the CI pipeline for critical issues requiring immediate developer attention.",
+  "category": "devsecops",
+  "subcategory": "dependency_management",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "8 minutes",
+  "tags": ["devsecops", "dependency", "sca", "npm", "pip", "maven", "supply-chain", "vulnerability"],
+  "alert_types": ["dependency_vulnerability", "sca_finding"],
+  "severity_filter": ["low", "medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["dependency_vulnerability", "sca_finding", "dependabot_alert", "snyk_alert"],
+    "min_severity": "medium"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "github",
+      "name": "GitHub",
+      "category": "scm",
+      "reason": "Create pull requests for dependency version bumps and interact with repository settings"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create tracking tickets for dependency vulnerabilities that require manual intervention"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Notify development teams about critical dependency vulnerabilities"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "title": "Dependency Vulnerability Alert",
+          "summary": "Triggers on dependency vulnerability alerts from SCA tools or package registries",
+          "config": {
+            "trigger_type": "alert",
+            "alert_types": ["dependency_vulnerability", "sca_finding", "dependabot_alert", "snyk_alert"],
+            "description": "Ingests dependency vulnerability alerts from Dependabot, Snyk, npm audit, pip-audit, or OWASP Dependency-Check"
+          }
+        }
+      },
+      {
+        "id": "analyze-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "title": "AI Dependency Risk Assessment",
+          "summary": "Riggs AI evaluates the dependency vulnerability severity and upgrade path",
+          "config": {
+            "template_id": "vuln_risk",
+            "additional_instructions": "Assess the dependency vulnerability: check CVE severity, whether a public exploit exists, if the vulnerable function is actually called in the codebase, and whether a patched version is available. Recommend upgrade path and breaking change risk.",
+            "description": "AI-powered dependency vulnerability risk assessment with upgrade path analysis"
+          }
+        }
+      },
+      {
+        "id": "decision-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "title": "Critical with Known Exploit?",
+          "summary": "Check if the dependency vulnerability is critical and has a known exploit",
+          "config": {
+            "conditions": {
+              "operator": "AND",
+              "conditions": [
+                {
+                  "left": { "type": "path", "value": "$.nodes.analyze-1.result.severity" },
+                  "operator": "in",
+                  "right": { "type": "value", "value": ["critical"] }
+                },
+                {
+                  "left": { "type": "path", "value": "$.nodes.analyze-1.result.exploit_available" },
+                  "operator": "equals",
+                  "right": { "type": "value", "value": true }
+                }
+              ],
+              "groups": []
+            },
+            "expression": "$.nodes.analyze-1.result.severity == \"critical\" and $.nodes.analyze-1.result.exploit_available == true",
+            "default_branch": "no"
+          }
+        }
+      },
+      {
+        "id": "respond-1",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "respond",
+          "title": "Block Pipeline & Alert Team",
+          "summary": "Block the CI/CD pipeline and immediately notify the development team",
+          "config": {
+            "response_type": "notify",
+            "channel": "slack",
+            "slack_channel": "#devsecops-critical",
+            "message": "PIPELINE BLOCKED — Critical Dependency Vulnerability\n\nPackage: {{trigger-1.alert.package_name}}@{{trigger-1.alert.current_version}}\nCVE: {{trigger-1.alert.cve_id}}\nExploit: Public exploit available\nRepo: {{trigger-1.alert.repository}}\nFixed Version: {{trigger-1.alert.patched_version}}\n\n{{analyze-1.result.summary}}\n\nAction Required: Upgrade immediately or apply workaround.",
+            "priority": "critical"
+          }
+        }
+      },
+      {
+        "id": "respond-2",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "title": "Create Emergency Fix Ticket",
+          "summary": "Create a Jira ticket for the critical dependency vulnerability",
+          "config": {
+            "response_type": "integration_action",
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_issue",
+              "parameters": {
+                "project": "{{trigger-1.alert.jira_project | default('APPSEC')}}",
+                "issue_type": "Bug",
+                "priority": "P1",
+                "summary": "CRITICAL DEP: {{trigger-1.alert.cve_id}} in {{trigger-1.alert.package_name}}@{{trigger-1.alert.current_version}}",
+                "description": "Critical dependency vulnerability with public exploit.\n\nPackage: {{trigger-1.alert.package_name}}@{{trigger-1.alert.current_version}}\nCVE: {{trigger-1.alert.cve_id}}\nFixed Version: {{trigger-1.alert.patched_version}}\nRepo: {{trigger-1.alert.repository}}\n\nRiggs Assessment:\n{{analyze-1.result.summary}}\n\nUpgrade Path:\n{{analyze-1.result.remediation}}",
+                "labels": ["dependency-vuln", "critical", "pipeline-blocked"]
+              }
+            },
+            "description": "Create an emergency P1 ticket for critical exploitable dependency vulnerability"
+          }
+        }
+      },
+      {
+        "id": "decision-2",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "decision",
+          "title": "Patch Available?",
+          "summary": "Check if a patched version of the dependency exists",
+          "config": {
+            "conditions": {
+              "operator": "AND",
+              "conditions": [
+                {
+                  "left": { "type": "path", "value": "$.nodes.analyze-1.result.patch_available" },
+                  "operator": "equals",
+                  "right": { "type": "value", "value": true }
+                }
+              ],
+              "groups": []
+            },
+            "expression": "$.nodes.analyze-1.result.patch_available == true",
+            "default_branch": "no"
+          }
+        }
+      },
+      {
+        "id": "respond-3",
+        "type": "signal",
+        "position": { "x": 600, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "title": "Create Auto-Upgrade PR",
+          "summary": "Automatically create a pull request to bump the vulnerable dependency",
+          "config": {
+            "response_type": "integration_action",
+            "integration_action": {
+              "connector_id": "github",
+              "action": "create_pull_request",
+              "parameters": {
+                "repository": "{{trigger-1.alert.repository}}",
+                "title": "fix(deps): upgrade {{trigger-1.alert.package_name}} to {{trigger-1.alert.patched_version}} ({{trigger-1.alert.cve_id}})",
+                "body": "Automated dependency upgrade to fix {{trigger-1.alert.cve_id}}.\n\nPackage: {{trigger-1.alert.package_name}}\nFrom: {{trigger-1.alert.current_version}}\nTo: {{trigger-1.alert.patched_version}}\n\n{{analyze-1.result.summary}}",
+                "branch": "fix/{{trigger-1.alert.cve_id}}-{{trigger-1.alert.package_name}}"
+              }
+            },
+            "description": "Create a pull request to automatically upgrade the vulnerable dependency"
+          }
+        }
+      },
+      {
+        "id": "utility-1",
+        "type": "signal",
+        "position": { "x": 860, "y": 700 },
+        "data": {
+          "kind": "utility",
+          "title": "Log for Manual Review",
+          "summary": "No patch available — log for manual developer review",
+          "config": {
+            "operation": "update_status",
+            "status": "acknowledged",
+            "note": "Dependency vulnerability in {{trigger-1.alert.package_name}}@{{trigger-1.alert.current_version}} — no patched version available. Requires manual workaround or alternative package."
+          }
+        }
+      },
+      {
+        "id": "end-1",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "end",
+          "title": "End — Pipeline Blocked",
+          "summary": "Critical dependency vulnerability — pipeline blocked and team notified",
+          "config": {
+            "disposition": "true_positive",
+            "summary": "Critical dependency vulnerability with public exploit. Pipeline blocked, emergency ticket created."
+          }
+        }
+      },
+      {
+        "id": "end-2",
+        "type": "signal",
+        "position": { "x": 700, "y": 860 },
+        "data": {
+          "kind": "end",
+          "title": "End — PR Created or Logged",
+          "summary": "Non-critical dependency vulnerability handled via PR or logged for review",
+          "config": {
+            "disposition": "remediated",
+            "summary": "Dependency vulnerability handled. Upgrade PR created or logged for manual review."
+          }
+        }
+      }
+    ],
+    "edges": [
+      { "id": "e1", "source": "trigger-1", "target": "analyze-1", "animated": true, "type": "smoothstep" },
+      { "id": "e2", "source": "analyze-1", "target": "decision-1", "animated": true, "type": "smoothstep" },
+      { "id": "e3", "source": "decision-1", "target": "respond-1", "sourceHandle": "yes", "label": "Yes", "animated": true, "type": "smoothstep" },
+      { "id": "e4", "source": "decision-1", "target": "decision-2", "sourceHandle": "no", "label": "No", "animated": true, "type": "smoothstep" },
+      { "id": "e5", "source": "respond-1", "target": "respond-2", "animated": true, "type": "smoothstep" },
+      { "id": "e6", "source": "respond-2", "target": "end-1", "animated": true, "type": "smoothstep" },
+      { "id": "e7", "source": "decision-2", "target": "respond-3", "sourceHandle": "yes", "label": "Yes", "animated": true, "type": "smoothstep" },
+      { "id": "e8", "source": "decision-2", "target": "utility-1", "sourceHandle": "no", "label": "No", "animated": true, "type": "smoothstep" },
+      { "id": "e9", "source": "respond-3", "target": "end-2", "animated": true, "type": "smoothstep" },
+      { "id": "e10", "source": "utility-1", "target": "end-2", "animated": true, "type": "smoothstep" }
+    ]
+  }
+}

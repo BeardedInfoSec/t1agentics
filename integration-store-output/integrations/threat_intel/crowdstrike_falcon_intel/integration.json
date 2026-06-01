@@ -1,0 +1,263 @@
+{
+  "id": "crowdstrike_falcon_intel",
+  "name": "CrowdStrike Falcon Intelligence",
+  "description": "Integrate with CrowdStrike Falcon Intelligence to query threat indicators, actors, reports, and malware intelligence via the Falcon API",
+  "version": "1.0.0",
+  "category": "threat_intel",
+  "vendor": "CrowdStrike",
+  "auth_type": "oauth2_client",
+  "auth_config": {
+    "type": "oauth2_client",
+    "token_url": "/oauth2/token",
+    "grant_type": "client_credentials",
+    "note": "POST client_id and client_secret as form data to obtain bearer token. Base URL varies by cloud region."
+  },
+  "base_url": "https://api.crowdstrike.com",
+  "actions": [
+    {
+      "id": "search_indicators",
+      "name": "Search Intel Indicators",
+      "description": "Search CrowdStrike intelligence indicators using FQL filters for IOC type, malware family, actor, and threat type",
+      "http_method": "GET",
+      "endpoint": "/intel/queries/indicators/v1",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "FQL filter expression (e.g. indicator:'8.8.8.8' or type:'ip_address')",
+          "required": false
+        },
+        {
+          "name": "q",
+          "type": "string",
+          "description": "Free text search across indicator fields",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of indicator IDs to return (max 50000)",
+          "required": false
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Pagination offset",
+          "required": false
+        },
+        {
+          "name": "sort",
+          "type": "string",
+          "description": "Sort field and direction (e.g. published_date|desc)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_indicator_entities",
+      "name": "Get Indicator Details",
+      "description": "Retrieve detailed information for specific CrowdStrike intelligence indicators by their IDs",
+      "http_method": "POST",
+      "endpoint": "/intel/entities/indicators/GET/v1",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "ids",
+          "type": "string",
+          "description": "Comma-separated list of indicator IDs to retrieve",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "search_actors",
+      "name": "Search Threat Actors",
+      "description": "Search CrowdStrike-tracked threat actors (adversaries) using FQL filters",
+      "http_method": "GET",
+      "endpoint": "/intel/queries/actors/v1",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "FQL filter (e.g. name:'FANCY BEAR' or target_countries:'US')",
+          "required": false
+        },
+        {
+          "name": "q",
+          "type": "string",
+          "description": "Free text search for actors",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of results",
+          "required": false
+        },
+        {
+          "name": "sort",
+          "type": "string",
+          "description": "Sort field and direction",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_actor_entities",
+      "name": "Get Actor Details",
+      "description": "Retrieve detailed threat actor profiles by CrowdStrike actor IDs",
+      "http_method": "GET",
+      "endpoint": "/intel/entities/actors/v1",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "ids",
+          "type": "string",
+          "description": "Comma-separated actor IDs to retrieve",
+          "required": true
+        },
+        {
+          "name": "fields",
+          "type": "string",
+          "description": "Specific fields to return",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "search_reports",
+      "name": "Search Intelligence Reports",
+      "description": "Search CrowdStrike intelligence reports including CSA, CSIT, and targeted intrusion reports",
+      "http_method": "GET",
+      "endpoint": "/intel/queries/reports/v1",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "FQL filter (e.g. type:'CSIT' or target_industries:'Technology')",
+          "required": false
+        },
+        {
+          "name": "q",
+          "type": "string",
+          "description": "Free text search for reports",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of results",
+          "required": false
+        },
+        {
+          "name": "sort",
+          "type": "string",
+          "description": "Sort field and direction (e.g. created_date|desc)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_report_entities",
+      "name": "Get Report Details",
+      "description": "Retrieve full intelligence report details by report IDs",
+      "http_method": "GET",
+      "endpoint": "/intel/entities/reports/v1",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "ids",
+          "type": "string",
+          "description": "Comma-separated report IDs to retrieve",
+          "required": true
+        },
+        {
+          "name": "fields",
+          "type": "string",
+          "description": "Specific fields to return",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "query_iocs",
+      "name": "Query Custom IOCs",
+      "description": "Query custom indicators of compromise uploaded to CrowdStrike for detection",
+      "http_method": "GET",
+      "endpoint": "/iocs/queries/indicators/v1",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "FQL filter (e.g. type:'ipv4'+value:'8.8.8.8')",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of results (max 500)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "upload_ioc",
+      "name": "Upload Custom IOC",
+      "description": "Upload a custom indicator of compromise to CrowdStrike for detection and prevention",
+      "http_method": "POST",
+      "endpoint": "/iocs/entities/indicators/v1",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "type",
+          "type": "string",
+          "description": "IOC type: ipv4, ipv6, domain, sha256, md5",
+          "required": true
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "description": "IOC value",
+          "required": true,
+          "contains": ["ip", "domain", "hash", "md5", "sha256"]
+        },
+        {
+          "name": "action",
+          "type": "string",
+          "description": "Action to take: detect, prevent, allow",
+          "required": true
+        },
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Severity: informational, low, medium, high, critical",
+          "required": false
+        },
+        {
+          "name": "platforms",
+          "type": "string",
+          "description": "Target platforms (comma-separated): windows, mac, linux",
+          "required": false
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Description of the IOC",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

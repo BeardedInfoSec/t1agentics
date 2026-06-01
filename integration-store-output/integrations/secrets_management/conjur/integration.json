@@ -1,0 +1,280 @@
+{
+  "id": "conjur",
+  "name": "CyberArk Conjur",
+  "description": "DevOps secrets management through CyberArk Conjur REST API for managing secrets, policies, roles, and workload authentication",
+  "version": "1.0.0",
+  "category": "secrets_management",
+  "vendor": "CyberArk (open source)",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "token_url": "https://{host}/authn/{account}/{login}/authenticate",
+    "header_name": "Authorization",
+    "header_prefix": "Token token=",
+    "location": "header"
+  },
+  "base_url": "https://{host}",
+  "actions": [
+    {
+      "id": "get_secret",
+      "name": "Get Secret",
+      "description": "Retrieve the value of a secret (variable) from Conjur",
+      "http_method": "GET",
+      "endpoint": "/secrets/{account}/variable/{identifier}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "account",
+          "type": "string",
+          "description": "Conjur organization account name",
+          "required": true
+        },
+        {
+          "name": "identifier",
+          "type": "string",
+          "description": "URL-encoded variable identifier (e.g. path/to/secret)",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "batch_get_secrets",
+      "name": "Batch Get Secrets",
+      "description": "Retrieve multiple secrets in a single API call",
+      "http_method": "GET",
+      "endpoint": "/secrets",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "variable_ids",
+          "type": "string",
+          "description": "Comma-separated list of variable IDs (e.g. account:variable:path1,account:variable:path2)",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "set_secret",
+      "name": "Set Secret",
+      "description": "Set or update the value of a secret (variable)",
+      "http_method": "POST",
+      "endpoint": "/secrets/{account}/variable/{identifier}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "account",
+          "type": "string",
+          "description": "Conjur organization account name",
+          "required": true
+        },
+        {
+          "name": "identifier",
+          "type": "string",
+          "description": "URL-encoded variable identifier",
+          "required": true
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "description": "Secret value to set",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_resources",
+      "name": "List Resources",
+      "description": "List all resources (variables, hosts, users, groups, policies) in the account",
+      "http_method": "GET",
+      "endpoint": "/resources/{account}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "account",
+          "type": "string",
+          "description": "Conjur organization account name",
+          "required": true
+        },
+        {
+          "name": "kind",
+          "type": "string",
+          "description": "Filter by resource kind (variable, host, user, group, policy, layer)",
+          "required": false
+        },
+        {
+          "name": "search",
+          "type": "string",
+          "description": "Search term to filter resources",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of results",
+          "required": false
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Offset for pagination",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_resource",
+      "name": "Get Resource",
+      "description": "Retrieve details of a specific resource including permissions",
+      "http_method": "GET",
+      "endpoint": "/resources/{account}/{kind}/{identifier}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "account",
+          "type": "string",
+          "description": "Conjur organization account name",
+          "required": true
+        },
+        {
+          "name": "kind",
+          "type": "string",
+          "description": "Resource kind (variable, host, user, group, policy, layer)",
+          "required": true
+        },
+        {
+          "name": "identifier",
+          "type": "string",
+          "description": "URL-encoded resource identifier",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "load_policy",
+      "name": "Load Policy",
+      "description": "Load or update a Conjur policy to define resources, roles, and permissions",
+      "http_method": "POST",
+      "endpoint": "/policies/{account}/policy/{identifier}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "account",
+          "type": "string",
+          "description": "Conjur organization account name",
+          "required": true
+        },
+        {
+          "name": "identifier",
+          "type": "string",
+          "description": "Policy identifier",
+          "required": true
+        },
+        {
+          "name": "policy",
+          "type": "string",
+          "description": "YAML policy content",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_role_members",
+      "name": "List Role Members",
+      "description": "List all members of a specific role",
+      "http_method": "GET",
+      "endpoint": "/roles/{account}/{kind}/{identifier}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "account",
+          "type": "string",
+          "description": "Conjur organization account name",
+          "required": true
+        },
+        {
+          "name": "kind",
+          "type": "string",
+          "description": "Role kind (group, layer, host, user, policy)",
+          "required": true
+        },
+        {
+          "name": "identifier",
+          "type": "string",
+          "description": "Role identifier",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "check_permission",
+      "name": "Check Permission",
+      "description": "Check if a role has a specific privilege on a resource",
+      "http_method": "GET",
+      "endpoint": "/resources/{account}/{kind}/{identifier}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "account",
+          "type": "string",
+          "description": "Conjur organization account name",
+          "required": true
+        },
+        {
+          "name": "kind",
+          "type": "string",
+          "description": "Resource kind",
+          "required": true
+        },
+        {
+          "name": "identifier",
+          "type": "string",
+          "description": "Resource identifier",
+          "required": true
+        },
+        {
+          "name": "privilege",
+          "type": "string",
+          "description": "Privilege to check (read, execute, update)",
+          "required": true
+        },
+        {
+          "name": "role",
+          "type": "string",
+          "description": "Role to check permission for",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "rotate_api_key",
+      "name": "Rotate API Key",
+      "description": "Rotate the API key for a role (user or host)",
+      "http_method": "PUT",
+      "endpoint": "/authn/{account}/api_key",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "account",
+          "type": "string",
+          "description": "Conjur organization account name",
+          "required": true
+        },
+        {
+          "name": "role",
+          "type": "string",
+          "description": "Role whose API key to rotate (e.g. account:user:admin)",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,180 @@
+{
+  "id": "onyphe",
+  "name": "ONYPHE",
+  "description": "ONYPHE is a cyber defense search engine that aggregates open-source and cyber threat intelligence data collected by crawling various sources on the Internet. It provides IP, domain, and hostname intelligence with geolocation, threat lists, vulnerability scanning, and WHOIS data.",
+  "version": "1.0.0",
+  "category": "threat_intel",
+  "vendor": "Onyphe",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "header_name": "Authorization",
+    "prefix": "bearer",
+    "location": "header"
+  },
+  "base_url": "https://www.onyphe.io/api/v2",
+  "actions": [
+    {
+      "id": "summary_ip",
+      "name": "IP Summary",
+      "description": "Get a comprehensive summary of all available data for an IP address including geolocation, open ports, services, vulnerabilities, threat list membership, and WHOIS data.",
+      "http_method": "GET",
+      "endpoint": "/summary/ip/{ip}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "The IPv4 or IPv6 address to look up",
+          "required": true,
+          "contains": ["ip"]
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "summary_domain",
+      "name": "Domain Summary",
+      "description": "Get a comprehensive summary of all available data for a domain including DNS records, subdomains, SSL certificates, and associated infrastructure.",
+      "http_method": "GET",
+      "endpoint": "/summary/domain/{domain}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "domain",
+          "type": "string",
+          "description": "The domain name to look up",
+          "required": true,
+          "contains": ["domain"]
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "summary_hostname",
+      "name": "Hostname Summary",
+      "description": "Get a comprehensive summary of all available data for a specific hostname (FQDN) including DNS resolution, services, and SSL certificates.",
+      "http_method": "GET",
+      "endpoint": "/summary/hostname/{hostname}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "hostname",
+          "type": "string",
+          "description": "The fully-qualified hostname to look up (e.g., 'www.example.com')",
+          "required": true,
+          "contains": ["domain"]
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "simple_geoloc",
+      "name": "IP Geolocation",
+      "description": "Get geolocation data for an IP address including country, city, coordinates, ASN, and organization.",
+      "http_method": "GET",
+      "endpoint": "/simple/geoloc/{ip}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "The IPv4 or IPv6 address to geolocate",
+          "required": true,
+          "contains": ["ip"]
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "simple_threatlist",
+      "name": "IP Threat List Check",
+      "description": "Check whether an IP address appears on any threat intelligence lists tracked by ONYPHE, indicating potential malicious activity.",
+      "http_method": "GET",
+      "endpoint": "/simple/threatlist/{ip}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "The IPv4 or IPv6 address to check against threat lists",
+          "required": true,
+          "contains": ["ip"]
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "simple_vulnscan",
+      "name": "IP Vulnerability Scan",
+      "description": "Retrieve vulnerability scan results for an IP address showing detected CVEs and security weaknesses.",
+      "http_method": "GET",
+      "endpoint": "/simple/vulnscan/{ip}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "The IPv4 or IPv6 address to get vulnerability data for",
+          "required": true,
+          "contains": ["ip"]
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "simple_whois",
+      "name": "IP WHOIS",
+      "description": "Retrieve WHOIS registration data for an IP address including network block, organization, and allocation details.",
+      "http_method": "GET",
+      "endpoint": "/simple/whois/{ip}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "The IPv4 or IPv6 address to get WHOIS data for",
+          "required": true,
+          "contains": ["ip"]
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "search",
+      "name": "Search",
+      "description": "Search the ONYPHE database using the ONYPHE Query Language (OQL) to filter across all data categories.",
+      "http_method": "GET",
+      "endpoint": "/search/{category}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "category",
+          "type": "string",
+          "description": "Data category to search: 'datascan', 'geoloc', 'inetnum', 'resolver', 'threatlist', 'vulnscan', 'whois', 'ctl', 'pastries'",
+          "required": true
+        },
+        {
+          "name": "oql",
+          "type": "string",
+          "description": "ONYPHE Query Language (OQL) query string (e.g., 'ip:8.8.8.8')",
+          "required": true
+        },
+        {
+          "name": "page",
+          "type": "integer",
+          "description": "Page number for pagination (default: 1)",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

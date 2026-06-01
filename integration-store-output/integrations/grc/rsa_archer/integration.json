@@ -1,0 +1,93 @@
+{
+  "id": "rsa_archer",
+  "name": "RSA Archer",
+  "description": "Integrates with RSA Archer REST API for governance, risk, and compliance management including content records, applications, and risk assessments",
+  "version": "1.0.0",
+  "category": "grc",
+  "vendor": "Archer",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "https://{host}/api",
+  "actions": [
+    {
+      "id": "list_records",
+      "name": "List Records",
+      "description": "Search and list content records from an Archer application",
+      "http_method": "POST",
+      "endpoint": "/core/content/search",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "moduleId", "type": "number", "description": "Application/module ID to search", "required": true},
+        {"name": "filterCriteria", "type": "string", "description": "JSON filter criteria for the search", "required": false},
+        {"name": "pageNumber", "type": "number", "description": "Page number for results", "required": false, "default": 1},
+        {"name": "pageSize", "type": "number", "description": "Results per page", "required": false, "default": 50},
+        {"name": "sortFields", "type": "string", "description": "JSON array of sort field configurations", "required": false}
+      ]
+    },
+    {
+      "id": "get_record",
+      "name": "Get Record",
+      "description": "Retrieve a specific content record by ID",
+      "http_method": "GET",
+      "endpoint": "/core/content/{content_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "content_id", "type": "number", "description": "Content record ID", "required": true}
+      ]
+    },
+    {
+      "id": "create_record",
+      "name": "Create Record",
+      "description": "Create a new content record in an Archer application",
+      "http_method": "POST",
+      "endpoint": "/core/content",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "moduleId", "type": "number", "description": "Application/module ID", "required": true},
+        {"name": "fieldContents", "type": "string", "description": "JSON object of field values", "required": true}
+      ]
+    },
+    {
+      "id": "update_record",
+      "name": "Update Record",
+      "description": "Update an existing content record",
+      "http_method": "PUT",
+      "endpoint": "/core/content/{content_id}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "content_id", "type": "number", "description": "Content record ID to update", "required": true},
+        {"name": "fieldContents", "type": "string", "description": "JSON object of updated field values", "required": true}
+      ]
+    },
+    {
+      "id": "list_applications",
+      "name": "List Applications",
+      "description": "List all Archer applications/modules",
+      "http_method": "GET",
+      "endpoint": "/core/system/application",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "get_application_fields",
+      "name": "Get Application Fields",
+      "description": "Get field definitions for an Archer application",
+      "http_method": "GET",
+      "endpoint": "/core/system/fielddefinition/module/{module_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "module_id", "type": "number", "description": "Application/module ID", "required": true}
+      ]
+    }
+  ]
+}

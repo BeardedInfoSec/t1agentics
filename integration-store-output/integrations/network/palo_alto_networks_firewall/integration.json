@@ -1,0 +1,249 @@
+{
+  "id": "palo_alto_networks_firewall",
+  "name": "Palo Alto Networks Firewall",
+  "description": "This app integrates with the Palo Alto Networks Firewall to support containment and investigative actions",
+  "version": "2.1.4",
+  "category": "network",
+  "vendor": "Palo Alto Networks",
+  "auth_type": "basic_auth",
+  "auth_config": {
+    "type": "basic_auth",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "Using base URL ",
+  "actions": [
+    {
+      "id": "block_url",
+      "name": "Block Url",
+      "description": "Block an URL",
+      "http_method": "POST",
+      "endpoint": "/actions/block_url",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "URL to block",
+          "required": true,
+          "contains": [
+            "url",
+            "domain"
+          ]
+        },
+        {
+          "name": "ph",
+          "type": "string",
+          "description": "",
+          "required": false
+        },
+        {
+          "name": "vsys",
+          "type": "string",
+          "description": "Virtual system (vsys) to configure",
+          "required": false,
+          "default": "vsys1"
+        },
+        {
+          "name": "sec_policy",
+          "type": "string",
+          "description": "Insert above this policy",
+          "required": false
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "unblock_url",
+      "name": "Unblock Url",
+      "description": "Unblock an URL",
+      "http_method": "POST",
+      "endpoint": "/actions/unblock_url",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "URL to block",
+          "required": true,
+          "contains": [
+            "url",
+            "domain"
+          ]
+        },
+        {
+          "name": "vsys",
+          "type": "string",
+          "description": "Virtual system (vsys) to configure",
+          "required": false,
+          "default": "vsys1"
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "block_application",
+      "name": "Block Application",
+      "description": "Block an application",
+      "http_method": "POST",
+      "endpoint": "/actions/block_application",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "application",
+          "type": "string",
+          "description": "Application to block",
+          "required": true,
+          "contains": [
+            "network application"
+          ]
+        },
+        {
+          "name": "vsys",
+          "type": "string",
+          "description": "Virtual system (vsys) to configure",
+          "required": false,
+          "default": "vsys1"
+        }
+      ]
+    },
+    {
+      "id": "unblock_application",
+      "name": "Unblock Application",
+      "description": "Unblock an application",
+      "http_method": "POST",
+      "endpoint": "/actions/unblock_application",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "application",
+          "type": "string",
+          "description": "Application to unblock",
+          "required": true,
+          "contains": [
+            "network application"
+          ]
+        },
+        {
+          "name": "vsys",
+          "type": "string",
+          "description": "Virtual system (vsys) to configure",
+          "required": false,
+          "default": "vsys1"
+        }
+      ]
+    },
+    {
+      "id": "block_ip",
+      "name": "Block Ip",
+      "description": "Block an IP",
+      "http_method": "POST",
+      "endpoint": "/actions/block_ip",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "IP to block",
+          "required": true,
+          "contains": [
+            "ip",
+            "ip network"
+          ]
+        },
+        {
+          "name": "vsys",
+          "type": "string",
+          "description": "Virtual system (vsys) to configure",
+          "required": false,
+          "default": "vsys1"
+        },
+        {
+          "name": "is_source_address",
+          "type": "boolean",
+          "description": "Source address",
+          "required": false
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "unblock_ip",
+      "name": "Unblock Ip",
+      "description": "Unblock an IP",
+      "http_method": "POST",
+      "endpoint": "/actions/unblock_ip",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "IP to unblock",
+          "required": true,
+          "contains": [
+            "ip",
+            "ip network"
+          ]
+        },
+        {
+          "name": "vsys",
+          "type": "string",
+          "description": "Virtual system (vsys) to configure",
+          "required": false,
+          "default": "vsys1"
+        },
+        {
+          "name": "is_source_address",
+          "type": "boolean",
+          "description": "Source address",
+          "required": false
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "list_apps",
+      "name": "List Applications",
+      "description": "List the applications that the device knows about and can block. If the action parameter 'vsys' is not specified then 'vsys1' is used by default",
+      "http_method": "GET",
+      "endpoint": "/actions/list_apps",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "vsys",
+          "type": "string",
+          "description": "Virtual system (vsys)",
+          "required": false,
+          "default": "vsys1"
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Palo Alto Networks Firewall",
+    "original_type": "firewall",
+    "converted_at": "2025-12-18T16:25:29.021020",
+    "source_version": "2.1.4"
+  }
+}

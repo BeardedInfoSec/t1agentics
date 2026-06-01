@@ -1,0 +1,283 @@
+{
+  "id": "nginx",
+  "name": "NGINX",
+  "description": "This app integrates with an NGINX instance to manage upstreams and servers",
+  "version": "2.0.10",
+  "category": "devops",
+  "vendor": "F5",
+  "auth_type": "basic_auth",
+  "auth_config": {
+    "type": "basic_auth",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "{}api/4",
+  "actions": [
+    {
+      "id": "remove_server",
+      "name": "Remove Server",
+      "description": "Remove a server from an upstream",
+      "http_method": "GET",
+      "endpoint": "/actions/remove_server",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "URL of NGINX instance",
+          "required": false,
+          "contains": [
+            "url"
+          ]
+        },
+        {
+          "name": "upstream_name",
+          "type": "string",
+          "description": "Name of the upstream",
+          "required": true,
+          "contains": [
+            "nginx upstream name"
+          ]
+        },
+        {
+          "name": "server_id",
+          "type": "number",
+          "description": "ID of the server to remove",
+          "required": true,
+          "contains": [
+            "nginx server id"
+          ]
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "add_server",
+      "name": "Add Server",
+      "description": "Add a server to an upstream",
+      "http_method": "GET",
+      "endpoint": "/actions/add_server",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "URL of NGINX instance",
+          "required": false,
+          "contains": [
+            "url"
+          ]
+        },
+        {
+          "name": "upstream_name",
+          "type": "string",
+          "description": "Name of the upstream",
+          "required": true,
+          "contains": [
+            "nginx upstream name"
+          ]
+        },
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "IP of the server to add",
+          "required": true,
+          "contains": [
+            "ip"
+          ]
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "disable_server",
+      "name": "Disable Server",
+      "description": "Disable a server",
+      "http_method": "POST",
+      "endpoint": "/actions/disable_server",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "URL of NGINX instance",
+          "required": false,
+          "contains": [
+            "url"
+          ]
+        },
+        {
+          "name": "upstream_name",
+          "type": "string",
+          "description": "Name of the upstream containing the server",
+          "required": true,
+          "contains": [
+            "nginx upstream name"
+          ]
+        },
+        {
+          "name": "server_id",
+          "type": "string",
+          "description": "ID of the server to disable",
+          "required": true,
+          "contains": [
+            "nginx server id"
+          ]
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "enable_server",
+      "name": "Enable Server",
+      "description": "Enable a server",
+      "http_method": "POST",
+      "endpoint": "/actions/enable_server",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "URL of NGINX instance",
+          "required": false,
+          "contains": [
+            "url"
+          ]
+        },
+        {
+          "name": "upstream_name",
+          "type": "string",
+          "description": "Name of the upstream containing the server",
+          "required": true,
+          "contains": [
+            "nginx upstream name"
+          ]
+        },
+        {
+          "name": "server_id",
+          "type": "string",
+          "description": "ID of the server to enable",
+          "required": true,
+          "contains": [
+            "nginx server id"
+          ]
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "describe_server",
+      "name": "Describe Server",
+      "description": "Get information about an upstream server",
+      "http_method": "GET",
+      "endpoint": "/actions/describe_server",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "URL of NGINX instance",
+          "required": false,
+          "contains": [
+            "url"
+          ]
+        },
+        {
+          "name": "upstream_name",
+          "type": "string",
+          "description": "Name of the upstream containing the server",
+          "required": true,
+          "contains": [
+            "nginx upstream name"
+          ]
+        },
+        {
+          "name": "server_id",
+          "type": "string",
+          "description": "ID of the server to describe",
+          "required": true,
+          "contains": [
+            "nginx server id"
+          ]
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "list_servers",
+      "name": "List Servers",
+      "description": "List servers under an upstream",
+      "http_method": "GET",
+      "endpoint": "/actions/list_servers",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "URL of NGINX instance",
+          "required": false,
+          "contains": [
+            "url"
+          ]
+        },
+        {
+          "name": "upstream_name",
+          "type": "string",
+          "description": "Name of upstream",
+          "required": true,
+          "contains": [
+            "nginx upstream name"
+          ]
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "list_upstreams",
+      "name": "List Upstreams",
+      "description": "List all configured upstreams",
+      "http_method": "GET",
+      "endpoint": "/actions/list_upstreams",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "URL of NGINX instance",
+          "required": false,
+          "contains": [
+            "url"
+          ]
+        }
+      ],
+      "observable_type": "url"
+    }
+  ],
+  "source_metadata": {
+    "original_name": "NGINX",
+    "original_type": "devops",
+    "converted_at": "2025-12-18T16:25:29.009013",
+    "source_version": "2.0.10"
+  }
+}

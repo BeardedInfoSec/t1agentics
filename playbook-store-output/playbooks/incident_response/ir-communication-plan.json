@@ -1,0 +1,277 @@
+{
+  "name": "Incident Communication Plan",
+  "slug": "ir-communication-plan",
+  "description": "Orchestrates internal and external stakeholder communication during an active incident. Riggs AI generates an executive summary and recommends a communication tier based on severity. Critical incidents trigger a full communication cascade: internal leadership briefing via email, customer-facing status page update, PR/legal notification, and a dedicated Slack channel for coordinated updates. Non-critical incidents receive an internal SOC notification and status log update. All communications are tracked for compliance and audit purposes.",
+  "category": "incident_response",
+  "subcategory": "communication",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "10 minutes",
+  "tags": ["communication", "stakeholder", "notification", "crisis", "status_page", "pr"],
+  "alert_types": ["any"],
+  "severity_filter": ["medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["any"],
+    "min_severity": "medium"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Create incident communication channels and distribute updates to stakeholders"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Track all incident communications for audit and compliance"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Incident Communication Required",
+          "config": {
+            "alert_types": ["any"],
+            "description": "Triggers when an incident requires coordinated communication to internal and external stakeholders"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — Communication Assessment",
+          "config": {
+            "template_id": "executive_summary",
+            "additional_instructions": "Assess the incident severity and recommend a communication tier. Determine which stakeholders need to be notified: internal only, internal + customers, or full crisis communication including PR and legal.",
+            "description": "AI-powered assessment to determine the appropriate communication tier and stakeholder notification scope"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "label": "Crisis-Level Communication?",
+          "config": {
+            "condition": "{{analyze_1.severity}} in ['critical', 'high']",
+            "description": "Route based on whether the incident requires full crisis communication or standard internal notification"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "respond",
+          "label": "Notify Leadership via Email",
+          "config": {
+            "notify": {
+              "channel": "email",
+              "target": "{{config.leadership_distribution_list}}",
+              "message": "INCIDENT COMMUNICATION — LEADERSHIP BRIEFING\n\nIncident: {{trigger_1.alert.title}}\nSeverity: {{analyze_1.severity}}\nTimestamp: {{trigger_1.alert.timestamp}}\n\nExecutive Summary:\n{{analyze_1.summary}}\n\nA dedicated communication channel has been established. Further updates will follow as the situation develops."
+            },
+            "description": "Send leadership briefing email with incident executive summary and current status"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "label": "Create Incident Comms Channel",
+          "config": {
+            "integration_action": {
+              "connector_id": "slack",
+              "action": "create_channel",
+              "parameters": {
+                "channel_name": "incident-comms-{{trigger_1.alert.id}}",
+                "topic": "Incident Communications: {{trigger_1.alert.title}}",
+                "initial_message": "INCIDENT COMMUNICATION CHANNEL\n\nIncident: {{trigger_1.alert.title}}\nSeverity: {{analyze_1.severity}}\n\n{{analyze_1.summary}}\n\nThis channel is for coordinated incident communications. All external messaging must be approved before distribution."
+              }
+            },
+            "description": "Create a dedicated Slack channel for coordinated incident communications"
+          }
+        }
+      },
+      {
+        "id": "respond_3",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "label": "Notify PR and Legal",
+          "config": {
+            "notify": {
+              "channel": "email",
+              "target": "{{config.pr_legal_distribution_list}}",
+              "message": "INCIDENT NOTIFICATION — PR/LEGAL ADVISORY\n\nIncident: {{trigger_1.alert.title}}\nSeverity: {{analyze_1.severity}}\nComms Channel: #incident-comms-{{trigger_1.alert.id}}\n\nExecutive Summary:\n{{analyze_1.summary}}\n\nPlease join the incident communications channel for coordination. External messaging may be required. Await confirmation before issuing any public statements."
+            },
+            "description": "Alert PR and Legal teams that a significant incident may require external communication"
+          }
+        }
+      },
+      {
+        "id": "respond_4",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "label": "Create Communication Tracking Ticket",
+          "config": {
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_issue",
+              "parameters": {
+                "project": "IR",
+                "issue_type": "Task",
+                "priority": "P1 - Critical",
+                "summary": "COMMS TRACKING: {{trigger_1.alert.title}}",
+                "description": "Incident Communication Tracking\n\nIncident: {{trigger_1.alert.title}}\nSeverity: {{analyze_1.severity}}\nComms Channel: #incident-comms-{{trigger_1.alert.id}}\n\nNotifications Sent:\n- Leadership briefing email\n- PR/Legal advisory email\n- Slack comms channel created\n\nAll external communications must be documented in this ticket."
+              }
+            },
+            "description": "Create a Jira ticket to track all incident communications for audit and compliance purposes"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 1180 },
+        "data": {
+          "kind": "end",
+          "label": "End — Crisis Comms Activated",
+          "config": {
+            "description": "Full crisis communication plan activated — leadership, PR, and legal notified, comms channel created"
+          }
+        }
+      },
+      {
+        "id": "respond_5",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "respond",
+          "label": "Notify SOC Team on Slack",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#soc-operations",
+              "message": "INCIDENT UPDATE\n\nIncident: {{trigger_1.alert.title}}\nSeverity: {{analyze_1.severity}}\n\n{{analyze_1.summary}}\n\nThis incident does not currently require external communication. SOC team is handling."
+            },
+            "description": "Post internal notification to the SOC Slack channel for standard-severity incidents"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 700, "y": 700 },
+        "data": {
+          "kind": "utility",
+          "label": "Log Communication: Internal Only",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "Incident communication plan executed — internal notification only. Severity did not warrant external communication. SOC team notified via Slack."
+            },
+            "description": "Log that only internal communication was required for this incident severity level"
+          }
+        }
+      },
+      {
+        "id": "end_2",
+        "type": "signal",
+        "position": { "x": 700, "y": 860 },
+        "data": {
+          "kind": "end",
+          "label": "End — Internal Notification",
+          "config": {
+            "description": "Internal communication complete — SOC team notified, no external communication required"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_analyze",
+        "source": "trigger_1",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_analyze_decision",
+        "source": "analyze_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "respond_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "respond_5",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_respond1_respond2",
+        "source": "respond_1",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_respond2_respond3",
+        "source": "respond_2",
+        "target": "respond_3",
+        "type": "default"
+      },
+      {
+        "id": "e_respond3_respond4",
+        "source": "respond_3",
+        "target": "respond_4",
+        "type": "default"
+      },
+      {
+        "id": "e_respond4_end1",
+        "source": "respond_4",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_respond5_utility",
+        "source": "respond_5",
+        "target": "utility_1",
+        "type": "default"
+      },
+      {
+        "id": "e_utility_end2",
+        "source": "utility_1",
+        "target": "end_2",
+        "type": "default"
+      }
+    ]
+  }
+}

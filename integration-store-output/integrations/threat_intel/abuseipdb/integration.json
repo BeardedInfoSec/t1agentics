@@ -1,0 +1,94 @@
+{
+  "id": "abuseipdb",
+  "name": "AbuseIPDB",
+  "description": "This app integrates with AbuseIPDB to perform investigative actions",
+  "version": "2.1.2",
+  "category": "threat_intel",
+  "vendor": "AbuseIPDB",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "key",
+    "location": "header"
+  },
+  "base_url": "https://api.abuseipdb.com/api/v2",
+  "documentation_url": "https://docs.abuseipdb.com/",
+  "setup_instructions": "## Get an AbuseIPDB API key\n\nAbuseIPDB requires a free account; the **Free** tier allows 1,000 checks/day, **Webmaster** 3,000/day, paid plans go higher.\n\n### 1. Register an account\n1. Open https://www.abuseipdb.com/register and create an account (email + password). Verify the confirmation email.\n\n### 2. Create an API key\n1. After logging in, go to https://www.abuseipdb.com/account/api.\n2. Click **Create Key**, give it a label (e.g. `T1 Agentics`), and click **Create**.\n3. Copy the key string. AbuseIPDB only shows it once on creation — if you lose it, you'll need to make a new one.\n\n### 3. Paste the key below\nPaste in the **API Key** field. T1 sends it as the `Key` request header automatically (and adds the required `Accept: application/json`).\n\nClick **Test Authentication** to confirm. The test calls `/check?ipAddress=1.1.1.1` and expects a 200.\n\n### Rate limits\n- **Free**: 1,000 IP checks/day, 100 reports/day.\n- **Webmaster** (free, requires verifying domain ownership): 3,000 checks/day.\n- **Premium**: 10K–100K+ checks/day depending on plan; also unlocks bulk endpoints.\n\nT1 surfaces a `QuotaExceededError` on 429.\n\n### Troubleshooting\n- **`401 Unauthorized` / `Authentication failed`**: Key was deleted or mistyped. Generate a new one in the API page.\n- **`429 Too Many Requests`**: Daily quota hit. Resets at 00:00 UTC.\n- **`422 Unprocessable Entity`** on report: missing required `categories` parameter — it must be a comma-separated list of integer category IDs (see https://www.abuseipdb.com/categories).",
+  "actions": [
+    {
+      "id": "lookup_ip",
+      "name": "Lookup Ip",
+      "description": "Queries IP info",
+      "http_method": "GET",
+      "endpoint": "/check",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "ip",
+          "api_name": "ipAddress",
+          "type": "string",
+          "description": "IPv4 or IPv6 to query",
+          "required": true,
+          "contains": [
+            "ip",
+            "ipv6"
+          ]
+        },
+        {
+          "name": "days",
+          "api_name": "maxAgeInDays",
+          "type": "number",
+          "description": "Check for IP Reports within this number of days",
+          "required": false,
+          "default": 90
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "report_ip",
+      "name": "Post Ip",
+      "description": "Report an IP for abusive behavior",
+      "http_method": "GET",
+      "endpoint": "/report",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "IPv4 or IPv6 to report on",
+          "required": true,
+          "contains": [
+            "ip",
+            "ipv6"
+          ]
+        },
+        {
+          "name": "category_ids",
+          "type": "string",
+          "description": "Comma delineated list of category IDs",
+          "required": true
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "Description of malicious activity",
+          "required": false
+        }
+      ],
+      "observable_type": "ip"
+    }
+  ],
+  "source_metadata": {
+    "original_name": "AbuseIPDB",
+    "original_type": "reputation",
+    "converted_at": "2025-12-18T16:25:28.545558",
+    "source_version": "2.1.2"
+  }
+}

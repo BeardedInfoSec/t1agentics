@@ -1,0 +1,578 @@
+{
+  "id": "secure_application",
+  "name": "Secure Application",
+  "description": "This app provides policy management capabilities for proactive runtime app security",
+  "version": "1.0.1",
+  "category": "devops",
+  "vendor": "Splunk",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "create_new_policy",
+      "name": "Create New Policy",
+      "description": "Create a policy for an attack or vulnerability at runtime",
+      "http_method": "GET",
+      "endpoint": "/actions/create_new_policy",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Type of Runtime Policy",
+          "required": true,
+          "default": "Command execution"
+        },
+        {
+          "name": "application_id",
+          "type": "string",
+          "description": "Application that includes the tiers or services on which you require to apply the policy. Default value is \"all\"",
+          "required": true,
+          "default": "All"
+        },
+        {
+          "name": "tier_id",
+          "type": "string",
+          "description": "Application-specific tier to apply the policy. Default value is \"all\"",
+          "required": true,
+          "default": "All"
+        },
+        {
+          "name": "default_action",
+          "type": "string",
+          "description": "Default action for this policy. You can select IGNORE for no notifications for the runtime activity; select DETECT to detect the runtime activity; select BLOCK to block a specific runtime activity. Default value is \"DETECT\"",
+          "required": true,
+          "default": "DETECT"
+        },
+        {
+          "name": "enable_policy",
+          "type": "string",
+          "description": "Select Yes/No to enable/disable the policy",
+          "required": true,
+          "default": "Yes"
+        }
+      ]
+    },
+    {
+      "id": "create_new_policy_for_http_transaction_header",
+      "name": "Create New Policy For Http Transaction Header",
+      "description": "Create a policy for headers in HTTP transactions",
+      "http_method": "GET",
+      "endpoint": "/actions/create_new_policy_for_http_transaction_header",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "application_id",
+          "type": "string",
+          "description": "Application that includes the tiers or services on which you require to apply the policy. Default value is \"all\"",
+          "required": true,
+          "default": "All"
+        },
+        {
+          "name": "tier_id",
+          "type": "string",
+          "description": "Application-specific tier to apply the policy. Default value is \"all\"",
+          "required": true,
+          "default": "All"
+        },
+        {
+          "name": "default_action",
+          "type": "string",
+          "description": "Default action for this policy. You can select IGNORE for no notifications for the runtime activity; select DETECT to detect the runtime activity; select BLOCK to block a specific runtime activity. Default value is \"DETECT\"",
+          "required": true,
+          "default": "DETECT"
+        },
+        {
+          "name": "enable_policy",
+          "type": "string",
+          "description": "Select Yes/No to enable/disable the policy",
+          "required": true,
+          "default": "Yes"
+        },
+        {
+          "name": "action for Strict-Transport-Security",
+          "type": "string",
+          "description": "Action for Strict-Transport-Security header. Default value is \"DETECT\"",
+          "required": true,
+          "default": "DETECT"
+        },
+        {
+          "name": "patch value for Strict-Transport-Security",
+          "type": "string",
+          "description": "Value to patch for Strict-Transport-Security header. This value is applicable only if the action chosen is \"PATCH\"",
+          "required": false,
+          "default": ""
+        },
+        {
+          "name": "action for X-Frame-Options",
+          "type": "string",
+          "description": "Action for X-Frame-Options header. Default value is \"DETECT\"",
+          "required": true,
+          "default": "DETECT"
+        },
+        {
+          "name": "patch value for X-Frame-Options",
+          "type": "string",
+          "description": "Value to patch for X-Frame-Options header. This value is applicable only if the action chosen is \"PATCH\"",
+          "required": false,
+          "default": ""
+        },
+        {
+          "name": "action for X-XSS-Protection",
+          "type": "string",
+          "description": "Action for X-XSS-Protection header. Default value is \"DETECT\"",
+          "required": true,
+          "default": "DETECT"
+        },
+        {
+          "name": "patch value for X-XSS-Protection",
+          "type": "string",
+          "description": "Value to patch for X-XSS-Protection header. This value is applicable only if the action chosen is \"PATCH\"",
+          "required": false,
+          "default": ""
+        },
+        {
+          "name": "action for X-Content-Type-Options",
+          "type": "string",
+          "description": "Action for X-Content-Type-Options header. Default value is \"DETECT\"",
+          "required": true,
+          "default": "DETECT"
+        },
+        {
+          "name": "patch value for X-Content-Type-Options",
+          "type": "string",
+          "description": "Value to patch for X-Content-Type-Options header. This value is applicable only if the action chosen is \"PATCH\"",
+          "required": false,
+          "default": ""
+        }
+      ]
+    },
+    {
+      "id": "delete_policy",
+      "name": "Delete Policy",
+      "description": "Delete a runtime policy given its ID",
+      "http_method": "GET",
+      "endpoint": "/actions/delete_policy",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "policy_id",
+          "type": "string",
+          "description": "Unique Identifier for the policy.  The policy id is received in the response after the policy is created or listed.",
+          "required": true,
+          "default": ""
+        }
+      ]
+    },
+    {
+      "id": "get_policy_by_id",
+      "name": "Get Policy By Id",
+      "description": "Retrieve details of a specific policy using its ID",
+      "http_method": "GET",
+      "endpoint": "/actions/get_policy_by_id",
+      "action_type": "generic",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "policy_id",
+          "type": "string",
+          "description": "Unique Identifier for the policy.  The policy id is received in the response after the policy is created or listed.",
+          "required": true,
+          "default": ""
+        }
+      ]
+    },
+    {
+      "id": "list_policies",
+      "name": "List All Policies",
+      "description": "Fetch and display all existing policies",
+      "http_method": "GET",
+      "endpoint": "/actions/list_policies",
+      "action_type": "generic",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "update_policy",
+      "name": "Update Policy",
+      "description": "Update an existing policy given its ID",
+      "http_method": "GET",
+      "endpoint": "/actions/update_policy",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "policy_id",
+          "type": "string",
+          "description": "Unique Identifier for the policy.  The policy id is received in the response after the policy is created or listed.",
+          "required": true,
+          "default": ""
+        },
+        {
+          "name": "application_id",
+          "type": "string",
+          "description": "Application that includes the tiers or services on which you require to apply the policy. Default value is \"all\"",
+          "required": true,
+          "default": ""
+        },
+        {
+          "name": "tier_id",
+          "type": "string",
+          "description": "Application-specific tier to apply the policy. Default value is \"all\"",
+          "required": true,
+          "default": ""
+        },
+        {
+          "name": "default_action",
+          "type": "string",
+          "description": "Default action for this policy. You can select IGNORE for no notifications for the runtime activity; select DETECT to detect the runtime activity; select BLOCK to block a specific runtime activity. Default value is \"DETECT\"",
+          "required": true,
+          "default": ""
+        },
+        {
+          "name": "enable_policy",
+          "type": "string",
+          "description": "Select Yes/No to enable/disable the policy",
+          "required": true,
+          "default": ""
+        }
+      ]
+    },
+    {
+      "id": "add_a_rule_to_command_execution_policy",
+      "name": "Add A Rule To Command Execution Policy",
+      "description": "Add a rule to the command execution policy to detect, ignore or block the runtime activity",
+      "http_method": "GET",
+      "endpoint": "/actions/add_a_rule_to_command_execution_policy",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "policy_id",
+          "type": "string",
+          "description": "Unique Identifier for the policy.  The policy id is received in the response after the policy is created or listed.",
+          "required": true,
+          "default": ""
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Type of  match filter",
+          "required": true,
+          "default": ""
+        },
+        {
+          "name": "operation",
+          "type": "string",
+          "description": "Operation for the match filter",
+          "required": false,
+          "default": ""
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "description": "Value for the match filter",
+          "required": false,
+          "default": ""
+        },
+        {
+          "name": "action",
+          "type": "string",
+          "description": "Action to be taken if the filter matches",
+          "required": false,
+          "default": ""
+        }
+      ]
+    },
+    {
+      "id": "add_a_rule_to_filesystem_access_policy",
+      "name": "Add A Rule To Filesystem Access Policy",
+      "description": "Add a rule to the filesystem access policy to detect, ignore or block the runtime activity",
+      "http_method": "GET",
+      "endpoint": "/actions/add_a_rule_to_filesystem_access_policy",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "policy_id",
+          "type": "string",
+          "description": "Unique Identifier for the policy.  The policy id is received in the response after the policy is created or listed.",
+          "required": true,
+          "default": ""
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Type of  match filter",
+          "required": true,
+          "default": ""
+        },
+        {
+          "name": "operation",
+          "type": "string",
+          "description": "Operation for the match filter",
+          "required": false,
+          "default": ""
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "description": "Value for the match filter",
+          "required": false,
+          "default": ""
+        },
+        {
+          "name": "action",
+          "type": "string",
+          "description": "Action to be taken if the filter matches",
+          "required": false,
+          "default": ""
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "add_a_rule_to_network_or_socket_access_policy",
+      "name": "Add A Rule To Network Or Socket Access Policy",
+      "description": "Add a rule to the network or socket access policy to detect, ignore or block the runtime activity",
+      "http_method": "GET",
+      "endpoint": "/actions/add_a_rule_to_network_or_socket_access_policy",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "policy_id",
+          "type": "string",
+          "description": "Unique Identifier for the policy.  The policy id is received in the response after the policy is created or listed.",
+          "required": true,
+          "default": ""
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Type of  match filter",
+          "required": true,
+          "default": ""
+        },
+        {
+          "name": "operation",
+          "type": "string",
+          "description": "Operation for the match filter",
+          "required": false,
+          "default": ""
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "description": "Value for the match filter",
+          "required": false,
+          "default": ""
+        },
+        {
+          "name": "action",
+          "type": "string",
+          "description": "Action to be taken if the filter matches",
+          "required": false,
+          "default": ""
+        }
+      ]
+    },
+    {
+      "id": "delete_a_rule_from_command_execution_policy",
+      "name": "Delete A Rule From Command Execution Policy",
+      "description": "Delete a rule from the command execution policy",
+      "http_method": "GET",
+      "endpoint": "/actions/delete_a_rule_from_command_execution_policy",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "policy_id",
+          "type": "string",
+          "description": "Unique Identifier for the policy.  The policy id is received in the response after the policy is created or listed.",
+          "required": true,
+          "default": ""
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Type of  match filter",
+          "required": true,
+          "default": ""
+        },
+        {
+          "name": "operation",
+          "type": "string",
+          "description": "Operation for the match filter",
+          "required": false,
+          "default": ""
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "description": "Value for the match filter",
+          "required": false,
+          "default": ""
+        },
+        {
+          "name": "action",
+          "type": "string",
+          "description": "Action to be taken if the filter matches",
+          "required": false,
+          "default": ""
+        }
+      ]
+    },
+    {
+      "id": "delete_a_rule_from_filesystem_access_policy",
+      "name": "Delete A Rule From Filesystem Access Policy",
+      "description": "Delete a rule from the filesystem access policy",
+      "http_method": "GET",
+      "endpoint": "/actions/delete_a_rule_from_filesystem_access_policy",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "policy_id",
+          "type": "string",
+          "description": "Unique Identifier for the policy.  The policy id is received in the response after the policy is created or listed.",
+          "required": true,
+          "default": ""
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Type of  match filter",
+          "required": true,
+          "default": ""
+        },
+        {
+          "name": "operation",
+          "type": "string",
+          "description": "Operation for the match filter",
+          "required": false,
+          "default": ""
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "description": "Value for the match filter",
+          "required": false,
+          "default": ""
+        },
+        {
+          "name": "action",
+          "type": "string",
+          "description": "Action to be taken if the filter matches",
+          "required": false,
+          "default": ""
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "delete_a_rule_from_network_or_socket_access_policy",
+      "name": "Delete A Rule From Network Or Socket Access Policy",
+      "description": "Delete a rule from the network or socket access policy",
+      "http_method": "GET",
+      "endpoint": "/actions/delete_a_rule_from_network_or_socket_access_policy",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "policy_id",
+          "type": "string",
+          "description": "Unique Identifier for the policy.  The policy id is received in the response after the policy is created or listed.",
+          "required": true,
+          "default": ""
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Type of  match filter",
+          "required": true,
+          "default": ""
+        },
+        {
+          "name": "operation",
+          "type": "string",
+          "description": "Operation for the match filter",
+          "required": false,
+          "default": ""
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "description": "Value for the match filter",
+          "required": false,
+          "default": ""
+        },
+        {
+          "name": "action",
+          "type": "string",
+          "description": "Action to be taken if the filter matches",
+          "required": false,
+          "default": ""
+        }
+      ]
+    },
+    {
+      "id": "list_all_rules",
+      "name": "List All Rules",
+      "description": "List all rules in a policy given its policy id",
+      "http_method": "GET",
+      "endpoint": "/actions/list_all_rules",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "policy_id",
+          "type": "string",
+          "description": "Unique Identifier for the policy.  The policy id is received in the response after the policy is created or listed.",
+          "required": true,
+          "default": ""
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Secure Application",
+    "original_type": "devops",
+    "converted_at": "2025-12-18T16:25:29.103154",
+    "source_version": "1.0.1"
+  }
+}

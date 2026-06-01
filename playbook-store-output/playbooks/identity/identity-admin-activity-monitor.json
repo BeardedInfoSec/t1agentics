@@ -1,0 +1,182 @@
+{
+  "name": "Admin Privilege Activity Monitor",
+  "slug": "identity-admin-activity-monitor",
+  "description": "Monitors administrative privilege usage for anomalous patterns including off-hours activity, unusual commands, bulk changes, and geographic anomalies. Uses AI to analyze admin actions against behavioral baselines, flags high-risk deviations, creates audit tickets for suspicious activity, and generates periodic compliance reports.",
+  "category": "identity",
+  "subcategory": "admin_monitoring",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "10 minutes",
+  "tags": ["admin_monitoring", "privileged_access", "anomaly_detection", "audit", "compliance"],
+  "alert_types": ["admin_anomaly", "privileged_access", "insider_threat"],
+  "severity_filter": ["medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["admin_anomaly", "privileged_access"],
+    "min_severity": "medium"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "microsoft_graph",
+      "name": "Microsoft Graph",
+      "category": "identity",
+      "reason": "Query admin audit logs and privileged role assignments"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create audit tickets for suspicious admin activity"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "am-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "title": "Admin Activity Alert",
+          "summary": "Fires on anomalous admin activity or privileged access alert",
+          "config": {
+            "trigger_type": "alert",
+            "alert_filter": "admin_anomaly OR privileged_access"
+          }
+        }
+      },
+      {
+        "id": "am-2",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "title": "AI Admin Activity Analysis",
+          "summary": "Analyze admin actions for insider threat and anomaly indicators",
+          "config": {
+            "mode": "ai_analysis",
+            "template_id": "insider_threat",
+            "custom_instructions": "",
+            "alert_path": "$.trigger.alert",
+            "include_context": true
+          }
+        }
+      },
+      {
+        "id": "am-3",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "title": "High-Risk Anomaly?",
+          "summary": "Branch if AI flags the admin activity as high-risk deviation",
+          "config": {
+            "conditions": {
+              "operator": "AND",
+              "conditions": [
+                {
+                  "field": "$.nodes.am-2.result.risk_level",
+                  "operator": "equals",
+                  "value": "high"
+                }
+              ],
+              "groups": []
+            },
+            "expression": "$.nodes.am-2.result.risk_level == 'high'",
+            "default_branch": "no"
+          }
+        }
+      },
+      {
+        "id": "am-4",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "code",
+          "title": "Compile Activity Summary",
+          "summary": "Compile detailed admin activity summary with risk indicators",
+          "config": {
+            "language": "python",
+            "code": "alert = context['trigger']['alert']\nresult = {'admin_user': alert.get('admin_email'), 'action_count': alert.get('action_count', 0), 'off_hours': alert.get('off_hours', False), 'geo_anomaly': alert.get('geo_anomaly', False), 'actions': alert.get('admin_actions', [])}"
+          }
+        }
+      },
+      {
+        "id": "am-5",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "title": "Create Audit Ticket",
+          "summary": "Create Jira audit ticket for suspicious admin activity investigation",
+          "config": {
+            "response_type": "create_ticket",
+            "system": "jira",
+            "project_key": "SEC",
+            "issue_type": "Task",
+            "title": "Admin Activity Audit: {{$.trigger.alert.admin_email}} — High-Risk Anomaly",
+            "description": "Anomalous admin activity detected for {{$.trigger.alert.admin_email}}. Risk level: HIGH. Actions: {{$.nodes.am-4.result.action_count}}. Off-hours: {{$.nodes.am-4.result.off_hours}}. Geo anomaly: {{$.nodes.am-4.result.geo_anomaly}}. Manual investigation required.",
+            "priority": "high",
+            "requires_approval": false
+          }
+        }
+      },
+      {
+        "id": "am-6",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "title": "Alert SOC Manager",
+          "summary": "Notify SOC manager of high-risk admin activity for review",
+          "config": {
+            "response_type": "notification",
+            "channel": "slack",
+            "slack_channel": "#soc-alerts",
+            "message": "High-risk admin activity detected for {{$.trigger.alert.admin_email}}. {{$.nodes.am-4.result.action_count}} actions performed. Off-hours: {{$.nodes.am-4.result.off_hours}}. Audit ticket created.",
+            "requires_approval": false,
+            "priority": "high"
+          }
+        }
+      },
+      {
+        "id": "am-7",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "utility",
+          "title": "Log Normal Activity",
+          "summary": "Log the admin activity as normal — within expected baseline",
+          "config": {
+            "operation": "add_note",
+            "note": "Admin activity for {{$.trigger.alert.admin_email}} reviewed. Activity within expected behavioral baseline. No action required."
+          }
+        }
+      },
+      {
+        "id": "am-8",
+        "type": "signal",
+        "position": { "x": 520, "y": 1020 },
+        "data": {
+          "kind": "end",
+          "title": "Playbook Complete",
+          "summary": "Admin activity monitoring finished",
+          "config": {
+            "disposition": "completed",
+            "summary": "Admin privilege activity monitoring actions completed"
+          }
+        }
+      }
+    ],
+    "edges": [
+      { "id": "am-e1", "source": "am-1", "target": "am-2", "animated": true, "type": "smoothstep" },
+      { "id": "am-e2", "source": "am-2", "target": "am-3", "animated": true, "type": "smoothstep" },
+      { "id": "am-e3", "source": "am-3", "target": "am-4", "sourceHandle": "yes", "label": "Yes", "animated": true, "type": "smoothstep" },
+      { "id": "am-e4", "source": "am-3", "target": "am-7", "sourceHandle": "no", "label": "No", "animated": true, "type": "smoothstep" },
+      { "id": "am-e5", "source": "am-4", "target": "am-5", "animated": true, "type": "smoothstep" },
+      { "id": "am-e6", "source": "am-5", "target": "am-6", "animated": true, "type": "smoothstep" },
+      { "id": "am-e7", "source": "am-6", "target": "am-8", "animated": true, "type": "smoothstep" },
+      { "id": "am-e8", "source": "am-7", "target": "am-8", "animated": true, "type": "smoothstep" }
+    ]
+  }
+}

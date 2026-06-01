@@ -1,0 +1,223 @@
+{
+  "name": "MITRE ATT&CK Technique Mapping",
+  "slug": "ti-mitre-mapping",
+  "description": "Maps incoming security alerts to MITRE ATT&CK techniques, tactics, and procedures. The playbook extracts alert details, uses AI to identify applicable ATT&CK techniques, enriches with technique-specific context including known threat groups and mitigations, then annotates the alert with full TTP mapping. High-severity technique matches (e.g., lateral movement, privilege escalation) trigger automatic escalation with defensive recommendations. Lower-severity matches are documented for threat hunting reference.",
+  "category": "threat_intel",
+  "subcategory": "ttp_mapping",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "8 minutes",
+  "tags": ["mitre", "attck", "ttp", "technique", "mapping", "threat_intel", "enrichment"],
+  "alert_types": ["threat_intel", "security_alert"],
+  "severity_filter": ["low", "medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["security_alert", "threat_intel", "edr_alert", "network_alert"],
+    "min_severity": "low"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "mitre_attack",
+      "name": "MITRE ATT&CK",
+      "category": "threat_intel",
+      "reason": "Map alert behaviors to ATT&CK techniques and retrieve technique details, mitigations, and detection guidance"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Security Alert Received",
+          "config": {
+            "alert_types": ["security_alert", "threat_intel", "edr_alert", "network_alert"],
+            "description": "Triggers on any security alert for MITRE ATT&CK technique mapping and TTP enrichment"
+          }
+        }
+      },
+      {
+        "id": "code_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "code",
+          "label": "Extract Alert Behaviors",
+          "config": {
+            "code": "alert = inputs.get('alert', {})\n\nbehaviors = {\n    'alert_type': alert.get('type', 'unknown'),\n    'alert_title': alert.get('title', ''),\n    'description': alert.get('description', ''),\n    'source': alert.get('source', ''),\n    'severity': alert.get('severity', 'medium'),\n    'affected_host': alert.get('hostname', alert.get('host', '')),\n    'affected_user': alert.get('username', alert.get('user', '')),\n    'process_name': alert.get('process_name', ''),\n    'command_line': alert.get('command_line', ''),\n    'network_activity': alert.get('network', {}),\n    'file_activity': alert.get('file_operations', []),\n    'registry_activity': alert.get('registry_changes', []),\n    'existing_tags': alert.get('tags', [])\n}\n\nresult = behaviors",
+            "inputs": {
+              "alert": "{{trigger_1.alert}}"
+            },
+            "description": "Extracts all behavioral indicators from the alert including process activity, network activity, file operations, and registry changes"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — ATT&CK Technique Identification",
+          "config": {
+            "template_id": "ioc_correlation",
+            "additional_instructions": "Analyze all alert behaviors and map to specific MITRE ATT&CK techniques. For each identified technique, provide: technique ID (e.g., T1059.001), technique name, tactic, confidence level, and rationale. Identify the full kill chain progression if multiple tactics are present.",
+            "description": "AI-powered analysis mapping alert behaviors to specific MITRE ATT&CK techniques with confidence levels and kill chain context"
+          }
+        }
+      },
+      {
+        "id": "analyze_2",
+        "type": "signal",
+        "position": { "x": 520, "y": 540 },
+        "data": {
+          "kind": "analyze",
+          "label": "Enrich with ATT&CK Context",
+          "config": {
+            "mode": "enrich",
+            "observable_type": "technique",
+            "data_path": "$.analyze_1.technique_ids",
+            "sources": ["mitre_attack"],
+            "description": "Enriches identified techniques with full ATT&CK context including known threat groups, mitigations, detection methods, and related techniques"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 700 },
+        "data": {
+          "kind": "decision",
+          "label": "High-Severity Techniques Detected?",
+          "config": {
+            "condition": "{{analyze_1.max_severity}} in ['high', 'critical'] or {{analyze_1.tactics}} contains ['lateral-movement', 'privilege-escalation', 'defense-evasion', 'exfiltration']",
+            "description": "Routes based on whether the mapped techniques indicate high-severity tactics requiring immediate escalation"
+          }
+        }
+      },
+      {
+        "id": "analyze_3",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — Defensive Recommendations",
+          "config": {
+            "template_id": "executive_summary",
+            "additional_instructions": "Generate defensive recommendations for the identified high-severity ATT&CK techniques. Include specific mitigations, detection rules to implement, and immediate response actions. Reference relevant ATT&CK mitigations by ID.",
+            "description": "AI-generated defensive recommendations with specific mitigations and detection guidance for the identified techniques"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "label": "Escalate with TTP Context",
+          "config": {
+            "create_ticket": {
+              "title": "ATT&CK Mapping: {{analyze_1.primary_technique}} — {{code_1.outputs.result.alert_title}}",
+              "priority": "high",
+              "description": "MITRE ATT&CK mapping identified high-severity techniques.\n\nAlert: {{code_1.outputs.result.alert_title}}\nAffected Host: {{code_1.outputs.result.affected_host}}\nAffected User: {{code_1.outputs.result.affected_user}}\n\nMapped Techniques:\n{{analyze_1.technique_summary}}\n\nKill Chain Stage: {{analyze_1.kill_chain_stage}}\n\nDefensive Recommendations:\n{{analyze_3.summary}}",
+              "assignee": "soc-tier2",
+              "labels": ["mitre-attck", "ttp-mapping", "escalated"]
+            },
+            "description": "Escalates the alert with full TTP context and defensive recommendations for SOC Tier 2 investigation"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 700, "y": 860 },
+        "data": {
+          "kind": "utility",
+          "label": "Annotate Alert with TTP Mapping",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "MITRE ATT&CK Mapping Complete\n\nMapped Techniques:\n{{analyze_1.technique_summary}}\n\nTactic Coverage: {{analyze_1.tactics}}\n\nATT&CK Context:\n{{analyze_2.summary}}\n\nNo escalation required — techniques assessed as lower severity. Archived for threat hunting reference."
+            },
+            "description": "Annotates the alert with the full TTP mapping for threat hunting reference without escalation"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1180 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "MITRE ATT&CK technique mapping complete"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_extract",
+        "source": "trigger_1",
+        "target": "code_1",
+        "type": "default"
+      },
+      {
+        "id": "e_extract_identify",
+        "source": "code_1",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_identify_enrich",
+        "source": "analyze_1",
+        "target": "analyze_2",
+        "type": "default"
+      },
+      {
+        "id": "e_enrich_decision",
+        "source": "analyze_2",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "analyze_3",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "utility_1",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_recommendations_escalate",
+        "source": "analyze_3",
+        "target": "respond_1",
+        "type": "default"
+      },
+      {
+        "id": "e_escalate_end",
+        "source": "respond_1",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_annotate_end",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

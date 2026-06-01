@@ -1,0 +1,267 @@
+{
+  "name": "Cross-Account Access Anomaly Response",
+  "slug": "cloud-cross-account-access",
+  "description": "Detects anomalous cross-account role assumptions in multi-account cloud environments. Riggs AI evaluates whether the cross-account access is authorized by analyzing the assuming account, role trust policies, and historical patterns. Unauthorized access triggers role assumption audit, trust policy restriction, credential access investigation, incident ticket, and team notification. Authorized access is documented.",
+  "category": "cloud",
+  "subcategory": "iam_security",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "advanced",
+  "estimated_time": "15 minutes",
+  "tags": ["cloud", "cross_account", "iam", "role_assumption", "multi_account"],
+  "alert_types": ["cloud_security", "cross_account_anomaly"],
+  "severity_filter": ["medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["cloud_security", "cross_account_anomaly", "sts_anomaly"],
+    "min_severity": "medium"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "aws_security_hub",
+      "name": "AWS Security Hub",
+      "category": "cloud_security",
+      "reason": "Source of cross-account access findings and IAM policy management"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create incident tickets for unauthorized cross-account access events"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Notify the security team of cross-account access anomalies"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Cross-Account Access Anomaly",
+          "config": {
+            "alert_types": ["cloud_security", "cross_account_anomaly", "sts_anomaly"],
+            "description": "Triggers when an anomalous cross-account role assumption is detected via CloudTrail STS:AssumeRole events from unexpected accounts or regions"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — Credential Access Assessment",
+          "config": {
+            "template_id": "credential_access",
+            "additional_instructions": "Evaluate cross-account role assumption: is the source account in our organization, is this role normally assumed by this principal, are the accessed resources consistent with the role purpose",
+            "description": "AI-powered analysis of cross-account access patterns to determine if the role assumption is authorized or represents a breach of trust boundaries"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "label": "Unauthorized Access?",
+          "config": {
+            "condition": "{{analyze_1.verdict}} == 'unauthorized' || {{analyze_1.confidence}} >= 0.75",
+            "description": "Routes based on whether the AI assessment determined the cross-account access is unauthorized"
+          }
+        }
+      },
+      {
+        "id": "code_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "code",
+          "label": "Audit Role Assumptions",
+          "config": {
+            "mode": "query",
+            "query": "CloudTrail STS:AssumeRole events for role={{trigger_1.alert.role_arn}} in last 30 days: source accounts, source IPs, frequency, API calls made with assumed credentials",
+            "output_variable": "role_audit",
+            "description": "Audit all role assumption events for the affected role to build a baseline and identify all unauthorized access"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "label": "Restrict Role Trust Policy",
+          "config": {
+            "integration_action": {
+              "connector_id": "aws_security_hub",
+              "action": "update_trust_policy",
+              "parameters": {
+                "role_arn": "{{trigger_1.alert.role_arn}}",
+                "deny_account": "{{trigger_1.alert.source_account_id}}",
+                "reason": "Unauthorized cross-account access detected — restricting trust policy"
+              }
+            },
+            "description": "Update the IAM role trust policy to deny the unauthorized source account from assuming the role"
+          }
+        }
+      },
+      {
+        "id": "code_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "code",
+          "label": "Investigate Accessed Resources",
+          "config": {
+            "mode": "query",
+            "query": "All API calls made with temporary credentials from session={{trigger_1.alert.session_name}} in target account: resources accessed, modifications made, data downloaded",
+            "output_variable": "access_investigation",
+            "description": "Investigate what the unauthorized cross-account session accessed to determine blast radius and data exposure"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "label": "Create Incident Ticket",
+          "config": {
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_ticket",
+              "parameters": {
+                "project": "SEC",
+                "issue_type": "Incident",
+                "priority": "High",
+                "summary": "Unauthorized Cross-Account Access: {{trigger_1.alert.source_account_id}} assumed {{trigger_1.alert.role_arn}}",
+                "description": "Unauthorized cross-account role assumption detected.\n\nRole: {{trigger_1.alert.role_arn}}\nSource Account: {{trigger_1.alert.source_account_id}}\nSource Principal: {{trigger_1.alert.source_principal}}\nSource IP: {{trigger_1.alert.source_ip}}\n\nActions Taken:\n- Role assumptions audited (30-day history)\n- Trust policy restricted to deny source account\n- Accessed resources investigated\n\nRole Audit:\n{{code_1.role_audit}}\n\nAccess Investigation:\n{{code_2.access_investigation}}\n\nRiggs AI Assessment:\n{{analyze_1.summary}}"
+              }
+            },
+            "description": "Create an incident ticket documenting the unauthorized cross-account access and response actions"
+          }
+        }
+      },
+      {
+        "id": "respond_3",
+        "type": "signal",
+        "position": { "x": 340, "y": 1180 },
+        "data": {
+          "kind": "respond",
+          "label": "Notify Security Team",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#cloud-security-alerts",
+              "message": "UNAUTHORIZED CROSS-ACCOUNT ACCESS\nRole: {{trigger_1.alert.role_arn}}\nSource: {{trigger_1.alert.source_account_id}}\nActions: Trust policy restricted, access investigated\nTicket: {{respond_2.ticket_url}}\n\nRiggs Assessment:\n{{analyze_1.summary}}"
+            },
+            "description": "Notify the security team of the unauthorized cross-account access and all containment actions"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "utility",
+          "label": "Add Note: Authorized Access",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "Reviewed by Riggs AI (credential_access template). Cross-account role assumption determined to be authorized. Source account is within the organization trust boundary. Assessment: {{analyze_1.summary}}"
+            },
+            "description": "Document that the cross-account access was determined to be authorized"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1340 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "Cross-account access anomaly response complete"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_analyze",
+        "source": "trigger_1",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_analyze_decision",
+        "source": "analyze_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "code_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "utility_1",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_audit_restrict",
+        "source": "code_1",
+        "target": "respond_1",
+        "type": "default"
+      },
+      {
+        "id": "e_restrict_investigate",
+        "source": "respond_1",
+        "target": "code_2",
+        "type": "default"
+      },
+      {
+        "id": "e_investigate_ticket",
+        "source": "code_2",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_ticket_notify",
+        "source": "respond_2",
+        "target": "respond_3",
+        "type": "default"
+      },
+      {
+        "id": "e_notify_end",
+        "source": "respond_3",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_utility_end",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

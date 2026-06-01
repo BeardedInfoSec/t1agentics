@@ -1,0 +1,159 @@
+{
+  "id": "tenable_asm",
+  "name": "Tenable Attack Surface Management",
+  "description": "External attack surface management providing continuous discovery and assessment of internet-facing assets, domain monitoring, and exposure risk analysis",
+  "version": "1.0.0",
+  "category": "asm",
+  "vendor": "Tenable",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "header_format": "Bearer {api_key}",
+    "location": "header"
+  },
+  "base_url": "https://asm.cloud.tenable.com/api/1.0",
+  "actions": [
+    {
+      "id": "list_inventory",
+      "name": "List Inventory Assets",
+      "description": "Retrieve all discovered assets in the attack surface inventory with filtering and pagination",
+      "http_method": "POST",
+      "endpoint": "/inventory",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "filters",
+          "type": "object",
+          "description": "Filter criteria for narrowing results (e.g., by asset type, risk level)",
+          "required": false
+        },
+        {
+          "name": "pageSize",
+          "type": "integer",
+          "description": "Number of results per page",
+          "required": false
+        },
+        {
+          "name": "pageNumber",
+          "type": "integer",
+          "description": "Page number for pagination",
+          "required": false
+        },
+        {
+          "name": "columns",
+          "type": "array",
+          "description": "Specific columns to include in the response",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_asset_details",
+      "name": "Get Asset Details",
+      "description": "Retrieve detailed information about a specific asset including technologies, services, and risk factors",
+      "http_method": "GET",
+      "endpoint": "/inventory/{asset_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "asset_id",
+          "type": "string",
+          "description": "The unique identifier of the asset",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "search_domains",
+      "name": "Search Domains",
+      "description": "Search for domains and subdomains discovered in the attack surface",
+      "http_method": "POST",
+      "endpoint": "/inventory",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "filters",
+          "type": "object",
+          "description": "Filter with asset_type=domain and optional domain name search",
+          "required": true
+        },
+        {
+          "name": "pageSize",
+          "type": "integer",
+          "description": "Number of results per page",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_findings",
+      "name": "List Findings",
+      "description": "Retrieve security findings and exposures across the attack surface",
+      "http_method": "POST",
+      "endpoint": "/findings",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "filters",
+          "type": "object",
+          "description": "Filter criteria for findings",
+          "required": false
+        },
+        {
+          "name": "pageSize",
+          "type": "integer",
+          "description": "Number of results per page",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_risk_score",
+      "name": "Get Risk Score",
+      "description": "Retrieve the organization's attack surface risk score and trend data",
+      "http_method": "GET",
+      "endpoint": "/risk/score",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "list_seeds",
+      "name": "List Seeds",
+      "description": "Retrieve the list of seed domains and IP ranges used for attack surface discovery",
+      "http_method": "GET",
+      "endpoint": "/seeds",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "add_seed",
+      "name": "Add Seed",
+      "description": "Add a new seed domain or IP range to expand attack surface discovery",
+      "http_method": "POST",
+      "endpoint": "/seeds",
+      "action_type": "action",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Seed type (domain, ip_range, asn)",
+          "required": true
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "description": "Seed value (e.g., example.com, 192.168.1.0/24)",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

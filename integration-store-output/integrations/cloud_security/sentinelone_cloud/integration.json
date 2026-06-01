@@ -1,0 +1,196 @@
+{
+  "id": "sentinelone_cloud",
+  "name": "SentinelOne Cloud Security",
+  "description": "Singularity Cloud platform providing cloud workload protection, CNAPP, and runtime security across multi-cloud environments via REST API",
+  "version": "1.0.0",
+  "category": "cloud_security",
+  "vendor": "SentinelOne",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "prefix": "APIToken",
+    "location": "header"
+  },
+  "base_url": "https://{instance}.sentinelone.net/web/api/v2.1",
+  "actions": [
+    {
+      "id": "list_cloud_findings",
+      "name": "List Cloud Findings",
+      "description": "Retrieve cloud security findings including misconfigurations and threats",
+      "http_method": "GET",
+      "endpoint": "/cloud-detection/alerts",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Filter by severity (Critical, High, Medium, Low)",
+          "required": false
+        },
+        {
+          "name": "cloudProvider",
+          "type": "string",
+          "description": "Filter by cloud provider (aws, azure, gcp)",
+          "required": false
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Filter by status",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum findings to return",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "description": "Pagination cursor for next page",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_cloud_accounts",
+      "name": "List Cloud Accounts",
+      "description": "List connected cloud accounts and their protection status",
+      "http_method": "GET",
+      "endpoint": "/cloud-detection/accounts",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "cloudProvider",
+          "type": "string",
+          "description": "Filter by cloud provider",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_cloud_workloads",
+      "name": "List Cloud Workloads",
+      "description": "List protected cloud workloads with their agent and security status",
+      "http_method": "GET",
+      "endpoint": "/cloud-detection/workloads",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "cloudProvider",
+          "type": "string",
+          "description": "Filter by cloud provider",
+          "required": false
+        },
+        {
+          "name": "workloadType",
+          "type": "string",
+          "description": "Filter by workload type (vm, container, serverless)",
+          "required": false
+        },
+        {
+          "name": "agentInstalled",
+          "type": "boolean",
+          "description": "Filter by agent installation status",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum results to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "get_cloud_compliance",
+      "name": "Get Cloud Compliance",
+      "description": "Retrieve cloud compliance assessment results",
+      "http_method": "GET",
+      "endpoint": "/cloud-detection/compliance",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "framework",
+          "type": "string",
+          "description": "Compliance framework (CIS, SOC2, PCI-DSS)",
+          "required": false
+        },
+        {
+          "name": "cloudProvider",
+          "type": "string",
+          "description": "Filter by cloud provider",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_kubernetes_clusters",
+      "name": "List Kubernetes Clusters",
+      "description": "List protected Kubernetes clusters and their security posture",
+      "http_method": "GET",
+      "endpoint": "/cloud-detection/kubernetes/clusters",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "cloudProvider",
+          "type": "string",
+          "description": "Filter by cloud provider",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum results to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "list_runtime_threats",
+      "name": "List Runtime Threats",
+      "description": "Retrieve runtime threat detections from cloud workloads",
+      "http_method": "GET",
+      "endpoint": "/threats",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "classificationType",
+          "type": "string",
+          "description": "Filter by classification type",
+          "required": false
+        },
+        {
+          "name": "analystVerdict",
+          "type": "string",
+          "description": "Filter by analyst verdict (true_positive, false_positive, suspicious, undefined)",
+          "required": false
+        },
+        {
+          "name": "incidentStatus",
+          "type": "string",
+          "description": "Filter by incident status (unresolved, in_progress, resolved)",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum results to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    }
+  ]
+}

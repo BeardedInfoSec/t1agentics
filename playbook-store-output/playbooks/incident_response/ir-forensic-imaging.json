@@ -1,0 +1,266 @@
+{
+  "name": "Forensic Disk Imaging Request",
+  "slug": "ir-forensic-imaging",
+  "description": "Manages the forensic disk imaging request workflow for incident response investigations. Riggs AI assesses the incident to determine if forensic imaging is warranted based on evidence requirements. If imaging is recommended, the workflow requires IR lead approval before dispatching the request. A Jira task is created with detailed imaging instructions, chain of custody requirements, and the target endpoint information. The forensics team is notified via Slack, and a delay node allows time for the imaging to complete before a follow-up verification check is logged.",
+  "category": "incident_response",
+  "subcategory": "forensics",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "advanced",
+  "estimated_time": "45 minutes",
+  "tags": ["forensics", "imaging", "disk", "evidence", "chain_of_custody", "approval"],
+  "alert_types": ["any"],
+  "severity_filter": ["high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["any"],
+    "min_severity": "high"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create forensic imaging task with detailed instructions and chain of custody tracking"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Notify the forensics team about pending imaging requests"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Forensic Imaging Request Initiated",
+          "config": {
+            "alert_types": ["any"],
+            "description": "Triggers when a high or critical incident requires forensic disk imaging for evidence preservation"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — Imaging Necessity Assessment",
+          "config": {
+            "template_id": "malware_assessment",
+            "additional_instructions": "Assess whether forensic disk imaging is necessary for this incident. Consider: malware persistence, rootkit indicators, data tampering evidence, and legal hold requirements. Recommend full disk image, memory dump, or targeted collection.",
+            "description": "AI-powered assessment to determine if forensic imaging is warranted and what type of imaging is needed"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "label": "Forensic Imaging Recommended?",
+          "config": {
+            "condition": "{{analyze_1.imaging_recommended}} == true",
+            "description": "Route based on whether the AI assessment recommends forensic disk imaging"
+          }
+        }
+      },
+      {
+        "id": "approval_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "approval",
+          "label": "IR Lead — Approve Imaging Request",
+          "config": {
+            "approvers": ["ir_lead"],
+            "approval_message": "Forensic disk imaging has been recommended for endpoint {{trigger_1.alert.hostname}}. IR lead approval is required before dispatching the imaging request.\n\nEndpoint: {{trigger_1.alert.hostname}}\nAlert: {{trigger_1.alert.title}}\n\nRiggs Assessment:\n{{analyze_1.summary}}\n\nImaging Type: {{analyze_1.imaging_type}}",
+            "timeout_hours": 24,
+            "description": "IR lead must approve the forensic imaging request before it is dispatched to the forensics team"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "label": "Create Forensic Imaging Task",
+          "config": {
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_issue",
+              "parameters": {
+                "project": "IR",
+                "issue_type": "Task",
+                "priority": "P1 - Critical",
+                "summary": "FORENSIC IMAGE: {{trigger_1.alert.hostname}} — {{trigger_1.alert.title}}",
+                "description": "Forensic Disk Imaging Request\n\nTarget Endpoint: {{trigger_1.alert.hostname}}\nDevice ID: {{trigger_1.alert.endpoint_id}}\nImaging Type: {{analyze_1.imaging_type}}\nApproved by: {{approval_1.approver}}\nRequest Time: {{trigger_1.timestamp}}\n\nIncident Context:\n{{analyze_1.summary}}\n\nImaging Instructions:\n1. Use write-blocker before connecting target media\n2. Create bit-for-bit forensic image (E01 format preferred)\n3. Calculate and record SHA-256 hash of source and image\n4. Document chain of custody on physical evidence form\n5. Store image in secure forensic evidence locker\n6. Upload verification hashes to this Jira ticket\n\nChain of Custody:\n- Collected by: [Forensic Analyst Name]\n- Date/Time: [Collection Timestamp]\n- Storage Location: [Evidence Locker ID]\n- Hash Verification: [SHA-256]"
+              }
+            },
+            "description": "Create a detailed forensic imaging task in Jira with instructions and chain of custody template"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "label": "Dispatch to Forensics Team",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#forensics-team",
+              "message": "FORENSIC IMAGING REQUEST\n\nTarget: {{trigger_1.alert.hostname}}\nImaging Type: {{analyze_1.imaging_type}}\nJira Task: {{respond_1.issue_key}}\nApproved by: {{approval_1.approver}}\nPriority: CRITICAL\n\n{{analyze_1.summary}}\n\nPlease begin imaging as soon as possible. Document all chain of custody details in the Jira ticket."
+            },
+            "description": "Notify the forensics team via Slack about the approved imaging request"
+          }
+        }
+      },
+      {
+        "id": "delay_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "delay",
+          "label": "Wait for Imaging Completion",
+          "config": {
+            "duration_minutes": 120,
+            "description": "Wait 2 hours for the forensic imaging process to complete before follow-up"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 1180 },
+        "data": {
+          "kind": "utility",
+          "label": "Log Imaging Follow-Up Required",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "Forensic imaging requested for {{trigger_1.alert.hostname}} — Jira: {{respond_1.issue_key}}. Imaging window elapsed. Please verify completion status and hash verification in the Jira ticket."
+            },
+            "description": "Log a follow-up reminder to verify that imaging has been completed and hashes verified"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 1340 },
+        "data": {
+          "kind": "end",
+          "label": "End — Imaging Dispatched",
+          "config": {
+            "description": "Forensic imaging request approved, dispatched, and follow-up logged — verify completion in Jira"
+          }
+        }
+      },
+      {
+        "id": "utility_2",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "utility",
+          "label": "Log: Imaging Not Required",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "Forensic disk imaging assessed as not required for this incident. Riggs assessment: {{analyze_1.summary}}. Proceeding with standard evidence collection methods."
+            },
+            "description": "Record that forensic imaging was assessed as unnecessary for this incident"
+          }
+        }
+      },
+      {
+        "id": "end_2",
+        "type": "signal",
+        "position": { "x": 700, "y": 700 },
+        "data": {
+          "kind": "end",
+          "label": "End — No Imaging Needed",
+          "config": {
+            "description": "Forensic imaging not required — standard evidence collection sufficient for this incident"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_analyze",
+        "source": "trigger_1",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_analyze_decision",
+        "source": "analyze_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "approval_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "utility_2",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_approval_respond1",
+        "source": "approval_1",
+        "target": "respond_1",
+        "type": "default"
+      },
+      {
+        "id": "e_respond1_respond2",
+        "source": "respond_1",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_respond2_delay",
+        "source": "respond_2",
+        "target": "delay_1",
+        "type": "default"
+      },
+      {
+        "id": "e_delay_utility1",
+        "source": "delay_1",
+        "target": "utility_1",
+        "type": "default"
+      },
+      {
+        "id": "e_utility1_end1",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_utility2_end2",
+        "source": "utility_2",
+        "target": "end_2",
+        "type": "default"
+      }
+    ]
+  }
+}

@@ -1,0 +1,354 @@
+{
+  "id": "netwitness_endpoint",
+  "name": "NetWitness Endpoint",
+  "description": "This app supports executing various endpoint-based investigative and containment actions on RSA NetWitness Endpoint",
+  "version": "2.0.12",
+  "category": "edr",
+  "vendor": "RSA",
+  "auth_type": "basic_auth",
+  "auth_config": {
+    "type": "basic_auth",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "blocklist_domain",
+      "name": "Blocklist Domain",
+      "description": "Blocklist the domain",
+      "http_method": "POST",
+      "endpoint": "/api/v2/blacklist/domain?format=json",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "domain",
+          "type": "string",
+          "description": "Domain to blocklist",
+          "required": true,
+          "contains": [
+            "domain",
+            "url"
+          ]
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "blocklist_ip",
+      "name": "Blocklist Ip",
+      "description": "Blocklist the IP",
+      "http_method": "POST",
+      "endpoint": "/api/v2/blacklist/domain?format=json",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "IP to blocklist",
+          "required": true,
+          "contains": [
+            "ip",
+            "ipv6"
+          ]
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "list_endpoints",
+      "name": "List Endpoints",
+      "description": "Lists all the windows endpoints configured on NetWitness Endpoint",
+      "http_method": "GET",
+      "endpoint": "/api/v2/blacklist/domain?format=json",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "iocscore_gte",
+          "type": "number",
+          "description": "Filter all machines whose IOC score is greater than or equal to this value (Default: 0)",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "iocscore_lte",
+          "type": "number",
+          "description": "Filter all machines whose IOC score is less than or equal to this value (Default: 1024)",
+          "required": false,
+          "default": 1024
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of endpoints to retrieve (Default: 50)",
+          "required": false,
+          "default": 50
+        }
+      ]
+    },
+    {
+      "id": "get_system_info",
+      "name": "Get System Info",
+      "description": "Get information about an endpoint",
+      "http_method": "GET",
+      "endpoint": "/api/v2/machines/{}?format=json",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "guid",
+          "type": "string",
+          "description": "Machine GUID",
+          "required": true,
+          "contains": [
+            "nwe machine guid"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "scan_endpoint",
+      "name": "Scan Endpoint",
+      "description": "Scan an endpoint",
+      "http_method": "GET",
+      "endpoint": "/actions/scan_endpoint",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "guid",
+          "type": "string",
+          "description": "Machine GUID",
+          "required": true,
+          "contains": [
+            "nwe machine guid"
+          ]
+        },
+        {
+          "name": "scan_category",
+          "type": "string",
+          "description": "Scan category (Default: All)",
+          "required": false
+        },
+        {
+          "name": "filter_hooks",
+          "type": "string",
+          "description": "Filter hooks (Default: Signed Modules)",
+          "required": false
+        },
+        {
+          "name": "cpu_max",
+          "type": "number",
+          "description": "Max % of CPU (Default: 95)",
+          "required": false,
+          "default": 95
+        },
+        {
+          "name": "cpu_max_vm",
+          "type": "number",
+          "description": "Max % of CPU for VM (Default: 25)",
+          "required": false,
+          "default": 25
+        },
+        {
+          "name": "cpu_min",
+          "type": "number",
+          "description": "Min % of CPU (Default: 20)",
+          "required": false,
+          "default": 20
+        },
+        {
+          "name": "capture_floating_code",
+          "type": "boolean",
+          "description": "Capture floating code during scan",
+          "required": false
+        },
+        {
+          "name": "all_network_connections",
+          "type": "boolean",
+          "description": "Retrieve all network connections",
+          "required": false
+        },
+        {
+          "name": "reset_agent_network_cache",
+          "type": "boolean",
+          "description": "Reset the agent's network cache",
+          "required": false
+        },
+        {
+          "name": "retrieve_master_boot_record",
+          "type": "boolean",
+          "description": "Retrieve the master boot record",
+          "required": false
+        },
+        {
+          "name": "notify",
+          "type": "boolean",
+          "description": "Notify upon reception",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_scan_data",
+      "name": "Get Scan Data",
+      "description": "Get scan data of an endpoint",
+      "http_method": "GET",
+      "endpoint": "/api/v2/machines/{}/scandata/{}?format=json",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "guid",
+          "type": "string",
+          "description": "Machine GUID",
+          "required": true,
+          "contains": [
+            "nwe machine guid"
+          ]
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of records to retrieve for each category (Default: 50)",
+          "required": false,
+          "default": 50
+        }
+      ]
+    },
+    {
+      "id": "on_poll",
+      "name": "On Poll",
+      "description": "Action to ingest endpoint related information",
+      "http_method": "GET",
+      "endpoint": "/actions/on_poll",
+      "action_type": "ingest",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "container_id",
+          "type": "string",
+          "description": "Comma (,) separated container IDs",
+          "required": false
+        },
+        {
+          "name": "container_count",
+          "type": "number",
+          "description": "Maximum number of containers to ingest",
+          "required": false
+        },
+        {
+          "name": "start_time",
+          "type": "number",
+          "description": "Parameter ignored in this app",
+          "required": false
+        },
+        {
+          "name": "artifact_count",
+          "type": "number",
+          "description": "Parameter ignored in this app",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "number",
+          "description": "Parameter ignored in this app",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_ioc",
+      "name": "List Ioc",
+      "description": "List the IOC",
+      "http_method": "GET",
+      "endpoint": "/api/v2/blacklist/domain?format=json",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "machine_count",
+          "type": "number",
+          "description": "Minimum IOC machines (Default: 0)",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "module_count",
+          "type": "number",
+          "description": "Minimum IOC modules (Default: 0)",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "max_ioc_level",
+          "type": "string",
+          "description": "Maximum IOC level of modules (Default: 2)",
+          "required": false,
+          "default": "2"
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of IOCs to retrieve (Default: 50)",
+          "required": false,
+          "default": 50
+        }
+      ]
+    },
+    {
+      "id": "get_ioc",
+      "name": "Get Ioc",
+      "description": "Get the IOC",
+      "http_method": "GET",
+      "endpoint": "/actions/get_ioc",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Name of IOC",
+          "required": true,
+          "contains": [
+            "nwe ioc name"
+          ]
+        },
+        {
+          "name": "max_ioc_level",
+          "type": "string",
+          "description": "Maximum IOC level of modules to ingest (Default: 2)",
+          "required": false,
+          "default": "2"
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "NetWitness Endpoint",
+    "original_type": "endpoint",
+    "converted_at": "2025-12-18T16:25:29.004513",
+    "source_version": "2.0.12"
+  }
+}

@@ -1,0 +1,261 @@
+{
+  "name": "Wireless Intrusion Detection & Response",
+  "slug": "network-wireless-intrusion",
+  "description": "Detects and responds to wireless intrusion events including rogue access points, evil twin attacks, deauthentication floods, and unauthorized wireless clients. Riggs AI analyzes the wireless alert to identify the threat type and locate the rogue AP using signal triangulation data. Confirmed rogue APs are disabled via the wireless controller, the wired switch port is shut down, physical security is dispatched, and a security ticket is created. False positives from neighboring networks are documented and suppressed.",
+  "category": "network",
+  "subcategory": "wireless_security",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "advanced",
+  "estimated_time": "15 minutes",
+  "tags": ["wireless", "rogue_ap", "evil_twin", "wids", "network"],
+  "alert_types": ["network", "wireless", "rogue_ap"],
+  "severity_filter": ["medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["network", "rogue_ap", "evil_twin", "deauth_flood", "wids_alert", "unauthorized_ssid"],
+    "min_severity": "medium"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "cisco_wlc",
+      "name": "Cisco Wireless LAN Controller",
+      "category": "wireless",
+      "reason": "Contain rogue AP and manage wireless security policies"
+    },
+    {
+      "connector_id": "cisco_switch",
+      "name": "Cisco Switch",
+      "category": "network",
+      "reason": "Shut down the wired switch port feeding the rogue access point"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create security ticket for physical investigation and AP removal"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Alert SOC and physical security teams for rogue AP removal"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Wireless Intrusion Alert",
+          "config": {
+            "alert_types": ["network", "rogue_ap", "evil_twin", "deauth_flood", "wids_alert", "unauthorized_ssid"],
+            "description": "Triggers when the WIDS/WIPS detects rogue access points, evil twin attacks, deauthentication floods, or unauthorized wireless activity"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — Wireless Threat Analysis",
+          "config": {
+            "template_id": "ioc_correlation",
+            "additional_instructions": "Analyze the wireless alert: identify AP BSSID/SSID, channel, signal strength, vendor OUI, connected clients, and triangulated physical location. Determine if this is a rogue AP, evil twin, or neighboring network. Check if BSSID is in the authorized AP inventory.",
+            "description": "AI-powered analysis of the wireless intrusion alert to classify the threat type, identify the rogue AP, and estimate physical location"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "label": "Rogue AP Confirmed?",
+          "config": {
+            "condition": "{{analyze_1.verdict}} in ['MALICIOUS', 'SUSPICIOUS']",
+            "description": "Routes based on whether the wireless device is confirmed as a rogue AP or evil twin versus a neighboring network or authorized device"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "respond",
+          "label": "Contain Rogue AP via WLC",
+          "config": {
+            "integration_action": {
+              "connector_id": "cisco_wlc",
+              "action": "contain_rogue",
+              "parameters": {
+                "bssid": "{{trigger_1.alert.rogue_bssid}}",
+                "containment_level": "full",
+                "comment": "Rogue AP contained — SSID: {{trigger_1.alert.rogue_ssid}}, Type: {{analyze_1.threat_type}}"
+              }
+            },
+            "description": "Activates wireless containment on the rogue AP through the WLC to deauthenticate connected clients and prevent new associations"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "label": "Disable Wired Switch Port",
+          "config": {
+            "integration_action": {
+              "connector_id": "cisco_switch",
+              "action": "disable_port",
+              "parameters": {
+                "switch_ip": "{{analyze_1.connected_switch}}",
+                "port": "{{analyze_1.connected_port}}",
+                "comment": "Port disabled — rogue AP BSSID: {{trigger_1.alert.rogue_bssid}} connected here"
+              }
+            },
+            "description": "Disables the wired switch port feeding the rogue AP to cut its network connectivity entirely"
+          }
+        }
+      },
+      {
+        "id": "respond_3",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "label": "Create Security Ticket",
+          "config": {
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_issue",
+              "parameters": {
+                "project": "SEC",
+                "issue_type": "Incident",
+                "priority": "P2",
+                "summary": "Rogue AP Detected — {{trigger_1.alert.rogue_ssid}} ({{analyze_1.threat_type}})",
+                "description": "WIRELESS INTRUSION — ROGUE AP DETECTED\n\nRogue BSSID: {{trigger_1.alert.rogue_bssid}}\nRogue SSID: {{trigger_1.alert.rogue_ssid}}\nVendor: {{analyze_1.ap_vendor}}\nChannel: {{trigger_1.alert.channel}}\nThreat Type: {{analyze_1.threat_type}}\nEstimated Location: {{analyze_1.estimated_location}}\nConnected Clients: {{trigger_1.alert.connected_clients}}\n\nActions Taken:\n- Wireless containment activated via WLC\n- Wired switch port disabled\n\nPhysical security: Locate and remove the rogue device at estimated location."
+              }
+            },
+            "description": "Creates a security ticket for physical security to locate and remove the rogue wireless device"
+          }
+        }
+      },
+      {
+        "id": "respond_4",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "label": "Alert SOC & Physical Security",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#soc-alerts",
+              "message": "ROGUE AP DETECTED & CONTAINED\n\nSSID: {{trigger_1.alert.rogue_ssid}}\nBSSID: {{trigger_1.alert.rogue_bssid}}\nType: {{analyze_1.threat_type}}\nLocation: {{analyze_1.estimated_location}}\nClients Affected: {{trigger_1.alert.connected_clients}}\n\nActions: WLC containment active + switch port disabled\nTicket: {{respond_3.ticket_key}}\n\nPhysical security dispatch required.",
+              "priority": "high"
+            },
+            "description": "Alerts the SOC and physical security teams with rogue AP location for physical removal"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "utility",
+          "label": "Suppress: Neighboring Network",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "Wireless alert for BSSID {{trigger_1.alert.rogue_bssid}} (SSID: {{trigger_1.alert.rogue_ssid}}) analyzed. Verdict: {{analyze_1.verdict}}. Determined to be a neighboring network or authorized device. Alert suppressed.",
+              "close_alert": true,
+              "suppress_similar": true
+            },
+            "description": "Suppresses false positive alerts from neighboring wireless networks or authorized devices"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1180 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "Wireless intrusion detection and response workflow complete"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_analyze",
+        "source": "trigger_1",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_analyze_decision",
+        "source": "analyze_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "respond_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "utility_1",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_contain_port",
+        "source": "respond_1",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_port_ticket",
+        "source": "respond_2",
+        "target": "respond_3",
+        "type": "default"
+      },
+      {
+        "id": "e_ticket_notify",
+        "source": "respond_3",
+        "target": "respond_4",
+        "type": "default"
+      },
+      {
+        "id": "e_notify_end",
+        "source": "respond_4",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_utility_end",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

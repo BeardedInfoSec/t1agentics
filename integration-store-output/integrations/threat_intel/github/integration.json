@@ -1,0 +1,692 @@
+{
+  "id": "github",
+  "name": "GitHub",
+  "description": "This app integrates with GitHub to support various investigative and issue-based actions",
+  "version": "2.1.1",
+  "category": "threat_intel",
+  "vendor": "Microsoft",
+  "auth_type": "oauth2",
+  "auth_config": {
+    "type": "oauth2",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "{phantom_base_url}rest",
+  "actions": [
+    {
+      "id": "list_events",
+      "name": "List Events",
+      "description": "List events performed by a user",
+      "http_method": "GET",
+      "endpoint": "/user/orgs",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "username",
+          "type": "string",
+          "description": "Username",
+          "required": true,
+          "contains": [
+            "github username"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_users",
+      "name": "List Users",
+      "description": "List users of an organization",
+      "http_method": "GET",
+      "endpoint": "/orgs/{organization_name}/members",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "organization_name",
+          "type": "string",
+          "description": "Organization name",
+          "required": true,
+          "contains": [
+            "github organization name"
+          ]
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of users to be fetched",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "remove_collaborator",
+      "name": "Remove Collaborator",
+      "description": "Remove user as a collaborator from the repo",
+      "http_method": "GET",
+      "endpoint": "/repos/{repo_full_name}/collaborators/{user_name}",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "repo_owner",
+          "type": "string",
+          "description": "Owner of the repository",
+          "required": true,
+          "contains": [
+            "github repo owner",
+            "github username"
+          ]
+        },
+        {
+          "name": "repo_name",
+          "type": "string",
+          "description": "Name of the repository",
+          "required": true,
+          "contains": [
+            "github repo"
+          ]
+        },
+        {
+          "name": "user",
+          "type": "string",
+          "description": "Username",
+          "required": true,
+          "contains": [
+            "github username"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "add_collaborator",
+      "name": "Add Collaborator",
+      "description": "Add user as a collaborator to repo",
+      "http_method": "GET",
+      "endpoint": "/actions/add_collaborator",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "repo_owner",
+          "type": "string",
+          "description": "Owner of the repository",
+          "required": true,
+          "contains": [
+            "github repo owner",
+            "github username"
+          ]
+        },
+        {
+          "name": "repo_name",
+          "type": "string",
+          "description": "Name of the repository",
+          "required": true,
+          "contains": [
+            "github repo"
+          ]
+        },
+        {
+          "name": "user",
+          "type": "string",
+          "description": "Username",
+          "required": true,
+          "contains": [
+            "github username"
+          ]
+        },
+        {
+          "name": "role",
+          "type": "string",
+          "description": "Role of the user (Default: Push)",
+          "required": false,
+          "default": "Push"
+        },
+        {
+          "name": "override",
+          "type": "boolean",
+          "description": "Override existing role of collaborator",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "remove_member",
+      "name": "Remove Member",
+      "description": "Remove user from the team",
+      "http_method": "GET",
+      "endpoint": "/teams/{team_id}/memberships/{user_name}",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "team",
+          "type": "string",
+          "description": "Team name or team ID",
+          "required": true,
+          "contains": [
+            "github team name",
+            "github team id"
+          ]
+        },
+        {
+          "name": "user",
+          "type": "string",
+          "description": "Username",
+          "required": true,
+          "contains": [
+            "github username"
+          ]
+        },
+        {
+          "name": "organization_name",
+          "type": "string",
+          "description": "Organization name",
+          "required": false,
+          "contains": [
+            "github organization name"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "add_member",
+      "name": "Add Member",
+      "description": "Add user in a team",
+      "http_method": "GET",
+      "endpoint": "/actions/add_member",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "team",
+          "type": "string",
+          "description": "Team name or team ID",
+          "required": true,
+          "contains": [
+            "github team name",
+            "github team id"
+          ]
+        },
+        {
+          "name": "user",
+          "type": "string",
+          "description": "Username",
+          "required": true,
+          "contains": [
+            "github username"
+          ]
+        },
+        {
+          "name": "role",
+          "type": "string",
+          "description": "Role of the user (Default: Member)",
+          "required": false,
+          "default": "Member"
+        },
+        {
+          "name": "organization_name",
+          "type": "string",
+          "description": "Organization name",
+          "required": false,
+          "contains": [
+            "github organization name"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_teams",
+      "name": "List Teams",
+      "description": "List all teams of an organization",
+      "http_method": "GET",
+      "endpoint": "/orgs/{org_name}/teams",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "organization_name",
+          "type": "string",
+          "description": "Organization name",
+          "required": true,
+          "contains": [
+            "github organization name"
+          ]
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of teams to be fetched",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_repos",
+      "name": "List Repos",
+      "description": "List all repos of an organization",
+      "http_method": "GET",
+      "endpoint": "/orgs/{org_name}/repos",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "organization_name",
+          "type": "string",
+          "description": "Organization name",
+          "required": true,
+          "contains": [
+            "github organization name"
+          ]
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of repositories to be fetched",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_organizations",
+      "name": "List Organizations",
+      "description": "List all organizations",
+      "http_method": "GET",
+      "endpoint": "/user/orgs",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of organizations to be fetched",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_issues",
+      "name": "List Issues",
+      "description": "Get a list of issues for the GitHub repository",
+      "http_method": "GET",
+      "endpoint": "/user/orgs",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "repo_owner",
+          "type": "string",
+          "description": "Owner of the repository",
+          "required": true,
+          "contains": [
+            "github repo owner",
+            "github username"
+          ]
+        },
+        {
+          "name": "repo_name",
+          "type": "string",
+          "description": "Name of the repository",
+          "required": true,
+          "contains": [
+            "github repo"
+          ]
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of issues to be fetched",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_comments",
+      "name": "List Comments",
+      "description": "List comments for an issue on the GitHub repository",
+      "http_method": "GET",
+      "endpoint": "/user/orgs",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "repo_owner",
+          "type": "string",
+          "description": "Owner of the repository",
+          "required": true,
+          "contains": [
+            "github repo owner",
+            "github username"
+          ]
+        },
+        {
+          "name": "repo_name",
+          "type": "string",
+          "description": "Name of the repository",
+          "required": true,
+          "contains": [
+            "github repo"
+          ]
+        },
+        {
+          "name": "issue_number",
+          "type": "number",
+          "description": "Issue ID",
+          "required": true,
+          "contains": [
+            "github issue id"
+          ]
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of comments to be fetched",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_issue",
+      "name": "Get Issue",
+      "description": "Retrieve an issue for the GitHub repository",
+      "http_method": "GET",
+      "endpoint": "/actions/get_issue",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "repo_owner",
+          "type": "string",
+          "description": "Owner of the repository",
+          "required": true,
+          "contains": [
+            "github repo owner",
+            "github username"
+          ]
+        },
+        {
+          "name": "repo_name",
+          "type": "string",
+          "description": "Name of the repository",
+          "required": true,
+          "contains": [
+            "github repo"
+          ]
+        },
+        {
+          "name": "issue_number",
+          "type": "number",
+          "description": "Issue ID",
+          "required": true,
+          "contains": [
+            "github issue id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "create_issue",
+      "name": "Create Issue",
+      "description": "Create an issue for the GitHub repository",
+      "http_method": "GET",
+      "endpoint": "/actions/create_issue",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "repo_owner",
+          "type": "string",
+          "description": "Owner of the repository",
+          "required": true,
+          "contains": [
+            "github repo owner",
+            "github username"
+          ]
+        },
+        {
+          "name": "repo_name",
+          "type": "string",
+          "description": "Name of the repository",
+          "required": true,
+          "contains": [
+            "github repo"
+          ]
+        },
+        {
+          "name": "issue_title",
+          "type": "string",
+          "description": "Title of the issue",
+          "required": true
+        },
+        {
+          "name": "issue_body",
+          "type": "string",
+          "description": "Contents of the issue",
+          "required": false
+        },
+        {
+          "name": "assignees",
+          "type": "string",
+          "description": "Comma-separated list of logins (usernames) for the users to assign to this issue",
+          "required": false,
+          "contains": [
+            "github username"
+          ]
+        },
+        {
+          "name": "labels",
+          "type": "string",
+          "description": "Comma-separated list of labels to associate with this issue",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "update_issue",
+      "name": "Update Issue",
+      "description": "Update an issue for the GitHub repository",
+      "http_method": "GET",
+      "endpoint": "/actions/update_issue",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "repo_owner",
+          "type": "string",
+          "description": "Owner of the repository",
+          "required": true,
+          "contains": [
+            "github repo owner",
+            "github username"
+          ]
+        },
+        {
+          "name": "repo_name",
+          "type": "string",
+          "description": "Name of the repository",
+          "required": true,
+          "contains": [
+            "github repo"
+          ]
+        },
+        {
+          "name": "issue_number",
+          "type": "number",
+          "description": "Issue ID",
+          "required": true,
+          "contains": [
+            "github issue id"
+          ]
+        },
+        {
+          "name": "state",
+          "type": "string",
+          "description": "State of the issue",
+          "required": false
+        },
+        {
+          "name": "issue_title",
+          "type": "string",
+          "description": "Title of the issue",
+          "required": false
+        },
+        {
+          "name": "issue_body",
+          "type": "string",
+          "description": "Contents of the issue",
+          "required": false
+        },
+        {
+          "name": "assignees",
+          "type": "string",
+          "description": "Comma-separated list of logins (usernames) for the users to assign to this issue",
+          "required": false,
+          "contains": [
+            "github username"
+          ]
+        },
+        {
+          "name": "labels",
+          "type": "string",
+          "description": "Comma-separated list of labels to associate with this issue",
+          "required": false
+        },
+        {
+          "name": "to_empty",
+          "type": "boolean",
+          "description": "Empty the field values of the issue for which the parameter values are not provided",
+          "required": false,
+          "default": false
+        }
+      ]
+    },
+    {
+      "id": "create_comment",
+      "name": "Create Comment",
+      "description": "Create a comment for an issue on the GitHub repository",
+      "http_method": "GET",
+      "endpoint": "/actions/create_comment",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "repo_owner",
+          "type": "string",
+          "description": "Owner of the repository",
+          "required": true,
+          "contains": [
+            "github repo owner",
+            "github username"
+          ]
+        },
+        {
+          "name": "repo_name",
+          "type": "string",
+          "description": "Name of the repository",
+          "required": true,
+          "contains": [
+            "github repo"
+          ]
+        },
+        {
+          "name": "issue_number",
+          "type": "number",
+          "description": "Issue ID",
+          "required": true,
+          "contains": [
+            "github issue id"
+          ]
+        },
+        {
+          "name": "comment_body",
+          "type": "string",
+          "description": "Contents of a comment to add to the issue",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "add_labels",
+      "name": "Add Labels",
+      "description": "Add label(s) to an issue on the GitHub repository",
+      "http_method": "GET",
+      "endpoint": "/actions/add_labels",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "repo_owner",
+          "type": "string",
+          "description": "Owner of the repository",
+          "required": true,
+          "contains": [
+            "github repo owner",
+            "github username"
+          ]
+        },
+        {
+          "name": "repo_name",
+          "type": "string",
+          "description": "Name of the repository",
+          "required": true,
+          "contains": [
+            "github repo"
+          ]
+        },
+        {
+          "name": "issue_number",
+          "type": "number",
+          "description": "Issue ID",
+          "required": true,
+          "contains": [
+            "github issue id"
+          ]
+        },
+        {
+          "name": "labels",
+          "type": "string",
+          "description": "Comma-separated list of labels to add to the issue",
+          "required": true
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "GitHub",
+    "original_type": "information",
+    "converted_at": "2025-12-18T16:25:28.810154",
+    "source_version": "2.1.1"
+  }
+}

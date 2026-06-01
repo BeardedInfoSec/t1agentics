@@ -1,0 +1,255 @@
+{
+  "name": "Rogue Device Detection & Isolation",
+  "slug": "network-rogue-device",
+  "description": "Detects and responds to unauthorized devices discovered on the network through NAC alerts or MAC address anomalies. Riggs AI analyzes the device fingerprint, MAC vendor lookup, and connection context to determine if the device is rogue or a legitimate unregistered asset. Confirmed rogue devices trigger switch port isolation, MAC address blocking, a security alert to the SOC, and an incident ticket. Legitimate devices are flagged for IT asset registration.",
+  "category": "network",
+  "subcategory": "access_control",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "10 minutes",
+  "tags": ["rogue_device", "nac", "mac_address", "network", "access_control"],
+  "alert_types": ["network", "nac", "rogue_device"],
+  "severity_filter": ["medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["network", "rogue_device", "nac_violation", "unknown_mac", "unauthorized_device"],
+    "min_severity": "medium"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "cisco_ise",
+      "name": "Cisco ISE",
+      "category": "nac",
+      "reason": "Isolate rogue device by disabling the switch port and blocking the MAC address"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create incident ticket for physical security investigation of rogue device"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Alert SOC and physical security teams about the rogue device"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Unknown Device / NAC Alert",
+          "config": {
+            "alert_types": ["network", "rogue_device", "nac_violation", "unknown_mac", "unauthorized_device"],
+            "description": "Triggers when NAC or network monitoring detects an unknown or unauthorized device connecting to the network"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — Device Fingerprint Analysis",
+          "config": {
+            "template_id": "ioc_correlation",
+            "additional_instructions": "Analyze device fingerprint: MAC vendor lookup (OUI), DHCP fingerprint, OS detection, connected switch/port, and VLAN. Cross-reference against CMDB/asset inventory. Determine if this is a rogue device or a legitimate unregistered asset.",
+            "description": "AI-powered device fingerprinting and asset inventory cross-reference to classify the unknown device as rogue or legitimate"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "label": "Rogue Device Confirmed?",
+          "config": {
+            "condition": "{{analyze_1.verdict}} in ['MALICIOUS', 'SUSPICIOUS']",
+            "description": "Routes based on whether the device is confirmed rogue versus a legitimate unregistered asset"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "respond",
+          "label": "Isolate Switch Port",
+          "config": {
+            "integration_action": {
+              "connector_id": "cisco_ise",
+              "action": "disable_port",
+              "parameters": {
+                "switch_ip": "{{trigger_1.alert.switch_ip}}",
+                "port": "{{trigger_1.alert.switch_port}}",
+                "mac_address": "{{trigger_1.alert.mac_address}}",
+                "comment": "Port disabled — rogue device detected. MAC: {{trigger_1.alert.mac_address}}, Vendor: {{analyze_1.mac_vendor}}"
+              }
+            },
+            "description": "Disables the switch port where the rogue device is connected to immediately sever network access"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "label": "Block MAC Address",
+          "config": {
+            "integration_action": {
+              "connector_id": "cisco_ise",
+              "action": "blacklist_mac",
+              "parameters": {
+                "mac_address": "{{trigger_1.alert.mac_address}}",
+                "reason": "Rogue device — {{analyze_1.device_type}}, Vendor: {{analyze_1.mac_vendor}}"
+              }
+            },
+            "description": "Adds the rogue device MAC address to the NAC blacklist to prevent it from reconnecting on any port"
+          }
+        }
+      },
+      {
+        "id": "respond_3",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "label": "Create Incident Ticket",
+          "config": {
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_issue",
+              "parameters": {
+                "project": "SEC",
+                "issue_type": "Incident",
+                "priority": "P2",
+                "summary": "Rogue Device Detected — {{analyze_1.mac_vendor}} on {{trigger_1.alert.switch_port}}",
+                "description": "ROGUE DEVICE DETECTED\n\nMAC Address: {{trigger_1.alert.mac_address}}\nVendor: {{analyze_1.mac_vendor}}\nDevice Type: {{analyze_1.device_type}}\nSwitch: {{trigger_1.alert.switch_ip}} Port: {{trigger_1.alert.switch_port}}\nVLAN: {{trigger_1.alert.vlan}}\nBuilding/Floor: {{trigger_1.alert.location}}\n\nActions Taken:\n- Switch port disabled\n- MAC address blacklisted\n\nPhysical security investigation required to locate and remove the device."
+              }
+            },
+            "description": "Creates an incident ticket for physical security team to investigate and remove the rogue device"
+          }
+        }
+      },
+      {
+        "id": "respond_4",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "label": "Alert SOC on Slack",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#soc-alerts",
+              "message": "ROGUE DEVICE — ISOLATED\n\nMAC: {{trigger_1.alert.mac_address}}\nVendor: {{analyze_1.mac_vendor}}\nType: {{analyze_1.device_type}}\nLocation: {{trigger_1.alert.switch_ip}}:{{trigger_1.alert.switch_port}}\n\nActions: Port disabled + MAC blacklisted\nJira Ticket: {{respond_3.ticket_key}}\n\nPhysical security investigation required.",
+              "priority": "high"
+            },
+            "description": "Notifies the SOC and physical security teams about the rogue device with location details"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "utility",
+          "label": "Flag for IT Asset Registration",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "Unknown device analyzed — Verdict: {{analyze_1.verdict}}. Device appears legitimate but unregistered.\nMAC: {{trigger_1.alert.mac_address}} ({{analyze_1.mac_vendor}})\nType: {{analyze_1.device_type}}\n\nRouted to IT for asset registration and CMDB update.",
+              "assign_to": "it_asset_team",
+              "close_alert": false
+            },
+            "description": "Routes the alert to the IT asset team for proper registration when the device is legitimate but not in the CMDB"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1180 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "Rogue device detection and isolation workflow complete"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_analyze",
+        "source": "trigger_1",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_analyze_decision",
+        "source": "analyze_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "respond_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "utility_1",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_isolate_block",
+        "source": "respond_1",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_block_ticket",
+        "source": "respond_2",
+        "target": "respond_3",
+        "type": "default"
+      },
+      {
+        "id": "e_ticket_notify",
+        "source": "respond_3",
+        "target": "respond_4",
+        "type": "default"
+      },
+      {
+        "id": "e_notify_end",
+        "source": "respond_4",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_utility_end",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

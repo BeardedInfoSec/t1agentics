@@ -1,0 +1,209 @@
+{
+  "name": "Privilege Escalation Response",
+  "slug": "privilege-escalation-response",
+  "description": "Investigates and responds to unauthorized privilege escalation events. Uses AI to analyze escalation context, revokes elevated permissions through Active Directory, creates a P2 incident ticket in Jira for tracking, generates an executive summary of the incident, and notifies security leadership. Authorized changes are documented and closed.",
+  "category": "identity",
+  "subcategory": "privilege_escalation",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "15 minutes",
+  "tags": ["privilege_escalation", "identity", "access_control"],
+  "alert_types": ["privilege_escalation", "unauthorized_access"],
+  "severity_filter": ["high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["privilege_escalation", "unauthorized_access"],
+    "min_severity": "high"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "microsoft_graph",
+      "name": "Microsoft Graph",
+      "category": "identity",
+      "reason": "Revoke elevated permissions and query Active Directory group memberships"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create P2 incident ticket for tracking and remediation"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "pe-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "title": "Privilege Escalation Alert",
+          "summary": "Fires on privilege escalation or unauthorized access alert",
+          "config": {
+            "trigger_type": "alert",
+            "alert_filter": "privilege_escalation OR unauthorized_access"
+          }
+        }
+      },
+      {
+        "id": "pe-2",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "title": "AI Privilege Escalation Analysis",
+          "summary": "Analyze escalation event for authorization and intent",
+          "config": {
+            "mode": "ai_analysis",
+            "template_id": "priv_escalation",
+            "custom_instructions": "",
+            "alert_path": "$.trigger.alert",
+            "include_context": true
+          }
+        }
+      },
+      {
+        "id": "pe-3",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "title": "Unauthorized Escalation?",
+          "summary": "Branch based on whether the escalation was unauthorized",
+          "config": {
+            "conditions": {
+              "operator": "AND",
+              "conditions": [
+                {
+                  "field": "$.nodes.pe-2.result.unauthorized",
+                  "operator": "equals",
+                  "value": "true"
+                }
+              ],
+              "groups": []
+            },
+            "expression": "$.nodes.pe-2.result.unauthorized == true",
+            "default_branch": "no"
+          }
+        }
+      },
+      {
+        "id": "pe-4",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "respond",
+          "title": "Revoke Elevated Permissions",
+          "summary": "Remove unauthorized elevated permissions via Active Directory",
+          "config": {
+            "response_type": "integration_action",
+            "integration_instance_id": "microsoft_graph",
+            "action_type": "remove_group_membership",
+            "params": {
+              "user_id": "$.trigger.alert.target_user_id",
+              "group_id": "$.trigger.alert.escalated_group_id",
+              "reason": "Unauthorized privilege escalation — permissions revoked"
+            },
+            "requires_approval": false,
+            "priority": "high"
+          }
+        }
+      },
+      {
+        "id": "pe-5",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "title": "Create P2 Incident Ticket",
+          "summary": "Create a Priority 2 incident ticket in Jira for tracking",
+          "config": {
+            "response_type": "create_ticket",
+            "system": "jira",
+            "project_key": "SEC",
+            "issue_type": "Incident",
+            "title": "P2: Unauthorized Privilege Escalation — {{$.trigger.alert.target_user_email}}",
+            "description": "Unauthorized privilege escalation detected. User {{$.trigger.alert.target_user_email}} gained elevated permissions to {{$.trigger.alert.escalated_group_name}}. Permissions have been revoked. Investigation required.",
+            "priority": "high",
+            "requires_approval": false
+          }
+        }
+      },
+      {
+        "id": "pe-6",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "analyze",
+          "title": "Generate Executive Summary",
+          "summary": "AI-generated executive summary of the privilege escalation incident",
+          "config": {
+            "mode": "ai_analysis",
+            "template_id": "executive_summary",
+            "custom_instructions": "",
+            "alert_path": "$.trigger.alert",
+            "include_context": true
+          }
+        }
+      },
+      {
+        "id": "pe-7",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "title": "Notify Security Leadership",
+          "summary": "Email executive summary to security leadership team",
+          "config": {
+            "response_type": "notification",
+            "channel": "email",
+            "email_recipients": "security-leadership@company.com",
+            "email_subject": "P2 Incident: Unauthorized Privilege Escalation — {{$.trigger.alert.target_user_email}}",
+            "message": "{{$.nodes.pe-6.result.summary}}",
+            "requires_approval": false,
+            "priority": "high"
+          }
+        }
+      },
+      {
+        "id": "pe-8",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "utility",
+          "title": "Note: Authorized Change",
+          "summary": "Document that the privilege change was authorized and expected",
+          "config": {
+            "operation": "add_note",
+            "note": "Privilege escalation reviewed. Change was authorized per change request. No remediation required."
+          }
+        }
+      },
+      {
+        "id": "pe-9",
+        "type": "signal",
+        "position": { "x": 520, "y": 1180 },
+        "data": {
+          "kind": "end",
+          "title": "Playbook Complete",
+          "summary": "Privilege escalation response finished",
+          "config": {
+            "disposition": "completed",
+            "summary": "Privilege escalation response actions completed"
+          }
+        }
+      }
+    ],
+    "edges": [
+      { "id": "pe-e1", "source": "pe-1", "target": "pe-2", "animated": true, "type": "smoothstep" },
+      { "id": "pe-e2", "source": "pe-2", "target": "pe-3", "animated": true, "type": "smoothstep" },
+      { "id": "pe-e3", "source": "pe-3", "target": "pe-4", "sourceHandle": "yes", "label": "Yes", "animated": true, "type": "smoothstep" },
+      { "id": "pe-e4", "source": "pe-3", "target": "pe-8", "sourceHandle": "no", "label": "No", "animated": true, "type": "smoothstep" },
+      { "id": "pe-e5", "source": "pe-4", "target": "pe-5", "animated": true, "type": "smoothstep" },
+      { "id": "pe-e6", "source": "pe-5", "target": "pe-6", "animated": true, "type": "smoothstep" },
+      { "id": "pe-e7", "source": "pe-6", "target": "pe-7", "animated": true, "type": "smoothstep" },
+      { "id": "pe-e8", "source": "pe-7", "target": "pe-9", "animated": true, "type": "smoothstep" },
+      { "id": "pe-e9", "source": "pe-8", "target": "pe-9", "animated": true, "type": "smoothstep" }
+    ]
+  }
+}

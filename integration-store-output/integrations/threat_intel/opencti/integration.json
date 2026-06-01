@@ -1,0 +1,218 @@
+{
+  "id": "opencti",
+  "name": "OpenCTI",
+  "description": "Integrate with OpenCTI (Open Cyber Threat Intelligence) platform to query indicators, threat actors, malware, and intelligence reports via the GraphQL API",
+  "version": "1.0.0",
+  "category": "threat_intel",
+  "vendor": "Filigran (open source)",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "header_name": "Authorization",
+    "location": "header",
+    "note": "Bearer token using UUID v4 API key from user profile. Header format: Authorization: Bearer {api_key}"
+  },
+  "base_url": "https://{opencti_instance_url}",
+  "actions": [
+    {
+      "id": "search_indicators",
+      "name": "Search Indicators",
+      "description": "Search OpenCTI for STIX indicators by pattern value, type, or label using GraphQL query",
+      "http_method": "POST",
+      "endpoint": "/graphql",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "search",
+          "type": "string",
+          "description": "Search term to find indicators (IP, domain, hash, URL)",
+          "required": false,
+          "contains": ["ip", "domain", "hash", "url", "email"]
+        },
+        {
+          "name": "indicator_types",
+          "type": "string",
+          "description": "Filter by indicator type (e.g. IPv4-Addr, Domain-Name, StixFile, Url)",
+          "required": false
+        },
+        {
+          "name": "first",
+          "type": "number",
+          "description": "Number of results to return (pagination)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "search_observables",
+      "name": "Search Observables",
+      "description": "Search OpenCTI STIX Cyber Observables (SCOs) for technical indicators like IPs, domains, and hashes",
+      "http_method": "POST",
+      "endpoint": "/graphql",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "search",
+          "type": "string",
+          "description": "Observable value to search for",
+          "required": false,
+          "contains": ["ip", "domain", "hash", "url", "email"]
+        },
+        {
+          "name": "types",
+          "type": "string",
+          "description": "Observable type filter (IPv4-Addr, Domain-Name, StixFile, Url, Email-Addr)",
+          "required": false
+        },
+        {
+          "name": "first",
+          "type": "number",
+          "description": "Number of results to return",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "search_threat_actors",
+      "name": "Search Threat Actors",
+      "description": "Search OpenCTI intrusion sets and threat actor records",
+      "http_method": "POST",
+      "endpoint": "/graphql",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "search",
+          "type": "string",
+          "description": "Threat actor or intrusion set name to search",
+          "required": false
+        },
+        {
+          "name": "first",
+          "type": "number",
+          "description": "Number of results to return",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "search_malware",
+      "name": "Search Malware",
+      "description": "Search OpenCTI malware records including families, tools, and associated indicators",
+      "http_method": "POST",
+      "endpoint": "/graphql",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "search",
+          "type": "string",
+          "description": "Malware name or keyword to search",
+          "required": false
+        },
+        {
+          "name": "first",
+          "type": "number",
+          "description": "Number of results to return",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "search_reports",
+      "name": "Search Reports",
+      "description": "Search OpenCTI intelligence reports from connected feeds and manual submissions",
+      "http_method": "POST",
+      "endpoint": "/graphql",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "search",
+          "type": "string",
+          "description": "Report title or keyword to search",
+          "required": false
+        },
+        {
+          "name": "report_types",
+          "type": "string",
+          "description": "Report type filter (threat-report, internal-report)",
+          "required": false
+        },
+        {
+          "name": "first",
+          "type": "number",
+          "description": "Number of results to return",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "search_vulnerabilities",
+      "name": "Search Vulnerabilities",
+      "description": "Search OpenCTI vulnerability records by CVE ID or description",
+      "http_method": "POST",
+      "endpoint": "/graphql",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "search",
+          "type": "string",
+          "description": "CVE ID or vulnerability description to search",
+          "required": false,
+          "contains": ["cve"]
+        },
+        {
+          "name": "first",
+          "type": "number",
+          "description": "Number of results to return",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "create_indicator",
+      "name": "Create Indicator",
+      "description": "Create a new STIX indicator in OpenCTI via GraphQL mutation",
+      "http_method": "POST",
+      "endpoint": "/graphql",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Indicator name/label",
+          "required": true
+        },
+        {
+          "name": "pattern",
+          "type": "string",
+          "description": "STIX pattern (e.g. [ipv4-addr:value = '8.8.8.8'])",
+          "required": true
+        },
+        {
+          "name": "pattern_type",
+          "type": "string",
+          "description": "Pattern type: stix, yara, sigma, pcre, snort",
+          "required": true
+        },
+        {
+          "name": "valid_from",
+          "type": "string",
+          "description": "Valid from date (ISO 8601 format)",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Indicator description",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

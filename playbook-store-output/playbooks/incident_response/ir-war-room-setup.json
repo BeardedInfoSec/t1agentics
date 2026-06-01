@@ -1,0 +1,217 @@
+{
+  "name": "War Room Initialization",
+  "slug": "ir-war-room-setup",
+  "description": "Initializes a virtual war room for major incident response coordination. Riggs AI generates an executive summary and identifies required responders based on the incident type. A dedicated Slack channel is created with an incident brief posted as the opening message. Key responders (IR lead, SOC analysts, relevant SMEs) are invited to the channel. A Jira epic is created to track all war room activities. A conference bridge link is posted, and the incident commander role is assigned. The war room setup is logged for audit purposes.",
+  "category": "incident_response",
+  "subcategory": "coordination",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "beginner",
+  "estimated_time": "5 minutes",
+  "tags": ["war_room", "coordination", "incident", "slack", "responders", "conference"],
+  "alert_types": ["any"],
+  "severity_filter": ["critical"],
+  "trigger_conditions": {
+    "alert_types": ["any"],
+    "min_severity": "critical"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Create war room channel, invite responders, and post incident brief and conference bridge"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create incident epic to track all war room activities and response tasks"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Critical Incident — War Room Required",
+          "config": {
+            "alert_types": ["any"],
+            "description": "Triggers on critical severity incidents that require a coordinated war room response"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — Incident Brief",
+          "config": {
+            "template_id": "executive_summary",
+            "additional_instructions": "Generate a concise incident brief suitable for a war room opening. Include: what happened, what is affected, current impact, and recommended responder roles needed (e.g., network, endpoint, identity, cloud).",
+            "description": "AI-powered incident brief generation identifying the situation summary and required responder roles"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "respond",
+          "label": "Create War Room Channel",
+          "config": {
+            "integration_action": {
+              "connector_id": "slack",
+              "action": "create_channel",
+              "parameters": {
+                "channel_name": "war-room-{{trigger_1.alert.id}}",
+                "topic": "WAR ROOM: {{trigger_1.alert.title}} | IC: TBD",
+                "initial_message": "WAR ROOM ACTIVATED\n\nIncident: {{trigger_1.alert.title}}\nSeverity: Critical\nTime Opened: {{trigger_1.timestamp}}\n\n--- INCIDENT BRIEF ---\n{{analyze_1.summary}}\n\n--- AGENDA ---\n1. Situation assessment\n2. Assign incident commander\n3. Containment strategy\n4. Evidence preservation\n5. Communication plan\n\nConference Bridge: {{config.conference_bridge_url}}\n\nAll participants: please join the conference bridge immediately."
+              }
+            },
+            "description": "Create a dedicated Slack war room channel with the incident brief and agenda as the opening message"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 520, "y": 540 },
+        "data": {
+          "kind": "respond",
+          "label": "Invite Key Responders",
+          "config": {
+            "integration_action": {
+              "connector_id": "slack",
+              "action": "invite_users",
+              "parameters": {
+                "channel": "war-room-{{trigger_1.alert.id}}",
+                "users": "{{config.ir_team_members}}",
+                "message": "You have been invited to an active war room for a critical incident. Please join immediately and review the incident brief above."
+              }
+            },
+            "description": "Invite the IR team, SOC analysts, and relevant subject matter experts to the war room channel"
+          }
+        }
+      },
+      {
+        "id": "respond_3",
+        "type": "signal",
+        "position": { "x": 520, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "label": "Create Incident Epic in Jira",
+          "config": {
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_issue",
+              "parameters": {
+                "project": "IR",
+                "issue_type": "Epic",
+                "priority": "P1 - Critical",
+                "summary": "WAR ROOM: {{trigger_1.alert.title}}",
+                "description": "Incident War Room Epic\n\nIncident: {{trigger_1.alert.title}}\nSeverity: Critical\nWar Room Channel: #war-room-{{trigger_1.alert.id}}\nTime Opened: {{trigger_1.timestamp}}\n\nIncident Brief:\n{{analyze_1.summary}}\n\nThis epic tracks all tasks, decisions, and actions from the war room response."
+              }
+            },
+            "description": "Create a Jira epic to track all war room activities, tasks, and decisions"
+          }
+        }
+      },
+      {
+        "id": "respond_4",
+        "type": "signal",
+        "position": { "x": 520, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "label": "Post Jira Link to War Room",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#war-room-{{trigger_1.alert.id}}",
+              "message": "TRACKING: All war room activities are tracked in Jira Epic {{respond_3.issue_key}}\n\nPlease log all containment actions, evidence, and decisions in the Jira epic or as sub-tasks."
+            },
+            "description": "Post the Jira epic link back to the war room channel for easy reference"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1020 },
+        "data": {
+          "kind": "utility",
+          "label": "Log War Room Activation",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "War room activated at {{trigger_1.timestamp}} for incident: {{trigger_1.alert.title}}. Channel: #war-room-{{trigger_1.alert.id}}. Jira Epic: {{respond_3.issue_key}}. Responders invited. Conference bridge posted."
+            },
+            "description": "Record the war room activation details in the investigation audit trail"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1180 },
+        "data": {
+          "kind": "end",
+          "label": "End — War Room Active",
+          "config": {
+            "description": "War room initialized — channel created, responders invited, Jira epic tracking, conference bridge posted"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_analyze",
+        "source": "trigger_1",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_analyze_respond1",
+        "source": "analyze_1",
+        "target": "respond_1",
+        "type": "default"
+      },
+      {
+        "id": "e_respond1_respond2",
+        "source": "respond_1",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_respond2_respond3",
+        "source": "respond_2",
+        "target": "respond_3",
+        "type": "default"
+      },
+      {
+        "id": "e_respond3_respond4",
+        "source": "respond_3",
+        "target": "respond_4",
+        "type": "default"
+      },
+      {
+        "id": "e_respond4_utility",
+        "source": "respond_4",
+        "target": "utility_1",
+        "type": "default"
+      },
+      {
+        "id": "e_utility_end",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

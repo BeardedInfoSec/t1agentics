@@ -1,0 +1,324 @@
+{
+  "name": "Disk Space Alert Response",
+  "slug": "itops-disk-space-alert",
+  "description": "Responds to disk space threshold alerts by checking current utilization, attempting automated cleanup of temporary files and old logs when usage exceeds 85%, and escalating to the infrastructure team if usage remains critical (above 95%) after cleanup. AI analysis provides recommendations for long-term capacity planning.",
+  "category": "it_operations",
+  "subcategory": "capacity",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "beginner",
+  "estimated_time": "5 minutes",
+  "tags": ["disk_space", "capacity", "cleanup", "auto_remediation", "monitoring", "threshold"],
+  "alert_types": ["disk_space"],
+  "severity_filter": ["medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["disk_space", "storage_threshold"],
+    "min_severity": "medium"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "datadog",
+      "name": "Datadog",
+      "category": "monitoring",
+      "reason": "Source of disk space alerts and real-time utilization metrics"
+    },
+    {
+      "connector_id": "ansible",
+      "name": "Ansible",
+      "category": "automation",
+      "reason": "Execute automated disk cleanup tasks on the affected host"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create escalation tickets when automated cleanup is insufficient"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Notify the infrastructure team of critical disk space situations"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Disk Space Alert Received",
+          "config": {
+            "alert_types": ["disk_space", "storage_threshold"],
+            "description": "Triggers when a disk space utilization alert is received from monitoring, indicating usage has crossed the configured threshold"
+          }
+        }
+      },
+      {
+        "id": "code_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "code",
+          "label": "Check Current Disk Usage",
+          "config": {
+            "mode": "script",
+            "script": "result = integration.execute('datadog', 'get_host_metrics', { 'host': trigger_1.alert.hostname, 'metric': 'system.disk.in_use', 'partition': trigger_1.alert.partition })",
+            "output_variable": "disk_metrics",
+            "description": "Query current real-time disk utilization for the affected host and partition"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "label": "Usage > 85%?",
+          "config": {
+            "condition": "{{code_1.disk_metrics.usage_percent}} > 85",
+            "description": "Determine if disk usage exceeds the 85% threshold requiring automated cleanup"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "respond",
+          "label": "Run Automated Cleanup",
+          "config": {
+            "integration_action": {
+              "connector_id": "ansible",
+              "action": "run_playbook",
+              "parameters": {
+                "playbook": "disk_cleanup",
+                "target_host": "{{trigger_1.alert.hostname}}",
+                "partition": "{{trigger_1.alert.partition}}",
+                "actions": ["clear_tmp", "rotate_logs", "remove_old_packages"]
+              }
+            },
+            "description": "Execute automated disk cleanup removing temporary files, rotating old logs, and clearing package caches"
+          }
+        }
+      },
+      {
+        "id": "delay_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "delay",
+          "label": "Wait 2 Minutes",
+          "config": {
+            "duration_seconds": 120,
+            "description": "Wait for cleanup operations to complete before re-checking disk utilization"
+          }
+        }
+      },
+      {
+        "id": "code_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "code",
+          "label": "Re-Check Disk Usage",
+          "config": {
+            "mode": "script",
+            "script": "result = integration.execute('datadog', 'get_host_metrics', { 'host': trigger_1.alert.hostname, 'metric': 'system.disk.in_use', 'partition': trigger_1.alert.partition })",
+            "output_variable": "post_cleanup_metrics",
+            "description": "Re-query disk utilization after cleanup to determine if the issue has been resolved"
+          }
+        }
+      },
+      {
+        "id": "decision_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "decision",
+          "label": "Still Above 95%?",
+          "config": {
+            "condition": "{{code_2.post_cleanup_metrics.usage_percent}} > 95",
+            "description": "Check if disk usage is still critical after automated cleanup, requiring manual intervention"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 1180 },
+        "data": {
+          "kind": "respond",
+          "label": "Escalate — Create Ticket",
+          "config": {
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_issue",
+              "parameters": {
+                "project": "OPS",
+                "issue_type": "Incident",
+                "priority": "High",
+                "summary": "CRITICAL: Disk Space — {{trigger_1.alert.hostname}} ({{trigger_1.alert.partition}})",
+                "description": "Automated cleanup was insufficient. Disk usage remains at {{code_2.post_cleanup_metrics.usage_percent}}%.\n\nHost: {{trigger_1.alert.hostname}}\nPartition: {{trigger_1.alert.partition}}\nPre-cleanup: {{code_1.disk_metrics.usage_percent}}%\nPost-cleanup: {{code_2.post_cleanup_metrics.usage_percent}}%\n\nManual intervention required."
+              }
+            },
+            "description": "Escalate to infrastructure team via Jira ticket when automated cleanup fails to resolve the issue"
+          }
+        }
+      },
+      {
+        "id": "respond_3",
+        "type": "signal",
+        "position": { "x": 340, "y": 1340 },
+        "data": {
+          "kind": "respond",
+          "label": "Notify Infra Team",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#infra-alerts",
+              "message": "CRITICAL DISK SPACE — MANUAL INTERVENTION REQUIRED\nHost: {{trigger_1.alert.hostname}}\nPartition: {{trigger_1.alert.partition}}\nUsage: {{code_2.post_cleanup_metrics.usage_percent}}% (after cleanup)\nTicket: {{respond_2.issue_key}}\n\nAutomated cleanup was unable to reduce usage below critical threshold."
+            },
+            "description": "Send urgent Slack notification to the infrastructure team about the unresolved disk space issue"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "utility",
+          "label": "Log: Below Threshold",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "Disk space alert for {{trigger_1.alert.hostname}} ({{trigger_1.alert.partition}}). Current usage: {{code_1.disk_metrics.usage_percent}}% — below cleanup threshold. No action required."
+            },
+            "description": "Log that the disk utilization is currently below the cleanup threshold"
+          }
+        }
+      },
+      {
+        "id": "utility_2",
+        "type": "signal",
+        "position": { "x": 700, "y": 1020 },
+        "data": {
+          "kind": "utility",
+          "label": "Log: Cleanup Resolved",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "Automated cleanup resolved disk space issue on {{trigger_1.alert.hostname}} ({{trigger_1.alert.partition}}). Usage reduced from {{code_1.disk_metrics.usage_percent}}% to {{code_2.post_cleanup_metrics.usage_percent}}%."
+            },
+            "description": "Log that the automated cleanup successfully resolved the disk space issue"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1500 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "Disk space alert response workflow complete"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_code",
+        "source": "trigger_1",
+        "target": "code_1",
+        "type": "default"
+      },
+      {
+        "id": "e_code_decision1",
+        "source": "code_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision1_yes",
+        "source": "decision_1",
+        "target": "respond_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision1_no",
+        "source": "decision_1",
+        "target": "utility_1",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_cleanup_delay",
+        "source": "respond_1",
+        "target": "delay_1",
+        "type": "default"
+      },
+      {
+        "id": "e_delay_recheck",
+        "source": "delay_1",
+        "target": "code_2",
+        "type": "default"
+      },
+      {
+        "id": "e_recheck_decision2",
+        "source": "code_2",
+        "target": "decision_2",
+        "type": "default"
+      },
+      {
+        "id": "e_decision2_yes",
+        "source": "decision_2",
+        "target": "respond_2",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision2_no",
+        "source": "decision_2",
+        "target": "utility_2",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_escalate_notify",
+        "source": "respond_2",
+        "target": "respond_3",
+        "type": "default"
+      },
+      {
+        "id": "e_notify_end",
+        "source": "respond_3",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_belowthreshold_end",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_resolved_end",
+        "source": "utility_2",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

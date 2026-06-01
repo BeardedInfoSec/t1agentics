@@ -1,0 +1,259 @@
+{
+  "id": "aws_inspector_devops",
+  "name": "AWS Inspector",
+  "description": "This app integrates with AWS Inspector to perform security assessment actions",
+  "version": "2.2.12",
+  "category": "devops",
+  "vendor": "AWS",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "add_target",
+      "name": "Add Target",
+      "description": "Create a new assessment target using the ARN of the resource group",
+      "http_method": "GET",
+      "endpoint": "/actions/add_target",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "target_name",
+          "type": "string",
+          "description": "Name of the target",
+          "required": true,
+          "contains": [
+            "aws inspector target name"
+          ]
+        },
+        {
+          "name": "resource_group_arn",
+          "type": "string",
+          "description": "Resource Group ARN used for creating the assessment target",
+          "required": false,
+          "contains": [
+            "aws inspector resource group arn",
+            "aws arn"
+          ]
+        },
+        {
+          "name": "credentials",
+          "type": "string",
+          "description": "Assumed role credentials",
+          "required": false,
+          "contains": [
+            "aws credentials"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "delete_target",
+      "name": "Delete Target",
+      "description": "Delete the assessment target",
+      "http_method": "GET",
+      "endpoint": "/actions/delete_target",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "target_arn",
+          "type": "string",
+          "description": "ARN of the assessment target",
+          "required": true,
+          "contains": [
+            "aws inspector target arn",
+            "aws arn"
+          ]
+        },
+        {
+          "name": "credentials",
+          "type": "string",
+          "description": "Assumed role credentials",
+          "required": false,
+          "contains": [
+            "aws credentials"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_templates",
+      "name": "List Templates",
+      "description": "List the assessment templates of assessment targets",
+      "http_method": "GET",
+      "endpoint": "/actions/list_templates",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "target_arns",
+          "type": "string",
+          "description": "List of target ARNs",
+          "required": false,
+          "contains": [
+            "aws inspector target arn",
+            "aws arn"
+          ]
+        },
+        {
+          "name": "template_name",
+          "type": "string",
+          "description": "Assessment template name pattern",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of templates to be fetched",
+          "required": false
+        },
+        {
+          "name": "credentials",
+          "type": "string",
+          "description": "Assumed role credentials",
+          "required": false,
+          "contains": [
+            "aws credentials"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_targets",
+      "name": "List Targets",
+      "description": "List the assessment target ARNs within the AWS account",
+      "http_method": "GET",
+      "endpoint": "/actions/list_targets",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "target_name",
+          "type": "string",
+          "description": "Assessment target name pattern",
+          "required": false,
+          "contains": [
+            "aws inspector target name"
+          ]
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of targets to be fetched",
+          "required": false
+        },
+        {
+          "name": "credentials",
+          "type": "string",
+          "description": "Assumed role credentials",
+          "required": false,
+          "contains": [
+            "aws credentials"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "run_assessment",
+      "name": "Run Assessment",
+      "description": "Start the assessment run specified by the assessment template ARN",
+      "http_method": "GET",
+      "endpoint": "/actions/run_assessment",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "template_arn",
+          "type": "string",
+          "description": "Assessment template ARN to start the assessment run of",
+          "required": true,
+          "contains": [
+            "aws inspector template arn",
+            "aws arn"
+          ]
+        },
+        {
+          "name": "assessment_run_name",
+          "type": "string",
+          "description": "Name of the assessment run",
+          "required": false
+        },
+        {
+          "name": "credentials",
+          "type": "string",
+          "description": "Assumed role credentials",
+          "required": false,
+          "contains": [
+            "aws credentials"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_findings",
+      "name": "Get Findings",
+      "description": "List and describe the findings generated by the assessment runs",
+      "http_method": "GET",
+      "endpoint": "/actions/get_findings",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "assessment_run_arns",
+          "type": "string",
+          "description": "List of the assessment runs ARNs (Max Limit: 50)",
+          "required": false,
+          "contains": [
+            "aws inspector assessment run arn",
+            "aws arn"
+          ]
+        },
+        {
+          "name": "severities",
+          "type": "string",
+          "description": "List of severity values (case-sensitive) (Max Limit: 50)",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of findings to be fetched",
+          "required": false
+        },
+        {
+          "name": "credentials",
+          "type": "string",
+          "description": "Assumed role credentials",
+          "required": false,
+          "contains": [
+            "aws credentials"
+          ]
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "AWS Inspector",
+    "original_type": "devops",
+    "converted_at": "2025-12-18T16:25:28.585074",
+    "source_version": "2.2.12"
+  }
+}

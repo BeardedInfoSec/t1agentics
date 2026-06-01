@@ -1,0 +1,262 @@
+{
+  "name": "IOC Enrichment Pipeline",
+  "slug": "ioc-enrichment-pipeline",
+  "description": "Automated IOC enrichment pipeline that extracts all indicators (IPs, domains, hashes) from alert data, iterates over each IOC to enrich via VirusTotal, AbuseIPDB, and Shodan, then uses AI-powered correlation to identify patterns and threat actor TTPs. High-risk IOCs are automatically added to the threat intel EDL blocklist and an investigation ticket is created. Benign IOCs are annotated and closed.",
+  "category": "threat_intel",
+  "subcategory": "enrichment",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "15 minutes",
+  "tags": ["ioc", "enrichment", "threat_intel", "correlation", "automated"],
+  "alert_types": ["threat_intel", "ioc"],
+  "severity_filter": ["low", "medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["threat_intel", "ioc", "indicator_match"],
+    "min_severity": "low"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "virustotal",
+      "name": "VirusTotal",
+      "category": "threat_intel",
+      "reason": "Enrich IOCs with reputation data, detection ratios, and community scores"
+    },
+    {
+      "connector_id": "abuseipdb",
+      "name": "AbuseIPDB",
+      "category": "threat_intel",
+      "reason": "Check IP addresses against abuse reports and confidence scores"
+    },
+    {
+      "connector_id": "shodan",
+      "name": "Shodan",
+      "category": "threat_intel",
+      "reason": "Gather infrastructure intelligence on IP addresses and exposed services"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "IOC Alert Received",
+          "config": {
+            "alert_types": ["threat_intel", "ioc", "indicator_match"],
+            "description": "Triggers when a threat intel or IOC-related alert is ingested containing indicators to investigate"
+          }
+        }
+      },
+      {
+        "id": "code_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "code",
+          "label": "Extract All IOCs from Alert",
+          "config": {
+            "code": "import re\n\nalert = inputs.get('alert', {})\nraw_text = str(alert)\n\nip_pattern = r'\\b(?:\\d{1,3}\\.){3}\\d{1,3}\\b'\ndomain_pattern = r'\\b(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,}\\b'\nmd5_pattern = r'\\b[a-fA-F0-9]{32}\\b'\nsha1_pattern = r'\\b[a-fA-F0-9]{40}\\b'\nsha256_pattern = r'\\b[a-fA-F0-9]{64}\\b'\n\nips = list(set(re.findall(ip_pattern, raw_text)))\ndomains = list(set(re.findall(domain_pattern, raw_text)))\nhashes = list(set(re.findall(md5_pattern, raw_text) + re.findall(sha1_pattern, raw_text) + re.findall(sha256_pattern, raw_text)))\n\niocs = []\nfor ip in ips:\n    iocs.append({'type': 'ip', 'value': ip})\nfor domain in domains:\n    iocs.append({'type': 'domain', 'value': domain})\nfor h in hashes:\n    iocs.append({'type': 'hash', 'value': h})\n\nresult = {'iocs': iocs, 'total_count': len(iocs), 'ip_count': len(ips), 'domain_count': len(domains), 'hash_count': len(hashes)}",
+            "inputs": {
+              "alert": "{{trigger_1.alert}}"
+            },
+            "description": "Extracts all IPs, domains, and file hashes from the alert data using regex pattern matching"
+          }
+        }
+      },
+      {
+        "id": "loop_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "loop",
+          "label": "Iterate Over IOCs",
+          "config": {
+            "items_path": "$.code_1.outputs.result.iocs",
+            "loop_variable": "current_ioc",
+            "max_iterations": 50,
+            "description": "Iterates over each extracted IOC to perform individual enrichment"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 540 },
+        "data": {
+          "kind": "analyze",
+          "label": "Enrich IOC",
+          "config": {
+            "mode": "enrich",
+            "observable_type": "{{current_ioc.type}}",
+            "data_path": "$.current_ioc.value",
+            "sources": ["virustotal", "abuseipdb", "shodan"],
+            "description": "Enriches each IOC against VirusTotal, AbuseIPDB, and Shodan for reputation and infrastructure data"
+          }
+        }
+      },
+      {
+        "id": "analyze_2",
+        "type": "signal",
+        "position": { "x": 520, "y": 700 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — Correlate IOCs",
+          "config": {
+            "template_id": "ioc_correlation",
+            "additional_instructions": "Correlate all enriched IOCs, identify patterns and threat actor TTPs. Highlight any indicators linked to known campaigns or APT groups.",
+            "description": "AI-powered analysis correlating all enriched IOC data to identify patterns, threat actor TTPs, and campaign linkages"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 860 },
+        "data": {
+          "kind": "decision",
+          "label": "Any High-Risk IOCs?",
+          "config": {
+            "condition": "{{analyze_2.severity}} in ['high', 'critical'] or {{analyze_1.aggregated_verdict}} == 'malicious'",
+            "description": "Routes based on whether any IOCs were assessed as high-risk or malicious by enrichment or AI analysis"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "label": "Add to Threat Intel EDL Blocklist",
+          "config": {
+            "integration_action": {
+              "action": "edl_add",
+              "parameters": {
+                "list_name": "threat_intel_blocklist",
+                "indicators": "{{analyze_2.high_risk_iocs}}",
+                "source": "ioc-enrichment-pipeline",
+                "expiry_days": 90
+              }
+            },
+            "description": "Adds all high-risk IOCs to the External Dynamic List blocklist for automated blocking across security controls"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 1180 },
+        "data": {
+          "kind": "respond",
+          "label": "Create Investigation Ticket",
+          "config": {
+            "create_ticket": {
+              "title": "IOC Investigation — High-Risk Indicators Detected",
+              "priority": "high",
+              "description": "IOC enrichment pipeline detected high-risk indicators.\n\nTotal IOCs analyzed: {{code_1.outputs.result.total_count}}\nHigh-risk IOCs identified: {{analyze_2.high_risk_count}}\n\nRiggs AI Assessment:\n{{analyze_2.summary}}\n\nAction Taken: High-risk IOCs added to EDL blocklist.",
+              "assignee": "soc-tier2"
+            },
+            "description": "Creates an investigation ticket for SOC Tier 2 with full enrichment results and AI assessment"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 700, "y": 1020 },
+        "data": {
+          "kind": "utility",
+          "label": "Note: All IOCs Benign",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "IOC enrichment pipeline completed. All {{code_1.outputs.result.total_count}} IOCs assessed as benign. No blocking action required.\n\nRiggs AI Summary:\n{{analyze_2.summary}}"
+            },
+            "description": "Adds a note documenting that all IOCs were assessed as benign with no action required"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1340 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "IOC enrichment pipeline complete"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_code",
+        "source": "trigger_1",
+        "target": "code_1",
+        "type": "default"
+      },
+      {
+        "id": "e_code_loop",
+        "source": "code_1",
+        "target": "loop_1",
+        "type": "default"
+      },
+      {
+        "id": "e_loop_enrich",
+        "source": "loop_1",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_enrich_correlate",
+        "source": "analyze_1",
+        "target": "analyze_2",
+        "type": "default"
+      },
+      {
+        "id": "e_correlate_decision",
+        "source": "analyze_2",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "respond_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "utility_1",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_blocklist_ticket",
+        "source": "respond_1",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_ticket_end",
+        "source": "respond_2",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_benign_end",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

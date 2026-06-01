@@ -1,0 +1,251 @@
+{
+  "id": "teleport",
+  "name": "Teleport",
+  "description": "Infrastructure identity and access management through Teleport API for managing users, roles, sessions, access requests, and audit events",
+  "version": "1.0.0",
+  "category": "identity",
+  "vendor": "Teleport",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "header_name": "Authorization",
+    "header_prefix": "Bearer",
+    "location": "header"
+  },
+  "base_url": "https://{host}/v1",
+  "actions": [
+    {
+      "id": "list_users",
+      "name": "List Users",
+      "description": "List all users registered in the Teleport cluster",
+      "http_method": "GET",
+      "endpoint": "/webapi/users",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "get_user",
+      "name": "Get User",
+      "description": "Retrieve details of a specific user",
+      "http_method": "GET",
+      "endpoint": "/webapi/users/{userName}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "userName",
+          "type": "string",
+          "description": "Username",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "delete_user",
+      "name": "Delete User",
+      "description": "Delete a user from the Teleport cluster to revoke all access",
+      "http_method": "DELETE",
+      "endpoint": "/webapi/users/{userName}",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "userName",
+          "type": "string",
+          "description": "Username to delete",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "reset_password",
+      "name": "Reset Password",
+      "description": "Create a password reset token for a user",
+      "http_method": "POST",
+      "endpoint": "/webapi/users/password/token",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Username to reset password for",
+          "required": true
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Token type (reset or invite)",
+          "required": false,
+          "default": "reset"
+        }
+      ]
+    },
+    {
+      "id": "list_roles",
+      "name": "List Roles",
+      "description": "List all roles defined in the Teleport cluster",
+      "http_method": "GET",
+      "endpoint": "/webapi/roles",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "get_role",
+      "name": "Get Role",
+      "description": "Retrieve details of a specific role",
+      "http_method": "GET",
+      "endpoint": "/webapi/roles/{roleName}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "roleName",
+          "type": "string",
+          "description": "Role name",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_active_sessions",
+      "name": "List Active Sessions",
+      "description": "List all currently active sessions in the cluster",
+      "http_method": "GET",
+      "endpoint": "/webapi/sites/{clusterId}/sessions",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "clusterId",
+          "type": "string",
+          "description": "Cluster ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_nodes",
+      "name": "List Nodes",
+      "description": "List all registered nodes/servers in the cluster",
+      "http_method": "GET",
+      "endpoint": "/webapi/sites/{clusterId}/nodes",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "clusterId",
+          "type": "string",
+          "description": "Cluster ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_access_requests",
+      "name": "List Access Requests",
+      "description": "List all pending and historical access requests",
+      "http_method": "GET",
+      "endpoint": "/webapi/sites/{clusterId}/accessrequest",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "clusterId",
+          "type": "string",
+          "description": "Cluster ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "approve_access_request",
+      "name": "Approve Access Request",
+      "description": "Approve a pending access request",
+      "http_method": "PUT",
+      "endpoint": "/webapi/sites/{clusterId}/accessrequest/{requestId}/approve",
+      "action_type": "correct",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "clusterId",
+          "type": "string",
+          "description": "Cluster ID",
+          "required": true
+        },
+        {
+          "name": "requestId",
+          "type": "string",
+          "description": "Access request ID",
+          "required": true
+        },
+        {
+          "name": "reason",
+          "type": "string",
+          "description": "Reason for approval",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "deny_access_request",
+      "name": "Deny Access Request",
+      "description": "Deny a pending access request",
+      "http_method": "PUT",
+      "endpoint": "/webapi/sites/{clusterId}/accessrequest/{requestId}/deny",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "clusterId",
+          "type": "string",
+          "description": "Cluster ID",
+          "required": true
+        },
+        {
+          "name": "requestId",
+          "type": "string",
+          "description": "Access request ID",
+          "required": true
+        },
+        {
+          "name": "reason",
+          "type": "string",
+          "description": "Reason for denial",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_audit_events",
+      "name": "Get Audit Events",
+      "description": "Retrieve audit events from the Teleport cluster",
+      "http_method": "GET",
+      "endpoint": "/webapi/sites/{clusterId}/events",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "clusterId",
+          "type": "string",
+          "description": "Cluster ID",
+          "required": true
+        },
+        {
+          "name": "from",
+          "type": "string",
+          "description": "Start time (ISO 8601)",
+          "required": false
+        },
+        {
+          "name": "to",
+          "type": "string",
+          "description": "End time (ISO 8601)",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

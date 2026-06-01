@@ -1,0 +1,180 @@
+{
+  "id": "ibm_qradar_soar",
+  "name": "IBM QRadar SOAR",
+  "description": "IBM Security incident response platform (formerly Resilient) for managing incidents, tasks, artifacts, and automated playbooks across the security operations lifecycle.",
+  "version": "1.0.0",
+  "category": "soar",
+  "vendor": "IBM",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "https://{host}/rest/orgs/{org_id}",
+  "actions": [
+    {
+      "id": "list_incidents",
+      "name": "List Incidents",
+      "description": "Retrieve a list of incidents in the organization.",
+      "http_method": "GET",
+      "endpoint": "/incidents",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "want_closed", "type": "boolean", "description": "Include closed incidents in results.", "required": false},
+        {"name": "want_notes", "type": "boolean", "description": "Include incident notes.", "required": false},
+        {"name": "field_handle", "type": "array", "description": "Specific fields to include in the response.", "required": false}
+      ]
+    },
+    {
+      "id": "get_incident",
+      "name": "Get Incident",
+      "description": "Retrieve details of a specific incident.",
+      "http_method": "GET",
+      "endpoint": "/incidents/{incident_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "incident_id", "type": "integer", "description": "The incident ID.", "required": true}
+      ]
+    },
+    {
+      "id": "create_incident",
+      "name": "Create Incident",
+      "description": "Create a new security incident.",
+      "http_method": "POST",
+      "endpoint": "/incidents",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "name", "type": "string", "description": "Incident name/title.", "required": true},
+        {"name": "description", "type": "string", "description": "Description of the incident.", "required": false},
+        {"name": "incident_type_ids", "type": "array", "description": "Array of incident type IDs.", "required": false},
+        {"name": "severity_code", "type": "integer", "description": "Severity code ID.", "required": false},
+        {"name": "discovered_date", "type": "integer", "description": "Discovery date as epoch milliseconds.", "required": true},
+        {"name": "start_date", "type": "integer", "description": "Start date as epoch milliseconds.", "required": false},
+        {"name": "owner_id", "type": "integer", "description": "User ID of the incident owner.", "required": false},
+        {"name": "plan_status", "type": "string", "description": "Status: 'A' (Active) or 'C' (Closed).", "required": false}
+      ]
+    },
+    {
+      "id": "update_incident",
+      "name": "Update Incident",
+      "description": "Update an existing incident's fields using a patch operation.",
+      "http_method": "PATCH",
+      "endpoint": "/incidents/{incident_id}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "incident_id", "type": "integer", "description": "The incident ID to update.", "required": true},
+        {"name": "changes", "type": "array", "description": "Array of change objects with 'field', 'old_value', and 'new_value'.", "required": true}
+      ]
+    },
+    {
+      "id": "close_incident",
+      "name": "Close Incident",
+      "description": "Close an incident by setting its plan status to closed.",
+      "http_method": "PATCH",
+      "endpoint": "/incidents/{incident_id}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "incident_id", "type": "integer", "description": "The incident ID to close.", "required": true},
+        {"name": "changes", "type": "array", "description": "Array with plan_status change to 'C' and resolution details.", "required": true}
+      ]
+    },
+    {
+      "id": "list_artifacts",
+      "name": "List Artifacts",
+      "description": "Retrieve all artifacts for an incident.",
+      "http_method": "GET",
+      "endpoint": "/incidents/{incident_id}/artifacts",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "incident_id", "type": "integer", "description": "The incident ID.", "required": true}
+      ]
+    },
+    {
+      "id": "add_artifact",
+      "name": "Add Artifact",
+      "description": "Add an artifact (indicator/evidence) to an incident.",
+      "http_method": "POST",
+      "endpoint": "/incidents/{incident_id}/artifacts",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "incident_id", "type": "integer", "description": "The incident ID.", "required": true},
+        {"name": "type", "type": "integer", "description": "Artifact type ID (e.g., 1 for IP Address, 2 for DNS Name).", "required": true},
+        {"name": "value", "type": "string", "description": "The artifact value.", "required": true},
+        {"name": "description", "type": "string", "description": "Description of the artifact.", "required": false}
+      ]
+    },
+    {
+      "id": "list_tasks",
+      "name": "List Tasks",
+      "description": "Retrieve all tasks for an incident.",
+      "http_method": "GET",
+      "endpoint": "/incidents/{incident_id}/tasks",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "incident_id", "type": "integer", "description": "The incident ID.", "required": true}
+      ]
+    },
+    {
+      "id": "update_task",
+      "name": "Update Task",
+      "description": "Update a task within an incident (e.g., mark as complete).",
+      "http_method": "PUT",
+      "endpoint": "/tasks/{task_id}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "task_id", "type": "integer", "description": "The task ID.", "required": true},
+        {"name": "status", "type": "string", "description": "Task status: 'O' (Open) or 'C' (Complete).", "required": false},
+        {"name": "owner_id", "type": "integer", "description": "User ID to assign the task to.", "required": false},
+        {"name": "notes", "type": "string", "description": "Notes for the task.", "required": false}
+      ]
+    },
+    {
+      "id": "add_note",
+      "name": "Add Note",
+      "description": "Add a note/comment to an incident.",
+      "http_method": "POST",
+      "endpoint": "/incidents/{incident_id}/comments",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "incident_id", "type": "integer", "description": "The incident ID.", "required": true},
+        {"name": "text", "type": "string", "description": "Note/comment text content (supports HTML).", "required": true}
+      ]
+    },
+    {
+      "id": "list_phases",
+      "name": "List Phases",
+      "description": "Retrieve all phases and their tasks for an incident.",
+      "http_method": "GET",
+      "endpoint": "/incidents/{incident_id}/phases",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "incident_id", "type": "integer", "description": "The incident ID.", "required": true}
+      ]
+    },
+    {
+      "id": "search_incidents",
+      "name": "Search Incidents",
+      "description": "Query incidents using filter conditions.",
+      "http_method": "POST",
+      "endpoint": "/incidents/query",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "filters", "type": "array", "description": "Array of filter condition objects.", "required": false},
+        {"name": "sorts", "type": "array", "description": "Array of sort criteria.", "required": false}
+      ]
+    }
+  ]
+}

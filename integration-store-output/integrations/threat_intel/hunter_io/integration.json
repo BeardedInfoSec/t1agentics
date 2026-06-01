@@ -1,0 +1,163 @@
+{
+  "id": "hunter_io",
+  "name": "Hunter.io",
+  "description": "Hunter.io is an email intelligence platform that finds and verifies professional email addresses. It provides domain-level email discovery, individual email finding, email verification, and enrichment services for sales, recruiting, and security investigations.",
+  "version": "1.0.0",
+  "category": "threat_intel",
+  "vendor": "Hunter",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "param_name": "api_key",
+    "location": "query"
+  },
+  "base_url": "https://api.hunter.io/v2",
+  "actions": [
+    {
+      "id": "domain_search",
+      "name": "Domain Search",
+      "description": "Find all email addresses associated with a domain. Returns email patterns, individual addresses with confidence scores, department, seniority, and sources where the emails were found.",
+      "http_method": "GET",
+      "endpoint": "/domain-search",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "domain",
+          "type": "string",
+          "description": "The domain name to search for email addresses (e.g., 'example.com')",
+          "required": true,
+          "contains": ["domain"]
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Filter by email type: 'personal' or 'generic'",
+          "required": false
+        },
+        {
+          "name": "seniority",
+          "type": "string",
+          "description": "Filter by seniority level: 'junior', 'senior', 'executive'",
+          "required": false
+        },
+        {
+          "name": "department",
+          "type": "string",
+          "description": "Filter by department: 'executive', 'it', 'finance', 'management', 'sales', 'legal', 'support', 'hr', 'marketing', 'communication', 'education', 'design', 'health', 'operations'",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "description": "Maximum number of email addresses to return (default: 10)",
+          "required": false
+        },
+        {
+          "name": "offset",
+          "type": "integer",
+          "description": "Number of email addresses to skip for pagination",
+          "required": false
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "email_finder",
+      "name": "Email Finder",
+      "description": "Find the most likely email address for a person given their name and company domain. Returns the email with a confidence score and verification status.",
+      "http_method": "GET",
+      "endpoint": "/email-finder",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "domain",
+          "type": "string",
+          "description": "The domain name of the company",
+          "required": true,
+          "contains": ["domain"]
+        },
+        {
+          "name": "first_name",
+          "type": "string",
+          "description": "The person's first name",
+          "required": false
+        },
+        {
+          "name": "last_name",
+          "type": "string",
+          "description": "The person's last name",
+          "required": false
+        },
+        {
+          "name": "full_name",
+          "type": "string",
+          "description": "The person's full name (alternative to first_name + last_name)",
+          "required": false
+        },
+        {
+          "name": "max_duration",
+          "type": "integer",
+          "description": "Maximum duration for the request in seconds (3-20, default: 10)",
+          "required": false
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "email_verifier",
+      "name": "Email Verifier",
+      "description": "Verify the deliverability of an email address. Returns verification status (valid, invalid, accept_all, webmail, disposable, unknown), SMTP check results, and MX record data.",
+      "http_method": "GET",
+      "endpoint": "/email-verifier",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "email",
+          "type": "string",
+          "description": "The email address to verify",
+          "required": true,
+          "contains": ["email"]
+        }
+      ],
+      "observable_type": "email"
+    },
+    {
+      "id": "email_count",
+      "name": "Email Count",
+      "description": "Get the total number of email addresses found for a domain without consuming API credits. Returns counts broken down by type (personal vs. generic).",
+      "http_method": "GET",
+      "endpoint": "/email-count",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "domain",
+          "type": "string",
+          "description": "The domain name to get email count for",
+          "required": true,
+          "contains": ["domain"]
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Filter by email type: 'personal' or 'generic'",
+          "required": false
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "account_info",
+      "name": "Account Info",
+      "description": "Retrieve information about the Hunter.io account including remaining credits, plan details, and usage statistics.",
+      "http_method": "GET",
+      "endpoint": "/account",
+      "action_type": "generic",
+      "read_only": true,
+      "parameters": []
+    }
+  ]
+}

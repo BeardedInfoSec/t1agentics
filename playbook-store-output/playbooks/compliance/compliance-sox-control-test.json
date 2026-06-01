@@ -1,0 +1,258 @@
+{
+  "name": "SOX Control Testing",
+  "slug": "compliance-sox-control-test",
+  "description": "Automated SOX (Sarbanes-Oxley) IT control testing workflow. Collects evidence for key IT general controls (ITGC) including access management, change management, and system operations. Riggs AI evaluates control effectiveness against SOX requirements, flags deficiencies, and routes results through management approval before documenting in the audit trail. Control failures trigger immediate remediation tickets.",
+  "category": "compliance",
+  "subcategory": "sox",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "advanced",
+  "estimated_time": "35 minutes",
+  "tags": ["compliance", "sox", "sarbanes_oxley", "itgc", "control_testing", "audit", "financial"],
+  "alert_types": [],
+  "severity_filter": [],
+  "trigger_conditions": {
+    "alert_types": [],
+    "trigger_type": "scheduled",
+    "schedule": "0 9 1 */3 *"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Document control test results and create remediation tickets for deficiencies"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Notify IT audit team and management of control testing results"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Quarterly SOX Control Test",
+          "config": {
+            "trigger_type": "scheduled",
+            "schedule": "0 9 1 */3 *",
+            "description": "Triggers quarterly SOX IT general controls testing cycle"
+          }
+        }
+      },
+      {
+        "id": "code_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "code",
+          "label": "Collect ITGC Evidence",
+          "config": {
+            "mode": "query",
+            "query": "SELECT control_id, control_name, control_category, last_test_date, last_test_result, evidence_artifacts, owner FROM sox_controls WHERE active = true ORDER BY control_category, control_id",
+            "output_variable": "control_inventory",
+            "description": "Gather current state of all active SOX IT general controls and their last test results"
+          }
+        }
+      },
+      {
+        "id": "code_2",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "code",
+          "label": "Pull Change & Access Logs",
+          "config": {
+            "mode": "query",
+            "query": "SELECT cl.change_id, cl.system, cl.change_type, cl.approval_status, cl.changed_by, cl.change_date, al.user_id, al.access_level, al.granted_date, al.last_review FROM change_log cl FULL OUTER JOIN access_log al ON cl.system = al.system WHERE cl.change_date >= NOW() - INTERVAL '90 days' OR al.granted_date >= NOW() - INTERVAL '90 days'",
+            "output_variable": "change_access_logs",
+            "description": "Pull change management and access provisioning logs for the past quarter"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 540 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI -- SOX Control Assessment",
+          "config": {
+            "template_id": "executive_summary",
+            "additional_instructions": "Evaluate IT general controls against SOX Section 404 requirements. Test access management controls, change management controls, and computer operations controls. Identify any control deficiencies, material weaknesses, or significant deficiencies. Document test procedures and results.",
+            "description": "AI-powered assessment of SOX ITGC effectiveness and compliance"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 700 },
+        "data": {
+          "kind": "decision",
+          "label": "Control Deficiencies Found?",
+          "config": {
+            "condition": "{{analyze_1.deficiencies_found}} == true",
+            "description": "Routes based on whether SOX control deficiencies were identified"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "label": "Create Deficiency Remediation Ticket",
+          "config": {
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_issue",
+              "parameters": {
+                "project": "COMPLIANCE",
+                "issue_type": "Bug",
+                "priority": "P1",
+                "summary": "SOX Control Deficiency: {{analyze_1.top_deficiency}}",
+                "description": "SOX CONTROL TESTING -- DEFICIENCY IDENTIFIED\n\nQuarter: {{trigger_1.quarter}}\nControl Category: {{analyze_1.deficiency_category}}\nDeficiency Type: {{analyze_1.deficiency_severity}}\n\nFindings:\n{{analyze_1.summary}}\n\nRemediation required before next quarterly test cycle.",
+                "labels": ["sox", "control-deficiency", "itgc", "remediation"]
+              }
+            },
+            "description": "Create a remediation ticket for SOX control deficiencies"
+          }
+        }
+      },
+      {
+        "id": "approval_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1020 },
+        "data": {
+          "kind": "approval",
+          "label": "IT Audit Manager Approval",
+          "config": {
+            "approvers": ["it_audit_manager"],
+            "approval_message": "SOX quarterly control testing complete. Please review AI-generated assessment and confirm results for documentation.\n\n{{analyze_1.summary}}",
+            "timeout_hours": 72,
+            "description": "IT audit manager reviews and approves the SOX control testing results"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 700, "y": 860 },
+        "data": {
+          "kind": "utility",
+          "label": "Log: All Controls Passed",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "SOX quarterly ITGC testing complete. All controls operating effectively. No deficiencies identified."
+            },
+            "description": "Document that all SOX controls passed testing for this quarter"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 520, "y": 1180 },
+        "data": {
+          "kind": "respond",
+          "label": "Notify Audit Team on Slack",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#compliance-sox",
+              "message": "SOX QUARTERLY CONTROL TESTING COMPLETE\n\nApproved by: {{approval_1.approver}}\nControls Tested: {{control_inventory.length}}\nDeficiencies Found: {{analyze_1.deficiency_count}}\n\n{{analyze_1.summary}}\n\nResults have been documented and remediation tickets created for any deficiencies."
+            },
+            "description": "Notify the audit team of completed SOX control testing results"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1340 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "SOX control testing complete -- results documented, approved, and communicated"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_code1",
+        "source": "trigger_1",
+        "target": "code_1",
+        "type": "default"
+      },
+      {
+        "id": "e_code1_code2",
+        "source": "code_1",
+        "target": "code_2",
+        "type": "default"
+      },
+      {
+        "id": "e_code2_analyze",
+        "source": "code_2",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_analyze_decision",
+        "source": "analyze_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "respond_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "utility_1",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_respond1_approval",
+        "source": "respond_1",
+        "target": "approval_1",
+        "type": "default"
+      },
+      {
+        "id": "e_utility1_approval",
+        "source": "utility_1",
+        "target": "approval_1",
+        "type": "default"
+      },
+      {
+        "id": "e_approval_respond2",
+        "source": "approval_1",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_respond2_end",
+        "source": "respond_2",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

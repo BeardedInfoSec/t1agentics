@@ -1,0 +1,225 @@
+{
+  "id": "trend_micro_deep_discovery",
+  "name": "Trend Micro Deep Discovery",
+  "description": "Advanced threat detection platform that uses sandboxing, custom signatures, and network-wide correlation to detect targeted attacks and zero-day threats",
+  "version": "1.0.0",
+  "category": "ndr",
+  "vendor": "Trend Micro",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header",
+    "prefix": "Bearer"
+  },
+  "base_url": "https://{host}/api/v1",
+  "actions": [
+    {
+      "id": "get_detections",
+      "name": "Get Detections",
+      "description": "Retrieve network threat detections from Deep Discovery Inspector",
+      "http_method": "GET",
+      "endpoint": "/detections",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "start_time",
+          "type": "string",
+          "description": "Start time in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "string",
+          "description": "End time in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Filter by severity (low, medium, high, critical)",
+          "required": false
+        },
+        {
+          "name": "protocol",
+          "type": "string",
+          "description": "Filter by protocol type",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of detections to return",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Offset for pagination",
+          "required": false,
+          "default": 0
+        }
+      ]
+    },
+    {
+      "id": "get_detection_details",
+      "name": "Get Detection Details",
+      "description": "Retrieve detailed information about a specific detection",
+      "http_method": "GET",
+      "endpoint": "/detections/{detection_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "detection_id",
+          "type": "string",
+          "description": "The detection ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_suspicious_objects",
+      "name": "Get Suspicious Objects",
+      "description": "Retrieve the list of suspicious objects (IPs, domains, files, URLs) detected by the analyzer",
+      "http_method": "GET",
+      "endpoint": "/suspicious_objects",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Filter by object type (ip, domain, file, url)",
+          "required": false
+        },
+        {
+          "name": "risk_level",
+          "type": "string",
+          "description": "Filter by risk level (low, medium, high)",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of objects to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "submit_sample",
+      "name": "Submit Sample",
+      "description": "Submit a file or URL for sandbox analysis in Deep Discovery Analyzer",
+      "http_method": "POST",
+      "endpoint": "/sandbox/submit",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "URL to submit for analysis",
+          "required": false
+        },
+        {
+          "name": "file",
+          "type": "string",
+          "description": "Base64-encoded file content to submit",
+          "required": false
+        },
+        {
+          "name": "filename",
+          "type": "string",
+          "description": "Original filename of the submitted file",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_sandbox_result",
+      "name": "Get Sandbox Analysis Result",
+      "description": "Retrieve sandbox analysis results for a submitted sample",
+      "http_method": "GET",
+      "endpoint": "/sandbox/results/{submission_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "submission_id",
+          "type": "string",
+          "description": "The submission ID from sample submission",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_connected_hosts",
+      "name": "Get Connected Hosts",
+      "description": "Retrieve hosts that have connected to suspicious destinations",
+      "http_method": "GET",
+      "endpoint": "/hosts/connected",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "start_time",
+          "type": "string",
+          "description": "Start time in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "string",
+          "description": "End time in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of hosts to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "add_suspicious_object",
+      "name": "Add Suspicious Object",
+      "description": "Add a custom suspicious object to the local IOC repository",
+      "http_method": "POST",
+      "endpoint": "/suspicious_objects",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Object type (ip, domain, file_sha1, url)",
+          "required": true
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "description": "The suspicious object value",
+          "required": true
+        },
+        {
+          "name": "risk_level",
+          "type": "string",
+          "description": "Risk level (low, medium, high)",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Description of the suspicious object",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

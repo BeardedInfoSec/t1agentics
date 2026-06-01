@@ -1,0 +1,297 @@
+{
+  "name": "Unauthorized Remote Access Tool Detection",
+  "slug": "endpoint-remote-access-tool",
+  "description": "Detects and blocks unauthorized remote access tools (AnyDesk, TeamViewer, UltraViewer, RustDesk, etc.) running on managed endpoints. When a remote access tool is detected, the playbook checks it against the approved tools list and analyzes the execution context. Unauthorized tools are immediately killed, blocked via EDR policy, and a compliance ticket is created. If the tool was actively tunneling to an external IP, Riggs AI performs lateral movement analysis to assess potential compromise.",
+  "category": "endpoint",
+  "subcategory": "remote_access",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "8 minutes",
+  "tags": ["remote_access", "anydesk", "teamviewer", "endpoint", "unauthorized_tool", "rat"],
+  "alert_types": ["remote_access_tool", "unauthorized_software"],
+  "severity_filter": ["medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["remote_access_tool", "unauthorized_software", "anydesk", "teamviewer", "remote_control"],
+    "min_severity": "medium"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "crowdstrike",
+      "name": "CrowdStrike Falcon",
+      "category": "edr",
+      "reason": "Kill unauthorized processes, block application hashes, and isolate endpoint if needed"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create policy violation tickets for unauthorized remote access tool usage"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Remote Access Tool Detected",
+          "config": {
+            "alert_types": ["remote_access_tool", "unauthorized_software", "anydesk", "teamviewer", "remote_control"],
+            "description": "Triggers when a remote access tool is detected running on a managed endpoint"
+          }
+        }
+      },
+      {
+        "id": "code_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "code",
+          "label": "Check Approved Tools",
+          "config": {
+            "runtime": "python3",
+            "code": "process_name = alert.get('process_name', '').lower()\napp_name = alert.get('application_name', '').lower()\napproved_remote_tools = [t.lower() for t in context.get('approved_remote_tools', [])]\nis_approved = any(t in process_name or t in app_name for t in approved_remote_tools)\nhas_active_tunnel = alert.get('has_active_connection', False)\nremote_ip = alert.get('remote_ip', '')\nresult = {'process_name': process_name, 'app_name': alert.get('application_name'), 'is_approved': is_approved, 'has_active_tunnel': has_active_tunnel, 'remote_ip': remote_ip, 'file_hash': alert.get('file_hash', '')}",
+            "description": "Check the remote access tool against the list of approved tools and detect active tunnels"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "label": "Tool Approved?",
+          "config": {
+            "condition": "{{code_1.is_approved}} == true",
+            "description": "Routes based on whether the remote access tool is on the approved list"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "utility",
+          "label": "Log: Approved Tool",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "Remote access tool {{code_1.app_name}} on {{trigger_1.alert.hostname}} is approved. No action required.",
+              "close_alert": true
+            },
+            "description": "Log the approved remote access tool usage and close the alert"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "respond",
+          "label": "Kill Process & Block Hash",
+          "config": {
+            "integration_action": {
+              "connector_id": "crowdstrike",
+              "action": "run_script",
+              "parameters": {
+                "device_id": "{{trigger_1.alert.endpoint_id}}",
+                "script": "kill_and_block",
+                "args": {
+                  "process_name": "{{code_1.process_name}}",
+                  "file_hash": "{{code_1.file_hash}}"
+                }
+              }
+            },
+            "description": "Terminate the unauthorized remote access tool and add its hash to the block list"
+          }
+        }
+      },
+      {
+        "id": "decision_2",
+        "type": "signal",
+        "position": { "x": 700, "y": 700 },
+        "data": {
+          "kind": "decision",
+          "label": "Active Tunnel Detected?",
+          "config": {
+            "condition": "{{code_1.has_active_tunnel}} == true",
+            "description": "Routes based on whether the tool had an active remote connection"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 860 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — Lateral Movement Check",
+          "config": {
+            "template_id": "lateral_movement",
+            "additional_instructions": "Analyze this unauthorized remote access tool for signs of active compromise. The tool had an active tunnel to an external IP. Determine if this is an attacker using the tool for C2 or data exfiltration, or a user circumventing policy.",
+            "description": "AI-powered lateral movement analysis to assess if the active tunnel indicates compromise"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 520, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "label": "Isolate Host & Notify SOC",
+          "config": {
+            "integration_action": {
+              "connector_id": "crowdstrike",
+              "action": "contain_host",
+              "parameters": {
+                "device_id": "{{trigger_1.alert.endpoint_id}}"
+              }
+            },
+            "description": "Isolate the endpoint due to active remote tunnel and notify SOC for investigation"
+          }
+        }
+      },
+      {
+        "id": "respond_3",
+        "type": "signal",
+        "position": { "x": 700, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "label": "Create Violation Ticket",
+          "config": {
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_issue",
+              "parameters": {
+                "project_key": "SEC",
+                "issue_type": "Policy Violation",
+                "title": "Unauthorized Remote Access Tool: {{code_1.app_name}} — {{trigger_1.alert.hostname}}",
+                "description": "Unauthorized remote access tool detected and blocked.\nHost: {{trigger_1.alert.hostname}}\nUser: {{trigger_1.alert.username}}\nTool: {{code_1.app_name}}\nHash: {{code_1.file_hash}}\nActive Tunnel: {{code_1.has_active_tunnel}}\nRemote IP: {{code_1.remote_ip}}\n\nProcess killed and hash blocked.",
+                "priority": "medium"
+              }
+            },
+            "description": "Create a policy violation ticket for the unauthorized remote access tool"
+          }
+        }
+      },
+      {
+        "id": "respond_4",
+        "type": "signal",
+        "position": { "x": 520, "y": 1180 },
+        "data": {
+          "kind": "respond",
+          "label": "Notify SOC on Slack",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#soc-alerts",
+              "message": "UNAUTHORIZED REMOTE ACCESS TOOL\nHost: {{trigger_1.alert.hostname}}\nUser: {{trigger_1.alert.username}}\nTool: {{code_1.app_name}}\nActive Tunnel: {{code_1.has_active_tunnel}} (Remote IP: {{code_1.remote_ip}})\nAction: Process killed, hash blocked{{#if code_1.has_active_tunnel}}, host isolated{{/if}}\n\n{{#if analyze_1}}Riggs Assessment:\n{{analyze_1.summary}}{{/if}}"
+            },
+            "description": "Notify the SOC about the unauthorized remote access tool and actions taken"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1340 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "Remote access tool detection workflow complete"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_code",
+        "source": "trigger_1",
+        "target": "code_1",
+        "type": "default"
+      },
+      {
+        "id": "e_code_decision",
+        "source": "code_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "utility_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "respond_1",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_kill_tunnel_check",
+        "source": "respond_1",
+        "target": "decision_2",
+        "type": "default"
+      },
+      {
+        "id": "e_tunnel_yes",
+        "source": "decision_2",
+        "target": "analyze_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_tunnel_no",
+        "source": "decision_2",
+        "target": "respond_3",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_analyze_isolate",
+        "source": "analyze_1",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_isolate_notify",
+        "source": "respond_2",
+        "target": "respond_4",
+        "type": "default"
+      },
+      {
+        "id": "e_ticket_notify",
+        "source": "respond_3",
+        "target": "respond_4",
+        "type": "default"
+      },
+      {
+        "id": "e_notify_end",
+        "source": "respond_4",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_utility_end",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

@@ -1,0 +1,110 @@
+{
+  "template_id": "suspicious-usb-device",
+  "name": "Suspicious USB / Removable Device Found",
+  "description": "Employee found an unattended USB drive, SD card, or other removable device and wants security to handle it.",
+  "title": "Report a Suspicious USB or Removable Device",
+  "intro": "Thanks for not plugging it in. Unknown USB drives can carry malware, even if they look harmless. Fill in what you know and we'll arrange a safe pickup.\n\n**Please don't plug the device into any computer**, even just to see what's on it.",
+  "submit_message": "Thanks. We've logged this and someone from security will reach out to coordinate pickup. Please keep the device somewhere safe and don't connect it to anything.",
+  "fields": [
+    {
+      "key": "reporter_email",
+      "label": "Your email",
+      "type": "email",
+      "required": true,
+      "help": "We'll use this to coordinate pickup.",
+      "placeholder": "you@company.com",
+      "sample_value": "maria.lopez@northwindcloud.com"
+    },
+    {
+      "key": "device_type",
+      "label": "What kind of device is it?",
+      "type": "select",
+      "required": true,
+      "options": [
+        "USB flash drive / thumb drive",
+        "External hard drive",
+        "SD card or microSD",
+        "USB cable with built-in storage",
+        "Unknown / not sure"
+      ],
+      "sample_value": "USB flash drive / thumb drive"
+    },
+    {
+      "key": "where_found",
+      "label": "Where did you find it?",
+      "type": "select",
+      "required": true,
+      "help": "Pick the closest match.",
+      "options": [
+        "Parking lot or outside building",
+        "Lobby or reception area",
+        "Conference room or shared workspace",
+        "Bathroom or break room",
+        "Plugged into a kiosk, printer, or shared PC",
+        "Mailed or left at my desk",
+        "Other"
+      ],
+      "sample_value": "Parking lot or outside building"
+    },
+    {
+      "key": "location_detail",
+      "label": "Tell us a bit more about where",
+      "type": "textarea",
+      "required": true,
+      "help": "Building, floor, room number, or anything that helps us locate the area.",
+      "placeholder": "e.g. North parking lot, near the EV chargers by the side entrance.",
+      "sample_value": "North parking lot, near the EV chargers by the side entrance. Looked like it had been dropped recently, wasn't dirty."
+    },
+    {
+      "key": "plugged_in",
+      "label": "Was it plugged into anything?",
+      "type": "select",
+      "required": true,
+      "help": "We need to know if any company device may have been exposed.",
+      "options": [
+        "No, I left it as found",
+        "Yes, it was plugged into a shared kiosk or printer",
+        "Yes, it was plugged into my computer",
+        "Yes, plugged into someone else's computer",
+        "Not sure"
+      ],
+      "sample_value": "No, I left it as found"
+    },
+    {
+      "key": "markings",
+      "label": "Any labels, stickers, or markings on it?",
+      "type": "text",
+      "required": false,
+      "help": "Branding, names, handwriting, logos. 'Nothing visible' is fine too.",
+      "placeholder": "e.g. Red stick, no logo, 'CONFIDENTIAL' written in marker.",
+      "sample_value": "Plain black stick with a handwritten 'Payroll Q4' in silver marker."
+    },
+    {
+      "key": "photo",
+      "label": "Photo of the device (optional)",
+      "type": "file",
+      "required": false,
+      "help": "A photo helps us identify it without you having to handle it further.",
+      "sample_value": "usb_device_photo.jpg"
+    },
+    {
+      "key": "current_location",
+      "label": "Where is it now?",
+      "type": "text",
+      "required": true,
+      "help": "Where should we come pick it up? Please keep it somewhere safe and unplugged.",
+      "placeholder": "e.g. Locked in my desk drawer, 3rd floor, desk 312.",
+      "sample_value": "Locked in my desk drawer, 3rd floor, desk 312."
+    }
+  ],
+  "alert_template": {
+    "title": "Unknown removable device found by {{reporter_email}} at {{where_found}}",
+    "description": "An employee found an unattended removable device and reported it via intake.\n\nReporter: {{reporter_email}}\nDevice type: {{device_type}}\nFound at: {{where_found}}\nLocation detail: {{location_detail}}\nMarkings: {{markings}}\nPlugged in: {{plugged_in}}\nCurrently stored: {{current_location}}\n\nNext step: arrange safe pickup. If plugged_in is anything other than 'No', treat any host involved as potentially exposed.",
+    "severity": "medium",
+    "source": "intake_form",
+    "category": "removable_media"
+  },
+  "icon": "Usb",
+  "category": "File / Malware",
+  "estimated_minutes": 3
+}

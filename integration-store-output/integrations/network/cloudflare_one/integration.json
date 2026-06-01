@@ -1,0 +1,201 @@
+{
+  "id": "cloudflare_one",
+  "name": "Cloudflare One (Zero Trust)",
+  "description": "Cloudflare Zero Trust API for managing Gateway policies, DNS filtering, tunnels, access applications, and network security",
+  "version": "1.0.0",
+  "category": "network",
+  "vendor": "Cloudflare",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "header_name": "Authorization",
+    "location": "header",
+    "token_prefix": "Bearer"
+  },
+  "base_url": "https://api.cloudflare.com/client/v4",
+  "actions": [
+    {
+      "id": "list_gateway_rules",
+      "name": "List Gateway Rules",
+      "description": "Retrieve all Zero Trust Gateway rules for DNS, HTTP, and network filtering",
+      "http_method": "GET",
+      "endpoint": "/accounts/{account_id}/gateway/rules",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "account_id",
+          "type": "string",
+          "description": "Cloudflare account identifier",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "create_gateway_rule",
+      "name": "Create Gateway Rule",
+      "description": "Create a new Zero Trust Gateway rule for DNS, HTTP, or network policy enforcement",
+      "http_method": "POST",
+      "endpoint": "/accounts/{account_id}/gateway/rules",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "account_id",
+          "type": "string",
+          "description": "Cloudflare account identifier",
+          "required": true
+        },
+        {
+          "name": "body",
+          "type": "object",
+          "description": "Gateway rule definition including name, action (block, allow, safesearch, l4_override), traffic filter expression, and filters (dns, http, l4)",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "delete_gateway_rule",
+      "name": "Delete Gateway Rule",
+      "description": "Delete an existing Zero Trust Gateway rule",
+      "http_method": "DELETE",
+      "endpoint": "/accounts/{account_id}/gateway/rules/{rule_id}",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "account_id",
+          "type": "string",
+          "description": "Cloudflare account identifier",
+          "required": true
+        },
+        {
+          "name": "rule_id",
+          "type": "string",
+          "description": "Gateway rule identifier to delete",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_gateway_lists",
+      "name": "List Gateway Lists",
+      "description": "Retrieve all Zero Trust lists (custom domain, IP, URL lists) for policy use",
+      "http_method": "GET",
+      "endpoint": "/accounts/{account_id}/gateway/lists",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "account_id",
+          "type": "string",
+          "description": "Cloudflare account identifier",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "create_gateway_list",
+      "name": "Create Gateway List",
+      "description": "Create a new Zero Trust list for use in Gateway policies (block domains/IPs)",
+      "http_method": "POST",
+      "endpoint": "/accounts/{account_id}/gateway/lists",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "account_id",
+          "type": "string",
+          "description": "Cloudflare account identifier",
+          "required": true
+        },
+        {
+          "name": "body",
+          "type": "object",
+          "description": "List definition including name, type (SERIAL, URL, DOMAIN, IP, EMAIL), and items",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_tunnels",
+      "name": "List Tunnels",
+      "description": "Retrieve all Cloudflare Tunnels for private network connectivity",
+      "http_method": "GET",
+      "endpoint": "/accounts/{account_id}/cfd_tunnel",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "account_id",
+          "type": "string",
+          "description": "Cloudflare account identifier",
+          "required": true
+        },
+        {
+          "name": "is_deleted",
+          "type": "boolean",
+          "description": "Filter to include or exclude deleted tunnels",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_access_applications",
+      "name": "List Access Applications",
+      "description": "Retrieve all Cloudflare Access applications (protected web apps)",
+      "http_method": "GET",
+      "endpoint": "/accounts/{account_id}/access/apps",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "account_id",
+          "type": "string",
+          "description": "Cloudflare account identifier",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_access_policies",
+      "name": "List Access Policies",
+      "description": "Retrieve all access policies for a specific application",
+      "http_method": "GET",
+      "endpoint": "/accounts/{account_id}/access/apps/{app_id}/policies",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "account_id",
+          "type": "string",
+          "description": "Cloudflare account identifier",
+          "required": true
+        },
+        {
+          "name": "app_id",
+          "type": "string",
+          "description": "Access application identifier",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_gateway_categories",
+      "name": "Get Gateway Categories",
+      "description": "Retrieve all available domain and content categories for Gateway policies",
+      "http_method": "GET",
+      "endpoint": "/accounts/{account_id}/gateway/categories",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "account_id",
+          "type": "string",
+          "description": "Cloudflare account identifier",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

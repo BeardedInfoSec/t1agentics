@@ -1,0 +1,230 @@
+{
+  "id": "efficientip",
+  "name": "EfficientIP SOLIDserver",
+  "description": "EfficientIP SOLIDserver REST API for DNS, DHCP, and IPAM management including DNS record operations, zone management, and IP address tracking",
+  "version": "1.0.0",
+  "category": "dns_security",
+  "vendor": "EfficientIP",
+  "auth_type": "basic",
+  "auth_config": {
+    "type": "basic",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "https://{host}/rest",
+  "actions": [
+    {
+      "id": "list_dns_zones",
+      "name": "List DNS Zones",
+      "description": "Retrieve all DNS zones managed by SOLIDserver",
+      "http_method": "GET",
+      "endpoint": "/dns_zone_list",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "WHERE",
+          "type": "string",
+          "description": "Filter expression for zone queries (e.g., dns_name='example.com')",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "description": "Maximum number of results to return",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_dns_zone",
+      "name": "Get DNS Zone",
+      "description": "Retrieve details of a specific DNS zone",
+      "http_method": "GET",
+      "endpoint": "/dns_zone_info",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "dns_id",
+          "type": "string",
+          "description": "Zone ID to retrieve",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_dns_records",
+      "name": "List DNS Resource Records",
+      "description": "Retrieve all DNS resource records in a zone or matching criteria",
+      "http_method": "GET",
+      "endpoint": "/dns_rr_list",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "WHERE",
+          "type": "string",
+          "description": "Filter expression (e.g., dns_name='host.example.com' or rr_type='A')",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "description": "Maximum number of records to return",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "add_dns_record",
+      "name": "Add DNS Record",
+      "description": "Create a new DNS resource record in a zone",
+      "http_method": "POST",
+      "endpoint": "/dns_rr_add",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "dns_name",
+          "type": "string",
+          "description": "DNS server name hosting the zone",
+          "required": true
+        },
+        {
+          "name": "rr_name",
+          "type": "string",
+          "description": "Full name of the DNS record (FQDN)",
+          "required": true
+        },
+        {
+          "name": "rr_type",
+          "type": "string",
+          "description": "Record type: A, AAAA, CNAME, MX, TXT, PTR, SRV, NS",
+          "required": true
+        },
+        {
+          "name": "rr_value1",
+          "type": "string",
+          "description": "Primary record value (IP address, hostname, etc.)",
+          "required": true
+        },
+        {
+          "name": "rr_ttl",
+          "type": "integer",
+          "description": "Time to live in seconds",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "delete_dns_record",
+      "name": "Delete DNS Record",
+      "description": "Delete an existing DNS resource record",
+      "http_method": "DELETE",
+      "endpoint": "/dns_rr_delete",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "rr_id",
+          "type": "string",
+          "description": "ID of the resource record to delete",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_ip_addresses",
+      "name": "List IP Addresses",
+      "description": "Retrieve IP addresses and their assignment status from IPAM",
+      "http_method": "GET",
+      "endpoint": "/ip_address_list",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "WHERE",
+          "type": "string",
+          "description": "Filter expression (e.g., hostaddr='10.0.0.1' or name='server01')",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "description": "Maximum number of addresses to return",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "add_ip_address",
+      "name": "Add IP Address",
+      "description": "Register a new IP address in IPAM with associated name and metadata",
+      "http_method": "POST",
+      "endpoint": "/ip_address_add",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "site_name",
+          "type": "string",
+          "description": "IPAM space name",
+          "required": true
+        },
+        {
+          "name": "hostaddr",
+          "type": "string",
+          "description": "IP address to register",
+          "required": true
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Hostname or label for the IP address",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "find_free_ip",
+      "name": "Find Free IP Address",
+      "description": "Find the next available IP address in a subnet",
+      "http_method": "GET",
+      "endpoint": "/ip_find_free_address",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "subnet_id",
+          "type": "string",
+          "description": "ID of the subnet to search for free addresses",
+          "required": true
+        },
+        {
+          "name": "max_find",
+          "type": "integer",
+          "description": "Number of free addresses to find",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_dhcp_scopes",
+      "name": "List DHCP Scopes",
+      "description": "Retrieve all DHCP scopes and their configuration",
+      "http_method": "GET",
+      "endpoint": "/dhcp_scope_list",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "WHERE",
+          "type": "string",
+          "description": "Filter expression for DHCP scopes",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

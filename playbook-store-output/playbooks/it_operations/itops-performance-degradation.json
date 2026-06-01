@@ -1,0 +1,253 @@
+{
+  "name": "Performance Degradation Response",
+  "slug": "itops-performance-degradation",
+  "description": "Responds to performance degradation alerts by collecting system metrics, using AI to diagnose the bottleneck (CPU, memory, I/O, or network), and then routing to the appropriate remediation path. Resource exhaustion triggers auto-scaling or process optimization. Persistent issues that cannot be automatically resolved are escalated with a full diagnostic report for manual investigation.",
+  "category": "it_operations",
+  "subcategory": "performance",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "15 minutes",
+  "tags": ["performance", "degradation", "bottleneck", "auto_scaling", "diagnostics", "monitoring"],
+  "alert_types": ["performance"],
+  "severity_filter": ["medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["performance_degradation", "high_latency", "resource_exhaustion"],
+    "min_severity": "medium"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "datadog",
+      "name": "Datadog",
+      "category": "monitoring",
+      "reason": "Collect detailed system metrics for performance diagnosis"
+    },
+    {
+      "connector_id": "aws_autoscaling",
+      "name": "AWS Auto Scaling",
+      "category": "cloud",
+      "reason": "Trigger auto-scaling actions for resource-constrained services"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create incident tickets for persistent performance issues requiring manual investigation"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Notify the infrastructure team of performance issues and remediation actions"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Performance Alert Received",
+          "config": {
+            "alert_types": ["performance_degradation", "high_latency", "resource_exhaustion"],
+            "description": "Triggers when a performance degradation, high latency, or resource exhaustion alert is received"
+          }
+        }
+      },
+      {
+        "id": "code_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "code",
+          "label": "Collect System Metrics",
+          "config": {
+            "mode": "script",
+            "script": "result = integration.execute('datadog', 'get_host_metrics', { 'host': trigger_1.alert.hostname, 'metrics': ['system.cpu.user', 'system.mem.used', 'system.io.await', 'system.net.bytes_sent', 'system.load.1'], 'period': '30m' })",
+            "output_variable": "system_metrics",
+            "description": "Collect CPU, memory, I/O, network, and load metrics for the affected host over the past 30 minutes"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI -- Diagnose Bottleneck",
+          "config": {
+            "template_id": "executive_summary",
+            "additional_instructions": "Analyze the system metrics to identify the performance bottleneck. Determine if the issue is CPU-bound, memory-bound, I/O-bound, or network-bound. Recommend whether auto-scaling, process optimization, or manual investigation is the best remediation path.",
+            "description": "AI-powered performance diagnosis identifying the root cause bottleneck and recommending remediation strategy"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 540 },
+        "data": {
+          "kind": "decision",
+          "label": "Auto-Scalable?",
+          "config": {
+            "condition": "{{analyze_1.recommendation}} == 'auto_scale'",
+            "description": "Determine if the AI recommends auto-scaling as the appropriate remediation"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "label": "Trigger Auto-Scaling",
+          "config": {
+            "integration_action": {
+              "connector_id": "aws_autoscaling",
+              "action": "scale_out",
+              "parameters": {
+                "auto_scaling_group": "{{trigger_1.alert.service_group}}",
+                "desired_increment": 2,
+                "reason": "Performance degradation — AI diagnosis: {{analyze_1.bottleneck_type}}"
+              }
+            },
+            "description": "Scale out the affected service group to handle the increased resource demand"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "label": "Notify — Auto-Scaled",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#infra-alerts",
+              "message": "PERFORMANCE DEGRADATION — AUTO-SCALED\nHost: {{trigger_1.alert.hostname}}\nService: {{trigger_1.alert.service_name}}\nBottleneck: {{analyze_1.bottleneck_type}}\nAction: Scaled out by 2 instances\n\n{{analyze_1.summary}}"
+            },
+            "description": "Notify the infrastructure team that auto-scaling was triggered for the performance issue"
+          }
+        }
+      },
+      {
+        "id": "respond_3",
+        "type": "signal",
+        "position": { "x": 700, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "label": "Create Diagnostic Ticket",
+          "config": {
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_issue",
+              "parameters": {
+                "project": "OPS",
+                "issue_type": "Incident",
+                "priority": "High",
+                "summary": "Performance Degradation — {{trigger_1.alert.hostname}} ({{analyze_1.bottleneck_type}})",
+                "description": "Performance degradation detected that requires manual investigation.\n\nHost: {{trigger_1.alert.hostname}}\nService: {{trigger_1.alert.service_name}}\nBottleneck Type: {{analyze_1.bottleneck_type}}\n\nSystem Metrics (30m window):\nCPU: {{system_metrics.cpu_avg}}%\nMemory: {{system_metrics.mem_used_pct}}%\nI/O Wait: {{system_metrics.io_await_avg}}ms\nLoad: {{system_metrics.load_1}}\n\nRiggs AI Diagnosis:\n{{analyze_1.summary}}"
+              }
+            },
+            "description": "Create a detailed incident ticket with full diagnostic data for manual investigation"
+          }
+        }
+      },
+      {
+        "id": "respond_4",
+        "type": "signal",
+        "position": { "x": 700, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "label": "Notify — Escalated",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#infra-alerts",
+              "message": "PERFORMANCE DEGRADATION — ESCALATED\nHost: {{trigger_1.alert.hostname}}\nBottleneck: {{analyze_1.bottleneck_type}}\nAction: Manual investigation required\nTicket: {{respond_3.issue_key}}\n\n{{analyze_1.summary}}"
+            },
+            "description": "Notify the infrastructure team that the performance issue requires manual investigation"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1020 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "Performance degradation response workflow complete"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_code",
+        "source": "trigger_1",
+        "target": "code_1",
+        "type": "default"
+      },
+      {
+        "id": "e_code_analyze",
+        "source": "code_1",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_analyze_decision",
+        "source": "analyze_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "respond_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "respond_3",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_scale_notify",
+        "source": "respond_1",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_scaled_end",
+        "source": "respond_2",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_ticket_notify",
+        "source": "respond_3",
+        "target": "respond_4",
+        "type": "default"
+      },
+      {
+        "id": "e_escalated_end",
+        "source": "respond_4",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

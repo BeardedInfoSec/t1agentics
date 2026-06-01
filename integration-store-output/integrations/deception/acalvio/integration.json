@@ -1,0 +1,158 @@
+{
+  "id": "acalvio",
+  "name": "Acalvio ShadowPlex",
+  "description": "AI-powered cyber deception platform using decoys, honeytokens, and breadcrumbs for preemptive cybersecurity including network, endpoint, and Active Directory defense",
+  "version": "1.0.0",
+  "category": "deception",
+  "vendor": "Acalvio",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "prefix": "Bearer ",
+    "location": "header",
+    "description": "API token from ShadowPlex management console"
+  },
+  "base_url": "https://{host}/api/v1",
+  "actions": [
+    {
+      "id": "list_decoys",
+      "name": "List Decoys",
+      "description": "List all deployed deception assets including network decoys and honeytokens",
+      "http_method": "GET",
+      "endpoint": "/decoys",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Filter by decoy type: network, endpoint, ad, api, honeytoken",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Filter by status: active, inactive, deploying",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "description": "Max results per page",
+          "required": false,
+          "location": "query"
+        }
+      ]
+    },
+    {
+      "id": "list_alerts",
+      "name": "List Deception Alerts",
+      "description": "List all alerts generated from interactions with deception assets",
+      "http_method": "GET",
+      "endpoint": "/alerts",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Filter by severity: critical, high, medium, low",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "startTime",
+          "type": "string",
+          "description": "Start time filter (ISO 8601)",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "endTime",
+          "type": "string",
+          "description": "End time filter (ISO 8601)",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "decoyId",
+          "type": "string",
+          "description": "Filter alerts by decoy ID",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "description": "Max results per page",
+          "required": false,
+          "location": "query"
+        }
+      ]
+    },
+    {
+      "id": "get_alert_details",
+      "name": "Get Alert Details",
+      "description": "Retrieve detailed alert information including attacker telemetry and MITRE ATT&CK mapping",
+      "http_method": "GET",
+      "endpoint": "/alerts/{alert_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "alert_id",
+          "type": "string",
+          "description": "Alert ID",
+          "required": true,
+          "location": "path"
+        }
+      ]
+    },
+    {
+      "id": "list_honeytokens",
+      "name": "List Honeytokens",
+      "description": "List all deployed honeytokens including honey accounts, files, and credentials",
+      "http_method": "GET",
+      "endpoint": "/honeytokens",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Filter by honeytoken type: credential, file, account, api_key",
+          "required": false,
+          "location": "query"
+        }
+      ]
+    },
+    {
+      "id": "get_threat_intelligence",
+      "name": "Get Threat Intelligence",
+      "description": "Retrieve threat intelligence gathered from deception interactions including IOCs and TTPs",
+      "http_method": "GET",
+      "endpoint": "/threatintel",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "alertId",
+          "type": "string",
+          "description": "Filter by specific alert ID",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "startTime",
+          "type": "string",
+          "description": "Start time (ISO 8601)",
+          "required": false,
+          "location": "query"
+        }
+      ]
+    }
+  ]
+}

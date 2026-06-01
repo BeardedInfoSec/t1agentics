@@ -1,0 +1,225 @@
+{
+  "name": "Compromised Mailbox Rule Audit",
+  "slug": "phishing-mailbox-rule-audit",
+  "description": "Audits and remediates malicious email forwarding rules created by attackers after a successful phishing compromise. Queries the compromised user's mailbox rules via Microsoft Graph, identifies suspicious forwarding or auto-delete rules, removes malicious rules, and notifies the user and SOC. Attackers commonly create hidden forwarding rules to maintain persistent access to email communications. This playbook ensures those rules are detected and removed as part of incident response.",
+  "category": "phishing",
+  "subcategory": "mailbox_audit",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "12 minutes",
+  "tags": ["phishing", "mailbox-rules", "forwarding", "compromise", "microsoft-graph", "exchange", "persistence"],
+  "alert_types": ["phishing"],
+  "severity_filter": ["high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["phishing", "compromised_mailbox", "suspicious_rule", "email_forwarding"],
+    "min_severity": "high"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "microsoft_graph",
+      "name": "Microsoft Graph",
+      "category": "email_security",
+      "reason": "Query and remove mailbox rules from the compromised account"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Notify SOC about discovered malicious mailbox rules"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "title": "Mailbox Compromise Alert",
+          "summary": "Triggers on compromised mailbox or suspicious forwarding rule alerts",
+          "config": {
+            "trigger_type": "alert",
+            "alert_types": ["phishing", "compromised_mailbox", "suspicious_rule", "email_forwarding"]
+          }
+        }
+      },
+      {
+        "id": "respond-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "respond",
+          "title": "Query Mailbox Rules",
+          "summary": "Retrieve all inbox rules from the compromised user's mailbox",
+          "config": {
+            "response_type": "integration_action",
+            "action_type": "get_mailbox_rules",
+            "target_path": "$.trigger.alert.affected_user",
+            "requires_approval": false,
+            "priority": "high",
+            "message": "Querying mailbox rules for {{$.trigger.alert.affected_user}}",
+            "params": {
+              "user": "{{$.trigger.alert.affected_user}}"
+            }
+          }
+        }
+      },
+      {
+        "id": "code-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "code",
+          "title": "Identify Suspicious Rules",
+          "summary": "Analyze mailbox rules to find forwarding, redirect, or auto-delete rules",
+          "config": {
+            "mode": "script",
+            "script": {
+              "function_name": "main",
+              "inputs": [
+                { "name": "rules", "path": "$.nodes.respond-1.result" },
+                { "name": "alert", "path": "$.trigger.alert" }
+              ],
+              "code": "def main(rules, alert):\n    all_rules = rules.get('rules', rules.get('value', []))\n    suspicious = []\n    clean = []\n    for rule in all_rules:\n        actions = rule.get('actions', {})\n        is_suspicious = False\n        reasons = []\n        fwd = actions.get('forwardTo', actions.get('forward_to', []))\n        redir = actions.get('redirectTo', actions.get('redirect_to', []))\n        delete = actions.get('delete', actions.get('permanentDelete', False))\n        move_to = actions.get('moveToFolder', '')\n        if fwd:\n            is_suspicious = True\n            reasons.append(f'Forwards to: {fwd}')\n        if redir:\n            is_suspicious = True\n            reasons.append(f'Redirects to: {redir}')\n        if delete:\n            is_suspicious = True\n            reasons.append('Auto-deletes messages')\n        if move_to and 'deleted' in str(move_to).lower():\n            is_suspicious = True\n            reasons.append(f'Moves to: {move_to}')\n        entry = {\n            'rule_id': rule.get('id', ''),\n            'name': rule.get('displayName', rule.get('name', 'Unnamed')),\n            'enabled': rule.get('isEnabled', True),\n            'reasons': reasons\n        }\n        if is_suspicious:\n            suspicious.append(entry)\n        else:\n            clean.append(entry)\n    return {\n        'suspicious_rules': suspicious,\n        'clean_rules': clean,\n        'suspicious_count': len(suspicious),\n        'total_rules': len(all_rules),\n        'affected_user': alert.get('affected_user', '')\n    }"
+            }
+          }
+        }
+      },
+      {
+        "id": "decision-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 540 },
+        "data": {
+          "kind": "decision",
+          "title": "Suspicious Rules Found?",
+          "summary": "Were any suspicious forwarding or auto-delete rules detected?",
+          "config": {
+            "conditions": {
+              "operator": "AND",
+              "conditions": [
+                {
+                  "left": { "type": "path", "value": "$.nodes.code-1.result.suspicious_count" },
+                  "operator": "greater",
+                  "right": { "type": "value", "value": "0" }
+                }
+              ],
+              "groups": []
+            },
+            "expression": "$.nodes.code-1.result.suspicious_count > 0",
+            "default_branch": "no"
+          }
+        }
+      },
+      {
+        "id": "loop-1",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "loop",
+          "title": "For Each Suspicious Rule",
+          "summary": "Iterate over each suspicious mailbox rule for removal",
+          "config": {
+            "items_path": "$.nodes.code-1.result.suspicious_rules",
+            "loop_variable": "rule",
+            "max_iterations": 50
+          }
+        }
+      },
+      {
+        "id": "respond-2",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "title": "Remove Malicious Rule",
+          "summary": "Delete the suspicious mailbox rule via Microsoft Graph",
+          "config": {
+            "response_type": "integration_action",
+            "action_type": "delete_mailbox_rule",
+            "target_path": "$.loop.rule.rule_id",
+            "requires_approval": false,
+            "priority": "high",
+            "message": "Removing suspicious mailbox rule '{{$.loop.rule.name}}' ({{$.loop.rule.reasons}}) from {{$.nodes.code-1.result.affected_user}}",
+            "params": {
+              "user": "{{$.nodes.code-1.result.affected_user}}",
+              "rule_id": "{{$.loop.rule.rule_id}}"
+            }
+          }
+        }
+      },
+      {
+        "id": "respond-3",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "title": "Notify SOC & User",
+          "summary": "Alert SOC and notify the affected user about removed rules",
+          "config": {
+            "response_type": "notify",
+            "channel": "slack",
+            "slack_channel": "#soc-incidents",
+            "message": "MALICIOUS MAILBOX RULES REMOVED\n\nUser: {{$.nodes.code-1.result.affected_user}}\nSuspicious Rules Found: {{$.nodes.code-1.result.suspicious_count}}\nTotal Rules Audited: {{$.nodes.code-1.result.total_rules}}\n\nRemoved Rules:\n{{$.nodes.code-1.result.suspicious_rules}}\n\nRecommend:\n- Password reset for this user\n- Review sent items for unauthorized emails\n- Check for other persistence mechanisms",
+            "priority": "high"
+          }
+        }
+      },
+      {
+        "id": "utility-1",
+        "type": "signal",
+        "position": { "x": 700, "y": 700 },
+        "data": {
+          "kind": "utility",
+          "title": "Close — No Suspicious Rules",
+          "summary": "No suspicious mailbox rules found, close alert",
+          "config": {
+            "operation": "update_status",
+            "status": "closed",
+            "note": "Mailbox rule audit for {{$.nodes.code-1.result.affected_user}} completed. {{$.nodes.code-1.result.total_rules}} rules checked, no suspicious forwarding or auto-delete rules found."
+          }
+        }
+      },
+      {
+        "id": "end-1",
+        "type": "signal",
+        "position": { "x": 340, "y": 1180 },
+        "data": {
+          "kind": "end",
+          "title": "End — Rules Removed",
+          "summary": "Malicious mailbox rules removed, user and SOC notified",
+          "config": {
+            "disposition": "true_positive",
+            "summary": "Malicious mailbox rules detected and removed. SOC and user notified. Password reset recommended."
+          }
+        }
+      },
+      {
+        "id": "end-2",
+        "type": "signal",
+        "position": { "x": 700, "y": 860 },
+        "data": {
+          "kind": "end",
+          "title": "End — Clean Mailbox",
+          "summary": "No suspicious rules, mailbox clean",
+          "config": {
+            "disposition": "false_positive",
+            "summary": "Mailbox rule audit completed. No suspicious rules found. Alert closed."
+          }
+        }
+      }
+    ],
+    "edges": [
+      { "id": "e1", "source": "trigger-1", "target": "respond-1", "animated": true, "type": "smoothstep" },
+      { "id": "e2", "source": "respond-1", "target": "code-1", "animated": true, "type": "smoothstep" },
+      { "id": "e3", "source": "code-1", "target": "decision-1", "animated": true, "type": "smoothstep" },
+      { "id": "e4", "source": "decision-1", "target": "loop-1", "sourceHandle": "yes", "label": "Yes", "animated": true, "type": "smoothstep" },
+      { "id": "e5", "source": "decision-1", "target": "utility-1", "sourceHandle": "no", "label": "No", "animated": true, "type": "smoothstep" },
+      { "id": "e6", "source": "loop-1", "target": "respond-2", "animated": true, "type": "smoothstep" },
+      { "id": "e7", "source": "respond-2", "target": "respond-3", "animated": true, "type": "smoothstep" },
+      { "id": "e8", "source": "respond-3", "target": "end-1", "animated": true, "type": "smoothstep" },
+      { "id": "e9", "source": "utility-1", "target": "end-2", "animated": true, "type": "smoothstep" }
+    ]
+  }
+}

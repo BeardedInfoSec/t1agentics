@@ -1,0 +1,281 @@
+{
+  "name": "Cloud Container Escape Detection & Response",
+  "slug": "cloud-container-escape",
+  "description": "Detects container escape attempts in Kubernetes or ECS environments. Riggs AI analyzes the alert for privilege escalation indicators such as hostPID, hostNetwork, or privileged containers. Confirmed escapes trigger immediate pod isolation, node investigation to determine blast radius, workload rebuild from clean image, incident ticket creation, and team notification. Unconfirmed alerts receive a severity adjustment and analyst note.",
+  "category": "cloud",
+  "subcategory": "container_security",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "advanced",
+  "estimated_time": "20 minutes",
+  "tags": ["cloud", "container", "kubernetes", "escape", "privilege_escalation"],
+  "alert_types": ["cloud_security", "container_escape"],
+  "severity_filter": ["high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["cloud_security", "container_escape", "runtime_anomaly"],
+    "min_severity": "high"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "kubernetes",
+      "name": "Kubernetes API",
+      "category": "cloud_infrastructure",
+      "reason": "Isolate compromised pods, inspect node status, and rebuild workloads"
+    },
+    {
+      "connector_id": "aws_security_hub",
+      "name": "AWS Security Hub",
+      "category": "cloud_security",
+      "reason": "Source of container runtime threat findings and node-level security data"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create incident tickets for confirmed container escape events"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Notify the cloud security team of container escape detection and response actions"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Container Escape Alert Received",
+          "config": {
+            "alert_types": ["cloud_security", "container_escape", "runtime_anomaly"],
+            "description": "Triggers when a container escape attempt or runtime anomaly is detected by Falco, GuardDuty for EKS, or similar container security tooling"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — Privilege Escalation Assessment",
+          "config": {
+            "template_id": "priv_escalation",
+            "additional_instructions": "Evaluate container escape indicators: hostPID, hostNetwork, privileged flag, nsenter usage, mount of host filesystem",
+            "description": "AI-powered analysis of container runtime alert to determine if a genuine container escape or privilege escalation occurred"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "label": "Container Escape Confirmed?",
+          "config": {
+            "condition": "{{analyze_1.verdict}} == 'confirmed' || {{analyze_1.confidence}} >= 0.8",
+            "description": "Routes based on whether the AI assessment confirmed a container escape event"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "respond",
+          "label": "Isolate Compromised Pod",
+          "config": {
+            "integration_action": {
+              "connector_id": "kubernetes",
+              "action": "isolate_pod",
+              "parameters": {
+                "pod_name": "{{trigger_1.alert.pod_name}}",
+                "namespace": "{{trigger_1.alert.namespace}}",
+                "method": "network_policy_deny_all",
+                "reason": "Container escape detected — AI confidence: {{analyze_1.confidence}}"
+              }
+            },
+            "description": "Immediately isolate the compromised pod by applying a deny-all network policy to prevent lateral movement"
+          }
+        }
+      },
+      {
+        "id": "code_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "code",
+          "label": "Investigate Host Node",
+          "config": {
+            "mode": "query",
+            "query": "Kubernetes node diagnostics for node={{trigger_1.alert.node_name}}: running processes, mounted volumes, other pods on same node, recent kubectl exec events",
+            "output_variable": "node_investigation",
+            "description": "Investigate the underlying host node to determine blast radius — check for other affected pods, suspicious processes, and host-level compromise indicators"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "label": "Rebuild Workload from Clean Image",
+          "config": {
+            "integration_action": {
+              "connector_id": "kubernetes",
+              "action": "redeploy_workload",
+              "parameters": {
+                "deployment": "{{trigger_1.alert.deployment_name}}",
+                "namespace": "{{trigger_1.alert.namespace}}",
+                "force_pull": true,
+                "reason": "Rebuilding workload after confirmed container escape"
+              }
+            },
+            "description": "Delete the compromised pod and redeploy the workload from a clean, verified container image"
+          }
+        }
+      },
+      {
+        "id": "respond_3",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "label": "Create Incident Ticket",
+          "config": {
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_ticket",
+              "parameters": {
+                "project": "SEC",
+                "issue_type": "Incident",
+                "priority": "Critical",
+                "summary": "Container Escape: {{trigger_1.alert.pod_name}} in {{trigger_1.alert.namespace}}",
+                "description": "Confirmed container escape detected and remediated.\n\nPod: {{trigger_1.alert.pod_name}}\nNamespace: {{trigger_1.alert.namespace}}\nNode: {{trigger_1.alert.node_name}}\n\nActions Taken:\n- Pod isolated via network policy\n- Node investigated for blast radius\n- Workload rebuilt from clean image\n\nRiggs AI Assessment:\n{{analyze_1.summary}}\n\nNode Investigation Results:\n{{code_1.node_investigation}}"
+              }
+            },
+            "description": "Create an incident ticket with full details of the container escape and all response actions taken"
+          }
+        }
+      },
+      {
+        "id": "respond_4",
+        "type": "signal",
+        "position": { "x": 340, "y": 1180 },
+        "data": {
+          "kind": "respond",
+          "label": "Notify Cloud Security Team",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#cloud-security-alerts",
+              "message": "CONTAINER ESCAPE DETECTED & REMEDIATED\nPod: {{trigger_1.alert.pod_name}}\nNamespace: {{trigger_1.alert.namespace}}\nNode: {{trigger_1.alert.node_name}}\nActions: Pod isolated, node investigated, workload rebuilt\nTicket: {{respond_3.ticket_url}}\n\nRiggs Assessment:\n{{analyze_1.summary}}"
+            },
+            "description": "Send Slack notification to the cloud security team with escape details and remediation status"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "utility",
+          "label": "Update Severity & Add Note",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "Reviewed by Riggs AI (priv_escalation template). Container escape not confirmed — likely benign runtime anomaly. Confidence: {{analyze_1.confidence}}. Assessment: {{analyze_1.summary}}"
+            },
+            "description": "Document that AI analysis did not confirm a container escape and attach assessment details"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1340 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "Container escape detection and response complete"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_analyze",
+        "source": "trigger_1",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_analyze_decision",
+        "source": "analyze_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "respond_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "utility_1",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_isolate_investigate",
+        "source": "respond_1",
+        "target": "code_1",
+        "type": "default"
+      },
+      {
+        "id": "e_investigate_rebuild",
+        "source": "code_1",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_rebuild_ticket",
+        "source": "respond_2",
+        "target": "respond_3",
+        "type": "default"
+      },
+      {
+        "id": "e_ticket_notify",
+        "source": "respond_3",
+        "target": "respond_4",
+        "type": "default"
+      },
+      {
+        "id": "e_notify_end",
+        "source": "respond_4",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_utility_end",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

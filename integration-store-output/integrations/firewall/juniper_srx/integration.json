@@ -1,0 +1,166 @@
+{
+  "id": "juniper_srx",
+  "name": "Juniper SRX Firewall",
+  "description": "Juniper SRX Series firewall management via Junos OS REST API for security policies, zones, and traffic monitoring",
+  "version": "1.0.0",
+  "category": "firewall",
+  "vendor": "Juniper Networks",
+  "auth_type": "basic",
+  "auth_config": {
+    "type": "basic",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "https://{host}:3443/api",
+  "actions": [
+    {
+      "id": "get_security_policies",
+      "name": "Get Security Policies",
+      "description": "Retrieve all security policies configured on the SRX firewall",
+      "http_method": "GET",
+      "endpoint": "/config/security/policies",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "format",
+          "type": "string",
+          "description": "Response format (json or xml)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_security_zones",
+      "name": "Get Security Zones",
+      "description": "Retrieve all security zones configured on the firewall",
+      "http_method": "GET",
+      "endpoint": "/config/security/zones",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "format",
+          "type": "string",
+          "description": "Response format (json or xml)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_address_book",
+      "name": "Get Address Book",
+      "description": "Retrieve all address book entries for security policy references",
+      "http_method": "GET",
+      "endpoint": "/config/security/address-book",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "format",
+          "type": "string",
+          "description": "Response format (json or xml)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "create_address_entry",
+      "name": "Create Address Book Entry",
+      "description": "Add a new address entry to a security address book (for IP blocking)",
+      "http_method": "POST",
+      "endpoint": "/config/security/address-book",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "body",
+          "type": "object",
+          "description": "Address book entry including name, ip-prefix or dns-name",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "create_security_policy",
+      "name": "Create Security Policy",
+      "description": "Create a new security policy rule between zones",
+      "http_method": "POST",
+      "endpoint": "/config/security/policies",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "body",
+          "type": "object",
+          "description": "Security policy including from-zone, to-zone, match criteria, and action (permit/deny/reject)",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_interfaces",
+      "name": "Get Interfaces",
+      "description": "Retrieve all interface configurations and status",
+      "http_method": "GET",
+      "endpoint": "/config/interfaces",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "get_security_flow_sessions",
+      "name": "Get Security Flow Sessions",
+      "description": "Retrieve active security flow sessions (traffic monitoring)",
+      "http_method": "POST",
+      "endpoint": "/rpc/get-flow-session-information",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "get_security_log",
+      "name": "Get Security Log",
+      "description": "Retrieve security log entries from the firewall",
+      "http_method": "POST",
+      "endpoint": "/rpc/get-security-log-information",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "count",
+          "type": "integer",
+          "description": "Number of log entries to retrieve",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "commit_configuration",
+      "name": "Commit Configuration",
+      "description": "Commit pending configuration changes to the device",
+      "http_method": "POST",
+      "endpoint": "/rpc/commit-configuration",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "confirmed",
+          "type": "boolean",
+          "description": "Whether to require confirmation within a timeout period",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_system_information",
+      "name": "Get System Information",
+      "description": "Retrieve device system information including model, version, and uptime",
+      "http_method": "POST",
+      "endpoint": "/rpc/get-system-information",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    }
+  ]
+}

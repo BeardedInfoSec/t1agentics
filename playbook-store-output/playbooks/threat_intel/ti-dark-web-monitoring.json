@@ -1,0 +1,259 @@
+{
+  "name": "Dark Web Monitoring",
+  "slug": "ti-dark-web-monitoring",
+  "description": "Monitors dark web sources for mentions of the organization, its domains, credentials, or brand assets. When a dark web mention alert is received, the playbook parses the mention context, uses AI to assess exposure severity and potential impact, and routes based on risk level. High-risk exposures (credential dumps, data leaks) trigger immediate credential resets, executive notification, and incident ticket creation. Low-risk mentions are documented and placed in monitoring status.",
+  "category": "threat_intel",
+  "subcategory": "dark_web",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "12 minutes",
+  "tags": ["dark_web", "monitoring", "exposure", "credentials", "threat_intel", "brand"],
+  "alert_types": ["threat_intel", "dark_web"],
+  "severity_filter": ["low", "medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["dark_web_mention", "credential_leak", "data_exposure"],
+    "min_severity": "low"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "recorded_future",
+      "name": "Recorded Future",
+      "category": "threat_intel",
+      "reason": "Retrieve dark web mention details, context, and threat actor attribution"
+    },
+    {
+      "connector_id": "active_directory",
+      "name": "Active Directory",
+      "category": "identity",
+      "reason": "Force credential resets for compromised accounts identified in dark web leaks"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Dark Web Mention Alert",
+          "config": {
+            "alert_types": ["dark_web_mention", "credential_leak", "data_exposure"],
+            "description": "Triggers when a dark web monitoring service detects a mention of organizational assets, credentials, or brand"
+          }
+        }
+      },
+      {
+        "id": "code_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "code",
+          "label": "Parse Mention Context",
+          "config": {
+            "code": "alert = inputs.get('alert', {})\n\nmention_type = alert.get('mention_type', 'unknown')\nsource_forum = alert.get('source', 'unknown')\nraw_content = alert.get('content', '')\naffected_emails = alert.get('affected_emails', [])\naffected_domains = alert.get('affected_domains', [])\ndata_types = alert.get('data_types_exposed', [])\n\nis_credential_leak = mention_type in ['credential_dump', 'credential_leak'] or 'password' in str(data_types).lower()\nis_data_leak = mention_type in ['data_leak', 'database_dump'] or len(data_types) > 2\n\nresult = {\n    'mention_type': mention_type,\n    'source_forum': source_forum,\n    'affected_emails': affected_emails,\n    'affected_email_count': len(affected_emails),\n    'affected_domains': affected_domains,\n    'data_types_exposed': data_types,\n    'is_credential_leak': is_credential_leak,\n    'is_data_leak': is_data_leak,\n    'content_preview': raw_content[:500]\n}",
+            "inputs": {
+              "alert": "{{trigger_1.alert}}"
+            },
+            "description": "Parses the dark web mention alert to extract affected emails, domains, data types exposed, and categorizes the mention type"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — Exposure Assessment",
+          "config": {
+            "template_id": "executive_summary",
+            "additional_instructions": "Assess the dark web mention for organizational exposure severity. Determine the type of data exposed, potential impact on operations, likelihood of exploitation, and recommended immediate actions. Classify risk as low, medium, high, or critical.",
+            "description": "AI-powered assessment of the dark web mention to determine exposure severity, potential impact, and recommended response actions"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 540 },
+        "data": {
+          "kind": "decision",
+          "label": "High-Risk Exposure?",
+          "config": {
+            "condition": "{{code_1.outputs.result.is_credential_leak}} == true or {{code_1.outputs.result.is_data_leak}} == true or {{analyze_1.severity}} in ['high', 'critical']",
+            "description": "Routes based on whether the dark web mention constitutes a high-risk exposure requiring immediate response"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "label": "Force Credential Reset",
+          "config": {
+            "integration_action": {
+              "connector_id": "active_directory",
+              "action": "force_password_reset",
+              "parameters": {
+                "accounts": "{{code_1.outputs.result.affected_emails}}",
+                "reason": "Dark web credential leak detected",
+                "require_mfa_reregistration": true
+              }
+            },
+            "description": "Forces immediate password reset and MFA re-registration for all accounts identified in the dark web credential leak"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "label": "Notify Stakeholders",
+          "config": {
+            "notify": {
+              "channel": "email",
+              "target": "ciso@organization.com,security-team@organization.com",
+              "subject": "DARK WEB ALERT: {{code_1.outputs.result.mention_type}} — Organizational Data Exposed",
+              "message": "Dark web monitoring detected a high-risk exposure.\n\nMention Type: {{code_1.outputs.result.mention_type}}\nSource: {{code_1.outputs.result.source_forum}}\nAffected Accounts: {{code_1.outputs.result.affected_email_count}}\nData Types Exposed: {{code_1.outputs.result.data_types_exposed}}\n\nActions Taken:\n- Credential reset forced for affected accounts\n- MFA re-registration required\n\nRiggs AI Assessment:\n{{analyze_1.summary}}"
+            },
+            "description": "Sends high-priority notification to CISO and security team with exposure details and response actions taken"
+          }
+        }
+      },
+      {
+        "id": "respond_3",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "label": "Create Incident Ticket",
+          "config": {
+            "create_ticket": {
+              "title": "Dark Web Exposure: {{code_1.outputs.result.mention_type}} — {{code_1.outputs.result.affected_email_count}} Accounts",
+              "priority": "high",
+              "description": "Dark web monitoring detected organizational data on {{code_1.outputs.result.source_forum}}.\n\nExposure Type: {{code_1.outputs.result.mention_type}}\nAffected Accounts: {{code_1.outputs.result.affected_email_count}}\nData Types: {{code_1.outputs.result.data_types_exposed}}\n\nActions Taken:\n1. Credential resets forced\n2. Stakeholders notified\n\nRiggs AI Assessment:\n{{analyze_1.summary}}",
+              "assignee": "soc-tier2"
+            },
+            "description": "Creates an incident ticket for SOC Tier 2 to track the dark web exposure response and remediation"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 700, "y": 700 },
+        "data": {
+          "kind": "utility",
+          "label": "Note: Low-Risk Mention Logged",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "Dark web mention detected but assessed as low risk.\n\nMention Type: {{code_1.outputs.result.mention_type}}\nSource: {{code_1.outputs.result.source_forum}}\nContent Preview: {{code_1.outputs.result.content_preview}}\n\nNo immediate action required. Placed in monitoring status.\n\nRiggs AI Summary:\n{{analyze_1.summary}}"
+            },
+            "description": "Documents the low-risk dark web mention with context for future reference"
+          }
+        }
+      },
+      {
+        "id": "utility_2",
+        "type": "signal",
+        "position": { "x": 700, "y": 860 },
+        "data": {
+          "kind": "utility",
+          "label": "Set Status: Monitoring",
+          "config": {
+            "action": "update_status",
+            "parameters": {
+              "status": "monitoring"
+            },
+            "description": "Places the low-risk dark web mention in monitoring status for continued observation"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1180 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "Dark web monitoring response complete"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_parse",
+        "source": "trigger_1",
+        "target": "code_1",
+        "type": "default"
+      },
+      {
+        "id": "e_parse_assess",
+        "source": "code_1",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_assess_decision",
+        "source": "analyze_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "respond_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "utility_1",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_reset_notify",
+        "source": "respond_1",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_notify_ticket",
+        "source": "respond_2",
+        "target": "respond_3",
+        "type": "default"
+      },
+      {
+        "id": "e_ticket_end",
+        "source": "respond_3",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_lowrisk_monitoring",
+        "source": "utility_1",
+        "target": "utility_2",
+        "type": "default"
+      },
+      {
+        "id": "e_monitoring_end",
+        "source": "utility_2",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

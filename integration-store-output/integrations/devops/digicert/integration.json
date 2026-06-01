@@ -1,0 +1,158 @@
+{
+  "id": "digicert",
+  "name": "DigiCert",
+  "description": "This app uses the DigiCert automation API to manage ssl certificates",
+  "version": "1.0.3",
+  "category": "devops",
+  "vendor": "DigiCert",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "request_cert",
+      "name": "Request Cert",
+      "description": "Order a new SSL certificate",
+      "http_method": "GET",
+      "endpoint": "/actions/request_cert",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "csr",
+          "type": "string",
+          "description": "Vault_id OR vault_name of the certificate signing request (csr)",
+          "required": true,
+          "contains": [
+            "vault id"
+          ]
+        },
+        {
+          "name": "common_name",
+          "type": "string",
+          "description": "Certificate common name (default: extracted from csr)",
+          "required": false
+        },
+        {
+          "name": "signature_hash",
+          "type": "string",
+          "description": "The certificate's signing algorithm hash (default: extracted from csr)",
+          "required": false
+        },
+        {
+          "name": "server_platform",
+          "type": "string",
+          "description": "Server platform this certificate is for",
+          "required": true,
+          "default": "Apache"
+        },
+        {
+          "name": "order_validity",
+          "type": "number",
+          "description": "How long the order should be valid for (in years, max 6)",
+          "required": true,
+          "default": 1
+        }
+      ]
+    },
+    {
+      "id": "update_request_status",
+      "name": "Update Request Status",
+      "description": "Update the status of a request (i.e. approve the request)",
+      "http_method": "GET",
+      "endpoint": "/actions/update_request_status",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "request_id",
+          "type": "string",
+          "description": "The request id of a certificate request to update",
+          "required": true,
+          "contains": [
+            "digicert request id"
+          ]
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Status to set for the order",
+          "required": true
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "Add comment to the order request that we update (optional)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "download_cert",
+      "name": "Download Cert",
+      "description": "Download a certificate to the vault",
+      "http_method": "GET",
+      "endpoint": "/actions/download_cert",
+      "action_type": "generic",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "certificate_id",
+          "type": "string",
+          "description": "The certificate id to download",
+          "required": false,
+          "contains": [
+            "digicert certificate id"
+          ]
+        },
+        {
+          "name": "order_id",
+          "type": "string",
+          "description": "The order id to download the certificate for",
+          "required": false,
+          "contains": [
+            "digicert order id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_request_info",
+      "name": "Get Request Info",
+      "description": "Get details for a certificate request",
+      "http_method": "GET",
+      "endpoint": "/actions/get_request_info",
+      "action_type": "generic",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "order_id",
+          "type": "string",
+          "description": "Certificate order id",
+          "required": true,
+          "contains": [
+            "digicert order id"
+          ]
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "DigiCert",
+    "original_type": "devops",
+    "converted_at": "2025-12-18T16:25:28.735618",
+    "source_version": "1.0.3"
+  }
+}

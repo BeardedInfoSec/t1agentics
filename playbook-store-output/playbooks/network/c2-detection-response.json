@@ -1,0 +1,311 @@
+{
+  "name": "Command & Control Detection Response",
+  "slug": "c2-detection-response",
+  "description": "Responds to suspected command-and-control (C2) activity detected on the network. Riggs AI analyzes the alert using the C2 detection template to confirm beaconing or C2 communication. Confirmed threats trigger host isolation via EDR, firewall blocking of the C2 infrastructure, threat intel EDL updates, a lateral movement sweep across the environment, P1 incident ticket creation, and IR team notification. Unconfirmed alerts are downgraded to low severity for continued monitoring.",
+  "category": "network",
+  "subcategory": "threat_response",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "advanced",
+  "estimated_time": "20 minutes",
+  "tags": ["c2", "command_control", "network", "apt", "containment"],
+  "alert_types": ["network", "c2"],
+  "severity_filter": ["medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["network", "c2", "beaconing", "dns_tunneling", "suspicious_outbound"],
+    "min_severity": "medium"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "crowdstrike",
+      "name": "CrowdStrike Falcon",
+      "category": "edr",
+      "reason": "Isolate compromised endpoints communicating with C2 infrastructure"
+    },
+    {
+      "connector_id": "palo_alto_ngfw",
+      "name": "Palo Alto NGFW",
+      "category": "network",
+      "reason": "Block C2 IP addresses and domains at the network perimeter"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create P1 incident ticket for IR team tracking and compliance"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Notify the incident response team of confirmed C2 activity"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "C2 / Beaconing Alert",
+          "config": {
+            "alert_types": ["network", "c2", "beaconing", "dns_tunneling", "suspicious_outbound"],
+            "description": "Triggers on network alerts indicating potential command-and-control communication or beaconing behavior"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — C2 Detection Analysis",
+          "config": {
+            "template_id": "c2_detection",
+            "additional_instructions": "Focus on beaconing interval regularity, destination reputation, protocol anomalies, and process attribution. Determine if this is confirmed C2 or legitimate traffic.",
+            "description": "AI-powered analysis using the c2_detection template to evaluate destination reputation, beaconing patterns, protocol abuse, and process attribution"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "label": "C2 Confirmed?",
+          "config": {
+            "condition": "{{analyze_1.verdict}} in ['MALICIOUS', 'SUSPICIOUS']",
+            "description": "Routes based on whether Riggs AI confirmed command-and-control communication"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "respond",
+          "label": "Isolate Host via EDR",
+          "config": {
+            "integration_action": {
+              "connector_id": "crowdstrike",
+              "action": "contain_host",
+              "parameters": {
+                "device_id": "{{trigger_1.alert.endpoint_id}}",
+                "comment": "Isolated due to confirmed C2 communication — Alert: {{trigger_1.alert.alert_id}}"
+              }
+            },
+            "description": "Network-isolates the compromised endpoint via CrowdStrike to sever C2 communication immediately"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "label": "Block C2 IP/Domain on Firewall",
+          "config": {
+            "integration_action": {
+              "connector_id": "palo_alto_ngfw",
+              "action": "block_ip",
+              "parameters": {
+                "ip_address": "{{trigger_1.alert.destination_ip}}",
+                "domain": "{{trigger_1.alert.destination_domain}}",
+                "rule_name": "T1-C2-Block-{{trigger_1.alert.alert_id}}",
+                "direction": "both",
+                "comment": "C2 infrastructure blocked — Verdict: {{analyze_1.verdict}}, Type: {{analyze_1.threat_type}}"
+              }
+            },
+            "description": "Blocks the C2 destination IP and domain on the Palo Alto NGFW to prevent any other hosts from reaching the same infrastructure"
+          }
+        }
+      },
+      {
+        "id": "respond_3",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "label": "Add C2 Indicators to EDL",
+          "config": {
+            "utility_action": {
+              "action": "add_to_edl",
+              "parameters": {
+                "indicators": [
+                  { "value": "{{trigger_1.alert.destination_ip}}", "type": "ip" },
+                  { "value": "{{trigger_1.alert.destination_domain}}", "type": "domain" }
+                ],
+                "list_name": "c2-threat-intel-blocklist",
+                "expiry_days": 180,
+                "comment": "C2 indicators from alert {{trigger_1.alert.alert_id}} — {{analyze_1.threat_type}}"
+              }
+            },
+            "description": "Adds confirmed C2 IPs and domains to the threat intelligence EDL for organization-wide blocking"
+          }
+        }
+      },
+      {
+        "id": "analyze_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — Lateral Movement Sweep",
+          "config": {
+            "template_id": "lateral_movement",
+            "additional_instructions": "Check for other hosts communicating with the same C2 infrastructure ({{trigger_1.alert.destination_ip}} / {{trigger_1.alert.destination_domain}}). Identify any additional compromised endpoints.",
+            "description": "AI-powered lateral movement analysis to identify other hosts in the environment that may be communicating with the same C2 infrastructure"
+          }
+        }
+      },
+      {
+        "id": "respond_4",
+        "type": "signal",
+        "position": { "x": 340, "y": 1180 },
+        "data": {
+          "kind": "respond",
+          "label": "Create P1 Incident Ticket",
+          "config": {
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_issue",
+              "parameters": {
+                "project": "IR",
+                "issue_type": "Incident",
+                "priority": "P1",
+                "summary": "C2 DETECTED — {{trigger_1.alert.hostname}} communicating with {{trigger_1.alert.destination_ip}}",
+                "description": "CONFIRMED C2 ACTIVITY\n\nSource Host: {{trigger_1.alert.hostname}} ({{trigger_1.alert.source_ip}})\nC2 Destination: {{trigger_1.alert.destination_ip}} / {{trigger_1.alert.destination_domain}}\nC2 Type: {{analyze_1.threat_type}}\n\nActions Taken:\n- Host isolated via CrowdStrike\n- C2 IP/domain blocked on firewall\n- Indicators added to threat intel EDL\n\nLateral Movement Sweep:\n{{analyze_2.summary}}\n\nRiggs AI Assessment:\n{{analyze_1.summary}}"
+              }
+            },
+            "description": "Creates a Priority 1 incident ticket in Jira with full C2 analysis, containment actions taken, and lateral movement sweep results"
+          }
+        }
+      },
+      {
+        "id": "respond_5",
+        "type": "signal",
+        "position": { "x": 340, "y": 1340 },
+        "data": {
+          "kind": "respond",
+          "label": "Notify IR Team on Slack",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#incident-response",
+              "message": "C2 ACTIVITY CONFIRMED — P1 INCIDENT\n\nHost: {{trigger_1.alert.hostname}}\nC2 Destination: {{trigger_1.alert.destination_ip}} / {{trigger_1.alert.destination_domain}}\nC2 Type: {{analyze_1.threat_type}}\n\nContainment:\n- Host isolated via CrowdStrike\n- C2 blocked on firewall\n- Indicators pushed to EDL\n\nLateral Movement: {{analyze_2.summary}}\nJira Ticket: {{respond_4.ticket_key}}\n\nImmediate IR response required.",
+              "priority": "critical"
+            },
+            "description": "Sends a critical priority notification to the IR team Slack channel with the full incident summary and containment status"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "utility",
+          "label": "Downgrade Severity to Low",
+          "config": {
+            "action": "update_severity",
+            "parameters": {
+              "severity": "low",
+              "note": "C2 analysis by Riggs AI returned verdict: {{analyze_1.verdict}}. No confirmed C2 indicators. Downgrading to low severity for monitoring."
+            },
+            "description": "Downgrades alert severity to low when C2 activity is not confirmed, keeping the alert open for continued observation"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1500 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "Command and control detection response workflow complete"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_analyze",
+        "source": "trigger_1",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_analyze_decision",
+        "source": "analyze_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "respond_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "utility_1",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_isolate_block",
+        "source": "respond_1",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_block_edl",
+        "source": "respond_2",
+        "target": "respond_3",
+        "type": "default"
+      },
+      {
+        "id": "e_edl_lateral",
+        "source": "respond_3",
+        "target": "analyze_2",
+        "type": "default"
+      },
+      {
+        "id": "e_lateral_ticket",
+        "source": "analyze_2",
+        "target": "respond_4",
+        "type": "default"
+      },
+      {
+        "id": "e_ticket_notify",
+        "source": "respond_4",
+        "target": "respond_5",
+        "type": "default"
+      },
+      {
+        "id": "e_notify_end",
+        "source": "respond_5",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_utility_end",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

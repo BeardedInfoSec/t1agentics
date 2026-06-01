@@ -1,0 +1,188 @@
+{
+  "name": "PII Discovery and Classification",
+  "slug": "dlp-pii-discovery",
+  "description": "Automated PII discovery and classification workflow triggered by DLP scanning alerts. Riggs AI analyzes discovered data to classify PII types (SSN, credit card, health records, etc.), assess exposure risk, and generate a remediation plan. Confirmed PII findings are tagged with classification labels, a remediation ticket is created for the data owner, and the compliance team is notified. Designed for data governance and compliance teams.",
+  "category": "data_protection",
+  "subcategory": "pii_management",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "15 minutes",
+  "tags": ["dlp", "pii", "classification", "data_discovery", "compliance", "gdpr", "ccpa"],
+  "alert_types": ["dlp", "pii_discovery", "data_scan"],
+  "severity_filter": ["low", "medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["dlp", "pii_discovery", "data_classification_scan", "sensitive_data_found"],
+    "min_severity": "low"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create remediation tickets for data owners to address PII findings"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Notify compliance team and data owners of PII discovery findings"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "pii-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "title": "PII Discovery Alert",
+          "summary": "Triggers on DLP scan results indicating PII found in unauthorized locations",
+          "config": {
+            "trigger_type": "alert",
+            "alert_types": ["dlp", "pii_discovery", "data_classification_scan", "sensitive_data_found"]
+          }
+        }
+      },
+      {
+        "id": "pii-2",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "title": "AI PII Classification Analysis",
+          "summary": "Riggs AI classifies PII types, assesses exposure risk, and generates remediation plan",
+          "config": {
+            "mode": "ai_analysis",
+            "template_id": "data_exfil",
+            "custom_instructions": "Classify all PII types found (SSN, credit card, email, phone, health records, financial data). Assess storage compliance against GDPR/CCPA requirements. Rate exposure risk and recommend specific remediation steps.",
+            "alert_path": "$.trigger.alert",
+            "include_context": true
+          }
+        }
+      },
+      {
+        "id": "pii-3",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "title": "PII Requires Remediation?",
+          "summary": "Branch based on whether discovered PII needs remediation action",
+          "config": {
+            "conditions": {
+              "operator": "AND",
+              "conditions": [
+                {
+                  "field": "$.nodes.pii-2.result.verdict",
+                  "operator": "in",
+                  "value": ["MALICIOUS", "SUSPICIOUS"]
+                }
+              ],
+              "groups": []
+            },
+            "expression": "$.nodes.pii-2.result.verdict in ['MALICIOUS', 'SUSPICIOUS']",
+            "default_branch": "no"
+          }
+        }
+      },
+      {
+        "id": "pii-4",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "utility",
+          "title": "Apply Classification Tags",
+          "summary": "Tag the discovered data with appropriate classification labels",
+          "config": {
+            "operation": "tag_resource",
+            "tags": {
+              "data_classification": "{{$.nodes.pii-2.result.data_classification}}",
+              "pii_types": "{{$.nodes.pii-2.result.pii_types}}",
+              "compliance_framework": "{{$.nodes.pii-2.result.compliance_framework}}",
+              "risk_level": "{{$.nodes.pii-2.result.risk_level}}"
+            },
+            "note": "Classification tags applied based on Riggs AI PII analysis"
+          }
+        }
+      },
+      {
+        "id": "pii-5",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "title": "Create Remediation Ticket",
+          "summary": "Create a Jira ticket for the data owner with remediation plan",
+          "config": {
+            "response_type": "create_ticket",
+            "system": "jira",
+            "project_key": "COMP",
+            "issue_type": "Task",
+            "title": "PII Remediation Required: {{$.trigger.alert.resource_name}} — {{$.nodes.pii-2.result.pii_types}}",
+            "description": "PII discovered in unauthorized location requiring remediation.\n\nResource: {{$.trigger.alert.resource_name}}\nLocation: {{$.trigger.alert.resource_path}}\nPII Types Found: {{$.nodes.pii-2.result.pii_types}}\nData Classification: {{$.nodes.pii-2.result.data_classification}}\nRisk Level: {{$.nodes.pii-2.result.risk_level}}\nCompliance Framework: {{$.nodes.pii-2.result.compliance_framework}}\n\nRemediation Plan:\n{{$.nodes.pii-2.result.remediation_plan}}\n\nDeadline: 72 hours per data protection policy.",
+            "priority": "high",
+            "requires_approval": false
+          }
+        }
+      },
+      {
+        "id": "pii-6",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "title": "Notify Compliance Team",
+          "summary": "Alert the compliance team about PII discovery requiring remediation",
+          "config": {
+            "response_type": "notification",
+            "channel": "slack",
+            "slack_channel": "#compliance-alerts",
+            "message": "PII DISCOVERY — Remediation Required\n\nResource: {{$.trigger.alert.resource_name}}\nPII Types: {{$.nodes.pii-2.result.pii_types}}\nRisk Level: {{$.nodes.pii-2.result.risk_level}}\nClassification tags applied. Remediation ticket created: {{$.nodes.pii-5.ticket_key}}\n\nData owner has been assigned a 72-hour remediation deadline.",
+            "priority": "high"
+          }
+        }
+      },
+      {
+        "id": "pii-7",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "utility",
+          "title": "Close Alert — Compliant",
+          "summary": "Data is properly classified and stored, no remediation needed",
+          "config": {
+            "operation": "add_note",
+            "note": "PII discovery alert reviewed by Riggs AI. Data is properly classified, stored in approved locations, and compliant with data protection policies. No remediation required. Closing alert.",
+            "close_alert": true
+          }
+        }
+      },
+      {
+        "id": "pii-8",
+        "type": "signal",
+        "position": { "x": 520, "y": 1020 },
+        "data": {
+          "kind": "end",
+          "title": "Playbook Complete",
+          "summary": "PII discovery and classification workflow finished",
+          "config": {
+            "disposition": "completed",
+            "summary": "PII discovery and classification scan completed"
+          }
+        }
+      }
+    ],
+    "edges": [
+      { "id": "pii-e1", "source": "pii-1", "target": "pii-2", "animated": true, "type": "smoothstep" },
+      { "id": "pii-e2", "source": "pii-2", "target": "pii-3", "animated": true, "type": "smoothstep" },
+      { "id": "pii-e3", "source": "pii-3", "target": "pii-4", "sourceHandle": "yes", "label": "Yes", "animated": true, "type": "smoothstep" },
+      { "id": "pii-e4", "source": "pii-3", "target": "pii-7", "sourceHandle": "no", "label": "No", "animated": true, "type": "smoothstep" },
+      { "id": "pii-e5", "source": "pii-4", "target": "pii-5", "animated": true, "type": "smoothstep" },
+      { "id": "pii-e6", "source": "pii-5", "target": "pii-6", "animated": true, "type": "smoothstep" },
+      { "id": "pii-e7", "source": "pii-6", "target": "pii-8", "animated": true, "type": "smoothstep" },
+      { "id": "pii-e8", "source": "pii-7", "target": "pii-8", "animated": true, "type": "smoothstep" }
+    ]
+  }
+}

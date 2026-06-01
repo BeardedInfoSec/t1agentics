@@ -1,0 +1,79 @@
+{
+  "id": "metadefender",
+  "name": "Metadefender",
+  "description": "This app connects to OPSWAT Metadefender for performing investigative actions pertaining to reputation checking for ip and file",
+  "version": "2.0.8",
+  "category": "threat_intel",
+  "vendor": "OPSWAT",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "https://api.metadefender.com/",
+  "actions": [
+    {
+      "id": "ip_reputation",
+      "name": "Ip Reputation",
+      "description": "Gets information about an IP",
+      "http_method": "GET",
+      "endpoint": "/actions/ip_reputation",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "IP address to query",
+          "required": true,
+          "contains": [
+            "ip"
+          ]
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "file_reputation",
+      "name": "File Reputation",
+      "description": "Gets information about a hash",
+      "http_method": "GET",
+      "endpoint": "/actions/file_reputation",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "hash",
+          "type": "string",
+          "description": "Hash (md5, sha1, sha256)",
+          "required": true,
+          "contains": [
+            "hash",
+            "md5",
+            "sha1",
+            "sha256"
+          ]
+        },
+        {
+          "name": "additional_info",
+          "type": "boolean",
+          "description": "Fetch additional information about the file if available",
+          "required": false,
+          "default": true
+        }
+      ],
+      "observable_type": "file_hash"
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Metadefender",
+    "original_type": "reputation",
+    "converted_at": "2025-12-18T16:25:28.923041",
+    "source_version": "2.0.8"
+  }
+}

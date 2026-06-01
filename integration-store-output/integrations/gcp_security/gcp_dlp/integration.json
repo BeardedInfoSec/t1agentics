@@ -1,0 +1,178 @@
+{
+  "id": "gcp_dlp",
+  "name": "Google Cloud DLP",
+  "description": "Google Cloud Data Loss Prevention service for discovering, classifying, and protecting sensitive data in cloud storage, databases, and applications",
+  "version": "1.0.0",
+  "category": "gcp_security",
+  "vendor": "Google Cloud",
+  "auth_type": "oauth2_client",
+  "auth_config": {
+    "type": "oauth2_client",
+    "token_url": "https://oauth2.googleapis.com/token",
+    "scope": "https://www.googleapis.com/auth/cloud-platform",
+    "grant_type": "urn:ietf:params:oauth:grant-type:jwt-bearer"
+  },
+  "base_url": "https://dlp.googleapis.com/v2",
+  "actions": [
+    {
+      "id": "inspect_content",
+      "name": "Inspect Content",
+      "description": "Inspect text or data for sensitive information types (PII, credentials, health data, etc.)",
+      "http_method": "POST",
+      "endpoint": "/projects/{project}/content:inspect",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "project",
+          "type": "string",
+          "description": "GCP project ID",
+          "required": true
+        },
+        {
+          "name": "item",
+          "type": "object",
+          "description": "Content to inspect (e.g., {\"value\": \"My email is test@example.com\"})",
+          "required": true
+        },
+        {
+          "name": "inspectConfig",
+          "type": "object",
+          "description": "Inspection configuration specifying info types and likelihood thresholds",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_info_types",
+      "name": "List Info Types",
+      "description": "List all available built-in sensitive data info types (e.g., EMAIL_ADDRESS, CREDIT_CARD_NUMBER)",
+      "http_method": "GET",
+      "endpoint": "/infoTypes",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "Filter expression (e.g., \"supported_by=INSPECT\")",
+          "required": false
+        },
+        {
+          "name": "languageCode",
+          "type": "string",
+          "description": "BCP-47 language code for localized names",
+          "required": false,
+          "default": "en-US"
+        }
+      ]
+    },
+    {
+      "id": "list_dlp_jobs",
+      "name": "List DLP Jobs",
+      "description": "List DLP inspection and risk analysis jobs and their results",
+      "http_method": "GET",
+      "endpoint": "/projects/{project}/dlpJobs",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "project",
+          "type": "string",
+          "description": "GCP project ID",
+          "required": true
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Job type filter (INSPECT_JOB or RISK_ANALYSIS_JOB)",
+          "required": false
+        },
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "Filter expression (e.g., \"state=DONE\")",
+          "required": false
+        },
+        {
+          "name": "pageSize",
+          "type": "number",
+          "description": "Maximum jobs to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "get_dlp_job",
+      "name": "Get DLP Job Details",
+      "description": "Retrieve details and results of a specific DLP job including finding statistics",
+      "http_method": "GET",
+      "endpoint": "/projects/{project}/dlpJobs/{jobId}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "project",
+          "type": "string",
+          "description": "GCP project ID",
+          "required": true
+        },
+        {
+          "name": "jobId",
+          "type": "string",
+          "description": "DLP job ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_inspect_templates",
+      "name": "List Inspect Templates",
+      "description": "List DLP inspection templates defining which info types to detect",
+      "http_method": "GET",
+      "endpoint": "/projects/{project}/inspectTemplates",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "project",
+          "type": "string",
+          "description": "GCP project ID",
+          "required": true
+        },
+        {
+          "name": "pageSize",
+          "type": "number",
+          "description": "Maximum templates to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "list_stored_info_types",
+      "name": "List Stored Info Types",
+      "description": "List custom stored info types (dictionaries and regular expressions)",
+      "http_method": "GET",
+      "endpoint": "/projects/{project}/storedInfoTypes",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "project",
+          "type": "string",
+          "description": "GCP project ID",
+          "required": true
+        },
+        {
+          "name": "pageSize",
+          "type": "number",
+          "description": "Maximum stored info types to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    }
+  ]
+}

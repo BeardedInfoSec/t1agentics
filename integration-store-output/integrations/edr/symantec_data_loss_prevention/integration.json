@@ -1,0 +1,196 @@
+{
+  "id": "symantec_data_loss_prevention",
+  "name": "Symantec Data Loss Prevention",
+  "description": "This app supports incident update and incident ingestion from Symantec Data Loss Prevention installation",
+  "version": "2.2.1",
+  "category": "edr",
+  "vendor": "Symantec",
+  "auth_type": "basic_auth",
+  "auth_config": {
+    "type": "basic_auth",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "{0}/ProtectManager/services/v2011/incidents?wsdl",
+  "actions": [
+    {
+      "id": "update_incident",
+      "name": "Update Incident",
+      "description": "Update a DLP incident",
+      "http_method": "GET",
+      "endpoint": "/actions/update_incident",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "incident_id",
+          "type": "number",
+          "description": "ID of incident to update",
+          "required": true,
+          "contains": [
+            "dlp incident id"
+          ]
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "New status of incident",
+          "required": false
+        },
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "New severity of incident",
+          "required": false
+        },
+        {
+          "name": "remediation_status",
+          "type": "string",
+          "description": "New remediation status of incident",
+          "required": false
+        },
+        {
+          "name": "remediation_location",
+          "type": "string",
+          "description": "Represents the remediation location of the incident",
+          "required": false
+        },
+        {
+          "name": "note",
+          "type": "string",
+          "description": "Represents the note of the incident",
+          "required": false
+        },
+        {
+          "name": "custom_fields",
+          "type": "string",
+          "description": "JSON string representing custom fields to update (defined in administration console)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_incidents",
+      "name": "List Incidents",
+      "description": "List DLP incidents",
+      "http_method": "GET",
+      "endpoint": "/actions/list_incidents",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "report_id",
+          "type": "number",
+          "description": "ID of the saved report to fetch incident from",
+          "required": true,
+          "contains": [
+            "dlp report id"
+          ]
+        },
+        {
+          "name": "creation_time",
+          "type": "string",
+          "description": "Fetch the incidents that were created after the creation time",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_incident",
+      "name": "Get Incident",
+      "description": "Get DLP incident",
+      "http_method": "GET",
+      "endpoint": "/actions/get_incident",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "incident_id",
+          "type": "number",
+          "description": "ID of incident to update",
+          "required": false,
+          "contains": [
+            "dlp incident id"
+          ]
+        },
+        {
+          "name": "incident_long_id",
+          "type": "number",
+          "description": "Long ID of incident to update",
+          "required": false,
+          "contains": [
+            "dlp incident id"
+          ]
+        },
+        {
+          "name": "include_violations",
+          "type": "boolean",
+          "description": "Whether the Web Service should return policy violation data with the basic incident details",
+          "required": false
+        },
+        {
+          "name": "include_history",
+          "type": "boolean",
+          "description": "Whether the Web Service should return incident history information",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "on_poll",
+      "name": "On Poll",
+      "description": "Action handler for the ingest functionality",
+      "http_method": "GET",
+      "endpoint": "/actions/on_poll",
+      "action_type": "ingest",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "start_time",
+          "type": "number",
+          "description": "Parameter ignored in this app",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "number",
+          "description": "Parameter ignored in this app",
+          "required": false
+        },
+        {
+          "name": "container_id",
+          "type": "string",
+          "description": "Parameter ignored in this app",
+          "required": false
+        },
+        {
+          "name": "container_count",
+          "type": "number",
+          "description": "Maximum number of emails to ingest",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "artifact_count",
+          "type": "number",
+          "description": "Parameter ignored in this app",
+          "required": false
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Symantec Data Loss Prevention",
+    "original_type": "endpoint",
+    "converted_at": "2025-12-18T16:25:29.182934",
+    "source_version": "2.2.1"
+  }
+}

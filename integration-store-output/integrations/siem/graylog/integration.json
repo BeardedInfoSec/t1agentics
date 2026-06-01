@@ -1,0 +1,217 @@
+{
+  "id": "graylog",
+  "name": "Graylog",
+  "description": "Integrates with Graylog for message search, stream management, alert condition monitoring, dashboard access, and system health checks via the Graylog REST API",
+  "version": "1.0.0",
+  "category": "siem",
+  "vendor": "Graylog",
+  "auth_type": "basic",
+  "auth_config": {
+    "type": "basic",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "https://{host}:9000/api",
+  "actions": [
+    {
+      "id": "search_messages",
+      "name": "Search Messages",
+      "description": "Search for log messages using the Graylog search syntax",
+      "http_method": "GET",
+      "endpoint": "/search/universal/relative",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Search query string (Graylog search syntax)",
+          "required": true
+        },
+        {
+          "name": "range",
+          "type": "number",
+          "description": "Relative time range in seconds from now",
+          "required": true,
+          "default": 3600
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum messages to return",
+          "required": false,
+          "default": 150
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Offset for pagination",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "Filter by stream ID (e.g., streams:stream_id)",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "type": "string",
+          "description": "Comma-separated list of fields to return",
+          "required": false
+        },
+        {
+          "name": "sort",
+          "type": "string",
+          "description": "Sort field and order (e.g., timestamp:desc)",
+          "required": false,
+          "default": "timestamp:desc"
+        }
+      ]
+    },
+    {
+      "id": "search_absolute",
+      "name": "Search Messages (Absolute)",
+      "description": "Search for messages within an absolute time range",
+      "http_method": "GET",
+      "endpoint": "/search/universal/absolute",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Search query string",
+          "required": true
+        },
+        {
+          "name": "from",
+          "type": "string",
+          "description": "Start datetime (ISO 8601 format)",
+          "required": true
+        },
+        {
+          "name": "to",
+          "type": "string",
+          "description": "End datetime (ISO 8601 format)",
+          "required": true
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum messages to return",
+          "required": false,
+          "default": 150
+        },
+        {
+          "name": "fields",
+          "type": "string",
+          "description": "Comma-separated fields to return",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_streams",
+      "name": "List Streams",
+      "description": "Retrieve all configured Graylog streams",
+      "http_method": "GET",
+      "endpoint": "/streams",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "get_stream_alerts",
+      "name": "Get Stream Alerts",
+      "description": "Retrieve alert conditions for a specific stream",
+      "http_method": "GET",
+      "endpoint": "/streams/{streamId}/alerts/conditions",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "streamId",
+          "type": "string",
+          "description": "Stream ID to retrieve alert conditions for",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_alerts",
+      "name": "List Alerts",
+      "description": "List triggered alerts across all streams",
+      "http_method": "GET",
+      "endpoint": "/streams/alerts",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "since",
+          "type": "number",
+          "description": "Alerts since this Unix timestamp",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum alerts to return",
+          "required": false,
+          "default": 50
+        }
+      ]
+    },
+    {
+      "id": "get_message",
+      "name": "Get Message Details",
+      "description": "Retrieve a specific message by its ID",
+      "http_method": "GET",
+      "endpoint": "/messages/{index}/{messageId}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "index",
+          "type": "string",
+          "description": "Elasticsearch index containing the message",
+          "required": true
+        },
+        {
+          "name": "messageId",
+          "type": "string",
+          "description": "Message ID to retrieve",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_system_overview",
+      "name": "Get System Overview",
+      "description": "Retrieve Graylog system overview and health status",
+      "http_method": "GET",
+      "endpoint": "/system",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "aggregate_search",
+      "name": "Aggregate Search",
+      "description": "Execute an aggregation query across log data",
+      "http_method": "POST",
+      "endpoint": "/views/search",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "queries",
+          "type": "array",
+          "description": "Array of query objects with search filters and aggregation specs",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

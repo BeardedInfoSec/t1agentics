@@ -1,0 +1,213 @@
+{
+  "id": "darktrace_email",
+  "name": "Darktrace Email",
+  "description": "AI-powered email security using self-learning technology to detect and respond to phishing, BEC, account takeover, and data loss in Microsoft 365 and Google Workspace",
+  "version": "1.0.0",
+  "category": "email_security",
+  "vendor": "Darktrace",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header",
+    "note": "Requires HMAC signature using public and private API tokens"
+  },
+  "base_url": "https://{appliance}/",
+  "actions": [
+    {
+      "id": "get_email_threats",
+      "name": "Get Email Threats",
+      "description": "Retrieve email threats detected by Darktrace Email",
+      "http_method": "GET",
+      "endpoint": "/api/email/threats",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "start_time",
+          "type": "string",
+          "description": "Start time in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "string",
+          "description": "End time in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "threat_type",
+          "type": "string",
+          "description": "Filter by threat type (phishing, bec, malware, impersonation)",
+          "required": false
+        },
+        {
+          "name": "action",
+          "type": "string",
+          "description": "Filter by action taken (held, tagged, allowed)",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of threats to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "get_email_details",
+      "name": "Get Email Details",
+      "description": "Retrieve detailed information about a specific email analyzed by Darktrace",
+      "http_method": "GET",
+      "endpoint": "/api/email/messages/{message_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "message_id",
+          "type": "string",
+          "description": "The email message ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_held_messages",
+      "name": "Get Held Messages",
+      "description": "Retrieve emails held by Darktrace Antigena Email for review",
+      "http_method": "GET",
+      "endpoint": "/api/email/held",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "start_time",
+          "type": "string",
+          "description": "Start time in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "string",
+          "description": "End time in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of results",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "release_held_message",
+      "name": "Release Held Message",
+      "description": "Release a held email for delivery to the recipient",
+      "http_method": "POST",
+      "endpoint": "/api/email/held/{message_id}/release",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "message_id",
+          "type": "string",
+          "description": "The held message ID to release",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "block_held_message",
+      "name": "Block Held Message",
+      "description": "Permanently block a held email",
+      "http_method": "POST",
+      "endpoint": "/api/email/held/{message_id}/block",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "message_id",
+          "type": "string",
+          "description": "The held message ID to block",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_account_takeover_alerts",
+      "name": "Get Account Takeover Alerts",
+      "description": "Retrieve alerts for suspected email account compromises",
+      "http_method": "GET",
+      "endpoint": "/api/email/account-takeover",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "start_time",
+          "type": "string",
+          "description": "Start time in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "string",
+          "description": "End time in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of alerts",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "get_email_logs",
+      "name": "Get Email Logs",
+      "description": "Retrieve email processing logs and actions taken by Darktrace Email",
+      "http_method": "GET",
+      "endpoint": "/api/email/logs",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "start_time",
+          "type": "string",
+          "description": "Start time in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "string",
+          "description": "End time in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "sender",
+          "type": "string",
+          "description": "Filter by sender email address",
+          "required": false
+        },
+        {
+          "name": "recipient",
+          "type": "string",
+          "description": "Filter by recipient email address",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of log entries",
+          "required": false,
+          "default": 100
+        }
+      ]
+    }
+  ]
+}

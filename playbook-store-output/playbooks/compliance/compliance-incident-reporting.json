@@ -1,0 +1,278 @@
+{
+  "name": "Regulatory Incident Reporting",
+  "slug": "compliance-incident-reporting",
+  "description": "Manages the regulatory incident reporting process when a security incident triggers reporting obligations. Riggs AI analyzes the incident to determine which regulatory frameworks require notification (GDPR 72-hour, HIPAA 60-day, state breach notification laws, SEC 4-day, etc.), sets appropriate SLA timers, generates draft reports, and routes them through legal and compliance approval before filing. Tracks all reporting deadlines and ensures no regulatory obligation is missed.",
+  "category": "compliance",
+  "subcategory": "incident_reporting",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "advanced",
+  "estimated_time": "30 minutes",
+  "tags": ["compliance", "incident_reporting", "regulatory", "breach_notification", "gdpr", "hipaa", "sec"],
+  "alert_types": ["incident"],
+  "severity_filter": ["high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["security_incident", "data_breach"],
+    "min_severity": "high"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Track regulatory reporting obligations, deadlines, and filing status"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Notify legal, compliance, and executive teams of reporting obligations"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Security Incident Reported",
+          "config": {
+            "alert_types": ["security_incident", "data_breach"],
+            "description": "Triggers when a security incident that may require regulatory reporting is escalated"
+          }
+        }
+      },
+      {
+        "id": "code_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "code",
+          "label": "Collect Incident Details",
+          "config": {
+            "mode": "query",
+            "query": "SELECT i.incident_id, i.incident_type, i.severity, i.affected_systems, i.affected_data_types, i.affected_record_count, i.geographic_scope, i.detection_timestamp, i.containment_timestamp, r.framework, r.notification_deadline_hours FROM incidents i CROSS JOIN regulatory_requirements r WHERE i.incident_id = '{{trigger_1.incident_id}}' AND r.data_type IN (SELECT unnest(i.affected_data_types))",
+            "output_variable": "incident_details",
+            "description": "Collect incident details and map against regulatory notification requirements"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI -- Reporting Requirements",
+          "config": {
+            "template_id": "executive_summary",
+            "additional_instructions": "Determine all regulatory reporting obligations triggered by this incident. Consider: GDPR (72 hours for DPA, without undue delay for data subjects), HIPAA (60 days to HHS, individuals, media if > 500), SEC (4 business days for material incidents), state breach notification laws based on geographic scope and data types affected. List each obligation with its deadline and required content.",
+            "description": "AI-powered determination of regulatory reporting requirements and deadlines"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 540 },
+        "data": {
+          "kind": "decision",
+          "label": "Regulatory Reporting Required?",
+          "config": {
+            "condition": "{{analyze_1.reporting_required}} == true",
+            "description": "Routes based on whether the incident triggers mandatory regulatory reporting obligations"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "utility",
+          "label": "Set Earliest Reporting Deadline",
+          "config": {
+            "action": "set_sla",
+            "parameters": {
+              "sla_hours": "{{analyze_1.earliest_deadline_hours}}",
+              "sla_label": "Regulatory Reporting Deadline: {{analyze_1.earliest_framework}}"
+            },
+            "description": "Set SLA timer for the earliest regulatory reporting deadline"
+          }
+        }
+      },
+      {
+        "id": "analyze_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI -- Draft Notification Reports",
+          "config": {
+            "template_id": "executive_summary",
+            "additional_instructions": "Draft regulatory notification reports for each required framework. Include: nature of the breach, categories and approximate number of data subjects affected, likely consequences, measures taken or proposed to address the breach. Format each report per the specific regulatory template requirements.",
+            "description": "AI-powered drafting of regulatory notification reports for each applicable framework"
+          }
+        }
+      },
+      {
+        "id": "approval_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "approval",
+          "label": "Legal & Compliance Approval",
+          "config": {
+            "approvers": ["general_counsel", "compliance_officer"],
+            "approval_message": "REGULATORY INCIDENT REPORTS READY FOR REVIEW\n\nIncident: {{trigger_1.incident_id}}\nFrameworks Requiring Notification: {{analyze_1.frameworks_requiring_notification}}\nEarliest Deadline: {{analyze_1.earliest_deadline_hours}} hours\n\nDraft Reports:\n{{analyze_2.summary}}\n\nPlease review and approve for filing.",
+            "timeout_hours": 24,
+            "description": "Legal counsel and compliance officer must approve regulatory notifications before filing"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 1180 },
+        "data": {
+          "kind": "respond",
+          "label": "Create Regulatory Filing Ticket",
+          "config": {
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_issue",
+              "parameters": {
+                "project": "COMPLIANCE",
+                "issue_type": "Incident",
+                "priority": "P1",
+                "summary": "Regulatory Filing: {{trigger_1.incident_id}} -- {{analyze_1.frameworks_requiring_notification}}",
+                "description": "REGULATORY INCIDENT REPORTING\n\nIncident: {{trigger_1.incident_id}}\nFrameworks: {{analyze_1.frameworks_requiring_notification}}\nApproved by: {{approval_1.approver}}\nEarliest Deadline: {{analyze_1.earliest_deadline_hours}} hours from detection\n\nDraft Reports (Approved):\n{{analyze_2.summary}}\n\nFiling Status: PENDING\nTrack each regulatory filing to completion.",
+                "labels": ["regulatory-filing", "incident-reporting", "breach-notification", "urgent"]
+              }
+            },
+            "description": "Create a tracking ticket for all required regulatory filings"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 1340 },
+        "data": {
+          "kind": "respond",
+          "label": "Notify Executive Team on Slack",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#executive-security",
+              "message": "REGULATORY INCIDENT REPORTING INITIATED\n\nIncident: {{trigger_1.incident_id}}\nRegulatory Frameworks: {{analyze_1.frameworks_requiring_notification}}\nEarliest Deadline: {{analyze_1.earliest_deadline_hours}} hours\nApproved by: {{approval_1.approver}}\nJira: {{respond_1.ticket_url}}\n\nDraft notifications approved and ready for filing. All deadlines are being tracked."
+            },
+            "description": "Notify executive and legal teams that regulatory filing has been approved and initiated"
+          }
+        }
+      },
+      {
+        "id": "utility_2",
+        "type": "signal",
+        "position": { "x": 700, "y": 700 },
+        "data": {
+          "kind": "utility",
+          "label": "Log: No Reporting Required",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "Incident {{trigger_1.incident_id}} assessed for regulatory reporting obligations. No mandatory reporting required based on data types, affected records, and geographic scope. Assessment documented for audit trail."
+            },
+            "description": "Document that the incident does not trigger mandatory regulatory reporting"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1500 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "Regulatory incident reporting workflow complete -- obligations identified, reports drafted, approved, and filed"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_code",
+        "source": "trigger_1",
+        "target": "code_1",
+        "type": "default"
+      },
+      {
+        "id": "e_code_analyze1",
+        "source": "code_1",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_analyze1_decision",
+        "source": "analyze_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "utility_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "utility_2",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_utility1_analyze2",
+        "source": "utility_1",
+        "target": "analyze_2",
+        "type": "default"
+      },
+      {
+        "id": "e_analyze2_approval",
+        "source": "analyze_2",
+        "target": "approval_1",
+        "type": "default"
+      },
+      {
+        "id": "e_approval_respond1",
+        "source": "approval_1",
+        "target": "respond_1",
+        "type": "default"
+      },
+      {
+        "id": "e_respond1_respond2",
+        "source": "respond_1",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_respond2_end",
+        "source": "respond_2",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_utility2_end",
+        "source": "utility_2",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

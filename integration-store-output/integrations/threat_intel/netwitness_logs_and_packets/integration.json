@@ -1,0 +1,150 @@
+{
+  "id": "netwitness_logs_and_packets",
+  "name": "NetWitness Logs and Packets",
+  "description": "This app supports investigative actions to collect log and packet captures from RSA NetWitness Logs and Packets",
+  "version": "3.0.0",
+  "category": "threat_intel",
+  "vendor": "RSA",
+  "auth_type": "basic_auth",
+  "auth_config": {
+    "type": "basic_auth",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "get_pcap",
+      "name": "Get Pcap",
+      "description": "Download a packet capture file from Netwitness Logs and Packets and add it to the vault",
+      "http_method": "GET",
+      "endpoint": "/actions/get_pcap",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "session_ids",
+          "type": "string",
+          "description": "Session IDs in a list (72,637,1298...), as a range (0-9999), or singly (485)",
+          "required": false,
+          "contains": [
+            "netwitness session ids"
+          ]
+        },
+        {
+          "name": "query",
+          "type": "string",
+          "description": "A where query using configured meta keys",
+          "required": false
+        },
+        {
+          "name": "start_time",
+          "type": "string",
+          "description": "Start time in UTC (YYYY-MM-DD HH:MM:SS)",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "string",
+          "description": "End time in UTC (YYYY-MM-DD HH:MM:SS)",
+          "required": false
+        },
+        {
+          "name": "file_name",
+          "type": "string",
+          "description": "File name to give the downloaded capture",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_log_capture",
+      "name": "Get Log",
+      "description": "Download a log capture file from Netwitness Logs and Packets and add it to the vault",
+      "http_method": "GET",
+      "endpoint": "/actions/get_log_capture",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "session_ids",
+          "type": "string",
+          "description": "Session IDs in a list (72,637,1298...), as a range (0-9999), or singly (485)",
+          "required": false,
+          "contains": [
+            "netwitness session ids"
+          ]
+        },
+        {
+          "name": "query",
+          "type": "string",
+          "description": "A where query using configured meta keys",
+          "required": false
+        },
+        {
+          "name": "start_time",
+          "type": "string",
+          "description": "Start time in UTC (YYYY-MM-DD HH:MM:SS)",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "string",
+          "description": "End time in UTC (YYYY-MM-DD HH:MM:SS)",
+          "required": false
+        },
+        {
+          "name": "file_name",
+          "type": "string",
+          "description": "File name to give the downloaded capture",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "upload_file",
+      "name": "Upload File",
+      "description": "Upload a feed or parser file to a NetWitness Decoder",
+      "http_method": "GET",
+      "endpoint": "/actions/upload_file",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "vault_id",
+          "type": "string",
+          "description": "Vault ID of parser/feed to upload",
+          "required": true,
+          "contains": [
+            "vault id"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "restart_device",
+      "name": "Restart Device",
+      "description": "Restart the configured device",
+      "http_method": "GET",
+      "endpoint": "/actions/restart_device",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": []
+    }
+  ],
+  "source_metadata": {
+    "original_name": "NetWitness Logs and Packets",
+    "original_type": "investigative",
+    "converted_at": "2025-12-18T16:25:29.006514",
+    "source_version": "3.0.0"
+  }
+}

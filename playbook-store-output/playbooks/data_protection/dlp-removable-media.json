@@ -1,0 +1,211 @@
+{
+  "name": "Removable Media Data Transfer Detection",
+  "slug": "dlp-removable-media",
+  "description": "Detects and responds to unauthorized data transfers to removable media (USB drives, external hard drives, SD cards). Riggs AI analyzes the alert to assess data sensitivity and user intent. Confirmed unauthorized transfers trigger immediate USB port blocking on the endpoint, evidence preservation, user investigation, and SOC notification. Includes an approval gate for account suspension on high-risk transfers. Designed for SOC analysts handling endpoint DLP removable media alerts.",
+  "category": "data_protection",
+  "subcategory": "removable_media",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "15 minutes",
+  "tags": ["dlp", "usb", "removable_media", "endpoint", "data_transfer", "insider_threat"],
+  "alert_types": ["dlp", "removable_media", "usb_violation"],
+  "severity_filter": ["medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["dlp", "removable_media_violation", "usb_data_transfer", "external_storage_write"],
+    "min_severity": "medium"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "crowdstrike",
+      "name": "CrowdStrike Falcon",
+      "category": "edr",
+      "reason": "Block USB ports on the endpoint and collect forensic evidence"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create investigation ticket for removable media policy violation"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Notify SOC team and user's manager of policy violation"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "rm-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "title": "Removable Media Transfer Alert",
+          "summary": "Triggers on endpoint DLP alerts for data transfer to removable media",
+          "config": {
+            "trigger_type": "alert",
+            "alert_types": ["dlp", "removable_media_violation", "usb_data_transfer", "external_storage_write"]
+          }
+        }
+      },
+      {
+        "id": "rm-2",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "title": "AI Data Transfer Analysis",
+          "summary": "Riggs AI analyzes transferred data sensitivity, volume, and user intent",
+          "config": {
+            "mode": "ai_analysis",
+            "template_id": "insider_threat",
+            "custom_instructions": "Analyze the data transferred to removable media. Classify data sensitivity, assess transfer volume against normal patterns, check user authorization for removable media, and evaluate intent (work-from-home, offboarding, theft).",
+            "alert_path": "$.trigger.alert",
+            "include_context": true
+          }
+        }
+      },
+      {
+        "id": "rm-3",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "title": "Unauthorized Transfer?",
+          "summary": "Branch based on whether the removable media transfer is unauthorized",
+          "config": {
+            "conditions": {
+              "operator": "AND",
+              "conditions": [
+                {
+                  "field": "$.nodes.rm-2.result.verdict",
+                  "operator": "in",
+                  "value": ["MALICIOUS", "SUSPICIOUS"]
+                }
+              ],
+              "groups": []
+            },
+            "expression": "$.nodes.rm-2.result.verdict in ['MALICIOUS', 'SUSPICIOUS']",
+            "default_branch": "no"
+          }
+        }
+      },
+      {
+        "id": "rm-4",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "respond",
+          "title": "Block USB Ports on Endpoint",
+          "summary": "Disable USB storage access on the endpoint via EDR to prevent further data transfer",
+          "config": {
+            "response_type": "integration_action",
+            "integration_instance_id": "crowdstrike",
+            "action_type": "block_usb",
+            "params": {
+              "device_id": "$.trigger.alert.endpoint_id",
+              "block_type": "storage_devices",
+              "reason": "Unauthorized data transfer to removable media detected"
+            },
+            "requires_approval": false,
+            "priority": "high"
+          }
+        }
+      },
+      {
+        "id": "rm-5",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "utility",
+          "title": "Preserve Evidence",
+          "summary": "Log transfer details as forensic evidence for investigation",
+          "config": {
+            "operation": "add_note",
+            "note": "REMOVABLE MEDIA EVIDENCE PRESERVED\n\nUser: {{$.trigger.alert.username}}\nEndpoint: {{$.trigger.alert.hostname}}\nDevice Type: {{$.trigger.alert.media_type}}\nDevice ID: {{$.trigger.alert.device_serial}}\nFiles Transferred: {{$.trigger.alert.file_count}}\nData Volume: {{$.trigger.alert.bytes_transferred}} bytes\nTimestamp: {{$.trigger.alert.timestamp}}\nData Classification: {{$.nodes.rm-2.result.data_classification}}\nUSB ports blocked on endpoint."
+          }
+        }
+      },
+      {
+        "id": "rm-6",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "title": "Create Investigation Ticket",
+          "summary": "Create a Jira ticket for the removable media policy violation investigation",
+          "config": {
+            "response_type": "create_ticket",
+            "system": "jira",
+            "project_key": "SEC",
+            "issue_type": "Incident",
+            "title": "Removable Media Violation: {{$.trigger.alert.username}} — {{$.trigger.alert.media_type}}",
+            "description": "Unauthorized data transfer to removable media detected.\n\nUser: {{$.trigger.alert.username}}\nEndpoint: {{$.trigger.alert.hostname}}\nMedia Type: {{$.trigger.alert.media_type}}\nDevice Serial: {{$.trigger.alert.device_serial}}\nFiles: {{$.trigger.alert.file_count}} files ({{$.trigger.alert.bytes_transferred}} bytes)\nData Classification: {{$.nodes.rm-2.result.data_classification}}\n\nContainment: USB ports blocked on endpoint\nRiggs Assessment: {{$.nodes.rm-2.result.summary}}\n\nInvestigation Required:\n- Interview user about intent\n- Retrieve removable media if possible\n- Check for additional transfers in last 30 days\n- Assess data loss scope",
+            "priority": "high",
+            "requires_approval": false
+          }
+        }
+      },
+      {
+        "id": "rm-7",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "title": "Notify SOC & Manager",
+          "summary": "Alert SOC team and user's manager about the policy violation",
+          "config": {
+            "response_type": "notification",
+            "channel": "slack",
+            "slack_channel": "#soc-alerts",
+            "message": "REMOVABLE MEDIA VIOLATION\n\nUser: {{$.trigger.alert.username}}\nEndpoint: {{$.trigger.alert.hostname}}\nMedia: {{$.trigger.alert.media_type}}\nVolume: {{$.trigger.alert.bytes_transferred}} bytes\nClassification: {{$.nodes.rm-2.result.data_classification}}\n\nUSB ports blocked. Investigation ticket: {{$.nodes.rm-6.ticket_key}}",
+            "priority": "high"
+          }
+        }
+      },
+      {
+        "id": "rm-8",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "utility",
+          "title": "Close Alert — Authorized Transfer",
+          "summary": "Transfer is authorized or involves non-sensitive data, close alert",
+          "config": {
+            "operation": "add_note",
+            "note": "Removable media alert reviewed by Riggs AI. Transfer is authorized (approved exception, non-sensitive data, or approved device). Verdict: {{$.nodes.rm-2.result.verdict}}. Closing alert.",
+            "close_alert": true
+          }
+        }
+      },
+      {
+        "id": "rm-9",
+        "type": "signal",
+        "position": { "x": 520, "y": 1180 },
+        "data": {
+          "kind": "end",
+          "title": "Playbook Complete",
+          "summary": "Removable media data transfer response workflow finished",
+          "config": {
+            "disposition": "completed",
+            "summary": "Removable media data transfer detection and response completed"
+          }
+        }
+      }
+    ],
+    "edges": [
+      { "id": "rm-e1", "source": "rm-1", "target": "rm-2", "animated": true, "type": "smoothstep" },
+      { "id": "rm-e2", "source": "rm-2", "target": "rm-3", "animated": true, "type": "smoothstep" },
+      { "id": "rm-e3", "source": "rm-3", "target": "rm-4", "sourceHandle": "yes", "label": "Yes", "animated": true, "type": "smoothstep" },
+      { "id": "rm-e4", "source": "rm-3", "target": "rm-8", "sourceHandle": "no", "label": "No", "animated": true, "type": "smoothstep" },
+      { "id": "rm-e5", "source": "rm-4", "target": "rm-5", "animated": true, "type": "smoothstep" },
+      { "id": "rm-e6", "source": "rm-5", "target": "rm-6", "animated": true, "type": "smoothstep" },
+      { "id": "rm-e7", "source": "rm-6", "target": "rm-7", "animated": true, "type": "smoothstep" },
+      { "id": "rm-e8", "source": "rm-7", "target": "rm-9", "animated": true, "type": "smoothstep" },
+      { "id": "rm-e9", "source": "rm-8", "target": "rm-9", "animated": true, "type": "smoothstep" }
+    ]
+  }
+}

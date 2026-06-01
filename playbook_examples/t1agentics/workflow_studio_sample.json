@@ -1,0 +1,119 @@
+{
+  "name": "Sample: Enrich and Contain",
+  "description": "Alert enrichment with python decisioning and response actions.",
+  "trigger_conditions": {
+    "on_alert_created": true,
+    "on_investigation_created": false,
+    "on_alert_closed": false,
+    "on_investigation_closed": false,
+    "on_webhook": false,
+    "on_schedule": false,
+    "webhook": { "path": "", "secret": "" },
+    "schedule": { "cron": "0 * * * *", "timezone": "UTC" }
+  },
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger-1",
+        "type": "trigger",
+        "position": { "x": 520, "y": 120 },
+        "data": {
+          "label": "Inbound Alert",
+          "description": "Alert, webhook, or schedule",
+          "kind": "trigger",
+          "config": { "trigger_type": "alert", "filter": "" }
+        }
+      },
+      {
+        "id": "action-1",
+        "type": "action",
+        "position": { "x": 520, "y": 300 },
+        "data": {
+          "label": "Enrich IOC",
+          "description": "Call enrichment integration",
+          "kind": "action",
+          "config": {
+            "integration": "",
+            "action_type": "",
+            "target_path": "$.trigger.alert.iocs[0]",
+            "requires_approval": true,
+            "priority": "medium"
+          }
+        }
+      },
+      {
+        "id": "python-1",
+        "type": "python_code",
+        "position": { "x": 520, "y": 500 },
+        "data": {
+          "label": "Score Alert",
+          "description": "Compute risk from enrichment + alert fields",
+          "kind": "python_code",
+          "config": {
+            "function_name": "main",
+            "inputs": [
+              { "key": "alert", "path": "$.trigger.alert" },
+              { "key": "enrichment", "path": "$.nodes.action-1.result" }
+            ],
+            "code": "def main(inputs):\n    alert = inputs.get('alert', {})\n    enrichment = inputs.get('enrichment', {})\n    score = enrichment.get('risk_score', 0)\n    return {\n        'score': score,\n        'contains_malicious': score >= 75,\n        'alert_id': alert.get('id')\n    }\n"
+          }
+        }
+      },
+      {
+        "id": "condition-1",
+        "type": "condition",
+        "position": { "x": 520, "y": 700 },
+        "data": {
+          "label": "High Risk?",
+          "description": "Branch on python score",
+          "kind": "condition",
+          "config": {
+            "expression": "$.nodes.python-1.result.contains_malicious == true",
+            "default_branch": "no"
+          }
+        }
+      },
+      {
+        "id": "action-2",
+        "type": "action",
+        "position": { "x": 360, "y": 880 },
+        "data": {
+          "label": "Contain Sender",
+          "description": "Block malicious sender",
+          "kind": "action",
+          "config": {
+            "integration": "",
+            "action_type": "",
+            "target_path": "$.trigger.alert.sender",
+            "requires_approval": true,
+            "priority": "high"
+          }
+        }
+      },
+      {
+        "id": "action-3",
+        "type": "action",
+        "position": { "x": 680, "y": 880 },
+        "data": {
+          "label": "Notify Analyst",
+          "description": "Send analyst notification",
+          "kind": "action",
+          "config": {
+            "integration": "",
+            "action_type": "",
+            "target_path": "$.trigger.alert.id",
+            "requires_approval": false,
+            "priority": "low"
+          }
+        }
+      }
+    ],
+    "edges": [
+      { "id": "e1", "source": "trigger-1", "target": "action-1", "animated": true, "type": "smoothstep" },
+      { "id": "e2", "source": "action-1", "target": "python-1", "animated": true, "type": "smoothstep" },
+      { "id": "e3", "source": "python-1", "target": "condition-1", "animated": true, "type": "smoothstep" },
+      { "id": "e4", "source": "condition-1", "target": "action-2", "sourceHandle": "yes", "label": "Yes", "animated": true, "type": "smoothstep" },
+      { "id": "e5", "source": "condition-1", "target": "action-3", "sourceHandle": "no", "label": "No", "animated": true, "type": "smoothstep" }
+    ]
+  }
+}

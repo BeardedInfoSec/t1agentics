@@ -1,0 +1,190 @@
+{
+  "id": "gcp_cloud_kms",
+  "name": "Google Cloud KMS",
+  "description": "Google Cloud Key Management Service for creating, managing, and controlling cryptographic keys and performing encryption operations",
+  "version": "1.0.0",
+  "category": "gcp_security",
+  "vendor": "Google Cloud",
+  "auth_type": "oauth2_client",
+  "auth_config": {
+    "type": "oauth2_client",
+    "token_url": "https://oauth2.googleapis.com/token",
+    "scope": "https://www.googleapis.com/auth/cloudkms",
+    "grant_type": "urn:ietf:params:oauth:grant-type:jwt-bearer"
+  },
+  "base_url": "https://cloudkms.googleapis.com/v1",
+  "actions": [
+    {
+      "id": "list_key_rings",
+      "name": "List Key Rings",
+      "description": "List all key rings in a project and location",
+      "http_method": "GET",
+      "endpoint": "/projects/{project}/locations/{location}/keyRings",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "project",
+          "type": "string",
+          "description": "GCP project ID",
+          "required": true
+        },
+        {
+          "name": "location",
+          "type": "string",
+          "description": "GCP location (e.g., global, us-east1)",
+          "required": true
+        },
+        {
+          "name": "pageSize",
+          "type": "number",
+          "description": "Maximum key rings to return",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "pageToken",
+          "type": "string",
+          "description": "Pagination token",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_crypto_keys",
+      "name": "List Crypto Keys",
+      "description": "List cryptographic keys in a key ring",
+      "http_method": "GET",
+      "endpoint": "/projects/{project}/locations/{location}/keyRings/{keyRing}/cryptoKeys",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "project",
+          "type": "string",
+          "description": "GCP project ID",
+          "required": true
+        },
+        {
+          "name": "location",
+          "type": "string",
+          "description": "GCP location",
+          "required": true
+        },
+        {
+          "name": "keyRing",
+          "type": "string",
+          "description": "Key ring name",
+          "required": true
+        },
+        {
+          "name": "pageSize",
+          "type": "number",
+          "description": "Maximum keys to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "get_crypto_key",
+      "name": "Get Crypto Key",
+      "description": "Retrieve metadata about a specific cryptographic key including purpose, algorithm, and rotation schedule",
+      "http_method": "GET",
+      "endpoint": "/projects/{project}/locations/{location}/keyRings/{keyRing}/cryptoKeys/{cryptoKey}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "project",
+          "type": "string",
+          "description": "GCP project ID",
+          "required": true
+        },
+        {
+          "name": "location",
+          "type": "string",
+          "description": "GCP location",
+          "required": true
+        },
+        {
+          "name": "keyRing",
+          "type": "string",
+          "description": "Key ring name",
+          "required": true
+        },
+        {
+          "name": "cryptoKey",
+          "type": "string",
+          "description": "Crypto key name",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_crypto_key_versions",
+      "name": "List Crypto Key Versions",
+      "description": "List versions of a cryptographic key including their state and generation time",
+      "http_method": "GET",
+      "endpoint": "/projects/{project}/locations/{location}/keyRings/{keyRing}/cryptoKeys/{cryptoKey}/cryptoKeyVersions",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "project",
+          "type": "string",
+          "description": "GCP project ID",
+          "required": true
+        },
+        {
+          "name": "location",
+          "type": "string",
+          "description": "GCP location",
+          "required": true
+        },
+        {
+          "name": "keyRing",
+          "type": "string",
+          "description": "Key ring name",
+          "required": true
+        },
+        {
+          "name": "cryptoKey",
+          "type": "string",
+          "description": "Crypto key name",
+          "required": true
+        },
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "Filter expression (e.g., \"state=ENABLED\")",
+          "required": false
+        },
+        {
+          "name": "pageSize",
+          "type": "number",
+          "description": "Maximum versions to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "get_iam_policy",
+      "name": "Get Key IAM Policy",
+      "description": "Retrieve the IAM access control policy for a key ring or crypto key",
+      "http_method": "POST",
+      "endpoint": "/{resource}:getIamPolicy",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "resource",
+          "type": "string",
+          "description": "Full resource name (e.g., projects/my-project/locations/global/keyRings/my-keyring)",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

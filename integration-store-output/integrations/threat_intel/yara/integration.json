@@ -1,0 +1,155 @@
+{
+  "id": "yara",
+  "name": "Yara",
+  "description": "The pattern matching swiss knife for malware researchers (and everyone else)",
+  "version": "1.0.2",
+  "category": "threat_intel",
+  "vendor": "Virus Total",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "clear_yara_sources",
+      "name": "Clear Yara Sources",
+      "description": "Delete any files stored in the Vault to clear any Yara rules persisted for this asset",
+      "http_method": "GET",
+      "endpoint": "/actions/clear_yara_sources",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "path",
+          "type": "string",
+          "description": "A valid file glob, relative to the value of the app's state directory",
+          "required": false,
+          "contains": [
+            "file path"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "update_yara_sources",
+      "name": "Update Yara Sources",
+      "description": "Download and persist any rule sources defined in assets associated with this app",
+      "http_method": "GET",
+      "endpoint": "/actions/update_yara_sources",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": []
+    },
+    {
+      "id": "list_yara_sources",
+      "name": "List Yara Sources",
+      "description": "List sources of Yara rules previously downloaded and stored in the Vault",
+      "http_method": "GET",
+      "endpoint": "/actions/list_yara_sources",
+      "action_type": "generic",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "path",
+          "type": "string",
+          "description": "A relative path to provide for listing specific files in the app's state_dir.  Defaults to \"**\", or directories in state_dir.  Some examples could be \"**/*.yar\" or \"malware-rules/**\"",
+          "required": false,
+          "contains": [
+            "file path"
+          ]
+        },
+        {
+          "name": "stat_info",
+          "type": "boolean",
+          "description": "A boolean to optionally return the information from os.stat_result for each file object found.  Defaults to False",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "yara_scan",
+      "name": "Yara Scan",
+      "description": "Compile (if needed) any specified Yara rules and scan specified target for matches",
+      "http_method": "GET",
+      "endpoint": "/actions/yara_scan",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "yara_path",
+          "type": "string",
+          "description": "String to use for recursive file glob, relative to state directory, for locating Yara rules to use in scan.  Defaults to all files in the state directory",
+          "required": false,
+          "contains": [
+            "file path"
+          ]
+        },
+        {
+          "name": "use_includes",
+          "type": "boolean",
+          "description": "Whether or not rules found can use the include directive to load other files.  Defaults to False",
+          "required": false
+        },
+        {
+          "name": "scan_dir",
+          "type": "string",
+          "description": "Directory to scan for matches.  If not specified, vault_id is required",
+          "required": false
+        },
+        {
+          "name": "vault_id",
+          "type": "string",
+          "description": "Vault ID of a file to look up for scanning.  If not specified scan_dir is required",
+          "required": false
+        },
+        {
+          "name": "fast_mode",
+          "type": "boolean",
+          "description": "Whether or not to have Yara perform a fast mode scan.  Defaults to False",
+          "required": false
+        },
+        {
+          "name": "timeout",
+          "type": "number",
+          "description": "How long until a match function in Yara will time out?  Defaults to 60 seconds",
+          "required": false
+        },
+        {
+          "name": "stack_size",
+          "type": "number",
+          "description": "Set the stack size used by Yara.  Set with set_config(), interfacing with the C API",
+          "required": false
+        },
+        {
+          "name": "max_strings_per_rule",
+          "type": "number",
+          "description": "Set the Yara configuration to define the number of max_strings_per_rule",
+          "required": false
+        },
+        {
+          "name": "max_match_data",
+          "type": "number",
+          "description": "Set the max_match_data in Yara configuration",
+          "required": false
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Yara",
+    "original_type": "information",
+    "converted_at": "2025-12-18T16:25:29.318649",
+    "source_version": "1.0.2"
+  }
+}

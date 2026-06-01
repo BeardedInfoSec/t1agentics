@@ -1,0 +1,230 @@
+{
+  "name": "SSL/TLS Certificate Anomaly Investigation",
+  "slug": "network-ssl-certificate-anomaly",
+  "description": "Investigates SSL/TLS certificate anomalies including self-signed certificates on production services, expired certificates, certificate authority mismatches, and potential man-in-the-middle (MITM) indicators. Riggs AI analyzes the certificate chain, issuer reputation, and connection context. Confirmed MITM or malicious certificates trigger traffic blocking, affected user notification, and IR escalation. Expired or misconfigured certificates are routed to the infrastructure team for remediation.",
+  "category": "network",
+  "subcategory": "encryption_security",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "10 minutes",
+  "tags": ["ssl", "tls", "certificate", "mitm", "network", "encryption"],
+  "alert_types": ["network", "ssl", "certificate"],
+  "severity_filter": ["medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["network", "ssl_anomaly", "cert_expired", "self_signed_cert", "cert_mismatch", "mitm_detected"],
+    "min_severity": "medium"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "palo_alto_ngfw",
+      "name": "Palo Alto NGFW",
+      "category": "network",
+      "reason": "Block traffic to destinations presenting malicious or MITM certificates"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create tickets for certificate remediation or IR escalation"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Notify security or infrastructure teams of certificate anomalies"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "SSL/TLS Certificate Anomaly",
+          "config": {
+            "alert_types": ["network", "ssl_anomaly", "cert_expired", "self_signed_cert", "cert_mismatch", "mitm_detected"],
+            "description": "Triggers when network monitoring detects SSL/TLS certificate anomalies including self-signed certs, expired certs, CA mismatches, or potential MITM indicators"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — Certificate Analysis",
+          "config": {
+            "template_id": "ioc_correlation",
+            "additional_instructions": "Analyze the SSL/TLS certificate: validate chain of trust, check issuer against known CAs, verify subject/SAN match, check expiry, and compare against Certificate Transparency logs. Determine if this is a MITM attack, misconfiguration, or expired cert.",
+            "description": "AI-powered certificate chain analysis to determine if the anomaly indicates a MITM attack, misconfiguration, or operational issue"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "label": "MITM / Malicious Cert?",
+          "config": {
+            "condition": "{{analyze_1.verdict}} in ['MALICIOUS', 'SUSPICIOUS'] and {{analyze_1.threat_type}} == 'mitm'",
+            "description": "Routes based on whether the certificate anomaly indicates an active MITM attack versus a configuration or operational issue"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "respond",
+          "label": "Block Destination Traffic",
+          "config": {
+            "integration_action": {
+              "connector_id": "palo_alto_ngfw",
+              "action": "block_ip",
+              "parameters": {
+                "ip_address": "{{trigger_1.alert.destination_ip}}",
+                "domain": "{{trigger_1.alert.destination_domain}}",
+                "rule_name": "T1-MITM-Block-{{trigger_1.alert.alert_id}}",
+                "direction": "outbound",
+                "comment": "Potential MITM — Malicious certificate from {{trigger_1.alert.destination_domain}}, Issuer: {{trigger_1.alert.cert_issuer}}"
+              }
+            },
+            "description": "Blocks outbound traffic to the destination presenting the malicious certificate to protect users from MITM interception"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "label": "Create IR Incident Ticket",
+          "config": {
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_issue",
+              "parameters": {
+                "project": "IR",
+                "issue_type": "Incident",
+                "priority": "P1",
+                "summary": "POTENTIAL MITM — Malicious certificate on {{trigger_1.alert.destination_domain}}",
+                "description": "SSL/TLS MITM ALERT\n\nDestination: {{trigger_1.alert.destination_domain}} ({{trigger_1.alert.destination_ip}})\nCertificate Issuer: {{trigger_1.alert.cert_issuer}}\nSubject: {{trigger_1.alert.cert_subject}}\nAnomaly Type: {{analyze_1.anomaly_type}}\nAffected Users: {{trigger_1.alert.affected_users}}\n\nActions Taken:\n- Outbound traffic to destination blocked\n\nRiggs AI Assessment:\n{{analyze_1.summary}}\n\nInvestigate network path for interception devices."
+              }
+            },
+            "description": "Creates a P1 incident ticket for IR team to investigate potential MITM infrastructure on the network path"
+          }
+        }
+      },
+      {
+        "id": "respond_3",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "label": "Notify Security Team",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#incident-response",
+              "message": "POTENTIAL MITM DETECTED\n\nDestination: {{trigger_1.alert.destination_domain}}\nMalicious Cert Issuer: {{trigger_1.alert.cert_issuer}}\nAffected Users: {{trigger_1.alert.affected_users}}\n\nTraffic blocked. IR ticket: {{respond_2.ticket_key}}\nInvestigate network path for interception.\n\n{{analyze_1.summary}}",
+              "priority": "critical"
+            },
+            "description": "Sends critical alert to the IR team about the potential MITM attack with containment status"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "utility",
+          "label": "Route to Infra Team",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "Certificate anomaly on {{trigger_1.alert.destination_domain}} — Type: {{analyze_1.anomaly_type}}.\nIssuer: {{trigger_1.alert.cert_issuer}}\nExpiry: {{trigger_1.alert.cert_expiry}}\nVerdict: {{analyze_1.verdict}} (not MITM).\n\nRouted to infrastructure team for certificate remediation.",
+              "assign_to": "infrastructure_team",
+              "close_alert": false
+            },
+            "description": "Routes expired or misconfigured certificate alerts to the infrastructure team for remediation without security escalation"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1020 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "SSL/TLS certificate anomaly investigation workflow complete"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_analyze",
+        "source": "trigger_1",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_analyze_decision",
+        "source": "analyze_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "respond_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "utility_1",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_block_ticket",
+        "source": "respond_1",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_ticket_notify",
+        "source": "respond_2",
+        "target": "respond_3",
+        "type": "default"
+      },
+      {
+        "id": "e_notify_end",
+        "source": "respond_3",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_utility_end",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

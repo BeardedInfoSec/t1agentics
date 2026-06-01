@@ -1,0 +1,211 @@
+{
+  "name": "SAST Finding Triage",
+  "slug": "devsecops-sast-finding",
+  "description": "Automated triage workflow for Static Application Security Testing (SAST) findings. Riggs AI analyzes the code vulnerability context, determines severity and exploitability, then routes critical/high findings to the development team via Jira with remediation guidance, while low-risk findings are logged for tracking.",
+  "category": "devsecops",
+  "subcategory": "sast",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "8 minutes",
+  "tags": ["devsecops", "sast", "code-vulnerability", "static-analysis", "triage", "secure-coding"],
+  "alert_types": ["sast_finding", "code_vulnerability"],
+  "severity_filter": ["low", "medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["sast_finding", "code_vulnerability", "static_analysis_alert"],
+    "min_severity": "low"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create remediation tickets for confirmed SAST findings and assign to development teams"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Notify the security engineering channel about critical code vulnerabilities"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "title": "SAST Finding Received",
+          "summary": "Triggers when a SAST tool reports a code vulnerability finding",
+          "config": {
+            "trigger_type": "alert",
+            "alert_types": ["sast_finding", "code_vulnerability", "static_analysis_alert"],
+            "description": "Ingests findings from SAST scanners such as SonarQube, Checkmarx, Semgrep, or CodeQL"
+          }
+        }
+      },
+      {
+        "id": "analyze-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "title": "AI Vulnerability Analysis",
+          "summary": "Riggs AI assesses the SAST finding for exploitability and real-world risk",
+          "config": {
+            "template_id": "vuln_risk",
+            "additional_instructions": "Evaluate the SAST finding in context: check CWE category, data flow reachability, whether user input reaches the sink, and if the vulnerable code path is in production. Distinguish true positives from false positives.",
+            "description": "AI-powered code vulnerability assessment using the vuln_risk analysis template"
+          }
+        }
+      },
+      {
+        "id": "decision-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "title": "Critical or High Severity?",
+          "summary": "Route based on AI-assessed severity of the SAST finding",
+          "config": {
+            "conditions": {
+              "operator": "OR",
+              "conditions": [
+                {
+                  "left": { "type": "path", "value": "$.nodes.analyze-1.result.severity" },
+                  "operator": "equals",
+                  "right": { "type": "value", "value": "critical" }
+                },
+                {
+                  "left": { "type": "path", "value": "$.nodes.analyze-1.result.severity" },
+                  "operator": "equals",
+                  "right": { "type": "value", "value": "high" }
+                }
+              ],
+              "groups": []
+            },
+            "expression": "$.nodes.analyze-1.result.severity in [\"critical\", \"high\"]",
+            "default_branch": "no"
+          }
+        }
+      },
+      {
+        "id": "respond-1",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "respond",
+          "title": "Create Remediation Ticket",
+          "summary": "Create a Jira ticket assigned to the owning dev team with fix guidance",
+          "config": {
+            "response_type": "integration_action",
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_issue",
+              "parameters": {
+                "project": "{{trigger-1.alert.jira_project | default('APPSEC')}}",
+                "issue_type": "Bug",
+                "priority": "{{analyze-1.result.severity | upper}}",
+                "summary": "SAST: {{trigger-1.alert.cwe_id}} — {{trigger-1.alert.vulnerability_type}} in {{trigger-1.alert.file_path}}",
+                "description": "Severity: {{analyze-1.result.severity}}\nCWE: {{trigger-1.alert.cwe_id}}\nFile: {{trigger-1.alert.file_path}}:{{trigger-1.alert.line_number}}\nRule: {{trigger-1.alert.rule_id}}\n\nRiggs Assessment:\n{{analyze-1.result.summary}}\n\nRemediation:\n{{analyze-1.result.remediation}}",
+                "labels": ["sast", "security", "{{analyze-1.result.severity}}"],
+                "assignee": "{{trigger-1.alert.code_owner | default('')}}"
+              }
+            },
+            "description": "Create a prioritized Jira ticket for the development team with vulnerability details and remediation guidance"
+          }
+        }
+      },
+      {
+        "id": "respond-2",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "title": "Notify Security Engineering",
+          "summary": "Alert the security engineering team on Slack about the critical finding",
+          "config": {
+            "response_type": "notify",
+            "channel": "slack",
+            "slack_channel": "#devsecops-alerts",
+            "message": "SAST Finding — {{analyze-1.result.severity | upper}}\nCWE: {{trigger-1.alert.cwe_id}} — {{trigger-1.alert.vulnerability_type}}\nFile: {{trigger-1.alert.file_path}}:{{trigger-1.alert.line_number}}\nRepo: {{trigger-1.alert.repository}}\nJira: {{respond-1.ticket_url}}\n\n{{analyze-1.result.summary}}",
+            "priority": "high"
+          }
+        }
+      },
+      {
+        "id": "utility-1",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "utility",
+          "title": "Set SLA: 48 Hours",
+          "summary": "Set remediation SLA for critical/high SAST findings",
+          "config": {
+            "action": "set_sla",
+            "parameters": {
+              "sla_hours": 48,
+              "sla_label": "Critical/High SAST Remediation"
+            },
+            "description": "Set a 48-hour SLA timer for critical/high code vulnerability remediation"
+          }
+        }
+      },
+      {
+        "id": "utility-2",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "utility",
+          "title": "Log Finding for Tracking",
+          "summary": "Log the low/medium finding for backlog tracking without immediate action",
+          "config": {
+            "operation": "update_status",
+            "status": "acknowledged",
+            "note": "SAST finding assessed as {{analyze-1.result.severity}} severity. Logged for backlog tracking. CWE: {{trigger-1.alert.cwe_id}}, File: {{trigger-1.alert.file_path}}"
+          }
+        }
+      },
+      {
+        "id": "end-1",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "end",
+          "title": "End — Ticket Created",
+          "summary": "Critical/high SAST finding triaged, ticket created, team notified",
+          "config": {
+            "disposition": "true_positive",
+            "summary": "SAST finding confirmed as critical/high risk. Jira ticket created and security engineering notified."
+          }
+        }
+      },
+      {
+        "id": "end-2",
+        "type": "signal",
+        "position": { "x": 700, "y": 700 },
+        "data": {
+          "kind": "end",
+          "title": "End — Logged for Backlog",
+          "summary": "Low/medium finding logged for future remediation",
+          "config": {
+            "disposition": "low_risk",
+            "summary": "SAST finding assessed as low/medium risk. Logged for backlog tracking."
+          }
+        }
+      }
+    ],
+    "edges": [
+      { "id": "e1", "source": "trigger-1", "target": "analyze-1", "animated": true, "type": "smoothstep" },
+      { "id": "e2", "source": "analyze-1", "target": "decision-1", "animated": true, "type": "smoothstep" },
+      { "id": "e3", "source": "decision-1", "target": "respond-1", "sourceHandle": "yes", "label": "Yes", "animated": true, "type": "smoothstep" },
+      { "id": "e4", "source": "decision-1", "target": "utility-2", "sourceHandle": "no", "label": "No", "animated": true, "type": "smoothstep" },
+      { "id": "e5", "source": "respond-1", "target": "respond-2", "animated": true, "type": "smoothstep" },
+      { "id": "e6", "source": "respond-2", "target": "utility-1", "animated": true, "type": "smoothstep" },
+      { "id": "e7", "source": "utility-1", "target": "end-1", "animated": true, "type": "smoothstep" },
+      { "id": "e8", "source": "utility-2", "target": "end-2", "animated": true, "type": "smoothstep" }
+    ]
+  }
+}

@@ -1,0 +1,168 @@
+{
+  "id": "ibm_guardium",
+  "name": "IBM Guardium",
+  "description": "Integrates with IBM Security Guardium Data Protection REST API for database activity monitoring, audit reporting, vulnerability assessment, and compliance automation",
+  "version": "1.0.0",
+  "category": "database_security",
+  "vendor": "IBM",
+  "auth_type": "basic",
+  "auth_config": {
+    "type": "basic",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "https://{host}:8443/restAPI/v1",
+  "actions": [
+    {
+      "id": "list_audit_reports",
+      "name": "List Audit Reports",
+      "description": "Retrieve a list of all available audit reports from Guardium including activity, compliance, and vulnerability reports",
+      "http_method": "GET",
+      "endpoint": "/reports",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "reportType",
+          "type": "string",
+          "description": "Filter by report type (activity, compliance, vulnerability, anomaly)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "run_report",
+      "name": "Run Report",
+      "description": "Execute a specific audit report and retrieve results with optional date range filtering",
+      "http_method": "POST",
+      "endpoint": "/reports/{reportId}/execute",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "reportId",
+          "type": "string",
+          "description": "Unique identifier or name of the report to execute",
+          "required": true
+        },
+        {
+          "name": "startDate",
+          "type": "string",
+          "description": "Start date for report data (ISO 8601 format)",
+          "required": false
+        },
+        {
+          "name": "endDate",
+          "type": "string",
+          "description": "End date for report data (ISO 8601 format)",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of rows to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "list_policies",
+      "name": "List Security Policies",
+      "description": "Retrieve all configured security policies including audit, access control, and exception policies",
+      "http_method": "GET",
+      "endpoint": "/policies",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "list_data_sources",
+      "name": "List Data Sources",
+      "description": "Retrieve all monitored database data sources registered with Guardium",
+      "http_method": "GET",
+      "endpoint": "/datasources",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "dbType",
+          "type": "string",
+          "description": "Filter by database type (Oracle, DB2, SQL Server, MySQL, PostgreSQL)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_anomaly_events",
+      "name": "Get Anomaly Events",
+      "description": "Retrieve anomalous database activity events detected by Guardium threat analytics",
+      "http_method": "GET",
+      "endpoint": "/anomalies",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "startDate",
+          "type": "string",
+          "description": "Start date for anomaly query (ISO 8601 format)",
+          "required": false
+        },
+        {
+          "name": "endDate",
+          "type": "string",
+          "description": "End date for anomaly query (ISO 8601 format)",
+          "required": false
+        },
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Filter by severity (high, medium, low)",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of events to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "search_activity",
+      "name": "Search Activity",
+      "description": "Search database activity logs for specific SQL operations, users, or access patterns",
+      "http_method": "POST",
+      "endpoint": "/activity/search",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Search query for database activity",
+          "required": true
+        },
+        {
+          "name": "datasource",
+          "type": "string",
+          "description": "Filter by specific data source name",
+          "required": false
+        },
+        {
+          "name": "startDate",
+          "type": "string",
+          "description": "Start date for activity search (ISO 8601 format)",
+          "required": false
+        },
+        {
+          "name": "endDate",
+          "type": "string",
+          "description": "End date for activity search (ISO 8601 format)",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

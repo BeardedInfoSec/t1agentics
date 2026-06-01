@@ -1,0 +1,138 @@
+# AgentCore Integrations Configuration
+# Configure external system integrations for forwarding investigation results
+
+integrations:
+  # Splunk HEC (HTTP Event Collector) Integration
+  - name: production-splunk
+    type: splunk
+    enabled: true
+    config:
+      hec_url: https://splunk.company.com:8088/services/collector/event
+      hec_token: YOUR_HEC_TOKEN_HERE
+      index: security
+      source: agentcore
+      sourcetype: agentcore:investigation
+  
+  # Elasticsearch / Elastic SIEM Integration
+  - name: elastic-siem
+    type: elasticsearch
+    enabled: true
+    config:
+      es_url: https://elasticsearch.company.com:9200
+      index: agentcore-investigations
+      # Option 1: API Key authentication
+      api_key: YOUR_ELASTIC_API_KEY
+      # Option 2: Basic authentication (uncomment if using)
+      # username: elastic
+      # password: your_password
+  
+  # Generic Webhook (can be used for Slack, MS Teams, custom systems)
+  - name: slack-notifications
+    type: webhook
+    enabled: true
+    config:
+      url: https://hooks.slack.com/services/YOUR/WEBHOOK/URL
+      method: POST
+      headers:
+        Content-Type: application/json
+  
+  # Another Webhook Example (e.g., for ticketing system)
+  - name: jira-tickets
+    type: webhook
+    enabled: false  # Disabled by default
+    config:
+      url: https://jira.company.com/api/issues
+      method: POST
+      headers:
+        Content-Type: application/json
+        Authorization: Bearer YOUR_JIRA_API_TOKEN
+  
+  # Development/Test Splunk
+  - name: dev-splunk
+    type: splunk
+    enabled: false  # Only enable in dev environment
+    config:
+      hec_url: http://localhost:8088/services/collector/event
+      hec_token: DEV_TOKEN
+      index: agentcore_dev
+
+# Webhook Configurations for Incoming Alerts
+webhooks:
+  # Default webhook (no authentication)
+  - webhook_id: default
+    enabled: true
+    allowed_sources: []
+  
+  # Splunk alerts webhook
+  - webhook_id: splunk
+    enabled: true
+    allowed_sources:
+      - splunk
+  
+  # Suricata IDS webhook
+  - webhook_id: suricata-ids
+    enabled: true
+    allowed_sources:
+      - suricata
+    # Optional: Add HMAC secret for signature verification
+    # secret_key: your-hmac-secret-key
+  
+  # Custom webhook with authentication
+  - webhook_id: authenticated-webhook
+    enabled: true
+    secret_key: change-this-secret-key-in-production
+    allowed_sources:
+      - firewall
+      - ids
+      - endpoint-protection
+
+# Auto-forwarding Configuration
+auto_forward:
+  # Automatically forward investigations based on verdict
+  enabled: true
+  
+  # Forward rules based on verdict
+  by_verdict:
+    Malicious:
+      integrations:
+        - production-splunk
+        - slack-notifications
+    Suspicious:
+      integrations:
+        - production-splunk
+    Benign:
+      integrations: []  # Don't forward benign
+    Inconclusive:
+      integrations:
+        - production-splunk
+  
+  # Forward rules based on severity
+  by_severity:
+    Critical:
+      integrations:
+        - production-splunk
+        - slack-notifications
+    High:
+      integrations:
+        - production-splunk
+    Medium:
+      integrations:
+        - production-splunk
+    Low:
+      integrations: []
+
+# Rate Limiting
+rate_limiting:
+  webhook_ingestion:
+    enabled: true
+    requests_per_minute: 100
+  
+  integration_forwarding:
+    enabled: true
+    requests_per_minute: 50
+
+# Retry Configuration
+retry:
+  max_attempts: 3
+  backoff_seconds: 5
+  retry_on_status: [429, 500, 502, 503, 504]

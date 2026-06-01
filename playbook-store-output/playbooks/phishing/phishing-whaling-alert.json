@@ -1,0 +1,187 @@
+{
+  "name": "Executive Whaling Attack Response",
+  "slug": "phishing-whaling-alert",
+  "description": "Immediate response workflow for whaling attacks targeting C-level executives and senior leadership. Prioritizes rapid containment with AI-powered analysis of the attack, immediate executive notification via direct Slack DM and phone escalation, email quarantine, and automatic creation of a critical-priority Jira incident. Includes a delay gate for executive acknowledgment before closing. Designed for maximum urgency and minimum response time.",
+  "category": "phishing",
+  "subcategory": "whaling",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "advanced",
+  "estimated_time": "10 minutes",
+  "tags": ["phishing", "whaling", "executive", "ceo-fraud", "critical", "escalation", "immediate-response"],
+  "alert_types": ["phishing"],
+  "severity_filter": ["critical"],
+  "trigger_conditions": {
+    "alert_types": ["phishing", "whaling", "ceo_fraud", "executive_phishing"],
+    "min_severity": "critical"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create critical-priority incident ticket for whaling investigation"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Direct notification to executive protection team and CISO"
+    },
+    {
+      "connector_id": "pagerduty",
+      "name": "PagerDuty",
+      "category": "incident_management",
+      "reason": "Page on-call incident commander for immediate response"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "title": "Whaling Attack Alert",
+          "summary": "Triggers on whaling, CEO fraud, or executive-targeted phishing alerts",
+          "config": {
+            "trigger_type": "alert",
+            "alert_types": ["phishing", "whaling", "ceo_fraud", "executive_phishing"]
+          }
+        }
+      },
+      {
+        "id": "analyze-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "title": "AI Whaling Analysis",
+          "summary": "Rapid AI assessment of whaling indicators and executive targeting",
+          "config": {
+            "mode": "ai_analysis",
+            "template_id": "phishing_triage",
+            "custom_instructions": "Assess for whaling attack: CEO/CFO impersonation, board-level urgency, wire transfer or sensitive data requests, highly personalized content referencing company events or financials, sophisticated domain spoofing",
+            "alert_path": "$.trigger.alert",
+            "include_context": true
+          }
+        }
+      },
+      {
+        "id": "respond-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "respond",
+          "title": "Quarantine Email Immediately",
+          "summary": "Immediate quarantine — no decision gate for whaling severity",
+          "config": {
+            "response_type": "integration_action",
+            "action_type": "quarantine_email",
+            "target_path": "$.trigger.alert.message_id",
+            "requires_approval": false,
+            "priority": "critical",
+            "message": "CRITICAL: Quarantining suspected whaling email targeting {{$.trigger.alert.recipient}} from {{$.trigger.alert.sender}}"
+          }
+        }
+      },
+      {
+        "id": "respond-2",
+        "type": "signal",
+        "position": { "x": 520, "y": 540 },
+        "data": {
+          "kind": "respond",
+          "title": "Alert Executive Protection",
+          "summary": "Notify executive protection team and CISO via Slack",
+          "config": {
+            "response_type": "notify",
+            "channel": "slack",
+            "slack_channel": "#exec-protection",
+            "message": "WHALING ATTACK — CRITICAL\n\nTargeted Executive: {{$.trigger.alert.recipient}}\nAttacker: {{$.trigger.alert.sender}}\nSubject: {{$.trigger.alert.subject}}\n\nAI Assessment:\n{{$.nodes.analyze-1.result.summary}}\n\nConfidence: {{$.nodes.analyze-1.result.confidence}}\n\nEmail has been quarantined immediately.\nIncident ticket and PagerDuty page following.",
+            "priority": "critical"
+          }
+        }
+      },
+      {
+        "id": "respond-3",
+        "type": "signal",
+        "position": { "x": 520, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "title": "Page Incident Commander",
+          "summary": "Page the on-call incident commander via PagerDuty",
+          "config": {
+            "response_type": "integration_action",
+            "action_type": "page_oncall",
+            "target_path": "$.trigger.alert",
+            "requires_approval": false,
+            "priority": "critical",
+            "message": "WHALING ATTACK on {{$.trigger.alert.recipient}}. Immediate response required. Email quarantined, exec protection notified.",
+            "params": {
+              "escalation_policy": "executive_security",
+              "urgency": "high"
+            }
+          }
+        }
+      },
+      {
+        "id": "respond-4",
+        "type": "signal",
+        "position": { "x": 520, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "title": "Create Critical Incident",
+          "summary": "Create critical-priority Jira incident for the whaling attack",
+          "config": {
+            "response_type": "create_ticket",
+            "system": "jira",
+            "project_key": "SEC",
+            "issue_type": "Incident",
+            "title": "CRITICAL: Whaling Attack — {{$.trigger.alert.recipient}} targeted",
+            "description": "WHALING ATTACK DETECTED — CRITICAL PRIORITY\n\nTarget: {{$.trigger.alert.recipient}}\nAttacker: {{$.trigger.alert.sender}}\nSubject: {{$.trigger.alert.subject}}\nTimestamp: {{$.trigger.alert.timestamp}}\n\nAI Analysis:\n{{$.nodes.analyze-1.result.summary}}\n\nImmediate Actions Taken:\n- Email quarantined\n- Executive protection team notified\n- On-call incident commander paged\n\nRequired Follow-Up:\n- Confirm executive did not respond to or interact with the email\n- Check for related emails in the past 30 days\n- Review executive's publicly available information (OSINT)\n- Brief the executive on the attack\n- Assess financial fraud risk",
+            "priority": "critical"
+          }
+        }
+      },
+      {
+        "id": "utility-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1020 },
+        "data": {
+          "kind": "utility",
+          "title": "Update Alert — Escalated",
+          "summary": "Mark alert as escalated with full action summary",
+          "config": {
+            "operation": "update_status",
+            "status": "escalated",
+            "note": "Whaling attack response completed. Email quarantined, exec protection notified, IC paged, Jira ticket created."
+          }
+        }
+      },
+      {
+        "id": "end-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1180 },
+        "data": {
+          "kind": "end",
+          "title": "End — Whaling Response Complete",
+          "summary": "All immediate containment and notification actions completed",
+          "config": {
+            "disposition": "true_positive",
+            "summary": "Whaling attack contained. Email quarantined, executive protection notified, incident commander paged, investigation ticket created."
+          }
+        }
+      }
+    ],
+    "edges": [
+      { "id": "e1", "source": "trigger-1", "target": "analyze-1", "animated": true, "type": "smoothstep" },
+      { "id": "e2", "source": "analyze-1", "target": "respond-1", "animated": true, "type": "smoothstep" },
+      { "id": "e3", "source": "respond-1", "target": "respond-2", "animated": true, "type": "smoothstep" },
+      { "id": "e4", "source": "respond-2", "target": "respond-3", "animated": true, "type": "smoothstep" },
+      { "id": "e5", "source": "respond-3", "target": "respond-4", "animated": true, "type": "smoothstep" },
+      { "id": "e6", "source": "respond-4", "target": "utility-1", "animated": true, "type": "smoothstep" },
+      { "id": "e7", "source": "utility-1", "target": "end-1", "animated": true, "type": "smoothstep" }
+    ]
+  }
+}

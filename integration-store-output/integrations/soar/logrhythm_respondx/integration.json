@@ -1,0 +1,177 @@
+{
+  "id": "logrhythm_respondx",
+  "name": "LogRhythm RespondX",
+  "description": "LogRhythm SOAR module for case management, playbook automation, and coordinated security investigation and response via the Case API.",
+  "version": "1.0.0",
+  "category": "soar",
+  "vendor": "LogRhythm",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "header_name": "Authorization",
+    "location": "header",
+    "token_prefix": "Bearer"
+  },
+  "base_url": "https://{host}:8501",
+  "actions": [
+    {
+      "id": "list_cases",
+      "name": "List Cases",
+      "description": "Retrieve a list of cases with optional filtering.",
+      "http_method": "GET",
+      "endpoint": "/lr-case-api/cases",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "count", "type": "integer", "description": "Number of cases to return.", "required": false},
+        {"name": "offset", "type": "integer", "description": "Starting offset for pagination.", "required": false},
+        {"name": "statusNumber", "type": "integer", "description": "Filter by status: 1 (Created), 2 (Completed), 3 (Incident), 4 (Mitigated), 5 (Resolved).", "required": false},
+        {"name": "priority", "type": "integer", "description": "Filter by priority: 1 (Low), 2 (Medium), 3 (High), 4 (Critical).", "required": false},
+        {"name": "orderBy", "type": "string", "description": "Field to order by (e.g., 'dateCreated', 'priority').", "required": false}
+      ]
+    },
+    {
+      "id": "get_case",
+      "name": "Get Case",
+      "description": "Retrieve details of a specific case by ID.",
+      "http_method": "GET",
+      "endpoint": "/lr-case-api/cases/{caseId}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "caseId", "type": "string", "description": "The case ID (GUID).", "required": true}
+      ]
+    },
+    {
+      "id": "create_case",
+      "name": "Create Case",
+      "description": "Create a new case for security investigation.",
+      "http_method": "POST",
+      "endpoint": "/lr-case-api/cases",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "name", "type": "string", "description": "Case name.", "required": true},
+        {"name": "priority", "type": "integer", "description": "Priority: 1 (Low), 2 (Medium), 3 (High), 4 (Critical).", "required": true},
+        {"name": "summary", "type": "string", "description": "Case summary/description.", "required": false},
+        {"name": "externalId", "type": "string", "description": "External reference ID.", "required": false},
+        {"name": "dueDate", "type": "string", "description": "Due date in ISO 8601 format.", "required": false}
+      ]
+    },
+    {
+      "id": "update_case",
+      "name": "Update Case",
+      "description": "Update an existing case's properties.",
+      "http_method": "PUT",
+      "endpoint": "/lr-case-api/cases/{caseId}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "caseId", "type": "string", "description": "The case ID.", "required": true},
+        {"name": "name", "type": "string", "description": "Updated case name.", "required": false},
+        {"name": "priority", "type": "integer", "description": "Updated priority.", "required": false},
+        {"name": "summary", "type": "string", "description": "Updated summary.", "required": false}
+      ]
+    },
+    {
+      "id": "update_case_status",
+      "name": "Update Case Status",
+      "description": "Change the status of a case.",
+      "http_method": "PUT",
+      "endpoint": "/lr-case-api/cases/{caseId}/status",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "caseId", "type": "string", "description": "The case ID.", "required": true},
+        {"name": "statusNumber", "type": "integer", "description": "New status: 1 (Created), 2 (Completed), 3 (Incident), 4 (Mitigated), 5 (Resolved).", "required": true}
+      ]
+    },
+    {
+      "id": "close_case",
+      "name": "Close Case",
+      "description": "Close a case by setting its status to Completed or Resolved.",
+      "http_method": "PUT",
+      "endpoint": "/lr-case-api/cases/{caseId}/status",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "caseId", "type": "string", "description": "The case ID to close.", "required": true},
+        {"name": "statusNumber", "type": "integer", "description": "Set to 5 (Resolved) or 2 (Completed).", "required": true}
+      ]
+    },
+    {
+      "id": "add_evidence",
+      "name": "Add Evidence",
+      "description": "Add evidence (artifacts) to a case.",
+      "http_method": "POST",
+      "endpoint": "/lr-case-api/cases/{caseId}/evidence",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "caseId", "type": "string", "description": "The case ID.", "required": true},
+        {"name": "type", "type": "string", "description": "Evidence type (e.g., 'alarm', 'log', 'note').", "required": true},
+        {"name": "value", "type": "string", "description": "Evidence value or reference.", "required": true}
+      ]
+    },
+    {
+      "id": "list_evidence",
+      "name": "List Evidence",
+      "description": "Retrieve all evidence items for a case.",
+      "http_method": "GET",
+      "endpoint": "/lr-case-api/cases/{caseId}/evidence",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "caseId", "type": "string", "description": "The case ID.", "required": true}
+      ]
+    },
+    {
+      "id": "list_playbooks",
+      "name": "List Playbooks",
+      "description": "Retrieve a list of available playbooks.",
+      "http_method": "GET",
+      "endpoint": "/lr-case-api/playbooks",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "get_playbook",
+      "name": "Get Playbook",
+      "description": "Retrieve details and procedures of a specific playbook.",
+      "http_method": "GET",
+      "endpoint": "/lr-case-api/playbooks/{playbookId}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "playbookId", "type": "string", "description": "The playbook ID.", "required": true}
+      ]
+    },
+    {
+      "id": "attach_playbook",
+      "name": "Attach Playbook to Case",
+      "description": "Attach a playbook to a case for guided response.",
+      "http_method": "POST",
+      "endpoint": "/lr-case-api/cases/{caseId}/playbooks",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "caseId", "type": "string", "description": "The case ID.", "required": true},
+        {"name": "playbookId", "type": "string", "description": "The playbook ID to attach.", "required": true}
+      ]
+    },
+    {
+      "id": "add_note",
+      "name": "Add Note",
+      "description": "Add a note/comment to a case.",
+      "http_method": "POST",
+      "endpoint": "/lr-case-api/cases/{caseId}/evidence/note",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "caseId", "type": "string", "description": "The case ID.", "required": true},
+        {"name": "text", "type": "string", "description": "Note text content.", "required": true}
+      ]
+    }
+  ]
+}

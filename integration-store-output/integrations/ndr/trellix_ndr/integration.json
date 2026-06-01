@@ -1,0 +1,211 @@
+{
+  "id": "trellix_ndr",
+  "name": "Trellix Network Detection and Response",
+  "description": "Network security platform providing advanced threat detection and response capabilities using signature-based and ML-based detection engines",
+  "version": "1.0.0",
+  "category": "ndr",
+  "vendor": "Trellix",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "X-FeApi-Token",
+    "location": "header"
+  },
+  "base_url": "https://{host}/api/v1",
+  "actions": [
+    {
+      "id": "get_alerts",
+      "name": "Get Alerts",
+      "description": "Retrieve network security alerts from Trellix NDR",
+      "http_method": "GET",
+      "endpoint": "/alerts",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "start_time",
+          "type": "string",
+          "description": "Start time in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "string",
+          "description": "End time in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Filter by severity level (minr, majr, crit)",
+          "required": false
+        },
+        {
+          "name": "src_ip",
+          "type": "string",
+          "description": "Filter by source IP address",
+          "required": false
+        },
+        {
+          "name": "dst_ip",
+          "type": "string",
+          "description": "Filter by destination IP address",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of alerts to return",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Offset for pagination",
+          "required": false,
+          "default": 0
+        }
+      ]
+    },
+    {
+      "id": "get_alert_details",
+      "name": "Get Alert Details",
+      "description": "Retrieve detailed information about a specific alert",
+      "http_method": "GET",
+      "endpoint": "/alerts/{alert_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "alert_id",
+          "type": "string",
+          "description": "The alert ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_malware_objects",
+      "name": "Get Malware Objects",
+      "description": "Retrieve malware objects detected on the network",
+      "http_method": "GET",
+      "endpoint": "/malware",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "start_time",
+          "type": "string",
+          "description": "Start time in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "string",
+          "description": "End time in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "md5",
+          "type": "string",
+          "description": "Filter by MD5 hash of the malware",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of objects to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "get_infected_hosts",
+      "name": "Get Infected Hosts",
+      "description": "Retrieve a list of hosts with confirmed or suspected infections",
+      "http_method": "GET",
+      "endpoint": "/hosts/infected",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "start_time",
+          "type": "string",
+          "description": "Start time in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "string",
+          "description": "End time in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of hosts to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "get_pcap",
+      "name": "Get PCAP",
+      "description": "Download a PCAP file associated with a specific alert",
+      "http_method": "GET",
+      "endpoint": "/alerts/{alert_id}/pcap",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "alert_id",
+          "type": "string",
+          "description": "The alert ID to retrieve PCAP for",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_system_info",
+      "name": "Get System Info",
+      "description": "Retrieve system information and appliance status",
+      "http_method": "GET",
+      "endpoint": "/system/info",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "submit_ioc",
+      "name": "Submit IOC",
+      "description": "Submit indicators of compromise for detection",
+      "http_method": "POST",
+      "endpoint": "/iocs",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "type",
+          "type": "string",
+          "description": "IOC type (ip, domain, url, md5, sha256)",
+          "required": true
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "description": "IOC value",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Description of the IOC",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

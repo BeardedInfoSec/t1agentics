@@ -1,0 +1,223 @@
+{
+  "name": "Endpoint Configuration Drift Detection",
+  "slug": "endpoint-config-drift",
+  "description": "Detects and remediates endpoint configuration drift by comparing current settings against the organization's security baseline. When drift is detected (disabled firewall, weakened audit policy, modified registry keys), the playbook categorizes the deviation and assesses severity. Critical deviations trigger automated remediation via the endpoint agent and SOC notification. Minor drift is logged for the next compliance review cycle.",
+  "category": "endpoint",
+  "subcategory": "configuration_management",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "8 minutes",
+  "tags": ["config_drift", "baseline", "compliance", "endpoint", "hardening", "cis_benchmark"],
+  "alert_types": ["config_drift", "policy_violation"],
+  "severity_filter": ["low", "medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["config_drift", "policy_violation", "baseline_deviation", "security_setting_change"],
+    "min_severity": "low"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "crowdstrike",
+      "name": "CrowdStrike Falcon",
+      "category": "edr",
+      "reason": "Push remediation scripts to restore endpoint configuration to baseline"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create tracking tickets for configuration drift remediation"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Config Drift Detected",
+          "config": {
+            "alert_types": ["config_drift", "policy_violation", "baseline_deviation", "security_setting_change"],
+            "description": "Triggers when an endpoint configuration deviates from the security baseline"
+          }
+        }
+      },
+      {
+        "id": "code_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "code",
+          "label": "Categorize Drift",
+          "config": {
+            "runtime": "python3",
+            "code": "drifted_settings = alert.get('drifted_settings', [])\ncritical_settings = ['windows_firewall', 'antivirus_status', 'audit_policy', 'uac_level', 'secure_boot']\ncritical_drift = [s for s in drifted_settings if s.get('setting_name', '') in critical_settings]\nminor_drift = [s for s in drifted_settings if s.get('setting_name', '') not in critical_settings]\nresult = {'total_drift': len(drifted_settings), 'critical_count': len(critical_drift), 'minor_count': len(minor_drift), 'critical_settings': [s.get('setting_name') for s in critical_drift], 'has_critical': len(critical_drift) > 0}",
+            "description": "Categorize drifted settings into critical (security-impacting) and minor deviations"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "label": "Critical Drift Detected?",
+          "config": {
+            "condition": "{{code_1.has_critical}} == true",
+            "description": "Routes based on whether any critical security settings have drifted from baseline"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "respond",
+          "label": "Remediate Configuration",
+          "config": {
+            "integration_action": {
+              "connector_id": "crowdstrike",
+              "action": "run_script",
+              "parameters": {
+                "device_id": "{{trigger_1.alert.endpoint_id}}",
+                "script": "restore_baseline_config",
+                "args": {
+                  "settings": "{{code_1.critical_settings}}"
+                }
+              }
+            },
+            "description": "Push remediation script to restore critical security settings to baseline values"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "label": "Create Remediation Ticket",
+          "config": {
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_issue",
+              "parameters": {
+                "project_key": "SEC",
+                "issue_type": "Task",
+                "title": "Config Drift Remediated — {{trigger_1.alert.hostname}}",
+                "description": "Critical configuration drift detected and auto-remediated.\nHost: {{trigger_1.alert.hostname}}\nCritical Settings Drifted: {{code_1.critical_count}}\nSettings: {{code_1.critical_settings}}\nMinor Drift: {{code_1.minor_count}}\n\nAuto-remediation applied. Verify settings and investigate cause of drift.",
+                "priority": "high"
+              }
+            },
+            "description": "Create a ticket to track the remediation and investigate the root cause of drift"
+          }
+        }
+      },
+      {
+        "id": "respond_3",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "label": "Notify SOC on Slack",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#soc-alerts",
+              "message": "CONFIG DRIFT REMEDIATED\nHost: {{trigger_1.alert.hostname}}\nCritical Settings Fixed: {{code_1.critical_count}} ({{code_1.critical_settings}})\nMinor Drift Remaining: {{code_1.minor_count}}\nAction: Auto-remediation applied, ticket created"
+            },
+            "description": "Notify the SOC about the critical configuration drift and remediation actions"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "utility",
+          "label": "Log for Review Cycle",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "Minor configuration drift detected on {{trigger_1.alert.hostname}}. {{code_1.minor_count}} non-critical settings deviated from baseline. Deferred to next compliance review cycle.",
+              "tags": ["minor-drift", "compliance-review"],
+              "close_alert": true
+            },
+            "description": "Log minor drift for the next scheduled compliance review cycle"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1020 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "Endpoint configuration drift detection workflow complete"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_code",
+        "source": "trigger_1",
+        "target": "code_1",
+        "type": "default"
+      },
+      {
+        "id": "e_code_decision",
+        "source": "code_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "respond_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "utility_1",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_remediate_ticket",
+        "source": "respond_1",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_ticket_notify",
+        "source": "respond_2",
+        "target": "respond_3",
+        "type": "default"
+      },
+      {
+        "id": "e_notify_end",
+        "source": "respond_3",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_utility_end",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

@@ -1,0 +1,220 @@
+{
+  "id": "bluecat",
+  "name": "BlueCat Address Manager",
+  "description": "BlueCat Address Manager RESTful v2 API for DNS zone management, resource record operations, IP address management, and network block administration",
+  "version": "1.0.0",
+  "category": "dns_security",
+  "vendor": "BlueCat Networks",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "header_name": "Authorization",
+    "location": "header",
+    "token_prefix": "Bearer",
+    "note": "Token obtained via /api/v2/sessions endpoint using basic auth credentials"
+  },
+  "base_url": "https://{host}/api/v2",
+  "actions": [
+    {
+      "id": "authenticate",
+      "name": "Authenticate",
+      "description": "Create a session and obtain an API token for subsequent requests",
+      "http_method": "POST",
+      "endpoint": "/sessions",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "username",
+          "type": "string",
+          "description": "BlueCat Address Manager username",
+          "required": true
+        },
+        {
+          "name": "password",
+          "type": "string",
+          "description": "BlueCat Address Manager password",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_zones",
+      "name": "List DNS Zones",
+      "description": "Retrieve all DNS zones managed by BlueCat Address Manager",
+      "http_method": "GET",
+      "endpoint": "/zones",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "Filter expression (e.g., type:eq('Zone'))",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "type": "string",
+          "description": "Comma-separated list of fields to return",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "description": "Maximum number of zones to return",
+          "required": false
+        },
+        {
+          "name": "offset",
+          "type": "integer",
+          "description": "Offset for pagination",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_resource_records",
+      "name": "List Resource Records",
+      "description": "Retrieve all DNS resource records in a specific zone",
+      "http_method": "GET",
+      "endpoint": "/zones/{zone_id}/resourceRecords",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "zone_id",
+          "type": "string",
+          "description": "ID of the DNS zone to query records from",
+          "required": true
+        },
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "Filter expression for record types or names",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "description": "Maximum number of records to return",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "create_resource_record",
+      "name": "Create Resource Record",
+      "description": "Create a new DNS resource record (A, AAAA, CNAME, MX, TXT, etc.)",
+      "http_method": "POST",
+      "endpoint": "/zones/{zone_id}/resourceRecords",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "zone_id",
+          "type": "string",
+          "description": "ID of the DNS zone to create the record in",
+          "required": true
+        },
+        {
+          "name": "body",
+          "type": "object",
+          "description": "Resource record definition including name, type, rdata (record data), and TTL",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "delete_resource_record",
+      "name": "Delete Resource Record",
+      "description": "Delete an existing DNS resource record by ID",
+      "http_method": "DELETE",
+      "endpoint": "/resourceRecords/{record_id}",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "record_id",
+          "type": "string",
+          "description": "ID of the resource record to delete",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_ip_blocks",
+      "name": "List IP Blocks",
+      "description": "Retrieve all IP address blocks in the Address Manager",
+      "http_method": "GET",
+      "endpoint": "/blocks",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "Filter expression for blocks",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "description": "Maximum number of blocks to return",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_ip_networks",
+      "name": "List IP Networks",
+      "description": "Retrieve all IP networks (subnets) within a block",
+      "http_method": "GET",
+      "endpoint": "/blocks/{block_id}/networks",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "block_id",
+          "type": "string",
+          "description": "ID of the IP block to list networks from",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_ip_address",
+      "name": "Get IP Address Info",
+      "description": "Retrieve details of a specific IP address including associated records and metadata",
+      "http_method": "GET",
+      "endpoint": "/addresses/{address_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "address_id",
+          "type": "string",
+          "description": "ID of the IP address to look up",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "deploy_changes",
+      "name": "Deploy Changes",
+      "description": "Deploy pending DNS and DHCP changes to managed servers",
+      "http_method": "POST",
+      "endpoint": "/servers/{server_id}/deploy",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "server_id",
+          "type": "string",
+          "description": "ID of the server to deploy changes to",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

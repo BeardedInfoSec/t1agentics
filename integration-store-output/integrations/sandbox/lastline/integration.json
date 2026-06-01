@@ -1,0 +1,138 @@
+{
+  "id": "lastline",
+  "name": "Lastline",
+  "description": "This app supports executing investigative actions to analyze executables and URLs on the online Lastline sandbox",
+  "version": "3.1.0",
+  "category": "sandbox",
+  "vendor": "Lastline",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "query_file",
+      "name": "Detonate File",
+      "description": "Run the file in the Lastline sandbox and retrieve the analysis results",
+      "http_method": "GET",
+      "endpoint": "/actions/query_file",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "vault_id",
+          "type": "string",
+          "description": "Vault ID of file to detonate",
+          "required": true,
+          "contains": [
+            "vault id",
+            "pe file"
+          ]
+        },
+        {
+          "name": "file_name",
+          "type": "string",
+          "description": "Filename to use",
+          "required": false,
+          "contains": [
+            "file name"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "get_detonation_result",
+      "name": "Get Report",
+      "description": "Query for results of an already completed task in Lastline",
+      "http_method": "GET",
+      "endpoint": "/actions/get_detonation_result",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Task ID to get the results of",
+          "required": true,
+          "contains": [
+            "lastline task id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "query_url",
+      "name": "Detonate Url",
+      "description": "Load a URL in the Lastline sandbox and retrieve the analysis results",
+      "http_method": "GET",
+      "endpoint": "/actions/query_url",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "URL to detonate",
+          "required": true,
+          "contains": [
+            "url"
+          ]
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "get_artifact",
+      "name": "Get Artifact",
+      "description": "Download Lastline generated artifact and store to SOAR/Phantom Vault",
+      "http_method": "GET",
+      "endpoint": "/actions/get_artifact",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Task ID to get the results of",
+          "required": true
+        },
+        {
+          "name": "artifact_name",
+          "type": "string",
+          "description": "Name of the Artifact (when not specified all artifacts will be stored)",
+          "required": false
+        },
+        {
+          "name": "password",
+          "type": "string",
+          "description": "Optional for artifact encryption",
+          "required": false
+        },
+        {
+          "name": "container_id",
+          "type": "number",
+          "description": "Optional container id for artifact storage (Is detected automatically)",
+          "required": false
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Lastline",
+    "original_type": "sandbox",
+    "converted_at": "2025-12-18T16:25:28.901701",
+    "source_version": "3.1.0"
+  }
+}

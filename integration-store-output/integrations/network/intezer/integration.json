@@ -1,0 +1,317 @@
+{
+  "id": "intezer",
+  "name": "Intezer",
+  "description": "Intezer connector for Splunk SOAR enables security teams to automate the analysis, detection, and response of threats by integrating Intezer's technology into their Splunk workflows",
+  "version": "1.1.1",
+  "category": "network",
+  "vendor": "Intezer Labs",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "detonate_file",
+      "name": "Detonate File",
+      "description": "Analyze a file from Splunk vault with Intezer",
+      "http_method": "GET",
+      "endpoint": "/actions/detonate_file",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "vault_id",
+          "type": "string",
+          "description": "File's vault ID",
+          "required": true,
+          "contains": [
+            "vault id"
+          ]
+        },
+        {
+          "name": "related_alert_id",
+          "type": "string",
+          "description": "The alert ID that the file is related to",
+          "required": false,
+          "contains": [
+            "alert id"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "detonate_hash",
+      "name": "Detonate Hash",
+      "description": "Analyze a file hash (SHA1, SHA256, or MD5) with Intezer",
+      "http_method": "GET",
+      "endpoint": "/actions/detonate_hash",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "file_hash",
+          "type": "string",
+          "description": "File hash (SHA1, SHA256, or MD5)",
+          "required": true,
+          "contains": [
+            "hash",
+            "sha1",
+            "sha256",
+            "md5"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "get_file_report",
+      "name": "Get File Report",
+      "description": "Get a file analysis report based on an analysis ID or a file hash",
+      "http_method": "GET",
+      "endpoint": "/actions/get_file_report",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "analysis_id",
+          "type": "string",
+          "description": "File analysis ID. The analysis ID is returned when submitting a file or a hash for analysis",
+          "required": false,
+          "contains": [
+            "analysis id"
+          ]
+        },
+        {
+          "name": "file_hash",
+          "type": "string",
+          "description": "File's hash (SHA1, SHA256, MD5)",
+          "required": false,
+          "contains": [
+            "hash",
+            "sha1",
+            "sha256",
+            "md5"
+          ]
+        },
+        {
+          "name": "private_only",
+          "type": "boolean",
+          "description": "The \"private_only\" parameter, used when retrieving analysis reports by file hash, determines database access: \"false\" (default) uses both public and private databases, consuming additional quota for first-time public access; \"true\" uses only your private database, conserving quota",
+          "required": false
+        },
+        {
+          "name": "wait_for_completion",
+          "type": "boolean",
+          "description": "Whether to wait for the analysis to finish",
+          "required": false,
+          "default": true
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "detonate_url",
+      "name": "Detonate Url",
+      "description": "Analyze a suspicious URL with Intezer",
+      "http_method": "GET",
+      "endpoint": "/actions/detonate_url",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "URL to analyze",
+          "required": true,
+          "contains": [
+            "url"
+          ]
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "get_url_report",
+      "name": "Get Url Report",
+      "description": "Get a URL analysis report based on a URL analysis ID",
+      "http_method": "GET",
+      "endpoint": "/actions/get_url_report",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "analysis_id",
+          "type": "string",
+          "description": "URL analysis ID. The analysis ID is returned when submitting a URL for analysis",
+          "required": true,
+          "contains": [
+            "analysis id"
+          ]
+        },
+        {
+          "name": "wait_for_completion",
+          "type": "boolean",
+          "description": "Whether to wait for the analysis to finish",
+          "required": false,
+          "default": true
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "get_alert",
+      "name": "Get Alert",
+      "description": "Get an ingested alert triage and response information using alert ID",
+      "http_method": "GET",
+      "endpoint": "/actions/get_alert",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "alert_id",
+          "type": "string",
+          "description": "The alert ID to query",
+          "required": true,
+          "contains": [
+            "alert id"
+          ]
+        },
+        {
+          "name": "wait_for_completion",
+          "type": "boolean",
+          "description": "Whether to wait for the analysis to finish",
+          "required": false,
+          "default": true
+        }
+      ]
+    },
+    {
+      "id": "submit_alert",
+      "name": "Submit Alert",
+      "description": "Submit a new alert, including the raw alert information, to Intezer for processing",
+      "http_method": "GET",
+      "endpoint": "/actions/submit_alert",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "source",
+          "type": "string",
+          "description": "Where the alert came from",
+          "required": true
+        },
+        {
+          "name": "raw_alert",
+          "type": "string",
+          "description": "The alert raw data in JSON format",
+          "required": true
+        },
+        {
+          "name": "alert_mapping",
+          "type": "string",
+          "description": "The mapping to use for the alert in JSON formant",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "submit_suspicious_email",
+      "name": "Submit Suspicious Email",
+      "description": "Submit a suspicious phishing email in a raw format (.MSG or .EML) to Intezer for processing",
+      "http_method": "GET",
+      "endpoint": "/actions/submit_suspicious_email",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "vault_id",
+          "type": "string",
+          "description": "The vault ID of the email to submit",
+          "required": true
+        }
+      ],
+      "observable_type": "email"
+    },
+    {
+      "id": "index_file",
+      "name": "Index File",
+      "description": "Index the file's genes into the organizational database",
+      "http_method": "POST",
+      "endpoint": "/actions/index_file",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "index_as",
+          "type": "string",
+          "description": "\"trusted\" or \"malicious\"",
+          "required": true
+        },
+        {
+          "name": "vault_id",
+          "type": "string",
+          "description": "File's vault ID",
+          "required": false,
+          "contains": [
+            "vault id"
+          ]
+        },
+        {
+          "name": "family_name",
+          "type": "string",
+          "description": "Family name",
+          "required": false
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "unset_index_file",
+      "name": "Unset Index File",
+      "description": "Unset file's indexing",
+      "http_method": "POST",
+      "endpoint": "/actions/unset_index_file",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "file_hash",
+          "type": "string",
+          "description": "File's hash (SHA1, SHA256, MD5)",
+          "required": true
+        }
+      ],
+      "observable_type": "file_hash"
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Intezer",
+    "original_type": "network security",
+    "converted_at": "2025-12-18T16:25:28.869173",
+    "source_version": "1.1.1"
+  }
+}

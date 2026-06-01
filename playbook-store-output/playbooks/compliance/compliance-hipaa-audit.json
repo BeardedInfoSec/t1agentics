@@ -1,0 +1,250 @@
+{
+  "name": "HIPAA Compliance Audit",
+  "slug": "compliance-hipaa-audit",
+  "description": "Automated HIPAA compliance audit workflow that checks Protected Health Information (PHI) access patterns across systems. A code node collects PHI access logs, Riggs AI analyzes them for unauthorized or anomalous access patterns, and violations are routed through an approval gate before remediation tickets and regulatory notifications are issued. Compliant access is logged for audit trail purposes.",
+  "category": "compliance",
+  "subcategory": "hipaa",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "advanced",
+  "estimated_time": "25 minutes",
+  "tags": ["compliance", "hipaa", "phi", "healthcare", "audit", "access_monitoring"],
+  "alert_types": ["compliance"],
+  "severity_filter": ["low", "medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["compliance", "phi_access"],
+    "trigger_type": "scheduled",
+    "schedule": "0 7 * * *"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "splunk",
+      "name": "Splunk",
+      "category": "siem",
+      "reason": "Query PHI access logs and identify unauthorized access patterns"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create violation tickets and track remediation for HIPAA findings"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Notify privacy officer and compliance team of HIPAA violations"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Daily HIPAA Audit Trigger",
+          "config": {
+            "trigger_type": "scheduled",
+            "schedule": "0 7 * * *",
+            "description": "Triggers daily HIPAA compliance audit of PHI access patterns"
+          }
+        }
+      },
+      {
+        "id": "code_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "code",
+          "label": "Collect PHI Access Logs",
+          "config": {
+            "mode": "integration",
+            "integration_action": {
+              "connector_id": "splunk",
+              "action": "search",
+              "parameters": {
+                "query": "index=phi_access earliest=-24h | stats count by user, resource, action, source_ip | where count > 0",
+                "timeframe": "24h"
+              }
+            },
+            "output_variable": "phi_access_logs",
+            "description": "Query SIEM for all PHI access events in the past 24 hours"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI -- PHI Access Analysis",
+          "config": {
+            "template_id": "insider_threat",
+            "additional_instructions": "Analyze PHI access logs for HIPAA violations including unauthorized access, excessive data retrieval, access outside normal hours, and access from unusual locations. Flag any minimum necessary violations.",
+            "description": "AI-powered analysis of PHI access patterns against HIPAA requirements"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 540 },
+        "data": {
+          "kind": "decision",
+          "label": "HIPAA Violations Detected?",
+          "config": {
+            "condition": "{{analyze_1.violations_detected}} == true",
+            "description": "Routes based on whether HIPAA violations were identified in PHI access patterns"
+          }
+        }
+      },
+      {
+        "id": "approval_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "approval",
+          "label": "Privacy Officer Review",
+          "config": {
+            "approvers": ["privacy_officer"],
+            "approval_message": "HIPAA violations detected in PHI access audit. Please review findings and confirm for remediation and potential breach notification.\n\n{{analyze_1.summary}}",
+            "timeout_hours": 24,
+            "description": "Privacy officer reviews and confirms HIPAA violations before remediation actions are taken"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "label": "Create HIPAA Violation Ticket",
+          "config": {
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_issue",
+              "parameters": {
+                "project": "COMPLIANCE",
+                "issue_type": "Bug",
+                "priority": "P1",
+                "summary": "HIPAA Violation: Unauthorized PHI Access Detected",
+                "description": "HIPAA VIOLATION REPORT\n\nDate: {{trigger_1.timestamp}}\nApproved by: {{approval_1.approver}}\n\nFindings:\n{{analyze_1.summary}}\n\nAction Required: Investigate and remediate per HIPAA Breach Notification Rule (45 CFR 164.400-414).",
+                "labels": ["hipaa", "phi-violation", "compliance", "breach-assessment"]
+              }
+            },
+            "description": "Create a remediation ticket for confirmed HIPAA violations"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "label": "Notify Compliance Team on Slack",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#compliance-hipaa",
+              "message": "HIPAA VIOLATION DETECTED\n\nPrivacy Officer confirmed violations in daily PHI access audit.\nJira: {{respond_1.ticket_url}}\n\n{{analyze_1.summary}}\n\nBreach assessment may be required per 45 CFR 164.402."
+            },
+            "description": "Alert compliance team about confirmed HIPAA violations"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 700, "y": 700 },
+        "data": {
+          "kind": "utility",
+          "label": "Log: Audit Clean",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "Daily HIPAA audit completed. No violations detected. All PHI access within authorized parameters."
+            },
+            "description": "Record clean audit result for compliance documentation"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1180 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "HIPAA compliance audit complete -- findings documented and routed"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_code",
+        "source": "trigger_1",
+        "target": "code_1",
+        "type": "default"
+      },
+      {
+        "id": "e_code_analyze",
+        "source": "code_1",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_analyze_decision",
+        "source": "analyze_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "approval_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "utility_1",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_approval_respond1",
+        "source": "approval_1",
+        "target": "respond_1",
+        "type": "default"
+      },
+      {
+        "id": "e_respond1_respond2",
+        "source": "respond_1",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_respond2_end",
+        "source": "respond_2",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_utility1_end",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

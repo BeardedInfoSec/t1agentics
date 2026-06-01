@@ -1,0 +1,150 @@
+{
+  "id": "rapid7_insightcloudsec",
+  "name": "Rapid7 InsightCloudSec",
+  "description": "Cloud security and compliance platform providing CSPM, CIEM, and infrastructure security across multi-cloud environments via REST API",
+  "version": "1.0.0",
+  "category": "cloud_security",
+  "vendor": "Rapid7",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Api-Key",
+    "location": "header"
+  },
+  "base_url": "https://{instance}.rapid7.com/api",
+  "actions": [
+    {
+      "id": "list_insights",
+      "name": "List Insights",
+      "description": "Retrieve security insights (findings) across all connected cloud accounts",
+      "http_method": "POST",
+      "endpoint": "/v2/public/insights/list",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "severity",
+          "type": "array",
+          "description": "Filter by severity levels (e.g., [\"Critical\", \"High\"])",
+          "required": false
+        },
+        {
+          "name": "resource_type",
+          "type": "string",
+          "description": "Filter by resource type",
+          "required": false
+        },
+        {
+          "name": "cloud_type",
+          "type": "string",
+          "description": "Filter by cloud type (AWS, Azure, GCP)",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum results to return",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Offset for pagination",
+          "required": false,
+          "default": 0
+        }
+      ]
+    },
+    {
+      "id": "query_resources",
+      "name": "Query Resources",
+      "description": "Search and query cloud resources using InsightCloudSec query language",
+      "http_method": "POST",
+      "endpoint": "/v2/public/resource/query",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Resource query string",
+          "required": true
+        },
+        {
+          "name": "resource_types",
+          "type": "array",
+          "description": "Array of resource types to include",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum results to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "list_cloud_accounts",
+      "name": "List Cloud Accounts",
+      "description": "List all harvested cloud accounts and their configuration status",
+      "http_method": "GET",
+      "endpoint": "/v2/public/cloud/list",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "get_compliance_report",
+      "name": "Get Compliance Report",
+      "description": "Retrieve compliance assessment results for a specific pack or framework",
+      "http_method": "GET",
+      "endpoint": "/v2/public/compliance/report",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "pack_id",
+          "type": "string",
+          "description": "Compliance pack ID",
+          "required": true
+        },
+        {
+          "name": "cloud_account_id",
+          "type": "string",
+          "description": "Filter by specific cloud account",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_bots",
+      "name": "List Bots",
+      "description": "List automation bots and their remediation configurations",
+      "http_method": "GET",
+      "endpoint": "/v2/public/botfactory/list",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "get_resource_details",
+      "name": "Get Resource Details",
+      "description": "Get detailed information about a specific cloud resource",
+      "http_method": "GET",
+      "endpoint": "/v2/public/resource/{resourceId}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "resourceId",
+          "type": "string",
+          "description": "The unique identifier of the cloud resource",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

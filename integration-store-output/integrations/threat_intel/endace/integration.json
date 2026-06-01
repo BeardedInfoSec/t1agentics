@@ -1,0 +1,189 @@
+{
+  "id": "endace",
+  "name": "Endace",
+  "description": "This app integrates with the Endace Packet Capture device to implement investigative actions",
+  "version": "2.0.0",
+  "category": "threat_intel",
+  "vendor": "Endace",
+  "auth_type": "basic_auth",
+  "auth_config": {
+    "type": "basic_auth",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "https://{}/api/v5/",
+  "actions": [
+    {
+      "id": "get_pcap",
+      "name": "Get Pcap",
+      "description": "Download a PCAP into the vault",
+      "http_method": "GET",
+      "endpoint": "/actions/get_pcap",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "pcap_id",
+          "type": "string",
+          "description": "PCAP ID",
+          "required": true,
+          "contains": [
+            "pcap id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "delete_pcap",
+      "name": "Delete Pcap",
+      "description": "Delete the specified PCAP",
+      "http_method": "POST",
+      "endpoint": "/actions/delete_pcap",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "pcap_id",
+          "type": "string",
+          "description": "PCAP ID",
+          "required": true,
+          "contains": [
+            "pcap id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_status",
+      "name": "Get Status",
+      "description": "Get the status of a previously executed query",
+      "http_method": "GET",
+      "endpoint": "/actions/get_status",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "pcap_id",
+          "type": "string",
+          "description": "PCAP ID",
+          "required": true,
+          "contains": [
+            "pcap id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "run_query",
+      "name": "Run Query",
+      "description": "Run a query to create a PCAP",
+      "http_method": "GET",
+      "endpoint": "/actions/run_query",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "time",
+          "type": "string",
+          "description": "The time of interest, in RFC-3339 format",
+          "required": false,
+          "contains": [
+            "rfc3339"
+          ]
+        },
+        {
+          "name": "start_time",
+          "type": "string",
+          "description": "The start time of the data, in RFC-3339 format",
+          "required": false,
+          "contains": [
+            "rfc3339"
+          ]
+        },
+        {
+          "name": "end_time",
+          "type": "string",
+          "description": "The end time of the data, in RFC-3339 format",
+          "required": false,
+          "contains": [
+            "rfc3339"
+          ]
+        },
+        {
+          "name": "span_before",
+          "type": "number",
+          "description": "The span, in seconds, before the value specified by the 'time' parameter",
+          "required": false,
+          "default": 30
+        },
+        {
+          "name": "span_after",
+          "type": "number",
+          "description": "The span, in seconds, after the value specified by the 'time' parameter",
+          "required": false,
+          "default": 30
+        },
+        {
+          "name": "host1",
+          "type": "string",
+          "description": "The flow initiator, expressed as <IP Address>[/<CIDR prefix>]",
+          "required": true,
+          "contains": [
+            "ip",
+            "endace ip network"
+          ]
+        },
+        {
+          "name": "host2",
+          "type": "string",
+          "description": "The flow target, expressed as <IP Address>[/<CIDR prefix>]. Use 0.0.0.0/0 for directionless IP of host2",
+          "required": true,
+          "default": "0.0.0.0/0",
+          "contains": [
+            "ip",
+            "endace ip network"
+          ]
+        },
+        {
+          "name": "port1",
+          "type": "number",
+          "description": "The flow initiator port number",
+          "required": false,
+          "contains": [
+            "port"
+          ]
+        },
+        {
+          "name": "port2",
+          "type": "number",
+          "description": "The flow target port number",
+          "required": false,
+          "contains": [
+            "port"
+          ]
+        },
+        {
+          "name": "protocol",
+          "type": "string",
+          "description": "The name of the IP protocol; for example, 'udp', 'tcp'",
+          "required": true,
+          "default": "tcp"
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Endace",
+    "original_type": "investigative",
+    "converted_at": "2025-12-18T16:25:28.753119",
+    "source_version": "2.0.0"
+  }
+}

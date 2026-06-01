@@ -1,0 +1,494 @@
+{
+  "id": "eclecticiq_app",
+  "name": "EclecticIQ app",
+  "description": "EclecticIQ Intelligence Center integration",
+  "version": "2.0.0",
+  "category": "threat_intel",
+  "vendor": "EclecticIQ",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "domain_reputation",
+      "name": "Domain Reputation",
+      "description": "Queries domain info",
+      "http_method": "GET",
+      "endpoint": "/actions/domain_reputation",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "domain",
+          "type": "string",
+          "description": "Domain to query",
+          "required": true,
+          "contains": [
+            "domain",
+            "url"
+          ]
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "email_reputation",
+      "name": "Email Reputation",
+      "description": "Queries email info",
+      "http_method": "GET",
+      "endpoint": "/actions/email_reputation",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "email",
+          "type": "string",
+          "description": "Email to query",
+          "required": true,
+          "contains": [
+            "email"
+          ]
+        }
+      ],
+      "observable_type": "email"
+    },
+    {
+      "id": "file_reputation",
+      "name": "File Reputation",
+      "description": "Queries for file reputation info",
+      "http_method": "GET",
+      "endpoint": "/actions/file_reputation",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "hash",
+          "type": "string",
+          "description": "File hash to query",
+          "required": true,
+          "contains": [
+            "hash",
+            "sha256",
+            "sha1",
+            "md5"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "ip_reputation",
+      "name": "Ip Reputation",
+      "description": "Queries IP info",
+      "http_method": "GET",
+      "endpoint": "/actions/ip_reputation",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "IP to query",
+          "required": true,
+          "contains": [
+            "ip"
+          ]
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "url_reputation",
+      "name": "Url Reputation",
+      "description": "Queries URL info",
+      "http_method": "GET",
+      "endpoint": "/actions/url_reputation",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "URL to query",
+          "required": true,
+          "contains": [
+            "url"
+          ]
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "create_sighting",
+      "name": "Create Sighting",
+      "description": "Create sighting in EclecticIQ TIP",
+      "http_method": "POST",
+      "endpoint": "/actions/create_sighting",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "sighting_title",
+          "type": "string",
+          "description": "Sighting title",
+          "required": false,
+          "default": "Sighting created by Splunk SOAR"
+        },
+        {
+          "name": "sighting_description",
+          "type": "string",
+          "description": "Sighting description",
+          "required": false
+        },
+        {
+          "name": "confidence_value",
+          "type": "string",
+          "description": "Confidence value",
+          "required": false,
+          "default": "None"
+        },
+        {
+          "name": "impact_value",
+          "type": "string",
+          "description": "Impact value",
+          "required": false,
+          "default": "None"
+        },
+        {
+          "name": "tags",
+          "type": "string",
+          "description": "Sighting tags delimited by ','",
+          "required": false,
+          "default": "Splunk SOAR Sighting, Automatically created"
+        },
+        {
+          "name": "observable_1_value",
+          "type": "string",
+          "description": "Observable value",
+          "required": true
+        },
+        {
+          "name": "observable_1_type",
+          "type": "string",
+          "description": "Observable type",
+          "required": true
+        },
+        {
+          "name": "observable_1_maliciousness",
+          "type": "string",
+          "description": "Observalble maliciousness",
+          "required": false,
+          "default": "Unknown"
+        },
+        {
+          "name": "observable_2_value",
+          "type": "string",
+          "description": "Observable 2 value",
+          "required": false
+        },
+        {
+          "name": "observable_2_type",
+          "type": "string",
+          "description": "Observable 2 type",
+          "required": false
+        },
+        {
+          "name": "observable_2_maliciousness",
+          "type": "string",
+          "description": "Observable 2 maliciousness",
+          "required": false,
+          "default": "Unknown"
+        },
+        {
+          "name": "observable_3_value",
+          "type": "string",
+          "description": "Observable 3 value",
+          "required": false
+        },
+        {
+          "name": "observable_3_type",
+          "type": "string",
+          "description": "Observable 3 type",
+          "required": false
+        },
+        {
+          "name": "observable_3_maliciousness",
+          "type": "string",
+          "description": "Observable 3 maliciousness",
+          "required": false,
+          "default": "Unknown"
+        }
+      ]
+    },
+    {
+      "id": "create_indicator",
+      "name": "Create Indicator",
+      "description": "Create indicator in EclecticIQ TIP",
+      "http_method": "POST",
+      "endpoint": "/actions/create_indicator",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "indicator_title",
+          "type": "string",
+          "description": "Indicator title",
+          "required": false,
+          "default": "Indicator created by Splunk SOAR"
+        },
+        {
+          "name": "indicator_description",
+          "type": "string",
+          "description": "Indicator description",
+          "required": false
+        },
+        {
+          "name": "confidence_value",
+          "type": "string",
+          "description": "Confidence value",
+          "required": false,
+          "default": "None"
+        },
+        {
+          "name": "impact_value",
+          "type": "string",
+          "description": "Impact value",
+          "required": false,
+          "default": "None"
+        },
+        {
+          "name": "tags",
+          "type": "string",
+          "description": "Indicator tags delimited by ','",
+          "required": false,
+          "default": "Splunk SOAR Indicator, Automatically created"
+        },
+        {
+          "name": "observable_1_value",
+          "type": "string",
+          "description": "Observable value",
+          "required": true
+        },
+        {
+          "name": "observable_1_type",
+          "type": "string",
+          "description": "Observable type",
+          "required": true
+        },
+        {
+          "name": "observable_1_maliciousness",
+          "type": "string",
+          "description": "Observalble maliciousness",
+          "required": false,
+          "default": "Unknown"
+        },
+        {
+          "name": "observable_dictionary",
+          "type": "string",
+          "description": "Observable dictionary",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "query_entities",
+      "name": "Query Entities",
+      "description": "Query EclecticIQ Intelligence Center for entities",
+      "http_method": "GET",
+      "endpoint": "/actions/query_entities",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "observable",
+          "type": "string",
+          "description": "Observable value to query related entities",
+          "required": false,
+          "contains": [
+            "ip",
+            "hash",
+            "domain",
+            "url",
+            "sha1",
+            "sha256",
+            "md5",
+            "sha512"
+          ]
+        },
+        {
+          "name": "entity_title",
+          "type": "string",
+          "description": "Text to search inside entity title",
+          "required": false
+        },
+        {
+          "name": "entity_type",
+          "type": "string",
+          "description": "Type of entity to limit query",
+          "required": false,
+          "default": "all"
+        }
+      ]
+    },
+    {
+      "id": "query_entity_by_id",
+      "name": "Query Entity By Id",
+      "description": "Query EclecticIQ Intelligence Center for entity by its ID",
+      "http_method": "GET",
+      "endpoint": "/actions/query_entity_by_id",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "entity_id",
+          "type": "string",
+          "description": "Entity ID in EclecticIQ format, for example: a86f8393-eff6-4b31-b203-f63152be5a43",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "request_get",
+      "name": "Request Get",
+      "description": "Make HTTP GET request to EclecticIQ Intelligence Center",
+      "http_method": "GET",
+      "endpoint": "/actions/request_get",
+      "action_type": "generic",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "uri",
+          "type": "string",
+          "description": "EclecticIQ URI excluding Intelligence Cetner address but including API version and params if needed. e.g. /private/status",
+          "required": true
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "request_post",
+      "name": "Request Post",
+      "description": "Make HTTP POST request to EclecticIQ Intelligence Center",
+      "http_method": "GET",
+      "endpoint": "/actions/request_post",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "uri",
+          "type": "string",
+          "description": "EclecticIQ URI excluding Intelligence Cetner address but including API version and params if needed",
+          "required": true
+        },
+        {
+          "name": "body",
+          "type": "string",
+          "description": "JSON payload",
+          "required": true
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "request_delete",
+      "name": "Request Delete",
+      "description": "Make HTTP DELETE request to EclecticIQ Intelligence Center",
+      "http_method": "GET",
+      "endpoint": "/actions/request_delete",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "uri",
+          "type": "string",
+          "description": "EclecticIQ URI excluding Intelligence Cetner address but including API version and params if needed",
+          "required": true
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "on_poll",
+      "name": "On Poll",
+      "description": "Callback action for the on_poll ingest functionality",
+      "http_method": "GET",
+      "endpoint": "/actions/on_poll",
+      "action_type": "ingest",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "container_id",
+          "type": "string",
+          "description": "Container IDs to limit the ingestion to",
+          "required": false
+        },
+        {
+          "name": "start_time",
+          "type": "number",
+          "description": "Start of time range, in epoch time (milliseconds)",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "number",
+          "description": "End of time range, in epoch time (milliseconds)",
+          "required": false
+        },
+        {
+          "name": "container_count",
+          "type": "number",
+          "description": "Maximum number of container records to query for",
+          "required": false
+        },
+        {
+          "name": "artifact_count",
+          "type": "number",
+          "description": "Maximum number of artifact records to query for",
+          "required": false
+        },
+        {
+          "name": "feed_ids",
+          "type": "string",
+          "description": "TIP feed IDs delimited by \",\"",
+          "required": false
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "EclecticIQ app",
+    "original_type": "reputation",
+    "converted_at": "2025-12-18T16:25:28.749120",
+    "source_version": "2.0.0"
+  }
+}

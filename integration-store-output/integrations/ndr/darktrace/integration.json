@@ -1,0 +1,240 @@
+{
+  "id": "darktrace",
+  "name": "Darktrace",
+  "description": "Network Detection and Response platform using self-learning AI to detect and autonomously respond to cyber threats across the enterprise",
+  "version": "1.0.0",
+  "category": "ndr",
+  "vendor": "Darktrace",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header",
+    "note": "Requires HMAC signature using public and private API tokens. DT-API-Signature header with timestamp-based HMAC-SHA1"
+  },
+  "base_url": "https://{appliance}/",
+  "actions": [
+    {
+      "id": "get_model_breaches",
+      "name": "Get Model Breaches",
+      "description": "Retrieve model breach alerts from Darktrace within a specified time range",
+      "http_method": "GET",
+      "endpoint": "/modelbreaches",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "starttime",
+          "type": "number",
+          "description": "Start time as epoch milliseconds",
+          "required": false
+        },
+        {
+          "name": "endtime",
+          "type": "number",
+          "description": "End time as epoch milliseconds",
+          "required": false
+        },
+        {
+          "name": "did",
+          "type": "number",
+          "description": "Device ID to filter breaches for a specific device",
+          "required": false
+        },
+        {
+          "name": "count",
+          "type": "number",
+          "description": "Maximum number of breaches to return",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "minscore",
+          "type": "number",
+          "description": "Minimum breach score threshold (0-1)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_model_breach_details",
+      "name": "Get Model Breach Details",
+      "description": "Retrieve detailed information about a specific model breach by its ID",
+      "http_method": "GET",
+      "endpoint": "/modelbreaches/{pbid}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "pbid",
+          "type": "number",
+          "description": "The model breach ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_ai_analyst_incidents",
+      "name": "Get AI Analyst Incidents",
+      "description": "Retrieve AI Analyst investigation incidents",
+      "http_method": "GET",
+      "endpoint": "/aianalyst/incidentevents",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "starttime",
+          "type": "number",
+          "description": "Start time as epoch milliseconds",
+          "required": false
+        },
+        {
+          "name": "endtime",
+          "type": "number",
+          "description": "End time as epoch milliseconds",
+          "required": false
+        },
+        {
+          "name": "mingroupscore",
+          "type": "number",
+          "description": "Minimum group score to filter incidents",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_device_info",
+      "name": "Get Device Info",
+      "description": "Retrieve information about a specific device tracked by Darktrace",
+      "http_method": "GET",
+      "endpoint": "/deviceinfo",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "did",
+          "type": "number",
+          "description": "Device ID",
+          "required": false
+        },
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "IP address of the device",
+          "required": false
+        },
+        {
+          "name": "hostname",
+          "type": "string",
+          "description": "Hostname of the device",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_device_summary",
+      "name": "Get Device Summary",
+      "description": "Retrieve a summary of all devices tracked by Darktrace",
+      "http_method": "GET",
+      "endpoint": "/devicesummary",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "search_devices",
+      "name": "Search Devices",
+      "description": "Search for devices matching specific criteria",
+      "http_method": "GET",
+      "endpoint": "/devices",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Search query string for filtering devices",
+          "required": false
+        },
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "Filter by IP address",
+          "required": false
+        },
+        {
+          "name": "hostname",
+          "type": "string",
+          "description": "Filter by hostname",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_device_connection_data",
+      "name": "Get Device Connection Data",
+      "description": "Retrieve network connection data for a specific device",
+      "http_method": "GET",
+      "endpoint": "/deviceinfo/{did}/connections",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "did",
+          "type": "number",
+          "description": "Device ID",
+          "required": true
+        },
+        {
+          "name": "starttime",
+          "type": "number",
+          "description": "Start time as epoch milliseconds",
+          "required": false
+        },
+        {
+          "name": "endtime",
+          "type": "number",
+          "description": "End time as epoch milliseconds",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_status",
+      "name": "Get System Status",
+      "description": "Retrieve the current status and health of the Darktrace appliance",
+      "http_method": "GET",
+      "endpoint": "/status",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "acknowledge_model_breach",
+      "name": "Acknowledge Model Breach",
+      "description": "Acknowledge a model breach alert to mark it as reviewed",
+      "http_method": "POST",
+      "endpoint": "/modelbreaches/{pbid}/acknowledge",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "pbid",
+          "type": "number",
+          "description": "The model breach ID to acknowledge",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_tags",
+      "name": "Get Tags",
+      "description": "Retrieve all tags applied to devices in Darktrace",
+      "http_method": "GET",
+      "endpoint": "/tags",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    }
+  ]
+}

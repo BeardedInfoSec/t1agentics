@@ -1,0 +1,159 @@
+{
+  "id": "tessian",
+  "name": "Tessian",
+  "description": "AI-powered email security platform (now Proofpoint) providing adaptive protection against phishing, BEC, account takeover, and data loss via API-based deployment",
+  "version": "1.0.0",
+  "category": "email_security",
+  "vendor": "Proofpoint (Tessian)",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header",
+    "prefix": "Bearer"
+  },
+  "base_url": "https://portal.tessian.com/api/v1",
+  "actions": [
+    {
+      "id": "get_security_events",
+      "name": "Get Security Events",
+      "description": "Retrieve security events detected by Tessian including phishing and data loss prevention",
+      "http_method": "GET",
+      "endpoint": "/events",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "created_after",
+          "type": "string",
+          "description": "Filter events created after this ISO 8601 timestamp",
+          "required": false
+        },
+        {
+          "name": "created_before",
+          "type": "string",
+          "description": "Filter events created before this ISO 8601 timestamp",
+          "required": false
+        },
+        {
+          "name": "event_type",
+          "type": "string",
+          "description": "Filter by event type (inbound_email, outbound_email)",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of events to return",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Offset for pagination",
+          "required": false,
+          "default": 0
+        }
+      ]
+    },
+    {
+      "id": "get_event_details",
+      "name": "Get Event Details",
+      "description": "Retrieve detailed information about a specific security event",
+      "http_method": "GET",
+      "endpoint": "/events/{event_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "event_id",
+          "type": "string",
+          "description": "The event ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "release_from_quarantine",
+      "name": "Release from Quarantine",
+      "description": "Release an email from quarantine using the event ID",
+      "http_method": "POST",
+      "endpoint": "/events/{event_id}/release",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "event_id",
+          "type": "string",
+          "description": "The event ID of the quarantined email",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "delete_from_quarantine",
+      "name": "Delete from Quarantine",
+      "description": "Permanently delete an email from quarantine",
+      "http_method": "DELETE",
+      "endpoint": "/events/{event_id}/quarantine",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "event_id",
+          "type": "string",
+          "description": "The event ID of the quarantined email",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "delete_from_inbox",
+      "name": "Delete from Inbox",
+      "description": "Remediate an email by deleting it from the user's inbox",
+      "http_method": "POST",
+      "endpoint": "/events/{event_id}/remediate",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "event_id",
+          "type": "string",
+          "description": "The event ID of the email to remediate",
+          "required": true
+        },
+        {
+          "name": "action",
+          "type": "string",
+          "description": "Remediation action (delete, move_to_trash)",
+          "required": true,
+          "default": "delete"
+        }
+      ]
+    },
+    {
+      "id": "update_event_label",
+      "name": "Update Event Label",
+      "description": "Update the admin label on a security event",
+      "http_method": "PATCH",
+      "endpoint": "/events/{event_id}",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "event_id",
+          "type": "string",
+          "description": "The event ID",
+          "required": true
+        },
+        {
+          "name": "admin_label",
+          "type": "string",
+          "description": "Admin label to apply (confirmed_threat, false_positive, pending)",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

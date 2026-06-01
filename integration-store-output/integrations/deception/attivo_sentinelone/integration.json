@@ -1,0 +1,151 @@
+{
+  "id": "attivo_sentinelone",
+  "name": "SentinelOne Singularity Hologram",
+  "description": "Network-based deception platform (formerly Attivo Networks) using decoys, breadcrumbs, and honeypots to detect lateral movement, credential theft, and insider threats",
+  "version": "1.0.0",
+  "category": "deception",
+  "vendor": "SentinelOne",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "prefix": "ApiToken ",
+    "location": "header",
+    "description": "API token generated from SentinelOne management console under Actions > API Token Operations"
+  },
+  "base_url": "https://{host}/web/api/v2.1",
+  "actions": [
+    {
+      "id": "list_decoys",
+      "name": "List Decoys",
+      "description": "List all deployed network decoys with their status and configuration",
+      "http_method": "GET",
+      "endpoint": "/deception/decoys",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "siteIds",
+          "type": "string",
+          "description": "Comma-separated list of site IDs to filter",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Filter by decoy status: active, inactive",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "description": "Max results per page",
+          "required": false,
+          "location": "query"
+        }
+      ]
+    },
+    {
+      "id": "list_alerts",
+      "name": "List Deception Alerts",
+      "description": "List alerts triggered by attacker interactions with decoys and breadcrumbs",
+      "http_method": "GET",
+      "endpoint": "/deception/alerts",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Filter by severity: low, medium, high, critical",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "createdAt__gte",
+          "type": "string",
+          "description": "Filter alerts created on or after this date (ISO 8601)",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "createdAt__lte",
+          "type": "string",
+          "description": "Filter alerts created on or before this date",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "description": "Max results per page",
+          "required": false,
+          "location": "query"
+        }
+      ]
+    },
+    {
+      "id": "get_alert",
+      "name": "Get Alert Details",
+      "description": "Retrieve detailed information about a specific deception alert including forensics",
+      "http_method": "GET",
+      "endpoint": "/deception/alerts/{alert_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "alert_id",
+          "type": "string",
+          "description": "Alert ID",
+          "required": true,
+          "location": "path"
+        }
+      ]
+    },
+    {
+      "id": "list_breadcrumbs",
+      "name": "List Breadcrumbs",
+      "description": "List deployed breadcrumbs (lures) placed on endpoints to attract attackers to decoys",
+      "http_method": "GET",
+      "endpoint": "/deception/breadcrumbs",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Breadcrumb type: credential, file, share, rdp, ssh",
+          "required": false,
+          "location": "query"
+        }
+      ]
+    },
+    {
+      "id": "get_attacker_intelligence",
+      "name": "Get Attacker Intelligence",
+      "description": "Retrieve attacker telemetry and intelligence gathered from decoy interactions",
+      "http_method": "GET",
+      "endpoint": "/deception/intelligence",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "alertId",
+          "type": "string",
+          "description": "Alert ID to retrieve intelligence for",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "description": "Max results",
+          "required": false,
+          "location": "query"
+        }
+      ]
+    }
+  ]
+}

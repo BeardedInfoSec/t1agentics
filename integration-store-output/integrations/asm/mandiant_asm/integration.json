@@ -1,0 +1,166 @@
+{
+  "id": "mandiant_asm",
+  "name": "Mandiant Attack Surface Management",
+  "description": "Google Cloud-backed attack surface management providing automated external asset discovery, vulnerability detection, and exposure monitoring with threat intelligence enrichment",
+  "version": "1.0.0",
+  "category": "asm",
+  "vendor": "Mandiant (Google Cloud)",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "header_format": "Bearer {api_key}",
+    "location": "header"
+  },
+  "base_url": "https://asm.advantage.mandiant.com/api/v1",
+  "actions": [
+    {
+      "id": "list_assets",
+      "name": "List Assets",
+      "description": "Retrieve discovered external assets including hosts, domains, IP ranges, and web applications",
+      "http_method": "GET",
+      "endpoint": "/assets",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Filter by asset type (host, domain, ip_range, web_app, certificate)",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "description": "Maximum number of results to return",
+          "required": false
+        },
+        {
+          "name": "offset",
+          "type": "integer",
+          "description": "Number of results to skip for pagination",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_asset",
+      "name": "Get Asset Details",
+      "description": "Retrieve detailed information about a specific asset including services, technologies, and risk assessment",
+      "http_method": "GET",
+      "endpoint": "/assets/{asset_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "asset_id",
+          "type": "string",
+          "description": "The unique identifier of the asset",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_issues",
+      "name": "List Issues",
+      "description": "Retrieve security issues and exposures identified across the attack surface",
+      "http_method": "GET",
+      "endpoint": "/issues",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Filter by severity level",
+          "required": false
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Filter by issue status (open, resolved, accepted)",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "description": "Maximum number of results to return",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_vulnerabilities",
+      "name": "List Vulnerabilities",
+      "description": "Retrieve vulnerabilities detected on external assets with threat intelligence context",
+      "http_method": "GET",
+      "endpoint": "/vulnerabilities",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Filter by vulnerability severity",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "description": "Maximum number of results to return",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_collections",
+      "name": "List Collections",
+      "description": "Retrieve the list of data collections available in the ASM workspace",
+      "http_method": "GET",
+      "endpoint": "/collections",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "get_collection_netblocks",
+      "name": "Get Collection Netblocks",
+      "description": "Retrieve network blocks discovered in a specific collection",
+      "http_method": "GET",
+      "endpoint": "/collections/{collection_name}/netblocks",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "collection_name",
+          "type": "string",
+          "description": "The name of the collection",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "search_domains",
+      "name": "Search Domains",
+      "description": "Search for discovered domains and subdomains in the attack surface",
+      "http_method": "GET",
+      "endpoint": "/assets",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Set to 'domain' to filter for domain assets",
+          "required": true
+        },
+        {
+          "name": "q",
+          "type": "string",
+          "description": "Search query for domain name matching",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

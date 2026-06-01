@@ -1,0 +1,237 @@
+{
+  "name": "Tabletop Exercise Automation",
+  "slug": "ir-tabletop-exercise",
+  "description": "Automates tabletop exercise orchestration for incident response preparedness. A code node selects an exercise scenario from the scenario library based on the requested category (ransomware, phishing, insider threat, etc.). Riggs AI generates a tailored scenario brief with inject points and expected discussion topics. The scenario is distributed to participants via Slack and email. A delay allows time for the exercise to run, after which a follow-up survey is sent. The exercise results and participation are tracked in Jira for compliance reporting.",
+  "category": "incident_response",
+  "subcategory": "preparedness",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "60 minutes",
+  "tags": ["tabletop", "exercise", "preparedness", "scenario", "training", "compliance"],
+  "alert_types": [],
+  "severity_filter": [],
+  "trigger_conditions": {
+    "alert_types": [],
+    "trigger_type": "manual"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Distribute exercise scenarios, injects, and post-exercise surveys to participants"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Track exercise participation, results, and compliance reporting"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Manual Trigger — Tabletop Exercise",
+          "config": {
+            "trigger_type": "manual",
+            "description": "Manually triggered to initiate a tabletop exercise for incident response preparedness training"
+          }
+        }
+      },
+      {
+        "id": "code_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "code",
+          "label": "Select Exercise Scenario",
+          "config": {
+            "mode": "script",
+            "script": {
+              "function_name": "main",
+              "inputs": [
+                { "name": "config", "path": "$.config" }
+              ],
+              "code": "def main(config):\n    scenarios = {\n        'ransomware': {'title': 'Ransomware Attack on Critical Infrastructure', 'category': 'malware', 'injects': 5},\n        'phishing': {'title': 'Executive Spear-Phishing Campaign', 'category': 'phishing', 'injects': 4},\n        'insider_threat': {'title': 'Privileged User Data Exfiltration', 'category': 'insider_threat', 'injects': 4},\n        'supply_chain': {'title': 'Third-Party Software Supply Chain Compromise', 'category': 'supply_chain', 'injects': 5},\n        'cloud_breach': {'title': 'Cloud Infrastructure Credential Compromise', 'category': 'cloud', 'injects': 4}\n    }\n    selected = config.get('scenario_type', 'ransomware')\n    scenario = scenarios.get(selected, scenarios['ransomware'])\n    scenario['scenario_type'] = selected\n    return scenario"
+            },
+            "output_variable": "scenario",
+            "description": "Select the tabletop exercise scenario from the library based on the requested category"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — Generate Scenario Brief",
+          "config": {
+            "template_id": "executive_summary",
+            "additional_instructions": "Generate a detailed tabletop exercise scenario brief for the selected category. Include: scenario narrative, timeline of events, inject points with discussion questions, expected roles and responsibilities, and success criteria. Make the scenario realistic and challenging.",
+            "description": "AI-powered scenario brief generation with inject points, discussion topics, and expected outcomes"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 540 },
+        "data": {
+          "kind": "respond",
+          "label": "Create Exercise Channel",
+          "config": {
+            "integration_action": {
+              "connector_id": "slack",
+              "action": "create_channel",
+              "parameters": {
+                "channel_name": "tabletop-{{code_1.scenario.scenario_type}}-{{trigger_1.timestamp}}",
+                "topic": "Tabletop Exercise: {{code_1.scenario.title}}",
+                "initial_message": "TABLETOP EXERCISE — {{code_1.scenario.title}}\n\nWelcome to today's tabletop exercise. This is a simulated scenario for training purposes.\n\n--- SCENARIO BRIEF ---\n{{analyze_1.summary}}\n\n--- RULES OF ENGAGEMENT ---\n1. Discuss each inject as a team\n2. Document decisions and rationale\n3. Identify gaps in current procedures\n4. No actual systems will be affected\n\nThe facilitator will post injects at timed intervals. Please remain in this channel for the duration of the exercise."
+              }
+            },
+            "description": "Create a dedicated Slack channel for the tabletop exercise and post the scenario brief"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 520, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "label": "Email Exercise Invitation",
+          "config": {
+            "notify": {
+              "channel": "email",
+              "target": "{{config.exercise_participant_list}}",
+              "message": "TABLETOP EXERCISE INVITATION\n\nExercise: {{code_1.scenario.title}}\nChannel: #tabletop-{{code_1.scenario.scenario_type}}-{{trigger_1.timestamp}}\nDuration: 60 minutes\nInjects: {{code_1.scenario.injects}}\n\nPlease join the Slack channel at the scheduled time. Review the scenario brief posted in the channel before the exercise begins.\n\nParticipation is tracked for compliance reporting."
+            },
+            "description": "Send exercise invitation and details to all participants via email"
+          }
+        }
+      },
+      {
+        "id": "delay_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 860 },
+        "data": {
+          "kind": "delay",
+          "label": "Exercise Duration — 60 Minutes",
+          "config": {
+            "duration_minutes": 60,
+            "description": "Wait for the tabletop exercise to complete before sending the post-exercise survey"
+          }
+        }
+      },
+      {
+        "id": "respond_3",
+        "type": "signal",
+        "position": { "x": 520, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "label": "Send Post-Exercise Survey",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#tabletop-{{code_1.scenario.scenario_type}}-{{trigger_1.timestamp}}",
+              "message": "EXERCISE COMPLETE — FEEDBACK REQUESTED\n\nThank you for participating in today's tabletop exercise.\n\nPlease complete the post-exercise survey:\n{{config.survey_base_url}}/tabletop/{{trigger_1.timestamp}}\n\nKey Questions:\n- Were roles and responsibilities clear?\n- Were communication channels effective?\n- What gaps did you identify in our procedures?\n- What would you improve for the next exercise?\n\nSurvey deadline: 3 business days"
+            },
+            "description": "Post the post-exercise feedback survey link to the exercise channel"
+          }
+        }
+      },
+      {
+        "id": "respond_4",
+        "type": "signal",
+        "position": { "x": 520, "y": 1180 },
+        "data": {
+          "kind": "respond",
+          "label": "Create Exercise Tracking Ticket",
+          "config": {
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_issue",
+              "parameters": {
+                "project": "IR",
+                "issue_type": "Task",
+                "priority": "P3 - Medium",
+                "summary": "TABLETOP EXERCISE: {{code_1.scenario.title}}",
+                "description": "Tabletop Exercise Record\n\nScenario: {{code_1.scenario.title}}\nCategory: {{code_1.scenario.category}}\nDate: {{trigger_1.timestamp}}\nInjects: {{code_1.scenario.injects}}\nChannel: #tabletop-{{code_1.scenario.scenario_type}}-{{trigger_1.timestamp}}\n\nScenario Brief:\n{{analyze_1.summary}}\n\nAction Items:\n- [ ] Compile participant list and attendance\n- [ ] Review survey responses\n- [ ] Document identified gaps\n- [ ] Update IR procedures based on findings\n- [ ] File compliance report"
+              }
+            },
+            "description": "Create a Jira ticket to track exercise results, participation, and compliance reporting"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1340 },
+        "data": {
+          "kind": "end",
+          "label": "End — Exercise Complete",
+          "config": {
+            "description": "Tabletop exercise complete — scenario distributed, exercise conducted, survey sent, results tracked in Jira"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_code",
+        "source": "trigger_1",
+        "target": "code_1",
+        "type": "default"
+      },
+      {
+        "id": "e_code_analyze",
+        "source": "code_1",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_analyze_respond1",
+        "source": "analyze_1",
+        "target": "respond_1",
+        "type": "default"
+      },
+      {
+        "id": "e_respond1_respond2",
+        "source": "respond_1",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_respond2_delay",
+        "source": "respond_2",
+        "target": "delay_1",
+        "type": "default"
+      },
+      {
+        "id": "e_delay_respond3",
+        "source": "delay_1",
+        "target": "respond_3",
+        "type": "default"
+      },
+      {
+        "id": "e_respond3_respond4",
+        "source": "respond_3",
+        "target": "respond_4",
+        "type": "default"
+      },
+      {
+        "id": "e_respond4_end",
+        "source": "respond_4",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

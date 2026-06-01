@@ -1,0 +1,191 @@
+{
+  "name": "MFA Bypass Attempt Response",
+  "slug": "identity-mfa-bypass",
+  "description": "Responds to detected MFA bypass attempts including token replay, SIM swap indicators, and push fatigue attacks. Disables the compromised session, forces MFA re-enrollment for the affected user, analyzes the bypass method with AI, and notifies the security team. Low-confidence detections are logged for review.",
+  "category": "identity",
+  "subcategory": "mfa_bypass",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "10 minutes",
+  "tags": ["mfa", "bypass", "session_hijack", "authentication", "re_enrollment"],
+  "alert_types": ["mfa_bypass", "authentication_anomaly"],
+  "severity_filter": ["high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["mfa_bypass", "authentication_anomaly"],
+    "min_severity": "high"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "microsoft_graph",
+      "name": "Microsoft Graph",
+      "category": "identity",
+      "reason": "Revoke user sessions and force MFA re-enrollment"
+    },
+    {
+      "connector_id": "okta",
+      "name": "Okta",
+      "category": "identity",
+      "reason": "Clear Okta sessions and reset MFA factors"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "mb-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "title": "MFA Bypass Alert",
+          "summary": "Fires on MFA bypass or authentication anomaly alert",
+          "config": {
+            "trigger_type": "alert",
+            "alert_filter": "mfa_bypass OR authentication_anomaly"
+          }
+        }
+      },
+      {
+        "id": "mb-2",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "title": "AI MFA Bypass Analysis",
+          "summary": "Analyze the bypass attempt method, context, and risk level",
+          "config": {
+            "mode": "ai_analysis",
+            "template_id": "credential_access",
+            "custom_instructions": "",
+            "alert_path": "$.trigger.alert",
+            "include_context": true
+          }
+        }
+      },
+      {
+        "id": "mb-3",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "title": "Confirmed MFA Bypass?",
+          "summary": "Branch based on whether AI analysis confirms a genuine MFA bypass",
+          "config": {
+            "conditions": {
+              "operator": "AND",
+              "conditions": [
+                {
+                  "field": "$.nodes.mb-2.result.confirmed_bypass",
+                  "operator": "equals",
+                  "value": "true"
+                }
+              ],
+              "groups": []
+            },
+            "expression": "$.nodes.mb-2.result.confirmed_bypass == true",
+            "default_branch": "no"
+          }
+        }
+      },
+      {
+        "id": "mb-4",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "respond",
+          "title": "Terminate All Sessions",
+          "summary": "Revoke all active sessions for the compromised user",
+          "config": {
+            "response_type": "integration_action",
+            "integration_instance_id": "microsoft_graph",
+            "action_type": "revoke_sessions",
+            "params": {
+              "user_id": "$.trigger.alert.target_user_id",
+              "reason": "MFA bypass detected — all sessions terminated"
+            },
+            "requires_approval": false,
+            "priority": "critical"
+          }
+        }
+      },
+      {
+        "id": "mb-5",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "title": "Force MFA Re-enrollment",
+          "summary": "Reset MFA factors and force re-enrollment on next login",
+          "config": {
+            "response_type": "integration_action",
+            "integration_instance_id": "okta",
+            "action_type": "reset_mfa_factors",
+            "params": {
+              "user_id": "$.trigger.alert.target_user_id",
+              "require_re_enrollment": true,
+              "reason": "MFA bypass confirmed — re-enrollment required"
+            },
+            "requires_approval": false,
+            "priority": "critical"
+          }
+        }
+      },
+      {
+        "id": "mb-6",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "title": "Notify Security Team",
+          "summary": "Send high-priority notification to security team with bypass details",
+          "config": {
+            "response_type": "notification",
+            "channel": "slack",
+            "slack_channel": "#soc-critical",
+            "message": "MFA bypass confirmed for user {{$.trigger.alert.target_user_email}}. Method: {{$.trigger.alert.bypass_method}}. All sessions terminated and MFA re-enrollment forced.",
+            "requires_approval": false,
+            "priority": "critical"
+          }
+        }
+      },
+      {
+        "id": "mb-7",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "utility",
+          "title": "Log for Review",
+          "summary": "Log the unconfirmed MFA bypass attempt for analyst review",
+          "config": {
+            "operation": "add_note",
+            "note": "MFA bypass alert reviewed by AI. Bypass not confirmed with high confidence. Logged for manual analyst review."
+          }
+        }
+      },
+      {
+        "id": "mb-8",
+        "type": "signal",
+        "position": { "x": 520, "y": 1020 },
+        "data": {
+          "kind": "end",
+          "title": "Playbook Complete",
+          "summary": "MFA bypass response finished",
+          "config": {
+            "disposition": "completed",
+            "summary": "MFA bypass attempt response actions completed"
+          }
+        }
+      }
+    ],
+    "edges": [
+      { "id": "mb-e1", "source": "mb-1", "target": "mb-2", "animated": true, "type": "smoothstep" },
+      { "id": "mb-e2", "source": "mb-2", "target": "mb-3", "animated": true, "type": "smoothstep" },
+      { "id": "mb-e3", "source": "mb-3", "target": "mb-4", "sourceHandle": "yes", "label": "Yes", "animated": true, "type": "smoothstep" },
+      { "id": "mb-e4", "source": "mb-3", "target": "mb-7", "sourceHandle": "no", "label": "No", "animated": true, "type": "smoothstep" },
+      { "id": "mb-e5", "source": "mb-4", "target": "mb-5", "animated": true, "type": "smoothstep" },
+      { "id": "mb-e6", "source": "mb-5", "target": "mb-6", "animated": true, "type": "smoothstep" },
+      { "id": "mb-e7", "source": "mb-6", "target": "mb-8", "animated": true, "type": "smoothstep" },
+      { "id": "mb-e8", "source": "mb-7", "target": "mb-8", "animated": true, "type": "smoothstep" }
+    ]
+  }
+}

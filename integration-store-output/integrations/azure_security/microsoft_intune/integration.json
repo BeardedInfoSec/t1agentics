@@ -1,0 +1,186 @@
+{
+  "id": "microsoft_intune_azure_security",
+  "name": "Microsoft Intune",
+  "description": "Microsoft cloud-based endpoint management service for device compliance, app protection, and security configuration across mobile and desktop devices",
+  "version": "1.0.0",
+  "category": "azure_security",
+  "vendor": "Microsoft Azure",
+  "auth_type": "oauth2_client",
+  "auth_config": {
+    "type": "oauth2_client",
+    "token_url": "https://login.microsoftonline.com/{tenantId}/oauth2/v2.0/token",
+    "scope": "https://graph.microsoft.com/.default",
+    "grant_type": "client_credentials"
+  },
+  "base_url": "https://graph.microsoft.com/v1.0",
+  "actions": [
+    {
+      "id": "list_managed_devices",
+      "name": "List Managed Devices",
+      "description": "List all devices managed by Intune with their compliance and enrollment status",
+      "http_method": "GET",
+      "endpoint": "/deviceManagement/managedDevices",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "$filter",
+          "type": "string",
+          "description": "OData filter (e.g., \"complianceState eq 'noncompliant'\")",
+          "required": false
+        },
+        {
+          "name": "$top",
+          "type": "number",
+          "description": "Maximum devices to return",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "$select",
+          "type": "string",
+          "description": "Comma-separated properties to return",
+          "required": false
+        },
+        {
+          "name": "$orderby",
+          "type": "string",
+          "description": "Order by expression",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_managed_device",
+      "name": "Get Managed Device",
+      "description": "Retrieve detailed information about a specific managed device",
+      "http_method": "GET",
+      "endpoint": "/deviceManagement/managedDevices/{managedDeviceId}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "managedDeviceId",
+          "type": "string",
+          "description": "Managed device ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_compliance_policies",
+      "name": "List Compliance Policies",
+      "description": "List device compliance policies and their assignments",
+      "http_method": "GET",
+      "endpoint": "/deviceManagement/deviceCompliancePolicies",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "$top",
+          "type": "number",
+          "description": "Maximum policies to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "list_compliance_policy_status",
+      "name": "List Device Compliance Status",
+      "description": "List the compliance status for devices against a specific compliance policy",
+      "http_method": "GET",
+      "endpoint": "/deviceManagement/deviceCompliancePolicies/{policyId}/deviceStatuses",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "policyId",
+          "type": "string",
+          "description": "Compliance policy ID",
+          "required": true
+        },
+        {
+          "name": "$top",
+          "type": "number",
+          "description": "Maximum statuses to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "list_configuration_policies",
+      "name": "List Configuration Policies",
+      "description": "List device configuration policies including security baselines",
+      "http_method": "GET",
+      "endpoint": "/deviceManagement/deviceConfigurations",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "$top",
+          "type": "number",
+          "description": "Maximum configurations to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "list_detected_apps",
+      "name": "List Detected Apps",
+      "description": "List applications detected on managed devices",
+      "http_method": "GET",
+      "endpoint": "/deviceManagement/detectedApps",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "$top",
+          "type": "number",
+          "description": "Maximum apps to return",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "$orderby",
+          "type": "string",
+          "description": "Order by expression",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "wipe_device",
+      "name": "Wipe Device",
+      "description": "Initiate a remote wipe on a managed device to remove all data",
+      "http_method": "POST",
+      "endpoint": "/deviceManagement/managedDevices/{managedDeviceId}/wipe",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "managedDeviceId",
+          "type": "string",
+          "description": "Managed device ID to wipe",
+          "required": true
+        },
+        {
+          "name": "keepEnrollmentData",
+          "type": "boolean",
+          "description": "Keep enrollment data after wipe",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "keepUserData",
+          "type": "boolean",
+          "description": "Keep user data after wipe",
+          "required": false,
+          "default": false
+        }
+      ]
+    }
+  ]
+}

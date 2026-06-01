@@ -1,0 +1,196 @@
+{
+  "id": "arcsight",
+  "name": "ArcSight ESM",
+  "description": "Integrates with OpenText ArcSight ESM for event correlation, active list management, query viewer data retrieval, and case management via the ArcSight REST API",
+  "version": "1.0.0",
+  "category": "siem",
+  "vendor": "OpenText",
+  "auth_type": "basic",
+  "auth_config": {
+    "type": "basic",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "https://{host}:8443/www",
+  "actions": [
+    {
+      "id": "login",
+      "name": "Login",
+      "description": "Authenticate to ArcSight ESM and obtain a session token",
+      "http_method": "POST",
+      "endpoint": "/core-service/rest/LoginService/login",
+      "action_type": "generic",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "login",
+          "type": "string",
+          "description": "Username for authentication",
+          "required": true
+        },
+        {
+          "name": "password",
+          "type": "string",
+          "description": "Password for authentication",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_query_viewer_results",
+      "name": "Get Query Viewer Results",
+      "description": "Retrieve results from an ArcSight query viewer (equivalent to running a saved correlation query)",
+      "http_method": "POST",
+      "endpoint": "/manager-service/rest/QueryViewerService/getMatrixData",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Query Viewer resource ID",
+          "required": true
+        },
+        {
+          "name": "authToken",
+          "type": "string",
+          "description": "Authentication token from login",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_active_list_entries",
+      "name": "Get Active List Entries",
+      "description": "Retrieve entries from an ArcSight active list (used for IOC tracking, whitelists, etc.)",
+      "http_method": "POST",
+      "endpoint": "/manager-service/rest/ActiveListService/getEntries",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Active List resource ID",
+          "required": true
+        },
+        {
+          "name": "authToken",
+          "type": "string",
+          "description": "Authentication token from login",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "add_active_list_entries",
+      "name": "Add Active List Entries",
+      "description": "Add new entries to an ArcSight active list",
+      "http_method": "POST",
+      "endpoint": "/manager-service/rest/ActiveListService/addEntries",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Active List resource ID",
+          "required": true
+        },
+        {
+          "name": "entryList",
+          "type": "object",
+          "description": "Entries to add (array of column-value maps)",
+          "required": true
+        },
+        {
+          "name": "authToken",
+          "type": "string",
+          "description": "Authentication token from login",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_cases",
+      "name": "Get Cases",
+      "description": "Retrieve cases from ArcSight case management",
+      "http_method": "POST",
+      "endpoint": "/manager-service/rest/CaseService/getCaseEventIDs",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Case resource ID",
+          "required": true
+        },
+        {
+          "name": "authToken",
+          "type": "string",
+          "description": "Authentication token from login",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_resource_by_id",
+      "name": "Get Resource",
+      "description": "Retrieve any ArcSight resource by its resource ID",
+      "http_method": "POST",
+      "endpoint": "/manager-service/rest/ResourceService/getResourceById",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "resourceId",
+          "type": "string",
+          "description": "Resource ID to retrieve",
+          "required": true
+        },
+        {
+          "name": "authToken",
+          "type": "string",
+          "description": "Authentication token from login",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "search_events",
+      "name": "Search Events",
+      "description": "Search for events using ArcSight query viewer with time range parameters",
+      "http_method": "POST",
+      "endpoint": "/manager-service/rest/QueryViewerService/getMatrixData",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Query Viewer resource ID configured for event search",
+          "required": true
+        },
+        {
+          "name": "startMillis",
+          "type": "number",
+          "description": "Start time in epoch milliseconds",
+          "required": false
+        },
+        {
+          "name": "endMillis",
+          "type": "number",
+          "description": "End time in epoch milliseconds",
+          "required": false
+        },
+        {
+          "name": "authToken",
+          "type": "string",
+          "description": "Authentication token from login",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,207 @@
+{
+  "id": "mattermost",
+  "name": "Mattermost",
+  "description": "This app integrates with Mattermost to support various investigative actions",
+  "version": "2.3.1",
+  "category": "threat_intel",
+  "vendor": "Mattermost",
+  "auth_type": "oauth2",
+  "auth_config": {
+    "type": "oauth2",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "{server_url}/api/v4",
+  "actions": [
+    {
+      "id": "list_users",
+      "name": "List Users",
+      "description": "List users of a team",
+      "http_method": "GET",
+      "endpoint": "/users/me/teams/{team}/channels",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "team",
+          "type": "string",
+          "description": "ID or name of the team",
+          "required": false,
+          "contains": [
+            "mattermost team"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "upload_file",
+      "name": "Upload File",
+      "description": "Upload file to a channel",
+      "http_method": "GET",
+      "endpoint": "/actions/upload_file",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "team",
+          "type": "string",
+          "description": "ID or name of the team",
+          "required": true,
+          "contains": [
+            "mattermost team"
+          ]
+        },
+        {
+          "name": "channel",
+          "type": "string",
+          "description": "ID or name of the channel",
+          "required": true,
+          "contains": [
+            "mattermost channel"
+          ]
+        },
+        {
+          "name": "vault_id",
+          "type": "string",
+          "description": "Vault ID",
+          "required": true,
+          "contains": [
+            "vault id",
+            "sha1"
+          ]
+        },
+        {
+          "name": "message",
+          "type": "string",
+          "description": "Message to send",
+          "required": false
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "send_message",
+      "name": "Send Message",
+      "description": "Send a message to a channel",
+      "http_method": "GET",
+      "endpoint": "/actions/send_message",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "team",
+          "type": "string",
+          "description": "ID or name of the team",
+          "required": true,
+          "contains": [
+            "mattermost team"
+          ]
+        },
+        {
+          "name": "channel",
+          "type": "string",
+          "description": "ID or name of the channel",
+          "required": true,
+          "contains": [
+            "mattermost channel"
+          ]
+        },
+        {
+          "name": "message",
+          "type": "string",
+          "description": "Message to send",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_posts",
+      "name": "List Posts",
+      "description": "List posts of a channel",
+      "http_method": "GET",
+      "endpoint": "/channels/{channel}/posts",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "team",
+          "type": "string",
+          "description": "ID or name of the team",
+          "required": true,
+          "contains": [
+            "mattermost team"
+          ]
+        },
+        {
+          "name": "channel",
+          "type": "string",
+          "description": "ID or name of the channel",
+          "required": true,
+          "contains": [
+            "mattermost channel"
+          ]
+        },
+        {
+          "name": "start_time",
+          "type": "string",
+          "description": "Start time in formatted timestamp",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "string",
+          "description": "End time in formatted timestamp",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_channels",
+      "name": "List Channels",
+      "description": "List public and private channels of a team",
+      "http_method": "GET",
+      "endpoint": "/users/me/teams/{team}/channels",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "team",
+          "type": "string",
+          "description": "ID or name of the team",
+          "required": true,
+          "contains": [
+            "mattermost team"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_teams",
+      "name": "List Teams",
+      "description": "List teams",
+      "http_method": "GET",
+      "endpoint": "/users/me/teams/{team}/channels",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Mattermost",
+    "original_type": "information",
+    "converted_at": "2025-12-18T16:25:28.914534",
+    "source_version": "2.3.1"
+  }
+}

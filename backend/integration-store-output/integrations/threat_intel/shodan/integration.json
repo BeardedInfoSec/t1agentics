@@ -1,0 +1,111 @@
+{
+  "id": "shodan",
+  "name": "Shodan",
+  "description": "Integration with Shodan for security operations",
+  "version": "1.0.0",
+  "category": "threat_intel",
+  "vendor": "Shodan",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "key",
+    "location": "query"
+  },
+  "base_url": "https://api.shodan.io",
+  "actions": [
+    {
+      "id": "lookup_ip",
+      "name": "IP Lookup",
+      "http_method": "GET",
+      "endpoint": "/shodan/host/{ip}",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "description": "Get all available information on an IP including open ports, vulnerabilities, and services",
+      "observable_type": "ip"
+    },
+    {
+      "id": "search_domain",
+      "name": "DNS Lookup",
+      "http_method": "GET",
+      "endpoint": "/dns/domain/{domain}",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "description": "Get DNS records for a domain",
+      "observable_type": "domain"
+    },
+    {
+      "id": "api_info",
+      "name": "API Info",
+      "http_method": "GET",
+      "endpoint": "/api-info",
+      "read_only": true,
+      "cacheable": false,
+      "cache_ttl_days": 30,
+      "description": "Get API plan information and remaining query credits"
+    },
+    {
+      "id": "search",
+      "name": "Shodan Search",
+      "http_method": "GET",
+      "endpoint": "/shodan/host/search",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 1,
+      "description": "Search Shodan using filters like 'port:22 country:US org:Google'"
+    },
+    {
+      "id": "search_count",
+      "name": "Search Count",
+      "http_method": "GET",
+      "endpoint": "/shodan/host/count",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 1,
+      "description": "Get number of results for a query without using query credits"
+    },
+    {
+      "id": "dns_resolve",
+      "name": "DNS Resolve",
+      "http_method": "GET",
+      "endpoint": "/dns/resolve",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 1,
+      "description": "Resolve hostnames to IP addresses",
+      "observable_type": "domain"
+    },
+    {
+      "id": "dns_reverse",
+      "name": "Reverse DNS",
+      "http_method": "GET",
+      "endpoint": "/dns/reverse",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 1,
+      "description": "Reverse DNS lookup - find hostnames for IP addresses",
+      "observable_type": "ip"
+    },
+    {
+      "id": "protocols",
+      "name": "List Protocols",
+      "http_method": "GET",
+      "endpoint": "/shodan/protocols",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "description": "List all protocols Shodan can filter by in searches"
+    },
+    {
+      "id": "ports",
+      "name": "List Ports",
+      "http_method": "GET",
+      "endpoint": "/shodan/ports",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "description": "List all ports that Shodan crawls on the Internet"
+    }
+  ]
+}

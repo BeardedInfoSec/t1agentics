@@ -1,0 +1,130 @@
+{
+  "id": "maltego",
+  "name": "Maltego",
+  "description": "Maltego is a visual link analysis and data mining platform for gathering OSINT and mapping relationships between entities. It uses Transforms to query data sources and build investigation graphs. The Transform Distribution Server (TDS) provides remote Transform execution via REST.",
+  "version": "1.0.0",
+  "category": "threat_intel",
+  "vendor": "Maltego Technologies",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "param_name": "api_key",
+    "location": "query"
+  },
+  "base_url": "https://your-tds-server.maltego.com",
+  "actions": [
+    {
+      "id": "run_transform",
+      "name": "Run Transform",
+      "description": "Execute a Maltego Transform against an input entity (IP, domain, email, hash, etc.) to discover related entities and relationships from configured data sources.",
+      "http_method": "POST",
+      "endpoint": "/run/{transform_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "transform_id",
+          "type": "string",
+          "description": "The ID of the Transform to run",
+          "required": true
+        },
+        {
+          "name": "entity_value",
+          "type": "string",
+          "description": "The input entity value (e.g., an IP address, domain, email, or hash)",
+          "required": true,
+          "contains": ["ip", "domain", "email", "hash"]
+        },
+        {
+          "name": "entity_type",
+          "type": "string",
+          "description": "The Maltego entity type (e.g., 'maltego.IPv4Address', 'maltego.Domain', 'maltego.EmailAddress')",
+          "required": true
+        },
+        {
+          "name": "soft_limit",
+          "type": "integer",
+          "description": "Maximum number of results to return (default: 12)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_transforms",
+      "name": "List Transforms",
+      "description": "Retrieve a list of all available Transforms on the TDS server with their IDs, names, and descriptions.",
+      "http_method": "GET",
+      "endpoint": "/transforms",
+      "action_type": "generic",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "list_seeds",
+      "name": "List Seeds",
+      "description": "Get the list of configured seed (Transform Distribution) endpoints on the TDS server.",
+      "http_method": "GET",
+      "endpoint": "/seeds",
+      "action_type": "generic",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "ip_to_domains",
+      "name": "IP to Domains",
+      "description": "Standard Transform to discover domains associated with a given IP address through DNS resolution and reverse lookups.",
+      "http_method": "POST",
+      "endpoint": "/run/IPToDomains",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "entity_value",
+          "type": "string",
+          "description": "The IP address to resolve to domains",
+          "required": true,
+          "contains": ["ip"]
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "domain_to_ip",
+      "name": "Domain to IP",
+      "description": "Standard Transform to resolve a domain name to its IP address(es) through DNS resolution.",
+      "http_method": "POST",
+      "endpoint": "/run/DomainToIP",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "entity_value",
+          "type": "string",
+          "description": "The domain name to resolve",
+          "required": true,
+          "contains": ["domain"]
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "email_to_domain",
+      "name": "Email to Domain",
+      "description": "Standard Transform to extract the domain from an email address for further investigation.",
+      "http_method": "POST",
+      "endpoint": "/run/EmailToDomain",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "entity_value",
+          "type": "string",
+          "description": "The email address to extract domain from",
+          "required": true,
+          "contains": ["email"]
+        }
+      ],
+      "observable_type": "email"
+    }
+  ]
+}

@@ -1,0 +1,242 @@
+{
+  "name": "Vendor Risk Assessment",
+  "slug": "compliance-vendor-risk",
+  "description": "Third-party vendor risk assessment workflow that evaluates vendor security posture. When a new vendor assessment is initiated, the playbook collects the vendor's security questionnaire responses and external risk signals, uses Riggs AI to score the vendor against the organization's risk framework, and routes the decision based on risk tier. High-risk vendors require CISO approval; acceptable-risk vendors proceed to onboarding documentation.",
+  "category": "compliance",
+  "subcategory": "vendor_risk",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "20 minutes",
+  "tags": ["compliance", "vendor_risk", "third_party", "risk_assessment", "questionnaire", "supply_chain"],
+  "alert_types": [],
+  "severity_filter": [],
+  "trigger_conditions": {
+    "alert_types": [],
+    "trigger_type": "manual"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Track vendor risk assessment lifecycle and approval workflow"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Notify procurement and security teams of vendor risk decisions"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Vendor Assessment Initiated",
+          "config": {
+            "trigger_type": "manual",
+            "description": "Manually triggered when a new vendor risk assessment is requested by procurement or business unit"
+          }
+        }
+      },
+      {
+        "id": "code_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "code",
+          "label": "Collect Vendor Security Data",
+          "config": {
+            "mode": "query",
+            "query": "SELECT q.question_category, q.question_text, q.vendor_response, q.evidence_provided, e.risk_signal, e.signal_source, e.signal_date FROM vendor_questionnaire q LEFT JOIN vendor_external_signals e ON q.vendor_id = e.vendor_id WHERE q.vendor_id = '{{trigger_1.vendor_id}}'",
+            "output_variable": "vendor_security_data",
+            "description": "Collect vendor's security questionnaire responses and external risk intelligence signals"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI -- Vendor Risk Scoring",
+          "config": {
+            "template_id": "executive_summary",
+            "additional_instructions": "Score this vendor against the organization's third-party risk framework. Evaluate security controls, data handling practices, incident response capability, compliance certifications, and external risk signals. Assign a risk tier (Low, Medium, High, Critical) and provide specific risk factors.",
+            "description": "AI-powered vendor risk scoring and tier assignment"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 540 },
+        "data": {
+          "kind": "decision",
+          "label": "Risk Tier High or Critical?",
+          "config": {
+            "condition": "{{analyze_1.risk_tier}} in ['high', 'critical']",
+            "description": "Routes high and critical risk vendors through additional approval; lower risk proceeds to documentation"
+          }
+        }
+      },
+      {
+        "id": "approval_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "approval",
+          "label": "CISO Risk Acceptance",
+          "config": {
+            "approvers": ["ciso"],
+            "approval_message": "HIGH-RISK VENDOR ASSESSMENT\n\nVendor: {{trigger_1.vendor_name}}\nRisk Tier: {{analyze_1.risk_tier}}\nKey Risk Factors: {{analyze_1.key_risk_factors}}\n\n{{analyze_1.summary}}\n\nApprove risk acceptance for this vendor, or reject to block onboarding?",
+            "timeout_hours": 120,
+            "description": "CISO must approve or reject high-risk vendor engagement"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "label": "Create Risk Acceptance Ticket",
+          "config": {
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_issue",
+              "parameters": {
+                "project": "COMPLIANCE",
+                "issue_type": "Task",
+                "priority": "P2",
+                "summary": "Vendor Risk Acceptance: {{trigger_1.vendor_name}} ({{analyze_1.risk_tier}})",
+                "description": "VENDOR RISK ASSESSMENT -- HIGH RISK ACCEPTED\n\nVendor: {{trigger_1.vendor_name}}\nRisk Tier: {{analyze_1.risk_tier}}\nApproved by: {{approval_1.approver}}\n\nRisk Factors:\n{{analyze_1.key_risk_factors}}\n\nMitigation Requirements:\n{{analyze_1.mitigation_recommendations}}\n\nFull Assessment:\n{{analyze_1.summary}}",
+                "labels": ["vendor-risk", "high-risk", "risk-acceptance"]
+              }
+            },
+            "description": "Document the CISO's risk acceptance decision for the high-risk vendor"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 700, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "label": "Create Onboarding Ticket",
+          "config": {
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_issue",
+              "parameters": {
+                "project": "COMPLIANCE",
+                "issue_type": "Task",
+                "summary": "Vendor Approved: {{trigger_1.vendor_name}} ({{analyze_1.risk_tier}} risk)",
+                "description": "VENDOR RISK ASSESSMENT -- APPROVED FOR ONBOARDING\n\nVendor: {{trigger_1.vendor_name}}\nRisk Tier: {{analyze_1.risk_tier}}\n\nAssessment Summary:\n{{analyze_1.summary}}\n\nNext Review Date: {{analyze_1.next_review_date}}",
+                "labels": ["vendor-risk", "approved", "onboarding"]
+              }
+            },
+            "description": "Create an onboarding ticket for the approved low/medium risk vendor"
+          }
+        }
+      },
+      {
+        "id": "respond_3",
+        "type": "signal",
+        "position": { "x": 520, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "label": "Notify Teams on Slack",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#vendor-management",
+              "message": "VENDOR RISK ASSESSMENT COMPLETE\n\nVendor: {{trigger_1.vendor_name}}\nRisk Tier: {{analyze_1.risk_tier}}\nDecision: Approved\n\n{{analyze_1.summary}}\n\nSee Jira for full documentation and next steps."
+            },
+            "description": "Notify procurement and security teams of the vendor assessment result"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1180 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "Vendor risk assessment complete -- scored, decided, and documented"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_code",
+        "source": "trigger_1",
+        "target": "code_1",
+        "type": "default"
+      },
+      {
+        "id": "e_code_analyze",
+        "source": "code_1",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_analyze_decision",
+        "source": "analyze_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "approval_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "respond_2",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_approval_respond1",
+        "source": "approval_1",
+        "target": "respond_1",
+        "type": "default"
+      },
+      {
+        "id": "e_respond1_respond3",
+        "source": "respond_1",
+        "target": "respond_3",
+        "type": "default"
+      },
+      {
+        "id": "e_respond2_respond3",
+        "source": "respond_2",
+        "target": "respond_3",
+        "type": "default"
+      },
+      {
+        "id": "e_respond3_end",
+        "source": "respond_3",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

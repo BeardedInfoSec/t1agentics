@@ -1,0 +1,102 @@
+{
+  "id": "maxmind",
+  "name": "MaxMind",
+  "description": "This app provides IP geolocation with the included MaxMind database",
+  "version": "2.3.1",
+  "category": "threat_intel",
+  "vendor": "MaxMind",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "lookup_ip",
+      "name": "Geolocate Ip",
+      "description": "Queries MaxMind for IP location info",
+      "http_method": "GET",
+      "endpoint": "/actions/lookup_ip",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "IP (IPv4/IPv6) to geolocate",
+          "required": true,
+          "contains": [
+            "ip",
+            "ipv6"
+          ]
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "update_database",
+      "name": "Update Data",
+      "description": "Update database used to locate an ip",
+      "http_method": "GET",
+      "endpoint": "/actions/update_database",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": []
+    },
+    {
+      "id": "on_poll",
+      "name": "On Poll",
+      "description": "Update the database if there is a newer one on the server",
+      "http_method": "GET",
+      "endpoint": "/actions/on_poll",
+      "action_type": "ingest",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "container_id",
+          "type": "string",
+          "description": "Container IDs to limit the ingestion to",
+          "required": false
+        },
+        {
+          "name": "start_time",
+          "type": "number",
+          "description": "Start of time range, in epoch time (milliseconds)",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "number",
+          "description": "End of time range, in epoch time (milliseconds)",
+          "required": false
+        },
+        {
+          "name": "container_count",
+          "type": "number",
+          "description": "Maximum number of container records to query for",
+          "required": false
+        },
+        {
+          "name": "artifact_count",
+          "type": "number",
+          "description": "Maximum number of artifact records to query for",
+          "required": false
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "MaxMind",
+    "original_type": "information",
+    "converted_at": "2025-12-18T16:25:28.916534",
+    "source_version": "2.3.1"
+  }
+}

@@ -1,0 +1,209 @@
+{
+  "id": "gigamon_threatinsight",
+  "name": "Gigamon ThreatINSIGHT",
+  "description": "Cloud-native NDR platform that performs deep packet inspection and applies machine learning to detect advanced threats and accelerate incident response",
+  "version": "1.0.0",
+  "category": "ndr",
+  "vendor": "Gigamon",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header",
+    "prefix": "IBToken"
+  },
+  "base_url": "https://sensor.icebrg.io/v1",
+  "actions": [
+    {
+      "id": "get_detections",
+      "name": "Get Detections",
+      "description": "Retrieve detections matching specified criteria from ThreatINSIGHT",
+      "http_method": "GET",
+      "endpoint": "/detections",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "created_start_date",
+          "type": "string",
+          "description": "Start date for detection creation in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "created_end_date",
+          "type": "string",
+          "description": "End date for detection creation in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Filter by detection status (active, resolved)",
+          "required": false
+        },
+        {
+          "name": "device_ip",
+          "type": "string",
+          "description": "Filter by device IP address",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of detections to return",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Offset for pagination",
+          "required": false,
+          "default": 0
+        }
+      ]
+    },
+    {
+      "id": "get_detection_details",
+      "name": "Get Detection Details",
+      "description": "Retrieve detailed information about a specific detection",
+      "http_method": "GET",
+      "endpoint": "/detections/{detection_uuid}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "detection_uuid",
+          "type": "string",
+          "description": "The detection UUID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_detection_rules",
+      "name": "Get Detection Rules",
+      "description": "Retrieve detection rules configured in ThreatINSIGHT",
+      "http_method": "GET",
+      "endpoint": "/detection_rules",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of rules to return",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Offset for pagination",
+          "required": false,
+          "default": 0
+        }
+      ]
+    },
+    {
+      "id": "search_events",
+      "name": "Search Events",
+      "description": "Search network events using query filters",
+      "http_method": "POST",
+      "endpoint": "/events/search",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Search query for event filtering",
+          "required": true
+        },
+        {
+          "name": "start_date",
+          "type": "string",
+          "description": "Start date in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "end_date",
+          "type": "string",
+          "description": "End date in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of events to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "get_devices",
+      "name": "Get Devices",
+      "description": "Retrieve network devices discovered by ThreatINSIGHT sensors",
+      "http_method": "GET",
+      "endpoint": "/devices",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "ip_address",
+          "type": "string",
+          "description": "Filter by IP address",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of devices to return",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Offset for pagination",
+          "required": false,
+          "default": 0
+        }
+      ]
+    },
+    {
+      "id": "get_sensors",
+      "name": "Get Sensors",
+      "description": "Retrieve ThreatINSIGHT sensors and their status",
+      "http_method": "GET",
+      "endpoint": "/sensors",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "resolve_detection",
+      "name": "Resolve Detection",
+      "description": "Mark a detection as resolved with a resolution type",
+      "http_method": "PUT",
+      "endpoint": "/detections/{detection_uuid}/resolve",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "detection_uuid",
+          "type": "string",
+          "description": "The detection UUID to resolve",
+          "required": true
+        },
+        {
+          "name": "resolution",
+          "type": "string",
+          "description": "Resolution type (true_positive, false_positive, benign)",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

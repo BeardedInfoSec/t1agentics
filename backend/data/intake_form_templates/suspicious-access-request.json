@@ -1,0 +1,114 @@
+{
+  "template_id": "suspicious-access-request",
+  "name": "Suspicious Access Request",
+  "description": "Internal form for employees who were contacted by someone claiming to be IT, Security, HR, or a vendor and asked for credentials, MFA codes, remote access, or to install software. Classic pretexting / social engineering reporting.",
+  "title": "Report a Suspicious Request for Access or Credentials",
+  "intro": "Did someone reach out — call, chat, email, in person — claiming to be from IT, Security, HR, or a vendor, and ask for your password, an MFA code, remote access to your machine, or to install something? That's a pretext. Real IT will never ask you for those things over chat or phone.\n\nReporting this is the right move whether or not you gave anything up. We won't shame you. Takes about 3 minutes.",
+  "submit_message": "Thanks. Security will follow up shortly. If you provided credentials, an MFA code, or installed anything they asked you to: please also call the IT hotline now so we can lock things down immediately.",
+  "fields": [
+    {
+      "key": "reporter_email",
+      "label": "Your email",
+      "type": "email",
+      "required": true,
+      "help": "We'll only use this to follow up.",
+      "placeholder": "you@company.com",
+      "sample_value": "trent.bauer@northwindcloud.com"
+    },
+    {
+      "key": "contact_channel",
+      "label": "How did they contact you?",
+      "type": "select",
+      "required": true,
+      "help": "Pick whichever fits best.",
+      "options": [
+        "Phone call",
+        "Text message / SMS",
+        "Email",
+        "Teams / Slack / chat message",
+        "In person",
+        "Video call",
+        "Other"
+      ],
+      "sample_value": "Phone call"
+    },
+    {
+      "key": "claimed_identity",
+      "label": "Who did they claim to be?",
+      "type": "text",
+      "required": true,
+      "help": "Their name, role, or department as they said it. 'IT helpdesk' or 'someone from Microsoft' is fine.",
+      "placeholder": "e.g. 'Mark from IT support'",
+      "sample_value": "Said he was 'Mark from IT helpdesk' working on a password reset ticket I didn't open"
+    },
+    {
+      "key": "what_they_asked_for",
+      "label": "What did they ask you to do?",
+      "type": "multiselect",
+      "required": true,
+      "help": "Pick everything they asked for.",
+      "options": [
+        "Give them my password",
+        "Read out an MFA code or approve a push",
+        "Install remote access software (AnyDesk, TeamViewer, Quick Assist)",
+        "Click a link or sign in to a page",
+        "Buy gift cards / wire money",
+        "Share a document or data",
+        "Reset my own password using a link they sent",
+        "Let them physically use my workstation",
+        "Other"
+      ],
+      "sample_value": ["Read out an MFA code or approve a push", "Install remote access software (AnyDesk, TeamViewer, Quick Assist)"]
+    },
+    {
+      "key": "when_contacted",
+      "label": "When did this happen?",
+      "type": "datetime",
+      "required": false,
+      "help": "Approximate is fine.",
+      "sample_value": "2026-05-11T11:05:00"
+    },
+    {
+      "key": "did_you_comply",
+      "label": "Did you do any of what they asked?",
+      "type": "select",
+      "required": true,
+      "help": "Be honest. You're not in trouble. Knowing this drives how fast we move.",
+      "options": [
+        "No, I refused / hung up / ignored it",
+        "I started but stopped partway",
+        "Yes, I gave them what they asked for",
+        "Yes, and they're still on the line / chat now"
+      ],
+      "sample_value": "I started but stopped partway"
+    },
+    {
+      "key": "contact_details",
+      "label": "Any details about them you can share?",
+      "type": "textarea",
+      "required": false,
+      "help": "Phone number, email address, caller ID, the URL they sent, screen names, accent — anything you noticed.",
+      "placeholder": "Phone number, email, link, etc.",
+      "sample_value": "Caller ID showed 'IT Support' but the number was +1 415-555-0142, which isn't our helpdesk number. He kept stressing the request was urgent."
+    },
+    {
+      "key": "additional_notes",
+      "label": "Anything else we should know?",
+      "type": "textarea",
+      "required": false,
+      "help": "Optional. Did they reference real-sounding details about you, mention coworkers, follow up after?",
+      "placeholder": "Optional context",
+      "sample_value": "He knew my manager's name and my office location, which is what made it feel real at first."
+    }
+  ],
+  "alert_template": {
+    "title": "Pretext / social engineering attempt reported by {{reporter_email}}",
+    "description": "User {{reporter_email}} was contacted by someone claiming to be: {{claimed_identity}}\n\nChannel: {{contact_channel}}\nWhen: {{when_contacted}}\nWhat they asked for: {{what_they_asked_for}}\nUser complied: {{did_you_comply}}\nContact details / artifacts: {{contact_details}}\n\nAdditional context: {{additional_notes}}",
+    "severity": "medium",
+    "source": "intake_form",
+    "category": "social_engineering"
+  },
+  "icon": "UserX",
+  "category": "Identity / Access",
+  "estimated_minutes": 3
+}

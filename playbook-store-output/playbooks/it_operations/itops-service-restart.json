@@ -1,0 +1,348 @@
+{
+  "name": "Automated Service Restart",
+  "slug": "itops-service-restart",
+  "description": "Automated service restart playbook triggered by service-down alerts. Attempts an immediate restart via the configuration management integration, waits for the service to stabilize, then verifies health. If the first restart fails, retries once more with a longer stabilization window. Persistent failures after two attempts are escalated to the infrastructure team with an approval gate before manual intervention is authorized.",
+  "category": "it_operations",
+  "subcategory": "remediation",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "10 minutes",
+  "tags": ["service_restart", "auto_remediation", "retry", "escalation", "high_availability"],
+  "alert_types": ["service_down"],
+  "severity_filter": ["medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["service_down", "process_stopped", "health_check_failure"],
+    "min_severity": "medium"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "ansible",
+      "name": "Ansible",
+      "category": "automation",
+      "reason": "Execute service restart commands on the target host"
+    },
+    {
+      "connector_id": "datadog",
+      "name": "Datadog",
+      "category": "monitoring",
+      "reason": "Verify service health status after restart attempts"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create escalation tickets when automated restarts fail"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Notify the infrastructure team of service status and escalations"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Service Down Alert",
+          "config": {
+            "alert_types": ["service_down", "process_stopped", "health_check_failure"],
+            "description": "Triggers when a service-down or health check failure alert is received from monitoring"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "respond",
+          "label": "Restart Service — Attempt 1",
+          "config": {
+            "integration_action": {
+              "connector_id": "ansible",
+              "action": "run_playbook",
+              "parameters": {
+                "playbook": "service_restart",
+                "target_host": "{{trigger_1.alert.hostname}}",
+                "service_name": "{{trigger_1.alert.service_name}}"
+              }
+            },
+            "description": "Execute the first automated restart attempt for the failed service"
+          }
+        }
+      },
+      {
+        "id": "delay_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "delay",
+          "label": "Wait 60 Seconds",
+          "config": {
+            "duration_seconds": 60,
+            "description": "Wait for the service to fully start up and stabilize before checking health"
+          }
+        }
+      },
+      {
+        "id": "code_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 540 },
+        "data": {
+          "kind": "code",
+          "label": "Verify Service Health",
+          "config": {
+            "mode": "script",
+            "script": "result = integration.execute('datadog', 'check_service_status', { 'host': trigger_1.alert.hostname, 'service': trigger_1.alert.service_name })",
+            "output_variable": "health_check_1",
+            "description": "Query the monitoring system to verify whether the service has recovered after the first restart"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 700 },
+        "data": {
+          "kind": "decision",
+          "label": "Service Recovered?",
+          "config": {
+            "condition": "{{code_1.health_check_1.status}} == 'healthy'",
+            "description": "Check if the service is now reporting healthy after the first restart attempt"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "utility",
+          "label": "Log: Restart Successful",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "Service {{trigger_1.alert.service_name}} on {{trigger_1.alert.hostname}} recovered after first restart attempt. Service is now healthy."
+            },
+            "description": "Log that the first restart attempt was successful for audit trail"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 700, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "label": "Restart Service — Attempt 2",
+          "config": {
+            "integration_action": {
+              "connector_id": "ansible",
+              "action": "run_playbook",
+              "parameters": {
+                "playbook": "service_restart",
+                "target_host": "{{trigger_1.alert.hostname}}",
+                "service_name": "{{trigger_1.alert.service_name}}",
+                "force": true
+              }
+            },
+            "description": "Execute a second restart attempt with force flag for the persistently failed service"
+          }
+        }
+      },
+      {
+        "id": "delay_2",
+        "type": "signal",
+        "position": { "x": 700, "y": 1020 },
+        "data": {
+          "kind": "delay",
+          "label": "Wait 120 Seconds",
+          "config": {
+            "duration_seconds": 120,
+            "description": "Extended stabilization window after the second restart attempt"
+          }
+        }
+      },
+      {
+        "id": "code_2",
+        "type": "signal",
+        "position": { "x": 700, "y": 1180 },
+        "data": {
+          "kind": "code",
+          "label": "Re-Verify Service Health",
+          "config": {
+            "mode": "script",
+            "script": "result = integration.execute('datadog', 'check_service_status', { 'host': trigger_1.alert.hostname, 'service': trigger_1.alert.service_name })",
+            "output_variable": "health_check_2",
+            "description": "Re-verify service health after the second restart attempt"
+          }
+        }
+      },
+      {
+        "id": "decision_2",
+        "type": "signal",
+        "position": { "x": 700, "y": 1340 },
+        "data": {
+          "kind": "decision",
+          "label": "Recovered After Retry?",
+          "config": {
+            "condition": "{{code_2.health_check_2.status}} == 'healthy'",
+            "description": "Check if the service recovered after the second restart attempt"
+          }
+        }
+      },
+      {
+        "id": "respond_3",
+        "type": "signal",
+        "position": { "x": 700, "y": 1500 },
+        "data": {
+          "kind": "respond",
+          "label": "Escalate — Create Ticket",
+          "config": {
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_issue",
+              "parameters": {
+                "project": "OPS",
+                "issue_type": "Incident",
+                "priority": "Critical",
+                "summary": "PERSISTENT SERVICE FAILURE — {{trigger_1.alert.service_name}} on {{trigger_1.alert.hostname}}",
+                "description": "Two automated restart attempts failed for service {{trigger_1.alert.service_name}} on host {{trigger_1.alert.hostname}}.\n\nAttempt 1: Service did not recover after 60s stabilization\nAttempt 2: Service did not recover after 120s stabilization (force restart)\n\nManual investigation and intervention required."
+              }
+            },
+            "description": "Create a critical incident ticket for the persistently failed service after both restart attempts failed"
+          }
+        }
+      },
+      {
+        "id": "respond_4",
+        "type": "signal",
+        "position": { "x": 700, "y": 1660 },
+        "data": {
+          "kind": "respond",
+          "label": "Notify — Persistent Failure",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#infra-alerts",
+              "message": "PERSISTENT SERVICE FAILURE — ESCALATED\nService: {{trigger_1.alert.service_name}}\nHost: {{trigger_1.alert.hostname}}\nStatus: Failed after 2 automated restart attempts\nTicket: {{respond_3.issue_key}}\n\nManual intervention required immediately."
+            },
+            "description": "Send urgent Slack notification about the persistent service failure requiring manual intervention"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1820 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "Service restart workflow complete"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_restart1",
+        "source": "trigger_1",
+        "target": "respond_1",
+        "type": "default"
+      },
+      {
+        "id": "e_restart1_delay1",
+        "source": "respond_1",
+        "target": "delay_1",
+        "type": "default"
+      },
+      {
+        "id": "e_delay1_verify1",
+        "source": "delay_1",
+        "target": "code_1",
+        "type": "default"
+      },
+      {
+        "id": "e_verify1_decision1",
+        "source": "code_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision1_yes",
+        "source": "decision_1",
+        "target": "utility_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision1_no",
+        "source": "decision_1",
+        "target": "respond_2",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_restart2_delay2",
+        "source": "respond_2",
+        "target": "delay_2",
+        "type": "default"
+      },
+      {
+        "id": "e_delay2_verify2",
+        "source": "delay_2",
+        "target": "code_2",
+        "type": "default"
+      },
+      {
+        "id": "e_verify2_decision2",
+        "source": "code_2",
+        "target": "decision_2",
+        "type": "default"
+      },
+      {
+        "id": "e_decision2_yes",
+        "source": "decision_2",
+        "target": "utility_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision2_no",
+        "source": "decision_2",
+        "target": "respond_3",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_escalate_notify",
+        "source": "respond_3",
+        "target": "respond_4",
+        "type": "default"
+      },
+      {
+        "id": "e_notify_end",
+        "source": "respond_4",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_success_end",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

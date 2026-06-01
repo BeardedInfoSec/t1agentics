@@ -1,0 +1,287 @@
+{
+  "name": "EDR Agent Health Monitoring",
+  "slug": "endpoint-agent-health",
+  "description": "Monitors EDR agent health across managed endpoints. When an agent goes offline or reports degraded status, the playbook checks how long the agent has been unresponsive. Extended outages trigger an automated reinstallation attempt via remote management, followed by a verification loop. If reinstallation fails, a P2 ticket is created for manual investigation. Brief outages are logged and monitored.",
+  "category": "endpoint",
+  "subcategory": "agent_health",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "15 minutes",
+  "tags": ["edr", "agent_health", "monitoring", "endpoint", "availability", "reinstall"],
+  "alert_types": ["agent_offline", "agent_degraded"],
+  "severity_filter": ["low", "medium", "high"],
+  "trigger_conditions": {
+    "alert_types": ["agent_offline", "agent_degraded", "sensor_health"],
+    "min_severity": "low"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "crowdstrike",
+      "name": "CrowdStrike Falcon",
+      "category": "edr",
+      "reason": "Query agent status and trigger remote reinstallation"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create ticket if automated reinstall fails"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Agent Health Alert",
+          "config": {
+            "alert_types": ["agent_offline", "agent_degraded", "sensor_health"],
+            "description": "Triggers when an EDR agent reports offline or degraded status"
+          }
+        }
+      },
+      {
+        "id": "code_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "code",
+          "label": "Calculate Downtime",
+          "config": {
+            "runtime": "python3",
+            "code": "from datetime import datetime, timezone\nlast_seen = alert.get('last_seen_timestamp', '')\nif last_seen:\n    last_dt = datetime.fromisoformat(last_seen)\n    now = datetime.now(timezone.utc)\n    downtime_minutes = (now - last_dt).total_seconds() / 60\nelse:\n    downtime_minutes = 999\nresult = {'downtime_minutes': round(downtime_minutes), 'extended_outage': downtime_minutes > 30}",
+            "description": "Calculates how long the agent has been offline and flags extended outages (>30 minutes)"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "label": "Extended Outage (>30 min)?",
+          "config": {
+            "condition": "{{code_1.extended_outage}} == true",
+            "description": "Routes based on whether the agent has been offline for more than 30 minutes"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "respond",
+          "label": "Reinstall Agent Remotely",
+          "config": {
+            "integration_action": {
+              "connector_id": "crowdstrike",
+              "action": "reinstall_sensor",
+              "parameters": {
+                "device_id": "{{trigger_1.alert.endpoint_id}}",
+                "hostname": "{{trigger_1.alert.hostname}}"
+              }
+            },
+            "description": "Attempt automated reinstallation of the EDR agent via remote management"
+          }
+        }
+      },
+      {
+        "id": "delay_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "delay",
+          "label": "Wait 5 Minutes",
+          "config": {
+            "duration_seconds": 300,
+            "description": "Wait 5 minutes for the agent reinstallation to complete before checking status"
+          }
+        }
+      },
+      {
+        "id": "code_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "code",
+          "label": "Verify Agent Status",
+          "config": {
+            "runtime": "python3",
+            "code": "agent_status = context.get('agent_check_result', {}).get('status', 'unknown')\nresult = {'agent_online': agent_status == 'online'}",
+            "description": "Check whether the agent has come back online after the reinstallation attempt"
+          }
+        }
+      },
+      {
+        "id": "decision_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "decision",
+          "label": "Agent Back Online?",
+          "config": {
+            "condition": "{{code_2.agent_online}} == true",
+            "description": "Routes based on whether the agent successfully came back online"
+          }
+        }
+      },
+      {
+        "id": "utility_2",
+        "type": "signal",
+        "position": { "x": 160, "y": 1180 },
+        "data": {
+          "kind": "utility",
+          "label": "Close: Agent Restored",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "EDR agent on {{trigger_1.alert.hostname}} was offline for {{code_1.downtime_minutes}} minutes. Automated reinstallation successful — agent is back online.",
+              "close_alert": true
+            },
+            "description": "Document successful agent restoration and close the alert"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 520, "y": 1180 },
+        "data": {
+          "kind": "respond",
+          "label": "Create P2 Ticket",
+          "config": {
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_issue",
+              "parameters": {
+                "project_key": "SEC",
+                "issue_type": "Incident",
+                "title": "P2: EDR Agent Reinstall Failed — {{trigger_1.alert.hostname}}",
+                "description": "EDR agent on {{trigger_1.alert.hostname}} has been offline for {{code_1.downtime_minutes}} minutes. Automated reinstallation failed. Manual investigation required.\nEndpoint ID: {{trigger_1.alert.endpoint_id}}\nLast Seen: {{trigger_1.alert.last_seen_timestamp}}",
+                "priority": "high"
+              }
+            },
+            "description": "Create a P2 incident ticket for manual investigation of the failed agent reinstall"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "utility",
+          "label": "Set Status: Monitoring",
+          "config": {
+            "action": "update_status",
+            "parameters": {
+              "status": "monitoring",
+              "note": "Agent offline for {{code_1.downtime_minutes}} minutes (< 30 min threshold). Monitoring for recovery."
+            },
+            "description": "Brief outage — set to monitoring status and wait for agent to reconnect"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1340 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "EDR agent health monitoring workflow complete"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_code",
+        "source": "trigger_1",
+        "target": "code_1",
+        "type": "default"
+      },
+      {
+        "id": "e_code_decision",
+        "source": "code_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "respond_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "utility_1",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_reinstall_delay",
+        "source": "respond_1",
+        "target": "delay_1",
+        "type": "default"
+      },
+      {
+        "id": "e_delay_verify",
+        "source": "delay_1",
+        "target": "code_2",
+        "type": "default"
+      },
+      {
+        "id": "e_verify_decision2",
+        "source": "code_2",
+        "target": "decision_2",
+        "type": "default"
+      },
+      {
+        "id": "e_decision2_yes",
+        "source": "decision_2",
+        "target": "utility_2",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision2_no",
+        "source": "decision_2",
+        "target": "respond_2",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_utility2_end",
+        "source": "utility_2",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_respond2_end",
+        "source": "respond_2",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_utility1_end",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

@@ -1,0 +1,151 @@
+{
+  "id": "tenableio",
+  "name": "Tenable.io",
+  "description": "This app integrates with the Tenable.io API to provide endpoint-based investigative actions",
+  "version": "1.0.3",
+  "category": "threat_intel",
+  "vendor": "Tenable",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "list_scans",
+      "name": "List Scans",
+      "description": "Retrieve the list of configured scans",
+      "http_method": "GET",
+      "endpoint": "/actions/list_scans",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "folder_id",
+          "type": "number",
+          "description": "Only return scans within the folder with this ID",
+          "required": false,
+          "contains": [
+            "tenableio folder id"
+          ]
+        },
+        {
+          "name": "last_modified",
+          "type": "string",
+          "description": "Only return scans that have been modified since the time specified",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_scanners",
+      "name": "List Scanners",
+      "description": "Retrieve list of scanners that the current user is allowed to use",
+      "http_method": "GET",
+      "endpoint": "/actions/list_scanners",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "list_policies",
+      "name": "List Policies",
+      "description": "Retrieve the list of configured polcies",
+      "http_method": "GET",
+      "endpoint": "/actions/list_policies",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "scan_host",
+      "name": "Scan Endpoint",
+      "description": "Scans a host using the selected scan policy ID",
+      "http_method": "GET",
+      "endpoint": "/actions/scan_host",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "target_to_scan",
+          "type": "string",
+          "description": "Target to scan",
+          "required": true,
+          "contains": [
+            "ip",
+            "host name"
+          ]
+        },
+        {
+          "name": "policy_id",
+          "type": "string",
+          "description": "ID of the scan policy to use",
+          "required": true,
+          "contains": [
+            "tenableio policy id"
+          ]
+        },
+        {
+          "name": "scan_name",
+          "type": "string",
+          "description": "The name of the scan to create",
+          "required": false
+        },
+        {
+          "name": "scanner_id",
+          "type": "string",
+          "description": "The scanner or scanner group uuid or name",
+          "required": false,
+          "contains": [
+            "tenableio scanner id"
+          ]
+        },
+        {
+          "name": "scan_timeout",
+          "type": "number",
+          "description": "The time (in seconds) to wait for a scan to complete",
+          "required": false,
+          "default": 3600
+        }
+      ]
+    },
+    {
+      "id": "delete_scan",
+      "name": "Delete Scan",
+      "description": "Deletes a scan",
+      "http_method": "GET",
+      "endpoint": "/actions/delete_scan",
+      "action_type": "investigate",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "scan_id",
+          "type": "number",
+          "description": "The unique identifier for the scan",
+          "required": true,
+          "contains": [
+            "tenableio scan id"
+          ]
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Tenable.io",
+    "original_type": "information",
+    "converted_at": "2025-12-18T16:25:29.196517",
+    "source_version": "1.0.3"
+  }
+}

@@ -1,0 +1,236 @@
+{
+  "id": "datadog_siem",
+  "name": "Datadog Cloud SIEM",
+  "description": "Integrates with Datadog Cloud SIEM for security signal management, detection rule configuration, log search, and suppression rule management via the Datadog Security Monitoring API v2",
+  "version": "1.0.0",
+  "category": "siem",
+  "vendor": "Datadog",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "DD-API-KEY",
+    "location": "header",
+    "additional_headers": {
+      "DD-APPLICATION-KEY": "{application_key}"
+    }
+  },
+  "base_url": "https://api.datadoghq.com",
+  "actions": [
+    {
+      "id": "search_security_signals",
+      "name": "Search Security Signals",
+      "description": "Search for security signals (detection alerts) in Datadog Cloud SIEM",
+      "http_method": "POST",
+      "endpoint": "/api/v2/security_monitoring/signals/search",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Search query (e.g., status:high, source:aws, type:log_detection)",
+          "required": false,
+          "default": "*"
+        },
+        {
+          "name": "from",
+          "type": "string",
+          "description": "Start time in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "to",
+          "type": "string",
+          "description": "End time in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum signals to return",
+          "required": false,
+          "default": 50
+        },
+        {
+          "name": "sort",
+          "type": "string",
+          "description": "Sort order (timestamp or -timestamp)",
+          "required": false,
+          "default": "-timestamp"
+        }
+      ]
+    },
+    {
+      "id": "get_security_signal",
+      "name": "Get Security Signal",
+      "description": "Retrieve details for a specific security signal by ID",
+      "http_method": "GET",
+      "endpoint": "/api/v2/security_monitoring/signals/{signal_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "signal_id",
+          "type": "string",
+          "description": "Signal ID to retrieve",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "update_signal_state",
+      "name": "Update Signal State",
+      "description": "Update the triage state of a security signal",
+      "http_method": "PATCH",
+      "endpoint": "/api/v2/security_monitoring/signals/{signal_id}/state",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "signal_id",
+          "type": "string",
+          "description": "Signal ID to update",
+          "required": true
+        },
+        {
+          "name": "state",
+          "type": "string",
+          "description": "New state (open, archived, under_review)",
+          "required": true
+        },
+        {
+          "name": "archiveReason",
+          "type": "string",
+          "description": "Reason for archiving (none, false_positive, testing_or_maintenance, investigated_case_opened, other)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_detection_rules",
+      "name": "List Detection Rules",
+      "description": "List all security monitoring detection rules",
+      "http_method": "GET",
+      "endpoint": "/api/v2/security_monitoring/rules",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "page[size]",
+          "type": "number",
+          "description": "Number of rules per page",
+          "required": false,
+          "default": 25
+        },
+        {
+          "name": "page[number]",
+          "type": "number",
+          "description": "Page number",
+          "required": false,
+          "default": 0
+        }
+      ]
+    },
+    {
+      "id": "create_detection_rule",
+      "name": "Create Detection Rule",
+      "description": "Create a new security monitoring detection rule",
+      "http_method": "POST",
+      "endpoint": "/api/v2/security_monitoring/rules",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Rule name",
+          "required": true
+        },
+        {
+          "name": "queries",
+          "type": "array",
+          "description": "Array of query objects defining the detection logic",
+          "required": true
+        },
+        {
+          "name": "cases",
+          "type": "array",
+          "description": "Array of case objects defining severity conditions",
+          "required": true
+        },
+        {
+          "name": "message",
+          "type": "string",
+          "description": "Message template for generated signals",
+          "required": true
+        },
+        {
+          "name": "isEnabled",
+          "type": "boolean",
+          "description": "Whether the rule is enabled",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "tags",
+          "type": "array",
+          "description": "Tags for the rule",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_suppressions",
+      "name": "List Suppressions",
+      "description": "List all suppression rules for security monitoring",
+      "http_method": "GET",
+      "endpoint": "/api/v2/security_monitoring/configuration/suppressions",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "search_logs",
+      "name": "Search Logs",
+      "description": "Search logs using Datadog log query syntax",
+      "http_method": "POST",
+      "endpoint": "/api/v2/logs/events/search",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Log query string",
+          "required": true
+        },
+        {
+          "name": "from",
+          "type": "string",
+          "description": "Start time (ISO 8601)",
+          "required": false
+        },
+        {
+          "name": "to",
+          "type": "string",
+          "description": "End time (ISO 8601)",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum logs to return",
+          "required": false,
+          "default": 50
+        },
+        {
+          "name": "sort",
+          "type": "string",
+          "description": "Sort order (timestamp or -timestamp)",
+          "required": false,
+          "default": "-timestamp"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,202 @@
+{
+  "name": "Phishing Sender Reputation Check",
+  "slug": "phishing-sender-reputation",
+  "description": "Evaluates the reputation of an email sender's domain and originating IP address using threat intelligence enrichment. Checks the sender domain against VirusTotal and WHOIS databases, and the source IP against AbuseIPDB. A reputation score threshold determines whether the sender is blocked at the email gateway or allowed through with monitoring. Low-reputation senders are automatically blocked and the SOC is notified. Ideal for Tier 1 triage of suspicious sender alerts.",
+  "category": "phishing",
+  "subcategory": "sender_reputation",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "beginner",
+  "estimated_time": "5 minutes",
+  "tags": ["phishing", "sender", "reputation", "domain", "ip", "enrichment", "virustotal", "abuseipdb"],
+  "alert_types": ["phishing"],
+  "severity_filter": ["low", "medium", "high"],
+  "trigger_conditions": {
+    "alert_types": ["phishing", "suspicious_email", "suspicious_sender"],
+    "min_severity": "low"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "virustotal",
+      "name": "VirusTotal",
+      "category": "threat_intel",
+      "reason": "Domain reputation lookup for sender domain"
+    },
+    {
+      "connector_id": "abuseipdb",
+      "name": "AbuseIPDB",
+      "category": "threat_intel",
+      "reason": "IP reputation check for sender originating IP"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "title": "Suspicious Sender Alert",
+          "summary": "Triggers on phishing or suspicious sender alerts",
+          "config": {
+            "trigger_type": "alert",
+            "alert_types": ["phishing", "suspicious_email", "suspicious_sender"]
+          }
+        }
+      },
+      {
+        "id": "analyze-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "title": "Enrich Sender Domain",
+          "summary": "Check sender domain reputation via VirusTotal",
+          "config": {
+            "mode": "enrich",
+            "observable_type": "domain",
+            "observable_path": "$.trigger.alert.sender_domain",
+            "sources": ["virustotal"],
+            "aggregate_results": true
+          }
+        }
+      },
+      {
+        "id": "analyze-2",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "analyze",
+          "title": "Enrich Source IP",
+          "summary": "Check originating IP reputation via AbuseIPDB",
+          "config": {
+            "mode": "enrich",
+            "observable_type": "ip",
+            "observable_path": "$.trigger.alert.source_ip",
+            "sources": ["abuseipdb"],
+            "aggregate_results": true
+          }
+        }
+      },
+      {
+        "id": "decision-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 540 },
+        "data": {
+          "kind": "decision",
+          "title": "Low Reputation?",
+          "summary": "Is the combined domain/IP reputation score above the malicious threshold?",
+          "config": {
+            "conditions": {
+              "operator": "OR",
+              "conditions": [
+                {
+                  "left": { "type": "path", "value": "$.nodes.analyze-1.result.max_score" },
+                  "operator": "greater",
+                  "right": { "type": "value", "value": "60" }
+                },
+                {
+                  "left": { "type": "path", "value": "$.nodes.analyze-2.result.abuse_confidence" },
+                  "operator": "greater",
+                  "right": { "type": "value", "value": "70" }
+                }
+              ],
+              "groups": []
+            },
+            "expression": "$.nodes.analyze-1.result.max_score > 60 || $.nodes.analyze-2.result.abuse_confidence > 70",
+            "default_branch": "no"
+          }
+        }
+      },
+      {
+        "id": "respond-1",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "title": "Block Sender",
+          "summary": "Block the low-reputation sender at the email gateway",
+          "config": {
+            "response_type": "integration_action",
+            "action_type": "block_sender",
+            "target_path": "$.trigger.alert.sender",
+            "requires_approval": true,
+            "priority": "high",
+            "message": "Blocking sender {{$.trigger.alert.sender}} — domain score: {{$.nodes.analyze-1.result.max_score}}, IP abuse score: {{$.nodes.analyze-2.result.abuse_confidence}}"
+          }
+        }
+      },
+      {
+        "id": "respond-2",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "title": "Notify SOC",
+          "summary": "Notify SOC with sender reputation details",
+          "config": {
+            "response_type": "notify",
+            "channel": "slack",
+            "slack_channel": "#soc-alerts",
+            "message": "LOW REPUTATION SENDER BLOCKED\n\nSender: {{$.trigger.alert.sender}}\nDomain: {{$.trigger.alert.sender_domain}}\nSource IP: {{$.trigger.alert.source_ip}}\n\nDomain Score (VT): {{$.nodes.analyze-1.result.max_score}}\nIP Abuse Score: {{$.nodes.analyze-2.result.abuse_confidence}}\n\nSender has been blocked at the email gateway.",
+            "priority": "high"
+          }
+        }
+      },
+      {
+        "id": "utility-1",
+        "type": "signal",
+        "position": { "x": 700, "y": 700 },
+        "data": {
+          "kind": "utility",
+          "title": "Close — Sender Clean",
+          "summary": "Sender reputation is acceptable, close alert",
+          "config": {
+            "operation": "update_status",
+            "status": "closed",
+            "note": "Sender reputation within acceptable thresholds. Domain score: {{$.nodes.analyze-1.result.max_score}}, IP abuse score: {{$.nodes.analyze-2.result.abuse_confidence}}. No action required."
+          }
+        }
+      },
+      {
+        "id": "end-1",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "end",
+          "title": "End — Sender Blocked",
+          "summary": "Low-reputation sender blocked and SOC notified",
+          "config": {
+            "disposition": "true_positive",
+            "summary": "Sender blocked due to low domain/IP reputation. SOC notified."
+          }
+        }
+      },
+      {
+        "id": "end-2",
+        "type": "signal",
+        "position": { "x": 700, "y": 860 },
+        "data": {
+          "kind": "end",
+          "title": "End — Sender Clean",
+          "summary": "Sender reputation acceptable, alert closed",
+          "config": {
+            "disposition": "false_positive",
+            "summary": "Sender domain and IP reputation within acceptable thresholds. Alert closed."
+          }
+        }
+      }
+    ],
+    "edges": [
+      { "id": "e1", "source": "trigger-1", "target": "analyze-1", "animated": true, "type": "smoothstep" },
+      { "id": "e2", "source": "analyze-1", "target": "analyze-2", "animated": true, "type": "smoothstep" },
+      { "id": "e3", "source": "analyze-2", "target": "decision-1", "animated": true, "type": "smoothstep" },
+      { "id": "e4", "source": "decision-1", "target": "respond-1", "sourceHandle": "yes", "label": "Yes", "animated": true, "type": "smoothstep" },
+      { "id": "e5", "source": "decision-1", "target": "utility-1", "sourceHandle": "no", "label": "No", "animated": true, "type": "smoothstep" },
+      { "id": "e6", "source": "respond-1", "target": "respond-2", "animated": true, "type": "smoothstep" },
+      { "id": "e7", "source": "respond-2", "target": "end-1", "animated": true, "type": "smoothstep" },
+      { "id": "e8", "source": "utility-1", "target": "end-2", "animated": true, "type": "smoothstep" }
+    ]
+  }
+}

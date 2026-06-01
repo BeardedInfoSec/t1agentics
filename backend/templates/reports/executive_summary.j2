@@ -1,0 +1,174 @@
+# Executive Summary: {{ investigation.get('alert_title') or investigation.get('title', 'Investigation Report') }}
+
+**Report Generated:** {{ generated_at }}
+**Investigation ID:** {{ investigation.get('investigation_id', 'N/A') }}
+**State:** {{ investigation.get('state', 'Unknown') }} | **Priority:** {{ investigation.get('priority', 'N/A') }}
+**Severity:** {{ investigation.get('severity', 'N/A') }}
+**Created:** {{ investigation.get('created_at', '') | format_datetime }}
+
+---
+
+## Verdict
+
+{% if analysis.get('verdict') or investigation.get('disposition') %}
+**Verdict:** {{ analysis.get('verdict') or investigation.get('disposition', 'Pending') }}
+{% if analysis.get('confidence') or investigation.get('confidence') %}
+**Confidence:** {{ analysis.get('confidence') or investigation.get('confidence') }}
+{% endif %}
+
+{% if riggs.get('summary') %}
+{{ riggs.get('summary') }}
+{% elif analysis.get('summary') %}
+{{ analysis.get('summary') }}
+{% elif investigation.get('executive_summary') %}
+{{ investigation.get('executive_summary') }}
+{% endif %}
+{% else %}
+No automated verdict has been reached for this investigation. Manual review is recommended.
+{% endif %}
+
+---
+
+## Impact Overview
+
+{% if deep_dive.get('business_impact') %}
+{{ deep_dive.get('business_impact') }}
+{% elif analysis.get('impact') %}
+{{ analysis.get('impact') }}
+{% elif analysis.get('risk_assessment') %}
+{{ analysis.get('risk_assessment') }}
+{% endif %}
+
+- **Linked Alerts:** {{ alerts | length }}
+- **Indicators of Compromise:** {{ ioc_counts.total }} ({{ ioc_counts.malicious }} malicious, {{ ioc_counts.suspicious }} suspicious)
+- **Recommended Actions:** {{ actions | length }}
+
+---
+
+## Key Findings
+
+{% if riggs.get('key_signals') %}
+{% for signal in riggs.get('key_signals', []) %}
+- {{ signal }}
+{% endfor %}
+{% elif riggs.get('key_findings') %}
+{% for finding in riggs.get('key_findings', []) %}
+- {{ finding }}
+{% endfor %}
+{% endif %}
+
+---
+
+## Key Indicators
+
+{% if iocs %}
+| Type | Value | Verdict |
+|------|-------|---------|
+{% for ioc in iocs[:15] %}
+| {{ ioc.get('ioc_type', 'N/A') }} | {{ ioc.get('ioc_value', 'N/A') | truncate_str(60) }} | {{ ioc.get('verdict', 'Unknown') }} |
+{% endfor %}
+{% if iocs | length > 15 %}
+
+_... and {{ iocs | length - 15 }} additional indicators._
+{% endif %}
+{% else %}
+No indicators of compromise have been identified.
+{% endif %}
+
+---
+
+## Recommended Actions
+
+{% if actions %}
+{% for action in actions %}
+- {% if action.get('priority') %}[{{ action.get('priority') | upper }}] {% endif %}{{ action.get('description') or action.get('action') or action.get('title', 'No description') | truncate_str(150) }}{% if action.get('status') and action.get('status') != 'pending' %} ({{ action.get('status') }}){% endif %}
+
+{% endfor %}
+{% else %}
+No recommended actions have been generated.
+{% endif %}
+
+---
+
+## MITRE ATT&CK
+
+{% if mitre_techniques %}
+{% for technique in mitre_techniques %}
+{% if technique is mapping %}
+- **{{ technique.get('id', technique.get('technique_id', '')) }}** {{ technique.get('name', '') }} ({{ technique.get('tactic', '') }})
+{% else %}
+- {{ technique }}
+{% endif %}
+{% endfor %}
+{% else %}
+No MITRE ATT&CK techniques have been mapped.
+{% endif %}
+
+{% if deep_dive.get('executive_summary') and not deep_dive.get('parse_error') %}
+---
+
+## Deep Dive Summary
+
+{{ deep_dive.get('executive_summary') }}
+
+{% if deep_dive.get('threat_narrative') and deep_dive.get('threat_narrative') is string and not deep_dive.get('threat_narrative').startswith('{') %}
+### Threat Narrative
+{{ deep_dive.get('threat_narrative') }}
+{% endif %}
+
+{% if deep_dive.get('root_cause_analysis') and deep_dive.get('root_cause_analysis') is string and not deep_dive.get('root_cause_analysis').startswith('{') %}
+### Root Cause
+{{ deep_dive.get('root_cause_analysis') }}
+{% endif %}
+
+{% if deep_dive.get('threat_actor_assessment') and deep_dive.get('threat_actor_assessment') is string and not deep_dive.get('threat_actor_assessment').startswith('{') %}
+### Threat Actor
+{{ deep_dive.get('threat_actor_assessment') }}
+{% endif %}
+
+{% if deep_dive.get('response_recommendations') %}
+### Response Recommendations
+{% if deep_dive.get('response_recommendations') is iterable and deep_dive.get('response_recommendations') is not string %}
+{% for rec in deep_dive.get('response_recommendations', []) %}
+{% if rec is mapping %}
+- **{{ rec.get('priority', '') }}** ({{ rec.get('window', '') }}): {{ rec.get('text', rec.get('description', '')) }}
+{% else %}
+- {{ rec }}
+{% endif %}
+{% endfor %}
+{% else %}
+{{ deep_dive.get('response_recommendations') }}
+{% endif %}
+{% endif %}
+
+{% if deep_dive.get('confidence_factors') and deep_dive.get('confidence_factors') is mapping %}
+### Confidence Assessment
+{% if deep_dive['confidence_factors'].get('supporting') %}
+**Supporting:** {{ deep_dive['confidence_factors'].get('supporting', []) | join('; ') }}
+{% endif %}
+{% if deep_dive['confidence_factors'].get('contradicting') %}
+**Contradicting:** {{ deep_dive['confidence_factors'].get('contradicting', []) | join('; ') }}
+{% endif %}
+{% if deep_dive['confidence_factors'].get('gaps') or deep_dive['confidence_factors'].get('information_gaps') %}
+**Information Gaps:** {{ deep_dive['confidence_factors'].get('gaps', deep_dive['confidence_factors'].get('information_gaps', [])) | join('; ') }}
+{% endif %}
+{% endif %}
+{% endif %}
+
+{% if timeline %}
+---
+
+## Timeline
+
+{% for event in timeline %}
+{% if event is mapping %}
+- **{{ event.get('time', event.get('timestamp', '')) }}**: {{ event.get('event', event.get('description', event.get('evt', ''))) }}
+{% else %}
+- {{ event }}
+{% endif %}
+{% endfor %}
+{% endif %}
+
+---
+
+_This report was automatically generated by T1 Agentics. Review all findings before taking action._

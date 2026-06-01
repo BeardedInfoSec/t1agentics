@@ -1,0 +1,387 @@
+{
+  "name": "Incident Escalation Workflow",
+  "slug": "incident-escalation",
+  "description": "Automates incident escalation based on AI-assessed severity. When an alert arrives, Riggs generates an executive summary and routes the incident through a tiered escalation path. Critical incidents trigger P1 ticket creation in Jira, PagerDuty on-call paging, a dedicated Slack war room, and management email notification. High-severity incidents receive a P2 ticket and SOC lead notification. All remaining alerts are logged as P3 tickets for standard handling.",
+  "category": "incident_response",
+  "subcategory": "escalation",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "beginner",
+  "estimated_time": "5 minutes",
+  "tags": ["escalation", "incident", "triage", "routing", "automated"],
+  "alert_types": ["any"],
+  "severity_filter": ["critical", "high", "medium"],
+  "trigger_conditions": {
+    "alert_types": ["any"],
+    "min_severity": "medium"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create P1, P2, and P3 incident tickets based on severity tier"
+    },
+    {
+      "connector_id": "pagerduty",
+      "name": "PagerDuty",
+      "category": "ticketing",
+      "reason": "Page on-call engineer for critical-severity incidents"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Create war room channels and notify SOC lead for escalated incidents"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Alert Received",
+          "config": {
+            "alert_types": ["any"],
+            "description": "Triggers on any alert that meets the minimum severity threshold for escalation evaluation"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — Executive Summary",
+          "config": {
+            "template_id": "executive_summary",
+            "additional_instructions": "Determine incident severity tier (critical, high, or medium) and recommend escalation path.",
+            "description": "AI-powered executive summary to assess severity and guide escalation routing"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "label": "Severity Critical?",
+          "config": {
+            "condition": "{{analyze_1.severity}} == 'critical'",
+            "description": "Check if the AI assessment determined critical severity requiring P1 escalation"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "respond",
+          "label": "Create P1 Incident Ticket",
+          "config": {
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_issue",
+              "parameters": {
+                "project": "IR",
+                "issue_type": "Incident",
+                "priority": "P1 - Critical",
+                "summary": "P1 CRITICAL: {{trigger_1.alert.title}}",
+                "description": "Critical incident requiring immediate response.\n\nAlert: {{trigger_1.alert.title}}\nSource: {{trigger_1.alert.source}}\nTimestamp: {{trigger_1.alert.timestamp}}\n\nRiggs Assessment:\n{{analyze_1.summary}}"
+              }
+            },
+            "description": "Create a P1 critical incident ticket in Jira for immediate tracking"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "label": "Page On-Call Engineer",
+          "config": {
+            "integration_action": {
+              "connector_id": "pagerduty",
+              "action": "create_incident",
+              "parameters": {
+                "service_id": "{{config.pagerduty_service_id}}",
+                "urgency": "high",
+                "title": "P1 CRITICAL: {{trigger_1.alert.title}}",
+                "body": "Critical incident escalated by automated triage.\n\n{{analyze_1.summary}}"
+              }
+            },
+            "description": "Page the on-call engineer via PagerDuty for immediate response to critical incident"
+          }
+        }
+      },
+      {
+        "id": "respond_3",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "label": "Create War Room Channel",
+          "config": {
+            "integration_action": {
+              "connector_id": "slack",
+              "action": "create_channel",
+              "parameters": {
+                "channel_name": "war-room-{{trigger_1.alert.id}}",
+                "topic": "P1 Critical Incident: {{trigger_1.alert.title}}",
+                "initial_message": "WAR ROOM ACTIVATED\n\nIncident: {{trigger_1.alert.title}}\nSeverity: Critical\nJira Ticket: {{respond_1.issue_key}}\n\nRiggs Assessment:\n{{analyze_1.summary}}\n\nOn-call engineer has been paged via PagerDuty."
+              }
+            },
+            "description": "Create a dedicated Slack war room channel for coordinated critical incident response"
+          }
+        }
+      },
+      {
+        "id": "respond_4",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "label": "Notify Management via Email",
+          "config": {
+            "notify": {
+              "channel": "email",
+              "target": "{{config.management_distribution_list}}",
+              "message": "CRITICAL INCIDENT ESCALATION\n\nIncident: {{trigger_1.alert.title}}\nSeverity: Critical\nJira Ticket: {{respond_1.issue_key}}\nWar Room: #war-room-{{trigger_1.alert.id}}\n\nExecutive Summary:\n{{analyze_1.summary}}\n\nActions Taken:\n- P1 ticket created in Jira\n- On-call engineer paged via PagerDuty\n- War room channel created in Slack"
+            },
+            "description": "Email management distribution list with critical incident details and actions taken"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 1180 },
+        "data": {
+          "kind": "utility",
+          "label": "Set Status: Escalated",
+          "config": {
+            "action": "update_status",
+            "parameters": {
+              "status": "escalated"
+            },
+            "description": "Mark the incident as escalated after all critical-path notifications are sent"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 1340 },
+        "data": {
+          "kind": "end",
+          "label": "End — Critical Path",
+          "config": {
+            "description": "Critical incident escalation complete — P1 ticket, PagerDuty, war room, and management notified"
+          }
+        }
+      },
+      {
+        "id": "decision_2",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "decision",
+          "label": "Severity High?",
+          "config": {
+            "condition": "{{analyze_1.severity}} == 'high'",
+            "description": "Check if the AI assessment determined high severity requiring P2 escalation"
+          }
+        }
+      },
+      {
+        "id": "respond_5",
+        "type": "signal",
+        "position": { "x": 520, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "label": "Create P2 Ticket",
+          "config": {
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_issue",
+              "parameters": {
+                "project": "IR",
+                "issue_type": "Incident",
+                "priority": "P2 - High",
+                "summary": "P2 HIGH: {{trigger_1.alert.title}}",
+                "description": "High-severity incident requiring prompt attention.\n\nAlert: {{trigger_1.alert.title}}\nSource: {{trigger_1.alert.source}}\n\nRiggs Assessment:\n{{analyze_1.summary}}"
+              }
+            },
+            "description": "Create a P2 high-severity incident ticket in Jira"
+          }
+        }
+      },
+      {
+        "id": "respond_6",
+        "type": "signal",
+        "position": { "x": 520, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "label": "Notify SOC Lead on Slack",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#soc-leads",
+              "message": "HIGH SEVERITY INCIDENT\n\nIncident: {{trigger_1.alert.title}}\nSeverity: High\nJira Ticket: {{respond_5.issue_key}}\n\nRiggs Assessment:\n{{analyze_1.summary}}"
+            },
+            "description": "Notify the SOC lead via Slack about the high-severity incident"
+          }
+        }
+      },
+      {
+        "id": "end_2",
+        "type": "signal",
+        "position": { "x": 520, "y": 1020 },
+        "data": {
+          "kind": "end",
+          "label": "End — High Path",
+          "config": {
+            "description": "High-severity incident escalation complete — P2 ticket created and SOC lead notified"
+          }
+        }
+      },
+      {
+        "id": "respond_7",
+        "type": "signal",
+        "position": { "x": 880, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "label": "Create P3 Ticket",
+          "config": {
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_issue",
+              "parameters": {
+                "project": "IR",
+                "issue_type": "Incident",
+                "priority": "P3 - Medium",
+                "summary": "P3: {{trigger_1.alert.title}}",
+                "description": "Medium-severity incident for standard handling.\n\nAlert: {{trigger_1.alert.title}}\nSource: {{trigger_1.alert.source}}\n\nRiggs Assessment:\n{{analyze_1.summary}}"
+              }
+            },
+            "description": "Create a P3 standard-priority incident ticket in Jira for routine handling"
+          }
+        }
+      },
+      {
+        "id": "end_3",
+        "type": "signal",
+        "position": { "x": 880, "y": 860 },
+        "data": {
+          "kind": "end",
+          "label": "End — Medium Path",
+          "config": {
+            "description": "Medium-severity incident logged — P3 ticket created for standard handling"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_analyze",
+        "source": "trigger_1",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_analyze_decision1",
+        "source": "analyze_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision1_yes",
+        "source": "decision_1",
+        "target": "respond_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision1_no",
+        "source": "decision_1",
+        "target": "decision_2",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_p1ticket_page",
+        "source": "respond_1",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_page_warroom",
+        "source": "respond_2",
+        "target": "respond_3",
+        "type": "default"
+      },
+      {
+        "id": "e_warroom_email",
+        "source": "respond_3",
+        "target": "respond_4",
+        "type": "default"
+      },
+      {
+        "id": "e_email_utility",
+        "source": "respond_4",
+        "target": "utility_1",
+        "type": "default"
+      },
+      {
+        "id": "e_utility_end1",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision2_yes",
+        "source": "decision_2",
+        "target": "respond_5",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision2_no",
+        "source": "decision_2",
+        "target": "respond_7",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_p2ticket_notify",
+        "source": "respond_5",
+        "target": "respond_6",
+        "type": "default"
+      },
+      {
+        "id": "e_notify_end2",
+        "source": "respond_6",
+        "target": "end_2",
+        "type": "default"
+      },
+      {
+        "id": "e_p3ticket_end3",
+        "source": "respond_7",
+        "target": "end_3",
+        "type": "default"
+      }
+    ]
+  }
+}

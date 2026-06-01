@@ -1,0 +1,227 @@
+{
+  "name": "Pass-the-Hash Attack Response",
+  "slug": "identity-pass-the-hash",
+  "description": "Responds to pass-the-hash (PtH) attack detections by isolating the affected host, resetting NTLM hashes for compromised accounts, analyzing lateral movement indicators with AI, and creating a high-priority incident ticket. Includes host forensic evidence collection and SOC notification.",
+  "category": "identity",
+  "subcategory": "credential_attack",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "advanced",
+  "estimated_time": "15 minutes",
+  "tags": ["pass_the_hash", "ntlm", "lateral_movement", "credential_theft", "host_isolation"],
+  "alert_types": ["pass_the_hash", "credential_access", "lateral_movement"],
+  "severity_filter": ["high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["pass_the_hash", "credential_access"],
+    "min_severity": "high"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "microsoft_defender_endpoint",
+      "name": "Microsoft Defender for Endpoint",
+      "category": "edr",
+      "reason": "Isolate the compromised host and collect forensic data"
+    },
+    {
+      "connector_id": "microsoft_graph",
+      "name": "Microsoft Graph",
+      "category": "identity",
+      "reason": "Reset NTLM password hashes for compromised user accounts"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create high-priority incident ticket for PtH response tracking"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "ph-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "title": "Pass-the-Hash Alert",
+          "summary": "Fires on pass-the-hash or NTLM credential access detection",
+          "config": {
+            "trigger_type": "alert",
+            "alert_filter": "pass_the_hash OR credential_access"
+          }
+        }
+      },
+      {
+        "id": "ph-2",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "title": "AI PtH & Lateral Movement Analysis",
+          "summary": "Analyze the attack for lateral movement indicators and scope",
+          "config": {
+            "mode": "ai_analysis",
+            "template_id": "credential_access",
+            "custom_instructions": "",
+            "alert_path": "$.trigger.alert",
+            "include_context": true
+          }
+        }
+      },
+      {
+        "id": "ph-3",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "title": "Active Lateral Movement?",
+          "summary": "Branch if AI detects active lateral movement from the compromised host",
+          "config": {
+            "conditions": {
+              "operator": "AND",
+              "conditions": [
+                {
+                  "field": "$.nodes.ph-2.result.lateral_movement_detected",
+                  "operator": "equals",
+                  "value": "true"
+                }
+              ],
+              "groups": []
+            },
+            "expression": "$.nodes.ph-2.result.lateral_movement_detected == true",
+            "default_branch": "no"
+          }
+        }
+      },
+      {
+        "id": "ph-4",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "respond",
+          "title": "Isolate Compromised Host",
+          "summary": "Network-isolate the source host to stop lateral movement",
+          "config": {
+            "response_type": "integration_action",
+            "integration_instance_id": "microsoft_defender_endpoint",
+            "action_type": "isolate_machine",
+            "params": {
+              "machine_id": "$.trigger.alert.source_host_id",
+              "isolation_type": "full",
+              "reason": "Pass-the-hash attack with active lateral movement"
+            },
+            "requires_approval": false,
+            "priority": "critical"
+          }
+        }
+      },
+      {
+        "id": "ph-5",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "title": "Reset NTLM Hashes",
+          "summary": "Force password reset for all compromised accounts to invalidate stolen hashes",
+          "config": {
+            "response_type": "integration_action",
+            "integration_instance_id": "microsoft_graph",
+            "action_type": "force_password_reset",
+            "params": {
+              "user_ids": "$.trigger.alert.compromised_user_ids",
+              "force_change_on_next_login": true,
+              "reason": "NTLM hash compromised via pass-the-hash attack"
+            },
+            "requires_approval": false,
+            "priority": "critical"
+          }
+        }
+      },
+      {
+        "id": "ph-6",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "title": "Create P1 Incident Ticket",
+          "summary": "Create critical incident ticket for PtH attack with lateral movement",
+          "config": {
+            "response_type": "create_ticket",
+            "system": "jira",
+            "project_key": "SEC",
+            "issue_type": "Incident",
+            "title": "P1: Pass-the-Hash Attack with Lateral Movement — {{$.trigger.alert.source_hostname}}",
+            "description": "Pass-the-hash attack detected from {{$.trigger.alert.source_hostname}}. Active lateral movement confirmed. Host isolated, NTLM hashes reset. Full forensic investigation required.",
+            "priority": "critical",
+            "requires_approval": false
+          }
+        }
+      },
+      {
+        "id": "ph-7",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "title": "Notify SOC Team",
+          "summary": "Alert SOC team of PtH attack and containment actions taken",
+          "config": {
+            "response_type": "notification",
+            "channel": "slack",
+            "slack_channel": "#soc-critical",
+            "message": "CRITICAL: Pass-the-hash attack from {{$.trigger.alert.source_hostname}}. Lateral movement detected. Host isolated, NTLM hashes reset for {{$.trigger.alert.compromised_user_count}} accounts. P1 incident created.",
+            "requires_approval": false,
+            "priority": "critical"
+          }
+        }
+      },
+      {
+        "id": "ph-8",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "respond",
+          "title": "Reset Hashes (No Isolation)",
+          "summary": "Reset NTLM hashes without host isolation for contained PtH",
+          "config": {
+            "response_type": "integration_action",
+            "integration_instance_id": "microsoft_graph",
+            "action_type": "force_password_reset",
+            "params": {
+              "user_ids": "$.trigger.alert.compromised_user_ids",
+              "force_change_on_next_login": true,
+              "reason": "NTLM hash compromised — precautionary reset"
+            },
+            "requires_approval": false,
+            "priority": "high"
+          }
+        }
+      },
+      {
+        "id": "ph-9",
+        "type": "signal",
+        "position": { "x": 520, "y": 1180 },
+        "data": {
+          "kind": "end",
+          "title": "Playbook Complete",
+          "summary": "Pass-the-hash response finished",
+          "config": {
+            "disposition": "completed",
+            "summary": "Pass-the-hash attack response actions completed"
+          }
+        }
+      }
+    ],
+    "edges": [
+      { "id": "ph-e1", "source": "ph-1", "target": "ph-2", "animated": true, "type": "smoothstep" },
+      { "id": "ph-e2", "source": "ph-2", "target": "ph-3", "animated": true, "type": "smoothstep" },
+      { "id": "ph-e3", "source": "ph-3", "target": "ph-4", "sourceHandle": "yes", "label": "Yes", "animated": true, "type": "smoothstep" },
+      { "id": "ph-e4", "source": "ph-3", "target": "ph-8", "sourceHandle": "no", "label": "No", "animated": true, "type": "smoothstep" },
+      { "id": "ph-e5", "source": "ph-4", "target": "ph-5", "animated": true, "type": "smoothstep" },
+      { "id": "ph-e6", "source": "ph-5", "target": "ph-6", "animated": true, "type": "smoothstep" },
+      { "id": "ph-e7", "source": "ph-6", "target": "ph-7", "animated": true, "type": "smoothstep" },
+      { "id": "ph-e8", "source": "ph-7", "target": "ph-9", "animated": true, "type": "smoothstep" },
+      { "id": "ph-e9", "source": "ph-8", "target": "ph-9", "animated": true, "type": "smoothstep" }
+    ]
+  }
+}

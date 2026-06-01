@@ -1,0 +1,234 @@
+{
+  "name": "Container Scan Quality Gate",
+  "slug": "devsecops-container-scan-gate",
+  "description": "CI/CD quality gate for container image scanning. When a container image scan completes, Riggs AI evaluates the findings and enforces a security gate: images with critical vulnerabilities are blocked from deployment, high-severity findings trigger a review workflow, and clean images are approved for promotion to production.",
+  "category": "devsecops",
+  "subcategory": "container_security",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "advanced",
+  "estimated_time": "12 minutes",
+  "tags": ["devsecops", "container", "docker", "image-scan", "quality-gate", "cicd", "deployment"],
+  "alert_types": ["container_scan", "image_vulnerability"],
+  "severity_filter": ["low", "medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["container_scan", "image_vulnerability", "trivy_alert", "grype_alert"],
+    "min_severity": "low"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create tickets for container vulnerabilities that block deployment"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Notify DevOps and security teams about blocked or flagged container images"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "title": "Container Scan Completed",
+          "summary": "Triggers when a container image scan completes in the CI/CD pipeline",
+          "config": {
+            "trigger_type": "alert",
+            "alert_types": ["container_scan", "image_vulnerability", "trivy_alert", "grype_alert"],
+            "description": "Ingests container image scan results from Trivy, Grype, Snyk Container, or Aqua Security"
+          }
+        }
+      },
+      {
+        "id": "analyze-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "title": "AI Container Risk Assessment",
+          "summary": "Riggs AI evaluates the container scan findings and overall image risk",
+          "config": {
+            "template_id": "vuln_risk",
+            "additional_instructions": "Evaluate the container image scan results: count critical/high/medium/low CVEs, check for known exploited vulnerabilities, assess base image age, and identify fixable vs. unfixable vulnerabilities. Provide a pass/fail recommendation for the deployment gate.",
+            "description": "AI-powered container image risk assessment for deployment gate decision"
+          }
+        }
+      },
+      {
+        "id": "decision-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "title": "Any Critical Vulnerabilities?",
+          "summary": "Check if the scan found critical-severity vulnerabilities",
+          "config": {
+            "conditions": {
+              "operator": "AND",
+              "conditions": [
+                {
+                  "left": { "type": "path", "value": "$.nodes.analyze-1.result.critical_count" },
+                  "operator": "greater_than",
+                  "right": { "type": "value", "value": 0 }
+                }
+              ],
+              "groups": []
+            },
+            "expression": "$.nodes.analyze-1.result.critical_count > 0",
+            "default_branch": "no"
+          }
+        }
+      },
+      {
+        "id": "respond-1",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "respond",
+          "title": "Block Deployment",
+          "summary": "Block the container image from being promoted to production",
+          "config": {
+            "response_type": "integration_action",
+            "action_type": "block_deployment",
+            "target_path": "$.trigger.alert.image_name",
+            "message": "DEPLOYMENT BLOCKED: Container image {{trigger-1.alert.image_name}}:{{trigger-1.alert.image_tag}} contains {{analyze-1.result.critical_count}} critical vulnerabilities. Image must be remediated before deployment.",
+            "description": "Block the container image deployment due to critical vulnerabilities"
+          }
+        }
+      },
+      {
+        "id": "respond-2",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "title": "Create Block Ticket",
+          "summary": "Create a Jira ticket documenting the blocked deployment",
+          "config": {
+            "response_type": "integration_action",
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_issue",
+              "parameters": {
+                "project": "{{trigger-1.alert.jira_project | default('APPSEC')}}",
+                "issue_type": "Bug",
+                "priority": "P1",
+                "summary": "BLOCKED: {{trigger-1.alert.image_name}}:{{trigger-1.alert.image_tag}} — {{analyze-1.result.critical_count}} critical CVEs",
+                "description": "Container image deployment blocked by security gate.\n\nImage: {{trigger-1.alert.image_name}}:{{trigger-1.alert.image_tag}}\nRegistry: {{trigger-1.alert.registry}}\nCritical CVEs: {{analyze-1.result.critical_count}}\nHigh CVEs: {{analyze-1.result.high_count}}\nBase Image: {{trigger-1.alert.base_image}}\n\nRiggs Assessment:\n{{analyze-1.result.summary}}\n\nRemediation:\n{{analyze-1.result.remediation}}",
+                "labels": ["container-vuln", "deployment-blocked", "critical"]
+              }
+            },
+            "description": "Create a P1 Jira ticket for the blocked container deployment"
+          }
+        }
+      },
+      {
+        "id": "respond-3",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "title": "Notify DevOps Team",
+          "summary": "Alert the DevOps and security teams about the blocked deployment",
+          "config": {
+            "response_type": "notify",
+            "channel": "slack",
+            "slack_channel": "#devsecops-alerts",
+            "message": "DEPLOYMENT BLOCKED — Container Security Gate Failed\n\nImage: {{trigger-1.alert.image_name}}:{{trigger-1.alert.image_tag}}\nCritical CVEs: {{analyze-1.result.critical_count}}\nHigh CVEs: {{analyze-1.result.high_count}}\nJira: {{respond-2.ticket_url}}\n\n{{analyze-1.result.summary}}\n\nFix the critical vulnerabilities and rebuild the image.",
+            "priority": "critical"
+          }
+        }
+      },
+      {
+        "id": "decision-2",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "decision",
+          "title": "High Severity Findings?",
+          "summary": "Check if the scan found high-severity vulnerabilities requiring review",
+          "config": {
+            "conditions": {
+              "operator": "AND",
+              "conditions": [
+                {
+                  "left": { "type": "path", "value": "$.nodes.analyze-1.result.high_count" },
+                  "operator": "greater_than",
+                  "right": { "type": "value", "value": 0 }
+                }
+              ],
+              "groups": []
+            },
+            "expression": "$.nodes.analyze-1.result.high_count > 0",
+            "default_branch": "no"
+          }
+        }
+      },
+      {
+        "id": "approval-1",
+        "type": "signal",
+        "position": { "x": 600, "y": 700 },
+        "data": {
+          "kind": "approval",
+          "title": "Security Review Required",
+          "summary": "High-severity findings require security team sign-off for deployment",
+          "config": {
+            "approvers": ["security-team"],
+            "timeout_hours": 8,
+            "message": "Container image has {{analyze-1.result.high_count}} high-severity vulnerabilities.\n\nImage: {{trigger-1.alert.image_name}}:{{trigger-1.alert.image_tag}}\n\n{{analyze-1.result.summary}}\n\nApprove to allow deployment with accepted risk, or reject to block.",
+            "description": "Require security team approval for images with high-severity vulnerabilities"
+          }
+        }
+      },
+      {
+        "id": "utility-1",
+        "type": "signal",
+        "position": { "x": 860, "y": 540 },
+        "data": {
+          "kind": "utility",
+          "title": "Approve for Deployment",
+          "summary": "Image passed the security gate — approve for production promotion",
+          "config": {
+            "operation": "update_status",
+            "status": "approved",
+            "note": "Container image {{trigger-1.alert.image_name}}:{{trigger-1.alert.image_tag}} passed security gate. No critical or high vulnerabilities detected."
+          }
+        }
+      },
+      {
+        "id": "end-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1020 },
+        "data": {
+          "kind": "end",
+          "title": "End",
+          "summary": "Container scan quality gate evaluation complete",
+          "config": {
+            "disposition": "evaluated",
+            "summary": "Container image security gate evaluation complete."
+          }
+        }
+      }
+    ],
+    "edges": [
+      { "id": "e1", "source": "trigger-1", "target": "analyze-1", "animated": true, "type": "smoothstep" },
+      { "id": "e2", "source": "analyze-1", "target": "decision-1", "animated": true, "type": "smoothstep" },
+      { "id": "e3", "source": "decision-1", "target": "respond-1", "sourceHandle": "yes", "label": "Yes", "animated": true, "type": "smoothstep" },
+      { "id": "e4", "source": "decision-1", "target": "decision-2", "sourceHandle": "no", "label": "No", "animated": true, "type": "smoothstep" },
+      { "id": "e5", "source": "respond-1", "target": "respond-2", "animated": true, "type": "smoothstep" },
+      { "id": "e6", "source": "respond-2", "target": "respond-3", "animated": true, "type": "smoothstep" },
+      { "id": "e7", "source": "respond-3", "target": "end-1", "animated": true, "type": "smoothstep" },
+      { "id": "e8", "source": "decision-2", "target": "approval-1", "sourceHandle": "yes", "label": "Yes", "animated": true, "type": "smoothstep" },
+      { "id": "e9", "source": "decision-2", "target": "utility-1", "sourceHandle": "no", "label": "No", "animated": true, "type": "smoothstep" },
+      { "id": "e10", "source": "approval-1", "target": "end-1", "animated": true, "type": "smoothstep" },
+      { "id": "e11", "source": "utility-1", "target": "end-1", "animated": true, "type": "smoothstep" }
+    ]
+  }
+}

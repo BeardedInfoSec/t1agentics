@@ -1,0 +1,132 @@
+{
+  "template_id": "mfa-authentication-issue",
+  "name": "MFA / Authentication Issue",
+  "description": "Internal form covering both technical MFA problems and MFA-fatigue / push-bombing attacks. The select field lets the user distinguish, and severity escalates automatically when an active attack is selected.",
+  "title": "Report an MFA or Sign-in Issue",
+  "intro": "If your MFA app is buzzing with prompts you didn't trigger, or you can't get past the login screen at all, tell us. The first one is potentially someone trying to get into your account right now. The second is probably just a technical glitch — either way we want to know.\n\nTakes about 3 minutes. **If you are getting a stream of push notifications you didn't initiate: do NOT approve any of them**, set your phone aside, finish this form, and call the IT hotline.",
+  "submit_message": "Thanks. If you flagged this as an attack, Security will reach out within 15 minutes. If it's a technical issue, IT will pick it up next. In the meantime, do not approve any MFA prompt you didn't initiate.",
+  "fields": [
+    {
+      "key": "reporter_email",
+      "label": "Your email",
+      "type": "email",
+      "required": true,
+      "help": "Use a personal email if you can't access work email right now.",
+      "placeholder": "you@company.com",
+      "sample_value": "danielle.ortiz@northwindcloud.com"
+    },
+    {
+      "key": "issue_type",
+      "label": "What's happening?",
+      "type": "select",
+      "required": true,
+      "help": "Pick the one that fits best. If you're getting repeated push prompts you didn't start, that's the attack option.",
+      "options": [
+        "Push notification spam — getting prompts I didn't initiate (possible attack)",
+        "One unexpected MFA prompt I didn't initiate",
+        "I can't receive my MFA code at all (technical)",
+        "My authenticator app is broken / wiped / new phone",
+        "I'm locked out of MFA setup entirely",
+        "Other"
+      ],
+      "sample_value": "Push notification spam — getting prompts I didn't initiate (possible attack)"
+    },
+    {
+      "key": "severity_feel",
+      "label": "How urgent is this for you?",
+      "type": "select",
+      "required": true,
+      "help": "If you picked an attack option above, this is usually high. Technical issues are usually low.",
+      "options": [
+        "Low — just a technical issue, I can wait",
+        "Medium — slowing me down but no rush",
+        "High — I think someone is actively trying to get in"
+      ],
+      "sample_value": "High — I think someone is actively trying to get in"
+    },
+    {
+      "key": "account_username",
+      "label": "Which account is affected?",
+      "type": "text",
+      "required": true,
+      "help": "Your work username, SSO login, or email for the account.",
+      "placeholder": "username or login email",
+      "sample_value": "danielle.ortiz"
+    },
+    {
+      "key": "mfa_method",
+      "label": "Which MFA method?",
+      "type": "select",
+      "required": false,
+      "help": "Whichever one is misbehaving.",
+      "options": [
+        "Microsoft Authenticator push",
+        "Duo push",
+        "Okta Verify push",
+        "Google Authenticator / TOTP code",
+        "SMS text code",
+        "Phone call",
+        "Hardware token (YubiKey, etc.)",
+        "Not sure"
+      ],
+      "sample_value": "Microsoft Authenticator push"
+    },
+    {
+      "key": "started_at",
+      "label": "When did it start?",
+      "type": "datetime",
+      "required": false,
+      "help": "Approximate is fine. Useful for matching to login attempts.",
+      "sample_value": "2026-05-11T02:15:00"
+    },
+    {
+      "key": "prompt_count",
+      "label": "Roughly how many prompts have you received?",
+      "type": "select",
+      "required": false,
+      "help": "Only relevant if you're getting push spam. Skip otherwise.",
+      "options": [
+        "Just one",
+        "2 to 5",
+        "6 to 20",
+        "More than 20",
+        "They haven't stopped"
+      ],
+      "sample_value": "More than 20"
+    },
+    {
+      "key": "approved_any",
+      "label": "Did you approve any of the prompts (even by accident)?",
+      "type": "select",
+      "required": true,
+      "help": "Be honest — this is the most important question. You won't be in trouble.",
+      "options": [
+        "No, I denied or ignored them all",
+        "I tapped 'No it's not me' / 'Report fraud'",
+        "Yes, I approved one by accident",
+        "Yes, I approved one because I thought it was real",
+        "Not sure"
+      ],
+      "sample_value": "No, I denied or ignored them all"
+    },
+    {
+      "key": "additional_notes",
+      "label": "Anything else we should know?",
+      "type": "textarea",
+      "required": false,
+      "help": "Optional. Did you recently click a login link, get a phishing email, change devices?",
+      "placeholder": "Optional context",
+      "sample_value": "Earlier today I got a Teams message from someone claiming to be IT asking me to 'verify my login'. Didn't reply."
+    }
+  ],
+  "alert_template": {
+    "title": "MFA issue from {{reporter_email}}: {{issue_type}}",
+    "description": "User {{reporter_email}} reports an authentication issue on account '{{account_username}}'.\n\nIssue type: {{issue_type}}\nUser-rated urgency: {{severity_feel}}\nMFA method: {{mfa_method}}\nStarted at: {{started_at}}\nNumber of prompts seen: {{prompt_count}}\nApproved any prompts: {{approved_any}}\n\nAdditional context: {{additional_notes}}",
+    "severity": "medium",
+    "source": "intake_form",
+    "category": "mfa_anomaly"
+  },
+  "icon": "KeyRound",
+  "category": "Identity / Access",
+  "estimated_minutes": 3
+}

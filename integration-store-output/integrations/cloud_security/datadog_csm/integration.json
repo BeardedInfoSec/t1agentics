@@ -1,0 +1,197 @@
+{
+  "id": "datadog_csm",
+  "name": "Datadog Cloud Security Management",
+  "description": "Cloud Security Management providing misconfigurations detection, threats monitoring, identity risks, and vulnerability management via Datadog REST API",
+  "version": "1.0.0",
+  "category": "cloud_security",
+  "vendor": "Datadog",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "DD-API-KEY",
+    "location": "header",
+    "additional_headers": {
+      "DD-APPLICATION-KEY": "{application_key}"
+    }
+  },
+  "base_url": "https://api.datadoghq.com",
+  "actions": [
+    {
+      "id": "list_csm_agents",
+      "name": "List CSM Agents",
+      "description": "Retrieve the list of all CSM agents running on hosts and containers",
+      "http_method": "GET",
+      "endpoint": "/api/v2/csm/onboarding/agents",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "page[size]",
+          "type": "number",
+          "description": "Number of agents to return per page",
+          "required": false,
+          "default": 50
+        },
+        {
+          "name": "page[cursor]",
+          "type": "string",
+          "description": "Pagination cursor for next page",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_csm_threats_rules",
+      "name": "List CSM Threats Agent Rules",
+      "description": "List Cloud Workload Protection agent rules for threat detection",
+      "http_method": "GET",
+      "endpoint": "/api/v2/remote_config/products/cws/agent_rules",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "list_security_findings",
+      "name": "List Security Findings",
+      "description": "Retrieve security findings from CSM Misconfigurations and Threats",
+      "http_method": "GET",
+      "endpoint": "/api/v2/posture_management/findings",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "filter[evaluation]",
+          "type": "string",
+          "description": "Filter by evaluation result (pass, fail)",
+          "required": false
+        },
+        {
+          "name": "filter[mute_status]",
+          "type": "string",
+          "description": "Filter by mute status",
+          "required": false
+        },
+        {
+          "name": "filter[rule_id]",
+          "type": "string",
+          "description": "Filter by specific rule ID",
+          "required": false
+        },
+        {
+          "name": "page[limit]",
+          "type": "number",
+          "description": "Maximum findings to return",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "page[cursor]",
+          "type": "string",
+          "description": "Pagination cursor",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_security_signals",
+      "name": "List Security Signals",
+      "description": "Search and list security signals (real-time threat detections)",
+      "http_method": "POST",
+      "endpoint": "/api/v2/security_monitoring/signals/search",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "filter",
+          "type": "object",
+          "description": "Filter object with query, from, and to fields (e.g., {\"query\": \"status:high\", \"from\": \"2024-01-01T00:00:00Z\", \"to\": \"now\"})",
+          "required": false
+        },
+        {
+          "name": "sort",
+          "type": "string",
+          "description": "Sort order (timestamp or -timestamp)",
+          "required": false,
+          "default": "-timestamp"
+        },
+        {
+          "name": "page",
+          "type": "object",
+          "description": "Pagination object with limit and cursor",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_signal_details",
+      "name": "Get Signal Details",
+      "description": "Retrieve details for a specific security signal",
+      "http_method": "GET",
+      "endpoint": "/api/v2/security_monitoring/signals/{signal_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "signal_id",
+          "type": "string",
+          "description": "The unique identifier of the security signal",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_security_rules",
+      "name": "List Security Rules",
+      "description": "List security monitoring detection rules for cloud threats and misconfigurations",
+      "http_method": "GET",
+      "endpoint": "/api/v2/security_monitoring/rules",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "page[size]",
+          "type": "number",
+          "description": "Number of rules per page",
+          "required": false,
+          "default": 50
+        },
+        {
+          "name": "page[number]",
+          "type": "number",
+          "description": "Page number",
+          "required": false,
+          "default": 0
+        }
+      ]
+    },
+    {
+      "id": "mute_finding",
+      "name": "Mute Finding",
+      "description": "Mute or unmute a specific security finding",
+      "http_method": "PATCH",
+      "endpoint": "/api/v2/posture_management/findings/{finding_id}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "finding_id",
+          "type": "string",
+          "description": "The unique identifier of the finding",
+          "required": true
+        },
+        {
+          "name": "mute_status",
+          "type": "string",
+          "description": "Mute status (muted, unmuted)",
+          "required": true
+        },
+        {
+          "name": "mute_reason",
+          "type": "string",
+          "description": "Reason for muting the finding",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

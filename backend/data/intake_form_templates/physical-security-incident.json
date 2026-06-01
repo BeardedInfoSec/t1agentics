@@ -1,0 +1,127 @@
+{
+  "template_id": "physical-security-incident",
+  "name": "Physical Security Incident Report",
+  "description": "Internal form for employees to report physical security concerns at company facilities — tailgating, propped-open doors, lost or stolen badges, unrecognized people in restricted areas, broken locks, suspicious devices, etc. Severity escalates if access compromise is suspected (lost badge, person entered restricted area, device found plugged into network).",
+  "title": "Report a Physical Security Concern",
+  "intro": "See something off at the office? Someone you didn't recognize in a restricted area, a door propped open, a badge that went missing, an unfamiliar device plugged in somewhere? Tell us here. Whether or not anything came of it, reporting helps us spot patterns and tighten things up. It's totally fine to report even if you helped the person — for example, gave them directions or held a door — we just want to know.",
+  "submit_message": "Thanks — your report is in the queue. If it looks like access may have been compromised, an analyst will follow up shortly and coordinate with facilities. Otherwise, we'll review and track it.",
+  "fields": [
+    {
+      "key": "reporter_email",
+      "label": "Your email",
+      "type": "email",
+      "required": true,
+      "help": "So we can follow up if needed.",
+      "placeholder": "you@company.com",
+      "sample_value": "rachel.nguyen@northwindcloud.com"
+    },
+    {
+      "key": "incident_type",
+      "label": "What happened?",
+      "type": "select",
+      "required": true,
+      "help": "Pick the closest match. If multiple things apply, pick the most serious and explain in the description.",
+      "options": [
+        "Tailgating (someone followed me or another person in without badging)",
+        "Unrecognized person in a restricted area",
+        "Door propped open or left unlocked",
+        "Lost or stolen badge",
+        "Lost or stolen device (laptop, phone, hardware token)",
+        "Unfamiliar device plugged into network or USB port",
+        "Broken lock, window, or access control",
+        "Person refusing to identify themselves",
+        "Suspicious vehicle or activity outside the building",
+        "Other physical security concern"
+      ],
+      "sample_value": "Tailgating (someone followed me or another person in without badging)"
+    },
+    {
+      "key": "location",
+      "label": "Where did it happen?",
+      "type": "text",
+      "required": true,
+      "help": "Building, floor, room, or area. As specific as you can.",
+      "placeholder": "e.g., HQ - 4th floor lobby, near the server room",
+      "sample_value": "HQ building - 3rd floor, north entrance near the badge reader by the engineering wing"
+    },
+    {
+      "key": "when_happened",
+      "label": "When did it happen?",
+      "type": "datetime",
+      "required": true,
+      "help": "Approximate is fine.",
+      "sample_value": "2026-05-11T08:12:00"
+    },
+    {
+      "key": "what_you_observed",
+      "label": "Tell us what you saw",
+      "type": "textarea",
+      "required": true,
+      "help": "Describe what happened in your own words. Include a description of any person involved (clothing, build, anything memorable) — but only what you actually saw.",
+      "placeholder": "Walk us through what happened...",
+      "sample_value": "I badged in at the north entrance around 8:10am and a man in a dark jacket and a delivery-style backpack slipped in behind me before the door closed. He said 'thanks, going to the 4th floor meeting room' and held up a phone like he was checking a calendar. He didn't have a visible badge or visitor sticker. He walked toward the engineering side, not the meeting rooms. I'd say mid-30s, about 5'10, brown hair, no facial hair, carrying a black backpack."
+    },
+    {
+      "key": "did_you_engage",
+      "label": "Did you interact with the person?",
+      "type": "select",
+      "required": false,
+      "help": "Optional. Helps us understand the situation — there's no wrong answer.",
+      "options": [
+        "I didn't see a person / not applicable",
+        "I saw them but didn't interact",
+        "I held the door / let them in",
+        "I gave them directions or helped them",
+        "I asked who they were and they answered",
+        "I asked who they were and they wouldn't say",
+        "I challenged them and they left",
+        "I called security or reception",
+        "I followed them to see where they went"
+      ],
+      "sample_value": "I held the door / let them in"
+    },
+    {
+      "key": "access_compromise_concern",
+      "label": "Do you think access or a device may have been compromised?",
+      "type": "select",
+      "required": true,
+      "help": "Your best guess. We'll evaluate on our side.",
+      "options": [
+        "No, I don't think so",
+        "Maybe — they were in an area they shouldn't be",
+        "Yes — a badge, key, or device was lost or stolen",
+        "Yes — an unfamiliar device was found plugged in",
+        "Yes — a restricted door or system was left open",
+        "Not sure"
+      ],
+      "sample_value": "Maybe — they were in an area they shouldn't be"
+    },
+    {
+      "key": "photo",
+      "label": "Photo (optional)",
+      "type": "file",
+      "required": false,
+      "help": "If you took a photo of the device, the propped door, or the area, upload it here. Do not photograph people directly — only the scene.",
+      "sample_value": "north-entrance-propped-door-2026-05-11.jpg"
+    },
+    {
+      "key": "additional_context",
+      "label": "Anything else?",
+      "type": "textarea",
+      "required": false,
+      "help": "Optional. Did anyone else see this? Did you tell security or reception already?",
+      "placeholder": "Optional notes",
+      "sample_value": "I mentioned it to the receptionist on my way in. She said no deliveries were scheduled for this morning."
+    }
+  ],
+  "alert_template": {
+    "title": "Physical security incident reported by {{reporter_email}}",
+    "description": "Employee reported a physical security concern. Escalate severity to HIGH if 'access_compromise_concern' indicates lost/stolen badge, lost/stolen device, unfamiliar device on network, or unauthorized presence in restricted area.\n\nReporter: {{reporter_email}}\nWhen: {{when_happened}}\nLocation: {{location}}\nIncident type: {{incident_type}}\nReporter engagement: {{did_you_engage}}\nAccess compromise concern: {{access_compromise_concern}}\n\nObservation:\n{{what_you_observed}}\n\nAdditional context:\n{{additional_context}}\n\nPhoto attached: {{photo}}\n\nTriage note: coordinate with facilities/physical security; pull badge access logs and CCTV for the location and time window; if device was found plugged in, isolate the port and treat as potential rogue device.",
+    "severity": "medium",
+    "source": "intake_form",
+    "category": "physical_security"
+  },
+  "icon": "DoorOpen",
+  "category": "Insider / Policy",
+  "estimated_minutes": 5
+}

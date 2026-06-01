@@ -1,0 +1,266 @@
+{
+  "id": "ibm_qradar",
+  "name": "IBM QRadar",
+  "description": "Integrates with IBM QRadar SIEM for offense management, Ariel Query Language (AQL) searches, event and flow retrieval, and rule management via the QRadar REST API",
+  "version": "1.0.0",
+  "category": "siem",
+  "vendor": "IBM",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "header_name": "SEC",
+    "location": "header"
+  },
+  "base_url": "https://{host}/api",
+  "actions": [
+    {
+      "id": "list_offenses",
+      "name": "List Offenses",
+      "description": "Retrieve a list of offenses from QRadar with optional filtering",
+      "http_method": "GET",
+      "endpoint": "/siem/offenses",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "AQL-style filter expression (e.g., status=OPEN)",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "type": "string",
+          "description": "Comma-separated list of fields to return",
+          "required": false
+        },
+        {
+          "name": "Range",
+          "type": "string",
+          "description": "Range header for pagination (e.g., items=0-49)",
+          "required": false
+        },
+        {
+          "name": "sort",
+          "type": "string",
+          "description": "Sort order (e.g., +id or -start_time)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_offense",
+      "name": "Get Offense Details",
+      "description": "Retrieve details for a specific offense by ID",
+      "http_method": "GET",
+      "endpoint": "/siem/offenses/{offense_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "offense_id",
+          "type": "number",
+          "description": "Offense ID to retrieve",
+          "required": true
+        },
+        {
+          "name": "fields",
+          "type": "string",
+          "description": "Comma-separated list of fields to return",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "close_offense",
+      "name": "Close Offense",
+      "description": "Close an offense by updating its status to CLOSED",
+      "http_method": "POST",
+      "endpoint": "/siem/offenses/{offense_id}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "offense_id",
+          "type": "number",
+          "description": "Offense ID to close",
+          "required": true
+        },
+        {
+          "name": "closing_reason_id",
+          "type": "number",
+          "description": "ID of the closing reason",
+          "required": true
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "New status (CLOSED)",
+          "required": true,
+          "default": "CLOSED"
+        }
+      ]
+    },
+    {
+      "id": "run_ariel_search",
+      "name": "Run Ariel Search",
+      "description": "Create and execute an AQL search query in QRadar",
+      "http_method": "POST",
+      "endpoint": "/ariel/searches",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "query_expression",
+          "type": "string",
+          "description": "AQL query string to execute",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_ariel_search_results",
+      "name": "Get Ariel Search Results",
+      "description": "Retrieve results of a completed Ariel search",
+      "http_method": "GET",
+      "endpoint": "/ariel/searches/{search_id}/results",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "search_id",
+          "type": "string",
+          "description": "Search ID returned from run_ariel_search",
+          "required": true
+        },
+        {
+          "name": "Range",
+          "type": "string",
+          "description": "Range header for pagination (e.g., items=0-49)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_ariel_search_status",
+      "name": "Get Ariel Search Status",
+      "description": "Check the status of a running Ariel search",
+      "http_method": "GET",
+      "endpoint": "/ariel/searches/{search_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "search_id",
+          "type": "string",
+          "description": "Search ID to check status for",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "add_offense_note",
+      "name": "Add Offense Note",
+      "description": "Add a note to a QRadar offense",
+      "http_method": "POST",
+      "endpoint": "/siem/offenses/{offense_id}/notes",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "offense_id",
+          "type": "number",
+          "description": "Offense ID to add note to",
+          "required": true
+        },
+        {
+          "name": "note_text",
+          "type": "string",
+          "description": "Text content of the note",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_log_sources",
+      "name": "List Log Sources",
+      "description": "Retrieve a list of configured log sources in QRadar",
+      "http_method": "GET",
+      "endpoint": "/config/event_sources/log_source_management/log_sources",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "Filter expression for log sources",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "type": "string",
+          "description": "Comma-separated fields to return",
+          "required": false
+        },
+        {
+          "name": "Range",
+          "type": "string",
+          "description": "Pagination range header",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_rules",
+      "name": "List Rules",
+      "description": "Retrieve all custom and system rules from QRadar",
+      "http_method": "GET",
+      "endpoint": "/analytics/rules",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "Filter expression for rules",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "type": "string",
+          "description": "Comma-separated fields to return",
+          "required": false
+        },
+        {
+          "name": "Range",
+          "type": "string",
+          "description": "Pagination range header",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "add_to_reference_set",
+      "name": "Add to Reference Set",
+      "description": "Add an item to a QRadar reference set (used for IOC blocking, whitelisting, etc.)",
+      "http_method": "POST",
+      "endpoint": "/reference_data/sets/{name}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Name of the reference set",
+          "required": true
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "description": "Value to add to the reference set",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

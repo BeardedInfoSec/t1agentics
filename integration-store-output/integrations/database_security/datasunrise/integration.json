@@ -1,0 +1,156 @@
+{
+  "id": "datasunrise",
+  "name": "DataSunrise Database Security",
+  "description": "Integrates with DataSunrise Database Security Suite REST API for database activity monitoring, dynamic data masking, firewall rule management, and compliance auditing",
+  "version": "1.0.0",
+  "category": "database_security",
+  "vendor": "DataSunrise",
+  "auth_type": "basic",
+  "auth_config": {
+    "type": "basic",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "https://{host}:11000/api/v1",
+  "actions": [
+    {
+      "id": "list_audit_rules",
+      "name": "List Audit Rules",
+      "description": "Retrieve all configured database audit rules for monitoring specific query types, sensitive data access, and user activity",
+      "http_method": "GET",
+      "endpoint": "/audit/rules",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "databaseId",
+          "type": "string",
+          "description": "Filter rules by specific database instance ID",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_audit_events",
+      "name": "List Audit Events",
+      "description": "Retrieve database audit events captured by configured audit rules",
+      "http_method": "GET",
+      "endpoint": "/audit/events",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "startDate",
+          "type": "string",
+          "description": "Start date for audit event query (ISO 8601 format)",
+          "required": false
+        },
+        {
+          "name": "endDate",
+          "type": "string",
+          "description": "End date for audit event query (ISO 8601 format)",
+          "required": false
+        },
+        {
+          "name": "ruleId",
+          "type": "string",
+          "description": "Filter events by specific audit rule ID",
+          "required": false
+        },
+        {
+          "name": "databaseId",
+          "type": "string",
+          "description": "Filter events by database instance ID",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of events to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "list_databases",
+      "name": "List Databases",
+      "description": "Retrieve all monitored database instances registered with DataSunrise",
+      "http_method": "GET",
+      "endpoint": "/databases",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "dbType",
+          "type": "string",
+          "description": "Filter by database type (MySQL, PostgreSQL, Oracle, SQL Server, etc.)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_security_rules",
+      "name": "List Security Rules",
+      "description": "Retrieve all database firewall security rules configured for SQL injection prevention and access control",
+      "http_method": "GET",
+      "endpoint": "/security/rules",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "databaseId",
+          "type": "string",
+          "description": "Filter rules by database instance ID",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_masking_rules",
+      "name": "List Masking Rules",
+      "description": "Retrieve all dynamic data masking rules for obfuscating sensitive data",
+      "http_method": "GET",
+      "endpoint": "/masking/rules",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "databaseId",
+          "type": "string",
+          "description": "Filter masking rules by database instance ID",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "search_activity",
+      "name": "Search Activity",
+      "description": "Search through database activity logs for specific queries, users, or data access patterns",
+      "http_method": "POST",
+      "endpoint": "/audit/search",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Search query string for activity log filtering",
+          "required": true
+        },
+        {
+          "name": "startDate",
+          "type": "string",
+          "description": "Start date for search (ISO 8601 format)",
+          "required": false
+        },
+        {
+          "name": "endDate",
+          "type": "string",
+          "description": "End date for search (ISO 8601 format)",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

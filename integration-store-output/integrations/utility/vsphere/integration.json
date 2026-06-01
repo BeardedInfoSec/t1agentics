@@ -1,0 +1,188 @@
+{
+  "id": "vsphere",
+  "name": "vSphere",
+  "description": "This app implements investigative, containment and VM management actions on VMware ESXi or vCenter server",
+  "version": "2.0.10",
+  "category": "utility",
+  "vendor": "VMware",
+  "auth_type": "basic_auth",
+  "auth_config": {
+    "type": "basic_auth",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "list_vms",
+      "name": "List Vms",
+      "description": "Get the list of registered VMs",
+      "http_method": "GET",
+      "endpoint": "/actions/list_vms",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "get_system_info",
+      "name": "Get System Info",
+      "description": "Get information about a VM",
+      "http_method": "GET",
+      "endpoint": "/actions/get_system_info",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "ip_hostname",
+          "type": "string",
+          "description": "Hostname/IP address to get info of",
+          "required": true,
+          "contains": [
+            "host name",
+            "ip"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "start_guest",
+      "name": "Start Vm",
+      "description": "Start a stopped or suspended VM",
+      "http_method": "POST",
+      "endpoint": "/actions/start_guest",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "vmx_path",
+          "type": "string",
+          "description": "VMX file path",
+          "required": true,
+          "contains": [
+            "vm"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "revert_vm",
+      "name": "Revert Vm",
+      "description": "Revert VM to a named snapshot if name is specified, otherwise revert to the current snapshot",
+      "http_method": "POST",
+      "endpoint": "/actions/revert_vm",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "vmx_path",
+          "type": "string",
+          "description": "VMX file path",
+          "required": true,
+          "contains": [
+            "vm"
+          ]
+        },
+        {
+          "name": "snapshot",
+          "type": "string",
+          "description": "Snapshot name (case sensitive) to revert to",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "stop_guest",
+      "name": "Stop Vm",
+      "description": "Stop a VM",
+      "http_method": "POST",
+      "endpoint": "/actions/stop_guest",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "vmx_path",
+          "type": "string",
+          "description": "VMX file path",
+          "required": true,
+          "contains": [
+            "vm"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "suspend_guest",
+      "name": "Suspend Vm",
+      "description": "Suspend a VM",
+      "http_method": "POST",
+      "endpoint": "/actions/suspend_guest",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "vmx_path",
+          "type": "string",
+          "description": "VMX file path",
+          "required": true,
+          "contains": [
+            "vm"
+          ]
+        },
+        {
+          "name": "download",
+          "type": "boolean",
+          "description": "Download suspend file to the vault",
+          "required": false,
+          "default": false
+        }
+      ]
+    },
+    {
+      "id": "take_snapshot",
+      "name": "Snapshot Vm",
+      "description": "Take a snapshot of the VM",
+      "http_method": "GET",
+      "endpoint": "/actions/take_snapshot",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "vmx_path",
+          "type": "string",
+          "description": "VMX file path",
+          "required": true,
+          "contains": [
+            "vm"
+          ]
+        },
+        {
+          "name": "download",
+          "type": "boolean",
+          "description": "Download snapshot file to the vault",
+          "required": false,
+          "default": true
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "vSphere",
+    "original_type": "virtualization",
+    "converted_at": "2025-12-18T16:25:29.284933",
+    "source_version": "2.0.10"
+  }
+}

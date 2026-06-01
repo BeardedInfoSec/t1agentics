@@ -1,0 +1,139 @@
+#!/usr/bin/env bash
+# T1 Agentics operator CLI - thin wrapper around docker compose.
+# Run from anywhere; commands run against the repo this script lives in.
+
+set -euo pipefail
+
+REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$REPO_DIR"
+
+COMPOSE=(docker compose --env-file "$REPO_DIR/.env")
+
+usage() {
+  cat <<USAGE
+t1 - T1 Agentics operator CLI
+
+Usage:
+  t1 status                    Show service status
+  t1 logs [service]            Tail logs (default: all)
+  t1 upgrade                   Pull, restart, re-run migrations
+  t1 backup                    Snapshot Postgres + Caddy data to ./backups/
+  t1 restart [service]         Restart one or all services
+  t1 down                      Stop everything (keeps volumes)
+  t1 tenant create <slug> <name> [admin_email]
+                               Create a new tenant (currently stubbed)
+  t1 help                      Show this message
+USAGE
+}
+
+cmd_status() {
+  "${COMPOSE[@]}" ps
+}
+
+cmd_logs() {
+  local svc="${1:-}"
+  if [[ -n "$svc" ]]; then
+    "${COMPOSE[@]}" logs -f --tail=200 "$svc"
+  else
+    "${COMPOSE[@]}" logs -f --tail=200
+  fi
+}
+
+cmd_upgrade() {
+  echo "[t1] pulling latest images..."
+  "${COMPOSE[@]}" pull --ignore-pull-failures || true
+  echo "[t1] building local images..."
+  "${COMPOSE[@]}" build backend frontend
+  echo "[t1] restarting..."
+  "${COMPOSE[@]}" up -d
+  echo "[t1] waiting 10s for backend to settle, then running migrations..."
+  sleep 10
+  # The backend re-runs idempotent migrations on every connect. This is here
+  # primarily for forward-compat with a future explicit runner script.
+  if "${COMPOSE[@]}" exec -T backend test -f scripts/run_migrations.py >/dev/null 2>&1; then
+    "${COMPOSE[@]}" exec -T backend python scripts/run_migrations.py || true
+  fi
+  echo "[t1] upgrade complete."
+}
+
+cmd_backup() {
+  local stamp out_dir tar_file
+  stamp="$(date -u +%Y-%m-%d-%H%M%S)"
+  out_dir="$REPO_DIR/backups"
+  mkdir -p "$out_dir"
+  tar_file="$out_dir/${stamp}.tar.gz"
+
+  local tmp
+  tmp="$(mktemp -d)"
+  trap 'rm -rf "$tmp"' EXIT
+
+  echo "[t1] dumping postgres -> ${tmp}/postgres.sql.gz"
+  # shellcheck disable=SC1091
+  set -a; . "$REPO_DIR/.env"; set +a
+  "${COMPOSE[@]}" exec -T postgres \
+    pg_dump -U "${POSTGRES_USER:-agentcore}" -d "${POSTGRES_DB:-agentcore}" \
+      --no-owner --clean --if-exists \
+    | gzip > "${tmp}/postgres.sql.gz"
+
+  echo "[t1] snapshotting caddy_data volume"
+  docker run --rm \
+    -v t1agentics-oss_caddy_data:/from:ro \
+    -v "${tmp}":/to \
+    alpine sh -c "cd /from && tar czf /to/caddy_data.tar.gz ." || \
+    echo "[t1] caddy volume snapshot skipped (volume name may differ; check 'docker volume ls')"
+
+  cp "$REPO_DIR/.env" "${tmp}/env.snapshot" 2>/dev/null || true
+
+  tar czf "$tar_file" -C "$tmp" .
+  echo "[t1] backup written: $tar_file"
+}
+
+cmd_restart() {
+  local svc="${1:-}"
+  if [[ -n "$svc" ]]; then
+    "${COMPOSE[@]}" up -d "$svc"
+  else
+    "${COMPOSE[@]}" up -d
+  fi
+}
+
+cmd_down() {
+  "${COMPOSE[@]}" down
+}
+
+cmd_tenant() {
+  local sub="${1:-}"; shift || true
+  case "$sub" in
+    create)
+      local slug="${1:-}" name="${2:-}" admin_email="${3:-}"
+      if [[ -z "$slug" || -z "$name" ]]; then
+        echo "Usage: t1 tenant create <slug> <name> [admin_email]" >&2
+        exit 1
+      fi
+      echo "[t1] TODO: tenant create is not wired up yet."
+      echo "      slug=${slug} name=${name} admin_email=${admin_email:-<none>}"
+      echo "      Use the Platform Admin UI at https://\${DOMAIN}/platform-admin"
+      exit 0
+      ;;
+    *)
+      echo "Unknown tenant subcommand: ${sub}" >&2
+      usage; exit 1 ;;
+  esac
+}
+
+main() {
+  local cmd="${1:-help}"; shift || true
+  case "$cmd" in
+    status)   cmd_status "$@" ;;
+    logs)     cmd_logs    "$@" ;;
+    upgrade)  cmd_upgrade "$@" ;;
+    backup)   cmd_backup  "$@" ;;
+    restart)  cmd_restart "$@" ;;
+    down)     cmd_down    "$@" ;;
+    tenant)   cmd_tenant  "$@" ;;
+    help|-h|--help) usage ;;
+    *) echo "Unknown command: $cmd" >&2; usage; exit 1 ;;
+  esac
+}
+
+main "$@"

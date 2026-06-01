@@ -1,0 +1,219 @@
+{
+  "name": "Unauthorized USB Device Detection",
+  "slug": "endpoint-usb-device-detection",
+  "description": "Detects unauthorized USB device connections on managed endpoints. When a USB insertion event is detected, the playbook checks the device against the approved device allowlist. Unauthorized devices trigger an immediate block action via the endpoint agent, create a policy violation ticket, and alert the SOC. Approved devices are logged and closed.",
+  "category": "endpoint",
+  "subcategory": "device_control",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "beginner",
+  "estimated_time": "3 minutes",
+  "tags": ["usb", "device_control", "dlp", "endpoint", "policy_enforcement"],
+  "alert_types": ["usb_insertion", "device_control"],
+  "severity_filter": ["medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["usb_insertion", "device_control", "removable_media"],
+    "min_severity": "medium"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "crowdstrike",
+      "name": "CrowdStrike Falcon",
+      "category": "edr",
+      "reason": "Block unauthorized USB device and enforce device control policy"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create policy violation ticket for unauthorized USB usage"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "USB Device Inserted",
+          "config": {
+            "alert_types": ["usb_insertion", "device_control", "removable_media"],
+            "description": "Triggers when a USB device insertion event is detected on a managed endpoint"
+          }
+        }
+      },
+      {
+        "id": "code_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "code",
+          "label": "Check Device Allowlist",
+          "config": {
+            "runtime": "python3",
+            "code": "device_id = alert.get('usb_device_id', '')\nvendor_id = alert.get('usb_vendor_id', '')\napproved = device_id in context.get('approved_usb_devices', []) or vendor_id in context.get('approved_usb_vendors', [])\nresult = {'approved': approved, 'device_id': device_id, 'vendor_id': vendor_id}",
+            "description": "Checks the inserted USB device ID and vendor ID against the organization's approved device allowlist"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "label": "Device Authorized?",
+          "config": {
+            "condition": "{{code_1.approved}} == true",
+            "description": "Routes based on whether the USB device is on the approved allowlist"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "utility",
+          "label": "Log Approved Device",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "USB device {{code_1.device_id}} from vendor {{code_1.vendor_id}} is on the approved allowlist. No action required.",
+              "close_alert": true
+            },
+            "description": "Log the approved device connection and close the alert"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "respond",
+          "label": "Block USB Device",
+          "config": {
+            "integration_action": {
+              "connector_id": "crowdstrike",
+              "action": "block_usb_device",
+              "parameters": {
+                "device_id": "{{trigger_1.alert.endpoint_id}}",
+                "usb_device_id": "{{code_1.device_id}}"
+              }
+            },
+            "description": "Block the unauthorized USB device via the endpoint agent's device control policy"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 700, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "label": "Create Violation Ticket",
+          "config": {
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_issue",
+              "parameters": {
+                "project_key": "SEC",
+                "issue_type": "Policy Violation",
+                "title": "Unauthorized USB Device — {{trigger_1.alert.hostname}}",
+                "description": "Unauthorized USB device detected and blocked.\nHost: {{trigger_1.alert.hostname}}\nUser: {{trigger_1.alert.username}}\nDevice ID: {{code_1.device_id}}\nVendor: {{code_1.vendor_id}}",
+                "priority": "medium"
+              }
+            },
+            "description": "Create a policy violation ticket in Jira for tracking and user follow-up"
+          }
+        }
+      },
+      {
+        "id": "respond_3",
+        "type": "signal",
+        "position": { "x": 700, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "label": "Notify SOC on Slack",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#soc-alerts",
+              "message": "UNAUTHORIZED USB DEVICE BLOCKED\nHost: {{trigger_1.alert.hostname}}\nUser: {{trigger_1.alert.username}}\nDevice: {{code_1.device_id}} (Vendor: {{code_1.vendor_id}})\nAction: Device blocked, policy violation ticket created"
+            },
+            "description": "Notify the SOC team about the unauthorized USB device and actions taken"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1020 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "USB device detection workflow complete"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_code",
+        "source": "trigger_1",
+        "target": "code_1",
+        "type": "default"
+      },
+      {
+        "id": "e_code_decision",
+        "source": "code_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "utility_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "respond_1",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_block_ticket",
+        "source": "respond_1",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_ticket_notify",
+        "source": "respond_2",
+        "target": "respond_3",
+        "type": "default"
+      },
+      {
+        "id": "e_notify_end",
+        "source": "respond_3",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_utility_end",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

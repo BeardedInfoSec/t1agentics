@@ -1,0 +1,96 @@
+{
+  "id": "cisco_umbrella",
+  "name": "Cisco Umbrella",
+  "description": "This app allows management of a domain list on the Cisco Umbrella Security platform",
+  "version": "1.2.4",
+  "category": "edr",
+  "vendor": "Cisco",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "Using url: {base_url}",
+  "actions": [
+    {
+      "id": "list_blocked_domains",
+      "name": "List Blocked Domains",
+      "description": "Queries Cisco for the blocked domain list",
+      "http_method": "GET",
+      "endpoint": "/actions/list_blocked_domains",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of results to fetch",
+          "required": false,
+          "default": 200
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "block_domain",
+      "name": "Block Domain",
+      "description": "Block a domain",
+      "http_method": "POST",
+      "endpoint": "/actions/block_domain",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "domain",
+          "type": "string",
+          "description": "Domain to block",
+          "required": true,
+          "contains": [
+            "domain"
+          ]
+        },
+        {
+          "name": "disable_safeguards",
+          "type": "boolean",
+          "description": "Disable safeguards while blocking the domain",
+          "required": false
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "unblock_domain",
+      "name": "Unblock Domain",
+      "description": "Unblock a domain",
+      "http_method": "POST",
+      "endpoint": "/actions/unblock_domain",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "domain",
+          "type": "string",
+          "description": "Domain to unblock",
+          "required": true,
+          "contains": [
+            "domain"
+          ]
+        }
+      ],
+      "observable_type": "domain"
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Cisco Umbrella",
+    "original_type": "endpoint",
+    "converted_at": "2025-12-18T16:25:28.669652",
+    "source_version": "1.2.4"
+  }
+}

@@ -1,0 +1,105 @@
+{
+  "id": "aws_cloudtrail_utility",
+  "name": "AWS CloudTrail",
+  "description": "This app integrates with AWS CloudTrail to perform various investigative actions",
+  "version": "2.2.8",
+  "category": "utility",
+  "vendor": "AWS",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "describe_trails",
+      "name": "Describe Trails",
+      "description": "Retrieve settings for trails associated with the current region and the multi-region trails",
+      "http_method": "GET",
+      "endpoint": "/actions/describe_trails",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "include_shadow_trails",
+          "type": "boolean",
+          "description": "Inform command to include shadow trails",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "credentials",
+          "type": "string",
+          "description": "Assumed role credentials",
+          "required": false,
+          "contains": [
+            "aws credentials"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "run_query",
+      "name": "Run Query",
+      "description": "Lookup the management events captured by CloudTrail",
+      "http_method": "GET",
+      "endpoint": "/actions/run_query",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "attribute_key",
+          "type": "string",
+          "description": "Select an Attribute to query by (or leave blank to retrieve all records)",
+          "required": false
+        },
+        {
+          "name": "attribute_value",
+          "type": "string",
+          "description": "Specify the Value by which to search. Note that true/false values must be lower-case",
+          "required": false
+        },
+        {
+          "name": "start_date",
+          "type": "string",
+          "description": "Start date in the format of yyyy-mm-dd (e.g. 2019-12-25)",
+          "required": false
+        },
+        {
+          "name": "end_date",
+          "type": "string",
+          "description": "End date in the format of yyyy-mm-dd (e.g. 2019-12-25)",
+          "required": false
+        },
+        {
+          "name": "max_results",
+          "type": "number",
+          "description": "Max results to return",
+          "required": false,
+          "default": 50
+        },
+        {
+          "name": "credentials",
+          "type": "string",
+          "description": "Assumed role credentials",
+          "required": false,
+          "contains": [
+            "aws credentials"
+          ]
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "AWS CloudTrail",
+    "original_type": "generic",
+    "converted_at": "2025-12-18T16:25:28.571060",
+    "source_version": "2.2.8"
+  }
+}

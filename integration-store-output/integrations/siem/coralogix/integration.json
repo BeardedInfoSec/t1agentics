@@ -1,0 +1,212 @@
+{
+  "id": "coralogix",
+  "name": "Coralogix",
+  "description": "Integrates with Coralogix observability and security platform for DataPrime queries, alert management, incident handling, and log ingestion via the Coralogix REST API",
+  "version": "1.0.0",
+  "category": "siem",
+  "vendor": "Coralogix",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "prefix": "Bearer",
+    "location": "header"
+  },
+  "base_url": "https://api.{domain}",
+  "actions": [
+    {
+      "id": "query_dataprime",
+      "name": "Query DataPrime",
+      "description": "Execute a DataPrime query against Coralogix log data",
+      "http_method": "POST",
+      "endpoint": "/api/v1/dataprime/query",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "DataPrime query string",
+          "required": true
+        },
+        {
+          "name": "startDate",
+          "type": "string",
+          "description": "Start date (ISO 8601)",
+          "required": false
+        },
+        {
+          "name": "endDate",
+          "type": "string",
+          "description": "End date (ISO 8601)",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum results to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "list_alerts",
+      "name": "List Alerts",
+      "description": "Retrieve configured alert definitions from Coralogix",
+      "http_method": "GET",
+      "endpoint": "/api/v2/external/alerts",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "active",
+          "type": "boolean",
+          "description": "Filter by active/inactive alerts",
+          "required": false
+        },
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Filter by severity (Info, Warning, Error, Critical)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_alert",
+      "name": "Get Alert Details",
+      "description": "Retrieve details for a specific alert definition",
+      "http_method": "GET",
+      "endpoint": "/api/v2/external/alerts/{alertId}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "alertId",
+          "type": "string",
+          "description": "Alert ID to retrieve",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "create_alert",
+      "name": "Create Alert",
+      "description": "Create a new alert definition in Coralogix",
+      "http_method": "POST",
+      "endpoint": "/api/v2/external/alerts",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Alert name",
+          "required": true
+        },
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Severity (Info, Warning, Error, Critical)",
+          "required": true
+        },
+        {
+          "name": "condition",
+          "type": "object",
+          "description": "Alert condition configuration",
+          "required": true
+        },
+        {
+          "name": "is_active",
+          "type": "boolean",
+          "description": "Whether the alert is active",
+          "required": false,
+          "default": true
+        }
+      ]
+    },
+    {
+      "id": "list_incidents",
+      "name": "List Incidents",
+      "description": "Retrieve incidents from Coralogix incident management",
+      "http_method": "GET",
+      "endpoint": "/api/v1/incidents",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "state",
+          "type": "string",
+          "description": "Filter by incident state (triggered, acknowledged, resolved)",
+          "required": false
+        },
+        {
+          "name": "fromDate",
+          "type": "string",
+          "description": "Start date filter",
+          "required": false
+        },
+        {
+          "name": "toDate",
+          "type": "string",
+          "description": "End date filter",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum incidents to return",
+          "required": false,
+          "default": 50
+        }
+      ]
+    },
+    {
+      "id": "acknowledge_incident",
+      "name": "Acknowledge Incident",
+      "description": "Acknowledge an active incident",
+      "http_method": "POST",
+      "endpoint": "/api/v1/incidents/{incidentId}/acknowledge",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "incidentId",
+          "type": "string",
+          "description": "Incident ID to acknowledge",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "send_logs",
+      "name": "Send Logs",
+      "description": "Send log entries to Coralogix for ingestion",
+      "http_method": "POST",
+      "endpoint": "/api/v1/logs",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "logEntries",
+          "type": "array",
+          "description": "Array of log entry objects to send",
+          "required": true
+        },
+        {
+          "name": "applicationName",
+          "type": "string",
+          "description": "Application name for the logs",
+          "required": true
+        },
+        {
+          "name": "subsystemName",
+          "type": "string",
+          "description": "Subsystem name for the logs",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

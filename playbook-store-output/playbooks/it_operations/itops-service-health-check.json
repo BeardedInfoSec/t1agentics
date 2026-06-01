@@ -1,0 +1,249 @@
+{
+  "name": "Service Health Check",
+  "slug": "itops-service-health-check",
+  "description": "Scheduled system health check that loops over all monitored services, queries their status via monitoring integration, and produces an AI-generated executive summary. Healthy results are logged; any degraded or failed services trigger a Jira ticket and Slack notification to the infrastructure team for immediate attention.",
+  "category": "it_operations",
+  "subcategory": "monitoring",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "beginner",
+  "estimated_time": "10 minutes",
+  "tags": ["health_check", "monitoring", "scheduled", "service_status", "uptime"],
+  "alert_types": [],
+  "severity_filter": [],
+  "trigger_conditions": {
+    "alert_types": [],
+    "trigger_type": "schedule",
+    "schedule": "0 */6 * * *"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "datadog",
+      "name": "Datadog",
+      "category": "monitoring",
+      "reason": "Query service health status and uptime metrics for all monitored services"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create incident tickets for degraded or failed services"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Notify the infrastructure team of service health issues"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Scheduled Health Check",
+          "config": {
+            "trigger_type": "schedule",
+            "schedule": "0 */6 * * *",
+            "description": "Runs every 6 hours to perform a comprehensive service health check across all monitored infrastructure"
+          }
+        }
+      },
+      {
+        "id": "code_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "code",
+          "label": "Fetch Service Inventory",
+          "config": {
+            "mode": "query",
+            "query": "SELECT service_name, service_url, expected_status, check_type FROM monitored_services WHERE active = true ORDER BY criticality DESC",
+            "output_variable": "service_list",
+            "description": "Retrieve the list of all active monitored services with their expected health parameters"
+          }
+        }
+      },
+      {
+        "id": "loop_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "loop",
+          "label": "Loop Over Services",
+          "config": {
+            "collection": "{{code_1.service_list}}",
+            "item_variable": "service",
+            "action": {
+              "connector_id": "datadog",
+              "action": "check_service_status",
+              "parameters": {
+                "service_name": "{{service.service_name}}",
+                "check_type": "{{service.check_type}}"
+              }
+            },
+            "output_variable": "health_results",
+            "description": "Iterate over each monitored service and check its health status via the monitoring integration"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 540 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI -- Health Summary",
+          "config": {
+            "template_id": "executive_summary",
+            "additional_instructions": "Summarize the health check results for all services. Highlight any degraded or failed services, uptime trends, and recommended actions.",
+            "description": "AI-powered executive summary of the overall service health status across all monitored infrastructure"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 700 },
+        "data": {
+          "kind": "decision",
+          "label": "Any Services Degraded?",
+          "config": {
+            "condition": "{{analyze_1.has_issues}} == true",
+            "description": "Routes based on whether any services reported degraded or failed health status"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "label": "Create Incident Ticket",
+          "config": {
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_issue",
+              "parameters": {
+                "project": "OPS",
+                "issue_type": "Incident",
+                "summary": "Service Health Degradation Detected — {{trigger_1.timestamp}}",
+                "description": "Automated health check detected service issues.\n\n{{analyze_1.summary}}\n\nAffected Services:\n{{analyze_1.affected_services}}\n\nRecommended Actions:\n{{analyze_1.recommendations}}"
+              }
+            },
+            "description": "Create an incident ticket in Jira for the degraded services requiring attention"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "label": "Notify Infra Team on Slack",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#infra-alerts",
+              "message": "SERVICE HEALTH CHECK — ISSUES DETECTED\nTime: {{trigger_1.timestamp}}\n\n{{analyze_1.summary}}\n\nTicket: {{respond_1.issue_key}}\n\nPlease investigate the affected services immediately."
+            },
+            "description": "Alert the infrastructure team on Slack about degraded services discovered during the health check"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 700, "y": 860 },
+        "data": {
+          "kind": "utility",
+          "label": "Log: All Services Healthy",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "Scheduled health check completed at {{trigger_1.timestamp}}. All services reporting healthy. Summary: {{analyze_1.summary}}"
+            },
+            "description": "Log that all services passed the health check for audit trail purposes"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1180 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "Service health check workflow complete"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_code",
+        "source": "trigger_1",
+        "target": "code_1",
+        "type": "default"
+      },
+      {
+        "id": "e_code_loop",
+        "source": "code_1",
+        "target": "loop_1",
+        "type": "default"
+      },
+      {
+        "id": "e_loop_analyze",
+        "source": "loop_1",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_analyze_decision",
+        "source": "analyze_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "respond_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "utility_1",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_ticket_notify",
+        "source": "respond_1",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_notify_end",
+        "source": "respond_2",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_healthy_end",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

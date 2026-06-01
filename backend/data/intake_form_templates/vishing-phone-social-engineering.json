@@ -1,0 +1,129 @@
+{
+  "template_id": "vishing-phone-social-engineering",
+  "name": "Vishing / Suspicious Phone Call Report",
+  "description": "Internal form for employees to report suspicious phone calls or voicemails — callers claiming to be IT support, vendors, executives, banks, or government agencies, asking for credentials, MFA codes, payments, or remote-access permission. Severity escalates if the user provided anything to the caller.",
+  "title": "Report a Suspicious Phone Call",
+  "intro": "Got a phone call that felt off? Someone claiming to be IT, a vendor, an executive, your bank, or the government — asking you to share credentials, read an MFA code, install something, or send money? Report it here. Even if you didn't give them anything, the report helps us warn others and track active campaigns. You're not in trouble if you did engage with them — be honest so we can help.",
+  "submit_message": "Thanks — your report is in the queue. If you shared anything with the caller, an analyst will reach out shortly. If you didn't, we'll still review and may follow up if we see a pattern.",
+  "fields": [
+    {
+      "key": "reporter_email",
+      "label": "Your email",
+      "type": "email",
+      "required": true,
+      "help": "So we can reach you if we need more details.",
+      "placeholder": "you@company.com",
+      "sample_value": "diego.morales@northwindcloud.com"
+    },
+    {
+      "key": "caller_id_number",
+      "label": "Caller ID / phone number",
+      "type": "text",
+      "required": false,
+      "help": "The number that showed up on your phone. Include country code if you saw it. 'Unknown' or 'Blocked' is also useful info.",
+      "placeholder": "e.g., +1 555-123-4567",
+      "sample_value": "+1 415-555-0142 (matched our internal help desk number)"
+    },
+    {
+      "key": "claimed_identity",
+      "label": "Who did the caller claim to be?",
+      "type": "text",
+      "required": true,
+      "help": "The name and role they gave you, or the company they claimed to represent.",
+      "placeholder": "e.g., 'Adam from IT support'",
+      "sample_value": "Adam from IT support — said he was on the internal help desk team"
+    },
+    {
+      "key": "contact_method",
+      "label": "How did they contact you?",
+      "type": "select",
+      "required": true,
+      "help": "Pick the closest match.",
+      "options": [
+        "Live phone call",
+        "Voicemail (no live conversation)",
+        "Video call (Zoom, Teams, etc.)",
+        "Robocall / automated voice",
+        "Callback after I called a number from somewhere else",
+        "Not sure"
+      ],
+      "sample_value": "Live phone call"
+    },
+    {
+      "key": "what_they_wanted",
+      "label": "What did they ask for?",
+      "type": "multiselect",
+      "required": true,
+      "help": "Pick anything that applies.",
+      "options": [
+        "My password or login credentials",
+        "An MFA / verification code from my phone or email",
+        "Remote access to my computer (TeamViewer, AnyDesk, Quick Assist)",
+        "Me to install or run something",
+        "Payment, wire transfer, or gift cards",
+        "Personal information (SSN, DOB, bank info)",
+        "Company information (org chart, customer list, project details)",
+        "Me to confirm or 'verify' details they already had",
+        "Other"
+      ],
+      "sample_value": [
+        "My password or login credentials",
+        "Remote access to my computer (TeamViewer, AnyDesk, Quick Assist)"
+      ]
+    },
+    {
+      "key": "did_you_give_anything",
+      "label": "Did you give them anything?",
+      "type": "select",
+      "required": true,
+      "help": "Be honest — this is the most important question on the form. You're not in trouble. Knowing the truth lets us protect you.",
+      "options": [
+        "No, I gave them nothing and hung up",
+        "I confirmed some basic info (my name, that I work here, my role)",
+        "I read them an MFA / verification code",
+        "I gave them my password or credentials",
+        "I let them connect to my computer",
+        "I installed or ran something they asked me to",
+        "I sent money, gift cards, or payment info",
+        "Not sure"
+      ],
+      "sample_value": "No, I gave them nothing and hung up"
+    },
+    {
+      "key": "when_call_happened",
+      "label": "When did the call happen?",
+      "type": "datetime",
+      "required": false,
+      "help": "Approximate is fine.",
+      "sample_value": "2026-05-11T14:22:00"
+    },
+    {
+      "key": "what_they_said",
+      "label": "What did they say? Tell us the story.",
+      "type": "textarea",
+      "required": true,
+      "help": "Describe the call in your own words — pretext, urgency tactics, what felt off, what specific things they said.",
+      "placeholder": "Walk us through the call...",
+      "sample_value": "Caller ID said it was our help desk number. Guy said 'Hi this is Adam from IT, we're seeing an outage with VPN connections from your laptop and need to push a fix.' He read off my full name, my manager's name, and what office I'm in. Then he asked me to confirm my password so he could 'verify access.' I said I'd call the help desk back directly and he got pushy, said the outage would spread if we didn't fix it now. I hung up and called the help desk on the internal number — they have no Adam and no outage."
+    },
+    {
+      "key": "additional_context",
+      "label": "Anything else?",
+      "type": "textarea",
+      "required": false,
+      "help": "Optional. Other coworkers contacted? Caller's accent or background noise? Anything memorable.",
+      "placeholder": "Optional notes",
+      "sample_value": "Two people in my Slack channel mentioned getting similar calls this week, both claiming to be from IT."
+    }
+  ],
+  "alert_template": {
+    "title": "Vishing attempt reported by {{reporter_email}}",
+    "description": "Employee reported a suspicious phone call. Severity should be escalated if the 'did_you_give_anything' answer indicates any disclosure.\n\nReporter: {{reporter_email}}\nWhen: {{when_call_happened}}\nCaller ID / number: {{caller_id_number}}\nClaimed identity: {{claimed_identity}}\nContact method: {{contact_method}}\nAsked for: {{what_they_wanted}}\nDisclosure response: {{did_you_give_anything}}\n\nCall narrative:\n{{what_they_said}}\n\nAdditional context:\n{{additional_context}}\n\nTriage note: if disclosure occurred, treat as account compromise and initiate credential/MFA reset workflow.",
+    "severity": "medium",
+    "source": "intake_form",
+    "category": "vishing"
+  },
+  "icon": "Phone",
+  "category": "Insider / Policy",
+  "estimated_minutes": 5
+}

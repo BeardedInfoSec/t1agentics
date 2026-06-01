@@ -1,0 +1,189 @@
+{
+  "name": "Post-Phishing User Training Follow-Up",
+  "slug": "phishing-user-training-followup",
+  "description": "Manages the post-phishing incident training workflow for users who fell for phishing attempts. Identifies affected users from the incident, assigns targeted security awareness training modules based on the attack type, tracks completion with a follow-up delay, and reports training compliance to management. Users who do not complete training within the deadline are escalated to their manager. Ensures organizational learning from phishing incidents.",
+  "category": "phishing",
+  "subcategory": "user_training",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "beginner",
+  "estimated_time": "30 minutes",
+  "tags": ["phishing", "training", "awareness", "compliance", "follow-up", "management-report", "remedial"],
+  "alert_types": ["phishing"],
+  "severity_filter": ["medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["phishing", "phishing_incident", "training_required"],
+    "min_severity": "medium"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Notify users about training assignments and report to management"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "title": "Phishing Incident — Training Required",
+          "summary": "Triggers after a phishing incident is closed requiring user training",
+          "config": {
+            "trigger_type": "alert",
+            "alert_types": ["phishing", "phishing_incident", "training_required"]
+          }
+        }
+      },
+      {
+        "id": "code-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "code",
+          "title": "Identify Affected Users",
+          "summary": "Extract list of users who need training and determine training module",
+          "config": {
+            "mode": "script",
+            "script": {
+              "function_name": "main",
+              "inputs": [
+                { "name": "alert", "path": "$.trigger.alert" }
+              ],
+              "code": "def main(alert):\n    affected = alert.get('affected_users', alert.get('clickers', []))\n    if isinstance(affected, str):\n        affected = [u.strip() for u in affected.split(',') if u.strip()]\n    attack_type = alert.get('attack_type', alert.get('subcategory', 'general_phishing'))\n    module_map = {\n        'phishing': 'phishing_awareness_101',\n        'bec': 'bec_detection_training',\n        'spear_phishing': 'targeted_attack_awareness',\n        'smishing': 'mobile_security_awareness',\n        'vishing': 'voice_phishing_awareness',\n        'credential_harvest': 'credential_safety_training',\n        'general_phishing': 'phishing_awareness_101'\n    }\n    training_module = module_map.get(attack_type, 'phishing_awareness_101')\n    return {\n        'affected_users': list(set(affected)),\n        'user_count': len(set(affected)),\n        'attack_type': attack_type,\n        'training_module': training_module,\n        'deadline_days': 7,\n        'incident_name': alert.get('name', alert.get('incident_id', 'Unknown'))\n    }"
+            }
+          }
+        }
+      },
+      {
+        "id": "loop-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "loop",
+          "title": "For Each Affected User",
+          "summary": "Iterate over each user who needs training",
+          "config": {
+            "items_path": "$.nodes.code-1.result.affected_users",
+            "loop_variable": "user",
+            "max_iterations": 200
+          }
+        }
+      },
+      {
+        "id": "respond-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 540 },
+        "data": {
+          "kind": "respond",
+          "title": "Assign Training Module",
+          "summary": "Enroll the user in the appropriate security awareness training",
+          "config": {
+            "response_type": "integration_action",
+            "action_type": "assign_training",
+            "target_path": "$.loop.user",
+            "requires_approval": false,
+            "priority": "medium",
+            "message": "Assigning {{$.nodes.code-1.result.training_module}} to {{$.loop.user}} — phishing incident follow-up",
+            "params": {
+              "user": "{{$.loop.user}}",
+              "training_module": "{{$.nodes.code-1.result.training_module}}",
+              "due_days": 7,
+              "reason": "Phishing incident: {{$.nodes.code-1.result.incident_name}}"
+            }
+          }
+        }
+      },
+      {
+        "id": "respond-2",
+        "type": "signal",
+        "position": { "x": 520, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "title": "Notify Users",
+          "summary": "Send training assignment notification to affected users",
+          "config": {
+            "response_type": "notify",
+            "channel": "email",
+            "message": "You have been enrolled in mandatory security awareness training following a recent phishing incident.\n\nTraining Module: {{$.nodes.code-1.result.training_module}}\nDeadline: 7 days from today\nIncident: {{$.nodes.code-1.result.incident_name}}\n\nPlease complete this training promptly. Non-completion will be escalated to your manager.\n\nIf you have questions, contact the security team.",
+            "priority": "medium"
+          }
+        }
+      },
+      {
+        "id": "delay-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 860 },
+        "data": {
+          "kind": "delay",
+          "title": "Wait for Training Deadline",
+          "summary": "Wait 7 days for training completion deadline",
+          "config": {
+            "delay_seconds": 604800,
+            "wait_for": "training_deadline"
+          }
+        }
+      },
+      {
+        "id": "respond-3",
+        "type": "signal",
+        "position": { "x": 520, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "title": "Report to Management",
+          "summary": "Send training compliance report to security management",
+          "config": {
+            "response_type": "notify",
+            "channel": "slack",
+            "slack_channel": "#security-management",
+            "message": "PHISHING TRAINING COMPLIANCE REPORT\n\nIncident: {{$.nodes.code-1.result.incident_name}}\nAttack Type: {{$.nodes.code-1.result.attack_type}}\nTraining Module: {{$.nodes.code-1.result.training_module}}\nUsers Assigned: {{$.nodes.code-1.result.user_count}}\nDeadline: 7 days\n\nAffected Users:\n{{$.nodes.code-1.result.affected_users}}\n\nPlease review training completion status in the LMS portal. Non-compliant users should be escalated to their managers.",
+            "priority": "medium"
+          }
+        }
+      },
+      {
+        "id": "utility-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1180 },
+        "data": {
+          "kind": "utility",
+          "title": "Update Alert — Training Complete",
+          "summary": "Mark the training follow-up workflow as complete",
+          "config": {
+            "operation": "update_status",
+            "status": "closed",
+            "note": "Post-phishing training assigned to {{$.nodes.code-1.result.user_count}} users. Module: {{$.nodes.code-1.result.training_module}}. Compliance report sent to management."
+          }
+        }
+      },
+      {
+        "id": "end-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1340 },
+        "data": {
+          "kind": "end",
+          "title": "End — Training Workflow Complete",
+          "summary": "Training assigned, deadline passed, compliance reported",
+          "config": {
+            "disposition": "resolved",
+            "summary": "Post-phishing training workflow complete. Training assigned to all affected users, compliance report sent to management."
+          }
+        }
+      }
+    ],
+    "edges": [
+      { "id": "e1", "source": "trigger-1", "target": "code-1", "animated": true, "type": "smoothstep" },
+      { "id": "e2", "source": "code-1", "target": "loop-1", "animated": true, "type": "smoothstep" },
+      { "id": "e3", "source": "loop-1", "target": "respond-1", "animated": true, "type": "smoothstep" },
+      { "id": "e4", "source": "respond-1", "target": "respond-2", "animated": true, "type": "smoothstep" },
+      { "id": "e5", "source": "respond-2", "target": "delay-1", "animated": true, "type": "smoothstep" },
+      { "id": "e6", "source": "delay-1", "target": "respond-3", "animated": true, "type": "smoothstep" },
+      { "id": "e7", "source": "respond-3", "target": "utility-1", "animated": true, "type": "smoothstep" },
+      { "id": "e8", "source": "utility-1", "target": "end-1", "animated": true, "type": "smoothstep" }
+    ]
+  }
+}

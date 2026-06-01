@@ -1,0 +1,767 @@
+{
+  "id": "palo_alto_cortex_xdr",
+  "name": "Palo Alto Cortex XDR",
+  "description": "This app integrates with the Palo Alto Cortex XDR",
+  "version": "1.2.1",
+  "category": "edr",
+  "vendor": "Palo Alto",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "https://api-{}/public_api/v1",
+  "actions": [
+    {
+      "id": "on_poll",
+      "name": "On Poll",
+      "description": "Callback action for the on_poll ingest functionality",
+      "http_method": "GET",
+      "endpoint": "/actions/on_poll",
+      "action_type": "ingest",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "container_id",
+          "type": "string",
+          "description": "Container IDs to limit the ingestion to",
+          "required": false
+        },
+        {
+          "name": "start_time",
+          "type": "number",
+          "description": "Start of time range, in epoch time (milliseconds)",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "number",
+          "description": "End of time range, in epoch time (milliseconds)",
+          "required": false
+        },
+        {
+          "name": "container_count",
+          "type": "number",
+          "description": "The maximum number of container records to query for",
+          "required": false
+        },
+        {
+          "name": "artifact_count",
+          "type": "number",
+          "description": "The maximum number of artifact records to query for",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_endpoints",
+      "name": "List Endpoints",
+      "description": "List all the endpoints/sensors configured on the device",
+      "http_method": "GET",
+      "endpoint": "/hash_exceptions/blocklist/",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "get_policy",
+      "name": "Get Policy",
+      "description": "Get the policy name for a specific endpoint",
+      "http_method": "GET",
+      "endpoint": "/endpoints/get_policy/",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "endpoint_id",
+          "type": "string",
+          "description": "Endpoint ID to get the policy name for",
+          "required": true,
+          "contains": [
+            "cortex endpoint id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_action_status",
+      "name": "Get Action Status",
+      "description": "Retrieve the status of the requested actions according to the action ID",
+      "http_method": "GET",
+      "endpoint": "/actions/get_action_status/",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "action_id",
+          "type": "number",
+          "description": "Action ID to be queried",
+          "required": true,
+          "contains": [
+            "cortex action id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "retrieve_file",
+      "name": "Retrieve File",
+      "description": "Retrieve files from a specified endpoint",
+      "http_method": "GET",
+      "endpoint": "/actions/retrieve_file",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "endpoint_id",
+          "type": "string",
+          "description": "Endpoint ID to retrieve the files for",
+          "required": true,
+          "contains": [
+            "cortex endpoint id"
+          ]
+        },
+        {
+          "name": "windows_path",
+          "type": "string",
+          "description": "File path in Windows",
+          "required": false
+        },
+        {
+          "name": "linux_path",
+          "type": "string",
+          "description": "File path in Linux",
+          "required": false
+        },
+        {
+          "name": "macos_path",
+          "type": "string",
+          "description": "File path in Mac OS",
+          "required": false
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "retrieve_file_details",
+      "name": "Retrieve File Details",
+      "description": "View the file retrieved by the Retrieve File action according to the action ID",
+      "http_method": "GET",
+      "endpoint": "/actions/retrieve_file_details",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "action_id",
+          "type": "number",
+          "description": "Action ID of the file retrieval action",
+          "required": true,
+          "contains": [
+            "cortex action id"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "quarantine_file",
+      "name": "Quarantine File",
+      "description": "Quarantine file on a specified endpoint",
+      "http_method": "POST",
+      "endpoint": "/actions/quarantine_file",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "endpoint_id",
+          "type": "string",
+          "description": "Endpoint ID where the file is present",
+          "required": true,
+          "contains": [
+            "cortex endpoint id"
+          ]
+        },
+        {
+          "name": "file_path",
+          "type": "string",
+          "description": "Path of the file you want to quarantine",
+          "required": true,
+          "contains": [
+            "file path"
+          ]
+        },
+        {
+          "name": "file_hash",
+          "type": "string",
+          "description": "Hash of the file you want to quarantine",
+          "required": true,
+          "contains": [
+            "sha256"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "unquarantine_file",
+      "name": "Unquarantine File",
+      "description": "Restore a quarantined file on a specified endpoint",
+      "http_method": "POST",
+      "endpoint": "/actions/unquarantine_file",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "file_hash",
+          "type": "string",
+          "description": "Hash of the file you want to restore",
+          "required": true,
+          "contains": [
+            "sha256"
+          ]
+        },
+        {
+          "name": "endpoint_id",
+          "type": "string",
+          "description": "Endpoint ID to restore the file",
+          "required": true,
+          "contains": [
+            "cortex endpoint id"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "block_hash",
+      "name": "Block Hash",
+      "description": "Add a hash that does not exist in the allow or block list to a block list",
+      "http_method": "POST",
+      "endpoint": "/actions/block_hash",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "file_hash",
+          "type": "string",
+          "description": "File hash in SHA256 to be added to the block list",
+          "required": true,
+          "contains": [
+            "sha256"
+          ]
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "Additional information regarding this action",
+          "required": false
+        },
+        {
+          "name": "incident_id",
+          "type": "number",
+          "description": "Incident ID related to the file hash",
+          "required": false,
+          "contains": [
+            "cortex incident id"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "allow_hash",
+      "name": "Allow Hash",
+      "description": "Add files that do not exist in the allow or block list to an allow list",
+      "http_method": "GET",
+      "endpoint": "/actions/allow_hash",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "file_hash",
+          "type": "string",
+          "description": "File hash in SHA256 to be added to the allow list",
+          "required": true,
+          "contains": [
+            "sha256"
+          ]
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "Additional information regarding this action",
+          "required": false
+        },
+        {
+          "name": "incident_id",
+          "type": "number",
+          "description": "Incident ID related to the file hash",
+          "required": false,
+          "contains": [
+            "cortex incident id"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "quarantine_device",
+      "name": "Quarantine Device",
+      "description": "Quarantine a specified endpoint",
+      "http_method": "POST",
+      "endpoint": "/actions/quarantine_device",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "endpoint_id",
+          "type": "string",
+          "description": "Endpoint ID to be isolated",
+          "required": true,
+          "contains": [
+            "cortex endpoint id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "unquarantine_device",
+      "name": "Unquarantine Device",
+      "description": "Unquarantine a specified endpoint",
+      "http_method": "POST",
+      "endpoint": "/actions/unquarantine_device",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "endpoint_id",
+          "type": "string",
+          "description": "Endpoint ID to be unisolated",
+          "required": true,
+          "contains": [
+            "cortex endpoint id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "scan_endpoint",
+      "name": "Scan Endpoint",
+      "description": "Run a scan on selected endpoints",
+      "http_method": "GET",
+      "endpoint": "/actions/scan_endpoint",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "scan_all",
+          "type": "boolean",
+          "description": "Scan all endpoints",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "endpoint_id",
+          "type": "string",
+          "description": "Endpoint ID to scan",
+          "required": false,
+          "contains": [
+            "cortex endpoint id"
+          ]
+        },
+        {
+          "name": "dist_name",
+          "type": "string",
+          "description": "Name of the distribution list",
+          "required": false
+        },
+        {
+          "name": "first_seen",
+          "type": "number",
+          "description": "When an endpoint was first seen",
+          "required": false
+        },
+        {
+          "name": "last_seen",
+          "type": "number",
+          "description": "When an endpoint was last seen",
+          "required": false
+        },
+        {
+          "name": "ip_list",
+          "type": "string",
+          "description": "IP address to scan",
+          "required": false
+        },
+        {
+          "name": "group_name",
+          "type": "string",
+          "description": "Name of endpoint group",
+          "required": false
+        },
+        {
+          "name": "platform",
+          "type": "string",
+          "description": "Type of operating system",
+          "required": false
+        },
+        {
+          "name": "alias",
+          "type": "string",
+          "description": "Endpoint alias name",
+          "required": false
+        },
+        {
+          "name": "isolated",
+          "type": "boolean",
+          "description": "Limit to only isolated hosts",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "unisolated",
+          "type": "boolean",
+          "description": "Limit to only unisolated hosts",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "hostname",
+          "type": "string",
+          "description": "Name of host",
+          "required": false,
+          "contains": [
+            "host name"
+          ]
+        },
+        {
+          "name": "scan_status",
+          "type": "string",
+          "description": "Scan status of an endpoint (select from defined values)",
+          "required": false
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "cancel_scan_endpoint",
+      "name": "Cancel Scan Endpoint",
+      "description": "Cancel the scan of selected endpoints",
+      "http_method": "GET",
+      "endpoint": "/actions/cancel_scan_endpoint",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "scan_all",
+          "type": "boolean",
+          "description": "Cancel all endpoints",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "endpoint_id",
+          "type": "string",
+          "description": "Endpoint ID to cancel the scan",
+          "required": false,
+          "contains": [
+            "cortex endpoint id"
+          ]
+        },
+        {
+          "name": "dist_name",
+          "type": "string",
+          "description": "Name of the distribution list",
+          "required": false
+        },
+        {
+          "name": "first_seen",
+          "type": "number",
+          "description": "When an endpoint was first seen",
+          "required": false
+        },
+        {
+          "name": "last_seen",
+          "type": "number",
+          "description": "When an endpoint was last seen",
+          "required": false
+        },
+        {
+          "name": "ip_list",
+          "type": "string",
+          "description": "IP Address to cancel the scan for",
+          "required": false
+        },
+        {
+          "name": "group_name",
+          "type": "string",
+          "description": "Name of endpoint group",
+          "required": false
+        },
+        {
+          "name": "platform",
+          "type": "string",
+          "description": "Type of operating system",
+          "required": false
+        },
+        {
+          "name": "alias",
+          "type": "string",
+          "description": "Endpoint alias name",
+          "required": false
+        },
+        {
+          "name": "isolated",
+          "type": "boolean",
+          "description": "Limit to only isolated hosts",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "unisolated",
+          "type": "boolean",
+          "description": "Limit to only unisolated hosts",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "hostname",
+          "type": "string",
+          "description": "Name of host",
+          "required": false,
+          "contains": [
+            "host name"
+          ]
+        },
+        {
+          "name": "scan_status",
+          "type": "string",
+          "description": "Scan status of an endpoint (select from defined values)",
+          "required": false
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "get_incidents",
+      "name": "Get Incidents",
+      "description": "Get a list of incidents filtered by a list of incident IDs, modification time, or creation time",
+      "http_method": "GET",
+      "endpoint": "/incidents/get_incidents/",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "modification_time",
+          "type": "number",
+          "description": "Modification time of the incident in timestamp epoch milliseconds",
+          "required": false
+        },
+        {
+          "name": "creation_time",
+          "type": "number",
+          "description": "Creation time of the incident in timestamp epoch milliseconds",
+          "required": false
+        },
+        {
+          "name": "incident_id",
+          "type": "number",
+          "description": "Incident ID to be searched",
+          "required": false,
+          "contains": [
+            "cortex incident id"
+          ]
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Incident description to be searched",
+          "required": false
+        },
+        {
+          "name": "alert_sources",
+          "type": "string",
+          "description": "Source which detected the alert",
+          "required": false
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Status of the incident to be searched (select from defined values)",
+          "required": false
+        },
+        {
+          "name": "search_from",
+          "type": "number",
+          "description": "Starting offset within the query result set from which you want incidents returned",
+          "required": false
+        },
+        {
+          "name": "search_to",
+          "type": "number",
+          "description": "End offset within the result set after which you do not want incidents returned",
+          "required": false
+        },
+        {
+          "name": "sort",
+          "type": "boolean",
+          "description": "Sorting of the returned results",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "sort_field",
+          "type": "string",
+          "description": "Sorting field (select from defined values)",
+          "required": false,
+          "default": "creation_time"
+        },
+        {
+          "name": "sort_order",
+          "type": "string",
+          "description": "Sorting order (select from defined values)",
+          "required": false,
+          "default": "desc"
+        }
+      ]
+    },
+    {
+      "id": "get_incident_details",
+      "name": "Get Incident Details",
+      "description": "Get extra data fields of a specific incident including alerts and key artifacts",
+      "http_method": "GET",
+      "endpoint": "/actions/get_incident_details",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "incident_id",
+          "type": "number",
+          "description": "Incident ID to be investigated",
+          "required": true,
+          "contains": [
+            "cortex incident id"
+          ]
+        },
+        {
+          "name": "alerts_limit",
+          "type": "number",
+          "description": "The maximum number of related alerts to be returned",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_alerts",
+      "name": "Get Alerts",
+      "description": "Get a list of alerts with multiple events",
+      "http_method": "GET",
+      "endpoint": "/alerts/get_alerts_multi_events/",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "alert_id",
+          "type": "number",
+          "description": "Alert ID to be searched",
+          "required": false,
+          "contains": [
+            "cortex alert id"
+          ]
+        },
+        {
+          "name": "alert_source",
+          "type": "string",
+          "description": "The source which detected the alert",
+          "required": false
+        },
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "The severity of the alert to be searched (select from defined values)",
+          "required": false
+        },
+        {
+          "name": "creation_time",
+          "type": "number",
+          "description": "Creation time of the alert in timestamp epoch milliseconds",
+          "required": false
+        },
+        {
+          "name": "search_from",
+          "type": "number",
+          "description": "Starting offset within the query result set from which you want incidents returned",
+          "required": false
+        },
+        {
+          "name": "search_to",
+          "type": "number",
+          "description": "End offset within the result set after which you do not want incidents returned",
+          "required": false
+        },
+        {
+          "name": "sort",
+          "type": "boolean",
+          "description": "Sorting of the returned results",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "sort_field",
+          "type": "string",
+          "description": "Sorting field (select from defined values)",
+          "required": false,
+          "default": "creation_time"
+        },
+        {
+          "name": "sort_order",
+          "type": "string",
+          "description": "Sorting order (select from defined values)",
+          "required": false,
+          "default": "desc"
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Palo Alto Cortex XDR",
+    "original_type": "endpoint",
+    "converted_at": "2025-12-18T16:25:29.018520",
+    "source_version": "1.2.1"
+  }
+}

@@ -1,0 +1,172 @@
+{
+  "id": "qualys_csam",
+  "name": "Qualys CyberSecurity Asset Management",
+  "description": "Comprehensive asset management and external attack surface monitoring providing asset inventory, software discovery, CVE correlation, and unauthorized asset detection",
+  "version": "1.0.0",
+  "category": "asm",
+  "vendor": "Qualys",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "oauth2",
+    "token_url": "https://gateway.{platform}.qualys.com/auth",
+    "location": "header"
+  },
+  "base_url": "https://gateway.{platform}.qualys.com/rest/2.0",
+  "actions": [
+    {
+      "id": "list_assets",
+      "name": "List Assets",
+      "description": "Search and retrieve host assets in the global IT asset inventory",
+      "http_method": "POST",
+      "endpoint": "/search/am/asset",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "QQL (Qualys Query Language) filter expression for asset search",
+          "required": false
+        },
+        {
+          "name": "lastModifiedDate",
+          "type": "string",
+          "description": "Filter assets modified after a specific date (ISO format)",
+          "required": false
+        },
+        {
+          "name": "pageSize",
+          "type": "integer",
+          "description": "Number of results per page (max 1000)",
+          "required": false
+        },
+        {
+          "name": "pageNumber",
+          "type": "integer",
+          "description": "Page number for pagination",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "count_assets",
+      "name": "Count Assets",
+      "description": "Get the total number of host assets matching filter criteria",
+      "http_method": "POST",
+      "endpoint": "/count/am/asset",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "QQL filter expression for counting assets",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_asset_details",
+      "name": "Get Asset Details",
+      "description": "Retrieve detailed information about a specific asset including software inventory and configuration",
+      "http_method": "GET",
+      "endpoint": "/am/asset/{asset_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "asset_id",
+          "type": "string",
+          "description": "The unique identifier of the asset",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_cve_details",
+      "name": "Get CVE Details",
+      "description": "Retrieve vulnerability data (CVEs) for software and operating systems in the asset catalog",
+      "http_method": "GET",
+      "endpoint": "/am/catalog/cve/detail",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "cveId",
+          "type": "string",
+          "description": "CVE identifier to look up (e.g., CVE-2021-44228)",
+          "required": false
+        },
+        {
+          "name": "softwareId",
+          "type": "string",
+          "description": "Software ID to get associated CVEs",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_external_assets",
+      "name": "List External Assets",
+      "description": "Retrieve internet-facing assets discovered through external scanning",
+      "http_method": "POST",
+      "endpoint": "/search/am/asset",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "QQL filter for external assets (e.g., asset.isExternalFacing:true)",
+          "required": true
+        },
+        {
+          "name": "pageSize",
+          "type": "integer",
+          "description": "Number of results per page",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_unauthorized_software",
+      "name": "List Unauthorized Software",
+      "description": "Search for unauthorized or unapproved software across managed assets",
+      "http_method": "POST",
+      "endpoint": "/search/am/asset",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "QQL filter for unauthorized software detection",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "search_domains",
+      "name": "Search Domains",
+      "description": "Search for domain assets and their associated metadata",
+      "http_method": "POST",
+      "endpoint": "/search/am/asset",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "QQL filter expression targeting domain assets",
+          "required": true
+        },
+        {
+          "name": "pageSize",
+          "type": "integer",
+          "description": "Number of results per page",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

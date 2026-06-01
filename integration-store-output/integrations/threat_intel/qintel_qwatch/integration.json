@@ -1,0 +1,93 @@
+{
+  "id": "qintel_qwatch",
+  "name": "Qintel QWatch",
+  "description": "This app retrieves exposed credential alerts from Qintel's QWatch platform",
+  "version": "1.0.1",
+  "category": "threat_intel",
+  "vendor": "Qintel",
+  "auth_type": "oauth2",
+  "auth_config": {
+    "type": "oauth2",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "on_poll",
+      "name": "On Poll",
+      "description": "Generate events and artifacts from QWatch alerts",
+      "http_method": "GET",
+      "endpoint": "/actions/on_poll",
+      "action_type": "ingest",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "start_time",
+          "type": "number",
+          "description": "Start of time range, in epoch time (milliseconds)",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "number",
+          "description": "End of time range, in epoch time (milliseconds)",
+          "required": false
+        },
+        {
+          "name": "container_count",
+          "type": "number",
+          "description": "Maximum number of container records to query for",
+          "required": false
+        },
+        {
+          "name": "artifact_count",
+          "type": "number",
+          "description": "Maximum number of artifact records to query for",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "qwatch_search_exposures",
+      "name": "Search Qwatch Exposures",
+      "description": "Queries QWatch for credential exposures",
+      "http_method": "GET",
+      "endpoint": "/actions/qwatch_search_exposures",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "email",
+          "type": "string",
+          "description": "Email to query",
+          "required": false,
+          "contains": [
+            "qwatch credential",
+            "email"
+          ]
+        },
+        {
+          "name": "domain",
+          "type": "string",
+          "description": "Domain to query",
+          "required": false,
+          "contains": [
+            "domain"
+          ]
+        }
+      ],
+      "observable_type": "domain"
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Qintel QWatch",
+    "original_type": "investigative",
+    "converted_at": "2025-12-18T16:25:29.050595",
+    "source_version": "1.0.1"
+  }
+}

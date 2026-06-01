@@ -1,0 +1,263 @@
+{
+  "id": "azure_key_vault",
+  "name": "Azure Key Vault",
+  "description": "Cloud secrets, keys, and certificate management through Azure Key Vault REST API for secure storage, retrieval, and lifecycle management",
+  "version": "1.0.0",
+  "category": "secrets_management",
+  "vendor": "Microsoft",
+  "auth_type": "oauth2_client",
+  "auth_config": {
+    "type": "oauth2_client",
+    "token_url": "https://login.microsoftonline.com/{tenantId}/oauth2/v2.0/token",
+    "scope": "https://vault.azure.net/.default"
+  },
+  "base_url": "https://{vault}.vault.azure.net",
+  "actions": [
+    {
+      "id": "list_secrets",
+      "name": "List Secrets",
+      "description": "List all secrets in the key vault",
+      "http_method": "GET",
+      "endpoint": "/secrets",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "api-version",
+          "type": "string",
+          "description": "API version",
+          "required": true,
+          "default": "7.4"
+        },
+        {
+          "name": "maxresults",
+          "type": "number",
+          "description": "Maximum number of results (1-25)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_secret",
+      "name": "Get Secret",
+      "description": "Get the value of a specific secret",
+      "http_method": "GET",
+      "endpoint": "/secrets/{secret-name}/{secret-version}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "secret-name",
+          "type": "string",
+          "description": "Name of the secret",
+          "required": true
+        },
+        {
+          "name": "secret-version",
+          "type": "string",
+          "description": "Version of the secret (latest if empty)",
+          "required": false
+        },
+        {
+          "name": "api-version",
+          "type": "string",
+          "description": "API version",
+          "required": true,
+          "default": "7.4"
+        }
+      ]
+    },
+    {
+      "id": "set_secret",
+      "name": "Set Secret",
+      "description": "Create or update a secret in the key vault",
+      "http_method": "PUT",
+      "endpoint": "/secrets/{secret-name}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "secret-name",
+          "type": "string",
+          "description": "Name of the secret",
+          "required": true
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "description": "Value of the secret",
+          "required": true
+        },
+        {
+          "name": "contentType",
+          "type": "string",
+          "description": "Content type of the secret (e.g. application/json)",
+          "required": false
+        },
+        {
+          "name": "api-version",
+          "type": "string",
+          "description": "API version",
+          "required": true,
+          "default": "7.4"
+        }
+      ]
+    },
+    {
+      "id": "delete_secret",
+      "name": "Delete Secret",
+      "description": "Delete a secret from the key vault (soft-delete if enabled)",
+      "http_method": "DELETE",
+      "endpoint": "/secrets/{secret-name}",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "secret-name",
+          "type": "string",
+          "description": "Name of the secret to delete",
+          "required": true
+        },
+        {
+          "name": "api-version",
+          "type": "string",
+          "description": "API version",
+          "required": true,
+          "default": "7.4"
+        }
+      ]
+    },
+    {
+      "id": "get_secret_versions",
+      "name": "Get Secret Versions",
+      "description": "List all versions of a specific secret",
+      "http_method": "GET",
+      "endpoint": "/secrets/{secret-name}/versions",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "secret-name",
+          "type": "string",
+          "description": "Name of the secret",
+          "required": true
+        },
+        {
+          "name": "api-version",
+          "type": "string",
+          "description": "API version",
+          "required": true,
+          "default": "7.4"
+        }
+      ]
+    },
+    {
+      "id": "list_keys",
+      "name": "List Keys",
+      "description": "List all cryptographic keys in the key vault",
+      "http_method": "GET",
+      "endpoint": "/keys",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "api-version",
+          "type": "string",
+          "description": "API version",
+          "required": true,
+          "default": "7.4"
+        }
+      ]
+    },
+    {
+      "id": "list_certificates",
+      "name": "List Certificates",
+      "description": "List all certificates in the key vault",
+      "http_method": "GET",
+      "endpoint": "/certificates",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "api-version",
+          "type": "string",
+          "description": "API version",
+          "required": true,
+          "default": "7.4"
+        }
+      ]
+    },
+    {
+      "id": "get_certificate",
+      "name": "Get Certificate",
+      "description": "Get a specific certificate and its policy",
+      "http_method": "GET",
+      "endpoint": "/certificates/{certificate-name}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "certificate-name",
+          "type": "string",
+          "description": "Name of the certificate",
+          "required": true
+        },
+        {
+          "name": "api-version",
+          "type": "string",
+          "description": "API version",
+          "required": true,
+          "default": "7.4"
+        }
+      ]
+    },
+    {
+      "id": "recover_deleted_secret",
+      "name": "Recover Deleted Secret",
+      "description": "Recover a soft-deleted secret",
+      "http_method": "POST",
+      "endpoint": "/deletedsecrets/{secret-name}/recover",
+      "action_type": "correct",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "secret-name",
+          "type": "string",
+          "description": "Name of the deleted secret to recover",
+          "required": true
+        },
+        {
+          "name": "api-version",
+          "type": "string",
+          "description": "API version",
+          "required": true,
+          "default": "7.4"
+        }
+      ]
+    },
+    {
+      "id": "backup_secret",
+      "name": "Backup Secret",
+      "description": "Create a backup of a secret for disaster recovery",
+      "http_method": "POST",
+      "endpoint": "/secrets/{secret-name}/backup",
+      "action_type": "generic",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "secret-name",
+          "type": "string",
+          "description": "Name of the secret to backup",
+          "required": true
+        },
+        {
+          "name": "api-version",
+          "type": "string",
+          "description": "API version",
+          "required": true,
+          "default": "7.4"
+        }
+      ]
+    }
+  ]
+}

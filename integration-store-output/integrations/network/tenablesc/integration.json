@@ -1,0 +1,256 @@
+{
+  "id": "tenablesc",
+  "name": "Tenable.sc",
+  "description": "This app integrates with Tenable's SecurityCenter to provide endpoint-based investigative actions",
+  "version": "2.4.0",
+  "category": "network",
+  "vendor": "Tenable",
+  "auth_type": "basic_auth",
+  "auth_config": {
+    "type": "basic_auth",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "scan_endpoint",
+      "name": "Scan Endpoint",
+      "description": "Runs a scan against a specified IP or host",
+      "http_method": "GET",
+      "endpoint": "/scan",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "scan_name",
+          "type": "string",
+          "description": "Title of the Tenable scan",
+          "required": false,
+          "default": "Scan launched from Splunk SOAR"
+        },
+        {
+          "name": "ip_hostname",
+          "type": "string",
+          "description": "IP/Hostname to scan (comma-separated)",
+          "required": true,
+          "contains": [
+            "ip",
+            "host name"
+          ]
+        },
+        {
+          "name": "scan_policy_id",
+          "type": "number",
+          "description": "Scan Policy ID of the Tenable scan",
+          "required": true,
+          "contains": [
+            "tenablesc scan policy id"
+          ]
+        },
+        {
+          "name": "repository_id",
+          "type": "number",
+          "description": "Repository ID of the Tenable scan",
+          "required": false,
+          "default": "1",
+          "contains": [
+            "tenablesc repository id"
+          ]
+        },
+        {
+          "name": "credential_id",
+          "type": "number",
+          "description": "Credential ID of the Tenable scan",
+          "required": false,
+          "contains": [
+            "tenablesc credential id"
+          ]
+        },
+        {
+          "name": "report_id",
+          "type": "number",
+          "description": "Report ID of the Tenable scan",
+          "required": false
+        },
+        {
+          "name": "report_source",
+          "type": "string",
+          "description": "Resource from which to fetch report",
+          "required": false,
+          "default": "cumulative"
+        }
+      ]
+    },
+    {
+      "id": "list_vulnerabilities",
+      "name": "List Vulnerabilities",
+      "description": "Query Tenable.sc for a list of vulnerabilities associated with an IP or host name or CVEID",
+      "http_method": "GET",
+      "endpoint": "/actions/list_vulnerabilities",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "ip_hostname",
+          "type": "string",
+          "description": "IP / host name of host to query",
+          "required": false,
+          "contains": [
+            "ip",
+            "host name"
+          ]
+        },
+        {
+          "name": "cve_id",
+          "type": "string",
+          "description": "CVEID to query",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_policies",
+      "name": "List Policies",
+      "description": "Lists the scan policies available in Tenable.sc",
+      "http_method": "GET",
+      "endpoint": "/actions/list_policies",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "list_repositories",
+      "name": "List Repositories",
+      "description": "Lists the repositories available in Tenable.sc",
+      "http_method": "GET",
+      "endpoint": "/actions/list_repositories",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "update_asset",
+      "name": "Update Asset",
+      "description": "Update existing asset with provided fields or create a new one as a 'static' type",
+      "http_method": "GET",
+      "endpoint": "/actions/update_asset",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "asset_name",
+          "type": "string",
+          "description": "Name of asset to update",
+          "required": true
+        },
+        {
+          "name": "update_fields",
+          "type": "string",
+          "description": "Fields to use for updating the asset (JSON String)",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "update_group",
+      "name": "Update Group",
+      "description": "Update existing group with provided fields",
+      "http_method": "GET",
+      "endpoint": "/actions/update_group",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "group_name",
+          "type": "string",
+          "description": "Name of group to update",
+          "required": true
+        },
+        {
+          "name": "update_fields",
+          "type": "string",
+          "description": "Fields to use for updating the group (JSON String)",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_credentials",
+      "name": "List Credentials",
+      "description": "Lists the credentials available in Tenable.sc",
+      "http_method": "GET",
+      "endpoint": "/credential",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "list_scans",
+      "name": "List Scans",
+      "description": "Lists the scan results in Tenable.sc",
+      "http_method": "GET",
+      "endpoint": "/scan",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "earliest_time",
+          "type": "number",
+          "description": "Number of minutes from now",
+          "required": false
+        },
+        {
+          "name": "latest_time",
+          "type": "number",
+          "description": "Number of minutes from now. Leave blank for current time",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "scan_information",
+      "name": "Scan Information",
+      "description": "Gets the information of a scan in Tenable.sc ",
+      "http_method": "GET",
+      "endpoint": "/scan",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "scan_id",
+          "type": "number",
+          "description": "ID of the Tenable scan",
+          "required": true,
+          "contains": [
+            "tenablesc scan id"
+          ]
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Tenable.sc",
+    "original_type": "network security",
+    "converted_at": "2025-12-18T16:25:29.199018",
+    "source_version": "2.4.0"
+  }
+}

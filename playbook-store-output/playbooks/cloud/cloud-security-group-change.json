@@ -1,0 +1,246 @@
+{
+  "name": "Security Group Unauthorized Change Response",
+  "slug": "cloud-security-group-change",
+  "description": "Detects unauthorized changes to cloud security groups or firewall rules. Riggs AI evaluates whether the change introduces risk by analyzing the rule modification against security baselines. Unauthorized changes trigger automatic reversion to the last known good state, compliance ticket creation, change audit investigation, and team notification. Authorized changes are documented with a compliance note.",
+  "category": "cloud",
+  "subcategory": "network_security",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "10 minutes",
+  "tags": ["cloud", "security_group", "firewall", "compliance", "change_management"],
+  "alert_types": ["cloud_security", "security_group_change"],
+  "severity_filter": ["medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["cloud_security", "security_group_change", "firewall_rule_change"],
+    "min_severity": "medium"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "aws_security_hub",
+      "name": "AWS Security Hub",
+      "category": "cloud_security",
+      "reason": "Source of security group change findings and API for reverting security group rules"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create compliance tickets for unauthorized security group modifications"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Notify the cloud security and compliance teams of security group changes"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Security Group Change Detected",
+          "config": {
+            "alert_types": ["cloud_security", "security_group_change", "firewall_rule_change"],
+            "description": "Triggers when a security group or firewall rule is modified, such as adding inbound rules allowing 0.0.0.0/0 or removing required egress restrictions"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — Cloud Security Assessment",
+          "config": {
+            "template_id": "cloud_security",
+            "additional_instructions": "Evaluate security group change: does the new rule introduce excessive exposure (0.0.0.0/0), was there a change request, is the actor authorized for security group changes",
+            "description": "AI-powered analysis of the security group modification to determine if it is authorized and whether it introduces unacceptable risk"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "label": "Unauthorized Change?",
+          "config": {
+            "condition": "{{analyze_1.verdict}} == 'unauthorized' || {{analyze_1.risk_level}} == 'high'",
+            "description": "Routes based on whether the AI assessment determined the security group change is unauthorized or high-risk"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "respond",
+          "label": "Revert Security Group Rules",
+          "config": {
+            "integration_action": {
+              "connector_id": "aws_security_hub",
+              "action": "revert_security_group",
+              "parameters": {
+                "security_group_id": "{{trigger_1.alert.security_group_id}}",
+                "revert_to": "last_known_good",
+                "reason": "Unauthorized security group change detected — reverting to last known good configuration"
+              }
+            },
+            "description": "Automatically revert the security group to its last known good state by removing the unauthorized rule changes"
+          }
+        }
+      },
+      {
+        "id": "code_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "code",
+          "label": "Audit Change History",
+          "config": {
+            "mode": "query",
+            "query": "CloudTrail events for security_group={{trigger_1.alert.security_group_id}} modifications in last 7 days: actors, changes made, source IPs, associated change requests",
+            "output_variable": "change_audit",
+            "description": "Audit the security group change history to identify all modifications and whether they correlate with approved change requests"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "label": "Create Compliance Ticket",
+          "config": {
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_ticket",
+              "parameters": {
+                "project": "SEC",
+                "issue_type": "Compliance",
+                "priority": "High",
+                "summary": "Unauthorized Security Group Change: {{trigger_1.alert.security_group_id}} — Reverted",
+                "description": "Unauthorized security group modification detected and automatically reverted.\n\nSecurity Group: {{trigger_1.alert.security_group_id}}\nVPC: {{trigger_1.alert.vpc_id}}\nActor: {{trigger_1.alert.actor}}\nChange: {{trigger_1.alert.change_description}}\n\nActions Taken:\n- Security group reverted to last known good state\n- Change history audited\n\nChange Audit:\n{{code_1.change_audit}}\n\nRiggs AI Assessment:\n{{analyze_1.summary}}\n\nCompliance Note: This change violated the security group change management policy. Requires review of actor permissions."
+              }
+            },
+            "description": "Create a compliance ticket documenting the unauthorized change, reversion, and audit trail"
+          }
+        }
+      },
+      {
+        "id": "respond_3",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "label": "Notify Security & Compliance Teams",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#cloud-security-alerts",
+              "message": "UNAUTHORIZED SECURITY GROUP CHANGE REVERTED\nSG: {{trigger_1.alert.security_group_id}}\nActor: {{trigger_1.alert.actor}}\nChange: {{trigger_1.alert.change_description}}\nAction: Automatically reverted to last known good state\nTicket: {{respond_2.ticket_url}}\n\nRiggs Assessment:\n{{analyze_1.summary}}"
+            },
+            "description": "Notify the security and compliance teams of the unauthorized security group change and automatic reversion"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "utility",
+          "label": "Add Note: Authorized Change",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "Reviewed by Riggs AI (cloud_security template). Security group change determined to be authorized and within acceptable risk parameters. Actor: {{trigger_1.alert.actor}}. Assessment: {{analyze_1.summary}}"
+            },
+            "description": "Document that the security group change was determined to be authorized"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1180 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "Security group unauthorized change response complete"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_analyze",
+        "source": "trigger_1",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_analyze_decision",
+        "source": "analyze_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "respond_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "utility_1",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_revert_audit",
+        "source": "respond_1",
+        "target": "code_1",
+        "type": "default"
+      },
+      {
+        "id": "e_audit_ticket",
+        "source": "code_1",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_ticket_notify",
+        "source": "respond_2",
+        "target": "respond_3",
+        "type": "default"
+      },
+      {
+        "id": "e_notify_end",
+        "source": "respond_3",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_utility_end",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

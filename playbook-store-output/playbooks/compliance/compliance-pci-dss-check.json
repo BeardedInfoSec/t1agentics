@@ -1,0 +1,229 @@
+{
+  "name": "PCI DSS Compliance Check",
+  "slug": "compliance-pci-dss-check",
+  "description": "Automated PCI DSS compliance verification workflow. Scans cardholder data environments for compliance violations across key requirements including network segmentation, encryption, access controls, and logging. Riggs AI analyzes scan results against PCI DSS requirements, flags violations, and routes findings based on severity. Critical violations trigger immediate Jira tickets and SOC notification; minor findings are logged for the next audit cycle.",
+  "category": "compliance",
+  "subcategory": "pci_dss",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "15 minutes",
+  "tags": ["compliance", "pci_dss", "payment_card", "cardholder_data", "audit", "scan"],
+  "alert_types": ["compliance"],
+  "severity_filter": ["low", "medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["compliance", "pci_scan"],
+    "trigger_type": "scheduled",
+    "schedule": "0 6 * * 1"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "qualys",
+      "name": "Qualys",
+      "category": "vulnerability",
+      "reason": "Run PCI compliance scans against cardholder data environment"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create remediation tickets for PCI DSS violations"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Notify compliance and security teams of PCI findings"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Scheduled PCI DSS Scan",
+          "config": {
+            "trigger_type": "scheduled",
+            "schedule": "0 6 * * 1",
+            "description": "Triggers weekly PCI DSS compliance scan of cardholder data environment"
+          }
+        }
+      },
+      {
+        "id": "code_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "code",
+          "label": "Execute PCI Compliance Scan",
+          "config": {
+            "mode": "integration",
+            "integration_action": {
+              "connector_id": "qualys",
+              "action": "launch_pci_scan",
+              "parameters": {
+                "scan_profile": "pci_dss_v4",
+                "target_scope": "cardholder_data_environment"
+              }
+            },
+            "output_variable": "scan_results",
+            "description": "Launch PCI DSS compliance scan against all systems in the cardholder data environment"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI -- PCI DSS Analysis",
+          "config": {
+            "template_id": "vuln_risk",
+            "additional_instructions": "Analyze scan results against PCI DSS v4.0 requirements. Categorize each finding by PCI requirement number, severity, and compensating controls. Identify critical violations requiring immediate remediation.",
+            "description": "AI-powered analysis of PCI DSS scan results against compliance requirements"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 540 },
+        "data": {
+          "kind": "decision",
+          "label": "Critical Violations Found?",
+          "config": {
+            "condition": "{{analyze_1.critical_violations_count}} > 0",
+            "description": "Routes based on whether critical PCI DSS violations were detected"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "label": "Create Critical Violation Ticket",
+          "config": {
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_issue",
+              "parameters": {
+                "project": "COMPLIANCE",
+                "issue_type": "Bug",
+                "priority": "P1",
+                "summary": "PCI DSS Critical Violation: {{analyze_1.top_violation_requirement}}",
+                "description": "PCI DSS CRITICAL VIOLATION DETECTED\n\nRequirement: {{analyze_1.top_violation_requirement}}\nAffected Systems: {{analyze_1.affected_systems}}\nTotal Critical Findings: {{analyze_1.critical_violations_count}}\n\nRiggs Assessment:\n{{analyze_1.summary}}\n\nImmediate remediation required to maintain PCI compliance.",
+                "labels": ["pci-dss", "critical", "compliance-violation"]
+              }
+            },
+            "description": "Create a P1 Jira ticket for critical PCI DSS violations requiring immediate remediation"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "label": "Alert Compliance Team on Slack",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#compliance-alerts",
+              "message": "PCI DSS CRITICAL VIOLATION DETECTED\n\nRequirement: {{analyze_1.top_violation_requirement}}\nAffected Systems: {{analyze_1.affected_systems}}\nTotal Critical Findings: {{analyze_1.critical_violations_count}}\nJira: {{respond_1.ticket_url}}\n\nImmediate action required.\n\n{{analyze_1.summary}}"
+            },
+            "description": "Send urgent notification to compliance team about critical PCI DSS violations"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 700, "y": 700 },
+        "data": {
+          "kind": "utility",
+          "label": "Log: Minor Findings for Audit",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "PCI DSS scan completed. No critical violations found. Minor findings logged for next audit cycle: {{analyze_1.summary}}"
+            },
+            "description": "Log minor PCI findings for inclusion in the next scheduled audit cycle"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1020 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "PCI DSS compliance check complete -- findings documented and routed appropriately"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_code",
+        "source": "trigger_1",
+        "target": "code_1",
+        "type": "default"
+      },
+      {
+        "id": "e_code_analyze",
+        "source": "code_1",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_analyze_decision",
+        "source": "analyze_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "respond_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "utility_1",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_respond1_respond2",
+        "source": "respond_1",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_respond2_end",
+        "source": "respond_2",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_utility1_end",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

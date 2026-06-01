@@ -1,0 +1,139 @@
+{
+  "id": "socket_dev",
+  "name": "Socket",
+  "description": "Supply chain security platform detecting malicious and risky open source packages across npm, PyPI, Go, and other ecosystems",
+  "version": "1.0.0",
+  "category": "code_security",
+  "vendor": "Socket",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "header_name": "Authorization",
+    "prefix": "Bearer ",
+    "location": "header"
+  },
+  "base_url": "https://api.socket.dev/v0",
+  "actions": [
+    {
+      "id": "get_package_issues",
+      "name": "Get Package Issues",
+      "description": "Retrieve security issues for a specific npm package and version",
+      "http_method": "GET",
+      "endpoint": "/npm/{package}/{version}/issues",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "package",
+          "type": "string",
+          "description": "NPM package name",
+          "required": true,
+          "location": "path"
+        },
+        {
+          "name": "version",
+          "type": "string",
+          "description": "Package version",
+          "required": true,
+          "location": "path"
+        }
+      ]
+    },
+    {
+      "id": "get_package_score",
+      "name": "Get Package Score",
+      "description": "Retrieve the security score for a specific package",
+      "http_method": "GET",
+      "endpoint": "/npm/{package}/{version}/score",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "package",
+          "type": "string",
+          "description": "NPM package name",
+          "required": true,
+          "location": "path"
+        },
+        {
+          "name": "version",
+          "type": "string",
+          "description": "Package version",
+          "required": true,
+          "location": "path"
+        }
+      ]
+    },
+    {
+      "id": "list_reports",
+      "name": "List Reports",
+      "description": "List all dependency reports for the organization",
+      "http_method": "GET",
+      "endpoint": "/report/list",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "create_report",
+      "name": "Create Report",
+      "description": "Create a new dependency analysis report from a manifest file",
+      "http_method": "POST",
+      "endpoint": "/report/upload",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "file",
+          "type": "file",
+          "description": "Manifest file (package.json, requirements.txt, go.mod, etc.)",
+          "required": true,
+          "location": "body"
+        }
+      ]
+    },
+    {
+      "id": "get_report",
+      "name": "Get Report Details",
+      "description": "Retrieve a specific dependency analysis report with all findings",
+      "http_method": "GET",
+      "endpoint": "/report/view/{report_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "report_id",
+          "type": "string",
+          "description": "Report ID",
+          "required": true,
+          "location": "path"
+        }
+      ]
+    },
+    {
+      "id": "get_org_dependencies",
+      "name": "Get Organization Dependencies",
+      "description": "List all tracked dependencies for the organization",
+      "http_method": "GET",
+      "endpoint": "/dependencies",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "limit",
+          "type": "integer",
+          "description": "Max number of results",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "offset",
+          "type": "integer",
+          "description": "Pagination offset",
+          "required": false,
+          "location": "query"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,194 @@
+{
+  "id": "censys_asm_platform",
+  "name": "Censys Attack Surface Management",
+  "description": "External attack surface management platform providing continuous asset discovery, risk identification, and internet exposure monitoring through comprehensive internet scanning",
+  "version": "1.0.0",
+  "category": "asm",
+  "vendor": "Censys",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "location": "header"
+  },
+  "base_url": "https://app.censys.io/api",
+  "actions": [
+    {
+      "id": "list_assets_hosts",
+      "name": "List Host Assets",
+      "description": "Retrieve internet-facing host assets discovered in the attack surface",
+      "http_method": "GET",
+      "endpoint": "/v1/assets/hosts",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "pageSize",
+          "type": "integer",
+          "description": "Number of results per page (max 500)",
+          "required": false
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "description": "Pagination cursor for next page",
+          "required": false
+        },
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "Filter expression for host assets",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_host_asset",
+      "name": "Get Host Asset Details",
+      "description": "Retrieve detailed information about a specific host asset including services, risks, and certificates",
+      "http_method": "GET",
+      "endpoint": "/v1/assets/hosts/{asset_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "asset_id",
+          "type": "string",
+          "description": "IP address or asset identifier",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_assets_domains",
+      "name": "List Domain Assets",
+      "description": "Retrieve domain assets discovered in the attack surface",
+      "http_method": "GET",
+      "endpoint": "/v1/assets/domains",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "pageSize",
+          "type": "integer",
+          "description": "Number of results per page",
+          "required": false
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "description": "Pagination cursor for next page",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_assets_certificates",
+      "name": "List Certificate Assets",
+      "description": "Retrieve TLS/SSL certificate assets discovered in the attack surface",
+      "http_method": "GET",
+      "endpoint": "/v1/assets/certificates",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "pageSize",
+          "type": "integer",
+          "description": "Number of results per page",
+          "required": false
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "description": "Pagination cursor for next page",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_risks",
+      "name": "List Risks",
+      "description": "Retrieve risks and security issues identified across the attack surface",
+      "http_method": "GET",
+      "endpoint": "/v1/risks",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "pageSize",
+          "type": "integer",
+          "description": "Number of results per page",
+          "required": false
+        },
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Filter by risk severity",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_logbook_events",
+      "name": "Get Logbook Events",
+      "description": "Poll the logbook for changes in the attack surface using cursor-based pagination",
+      "http_method": "GET",
+      "endpoint": "/v1/logbook",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "cursor",
+          "type": "string",
+          "description": "Cursor for retrieving events after a specific point",
+          "required": false
+        },
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "Filter for event types of interest",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "manage_seeds",
+      "name": "Add Seeds",
+      "description": "Add seed data (domains, IPs, ASNs, CIDRs) to expand attack surface discovery scope",
+      "http_method": "POST",
+      "endpoint": "/v1/seeds",
+      "action_type": "action",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "seeds",
+          "type": "array",
+          "description": "Array of seed objects with type (ASN, IP_ADDRESS, DOMAIN_NAME, CIDR) and value",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_subdomains",
+      "name": "List Subdomains",
+      "description": "Retrieve subdomains discovered for a specific domain asset",
+      "http_method": "GET",
+      "endpoint": "/v1/assets/domains/{domain}/subdomains",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "domain",
+          "type": "string",
+          "description": "The root domain to query subdomains for",
+          "required": true
+        },
+        {
+          "name": "pageSize",
+          "type": "integer",
+          "description": "Number of results per page",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

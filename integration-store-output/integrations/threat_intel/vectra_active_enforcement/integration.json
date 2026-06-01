@@ -1,0 +1,145 @@
+{
+  "id": "vectra_active_enforcement",
+  "name": "Vectra Active Enforcement",
+  "description": "This app supports investigate and ingest actions on Vectra Active Enforcement platform",
+  "version": "4.0.1",
+  "category": "threat_intel",
+  "vendor": "Vectra",
+  "auth_type": "basic_auth",
+  "auth_config": {
+    "type": "basic_auth",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "https://",
+  "actions": [
+    {
+      "id": "lookup_ip",
+      "name": "Lookup Ip",
+      "description": "Retrieve host based on IP address",
+      "http_method": "GET",
+      "endpoint": "/actions/lookup_ip",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "IP to lookup",
+          "required": true,
+          "contains": [
+            "ip"
+          ]
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "get_detections",
+      "name": "Get Detections",
+      "description": "Retrieve detections",
+      "http_method": "GET",
+      "endpoint": "/detections",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "src_ip",
+          "type": "string",
+          "description": "Source IP address of detection",
+          "required": false,
+          "contains": [
+            "ip"
+          ]
+        },
+        {
+          "name": "dest_port",
+          "type": "number",
+          "description": "Destination port of detection",
+          "required": false
+        },
+        {
+          "name": "dettypes",
+          "type": "string",
+          "description": "Detection types",
+          "required": true
+        },
+        {
+          "name": "state",
+          "type": "string",
+          "description": "State of detection",
+          "required": true,
+          "default": "active"
+        }
+      ]
+    },
+    {
+      "id": "get_scored_hosts",
+      "name": "Get Scored Hosts",
+      "description": "Retrieve hosts based on a minimum certainty and threat score",
+      "http_method": "GET",
+      "endpoint": "/hosts",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "cscore",
+          "type": "number",
+          "description": "Minimum certainty score",
+          "required": true,
+          "default": 50
+        },
+        {
+          "name": "tscore",
+          "type": "number",
+          "description": "Minimum threat score",
+          "required": true,
+          "default": 50
+        }
+      ]
+    },
+    {
+      "id": "get_tagged_hosts",
+      "name": "Get Tagged Hosts",
+      "description": "Retrieve hosts based on descriptive tags",
+      "http_method": "GET",
+      "endpoint": "/hosts",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "dtags",
+          "type": "string",
+          "description": "Tags",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "on_poll",
+      "name": "On Poll",
+      "description": "Query device on a known interval",
+      "http_method": "GET",
+      "endpoint": "/actions/on_poll",
+      "action_type": "ingest",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Vectra Active Enforcement",
+    "original_type": "information",
+    "converted_at": "2025-12-18T16:25:29.264426",
+    "source_version": "4.0.1"
+  }
+}

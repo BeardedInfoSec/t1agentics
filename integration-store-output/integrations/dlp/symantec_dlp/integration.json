@@ -1,0 +1,159 @@
+{
+  "id": "symantec_dlp",
+  "name": "Symantec DLP",
+  "description": "Integrates with Broadcom Symantec Data Loss Prevention Enforce Server REST API for incident reporting, policy management, and data match retrieval",
+  "version": "1.0.0",
+  "category": "dlp",
+  "vendor": "Broadcom (Symantec)",
+  "auth_type": "basic",
+  "auth_config": {
+    "type": "basic",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "https://{host}:8443/ProtectManager/webservices/v2",
+  "actions": [
+    {
+      "id": "list_incidents",
+      "name": "List Incidents",
+      "description": "Retrieve a list of DLP incidents with optional filtering by date range, severity, status, and policy",
+      "http_method": "POST",
+      "endpoint": "/incidents",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "savedReportId",
+          "type": "number",
+          "description": "ID of the saved report to use for filtering incidents",
+          "required": false
+        },
+        {
+          "name": "incidentCreationDateLaterThan",
+          "type": "string",
+          "description": "Filter incidents created after this date (ISO 8601 format)",
+          "required": false
+        },
+        {
+          "name": "incidentCreationDateEarlierThan",
+          "type": "string",
+          "description": "Filter incidents created before this date (ISO 8601 format)",
+          "required": false
+        },
+        {
+          "name": "incidentStatusId",
+          "type": "number",
+          "description": "Filter by incident status ID",
+          "required": false
+        },
+        {
+          "name": "incidentSeverity",
+          "type": "string",
+          "description": "Filter by severity level (High, Medium, Low, Info)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_incident_details",
+      "name": "Get Incident Details",
+      "description": "Retrieve full details of a specific DLP incident including matched data, policy violations, and remediation history",
+      "http_method": "GET",
+      "endpoint": "/incidents/{incidentId}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "incidentId",
+          "type": "number",
+          "description": "Unique identifier of the DLP incident",
+          "required": true
+        },
+        {
+          "name": "includeViolations",
+          "type": "boolean",
+          "description": "Include policy violation details in the response",
+          "required": false
+        },
+        {
+          "name": "includeHistory",
+          "type": "boolean",
+          "description": "Include incident history and audit trail",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "update_incident",
+      "name": "Update Incident",
+      "description": "Update incident attributes such as status, severity, or custom attributes",
+      "http_method": "PATCH",
+      "endpoint": "/incidents/{incidentId}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "incidentId",
+          "type": "number",
+          "description": "Unique identifier of the DLP incident to update",
+          "required": true
+        },
+        {
+          "name": "incidentStatusId",
+          "type": "number",
+          "description": "New status ID for the incident",
+          "required": false
+        },
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "New severity level (High, Medium, Low, Info)",
+          "required": false
+        },
+        {
+          "name": "note",
+          "type": "string",
+          "description": "Note to add to the incident",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_policies",
+      "name": "List Policies",
+      "description": "Retrieve all configured DLP policies including detection rules, response rules, and policy groups",
+      "http_method": "GET",
+      "endpoint": "/policies",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "get_incident_component_matches",
+      "name": "Get Data Matches",
+      "description": "Retrieve the matched sensitive data components for a given incident",
+      "http_method": "GET",
+      "endpoint": "/incidents/{incidentId}/components",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "incidentId",
+          "type": "number",
+          "description": "Unique identifier of the DLP incident",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_incident_statuses",
+      "name": "List Incident Statuses",
+      "description": "Retrieve all available incident status values configured in the system",
+      "http_method": "GET",
+      "endpoint": "/incidents/statuses",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    }
+  ]
+}

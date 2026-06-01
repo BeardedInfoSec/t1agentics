@@ -1,0 +1,427 @@
+{
+  "id": "databricks",
+  "name": "Databricks",
+  "description": "This app supports investigation and data manipulation actions in Databricks",
+  "version": "1.0.4",
+  "category": "threat_intel",
+  "vendor": "Databricks",
+  "auth_type": "basic_auth",
+  "auth_config": {
+    "type": "basic_auth",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "get_job_run",
+      "name": "Get Job Run",
+      "description": "Get a single job run",
+      "http_method": "GET",
+      "endpoint": "/actions/get_job_run",
+      "action_type": "generic",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "run_id",
+          "type": "number",
+          "description": "Job run id",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_job_output",
+      "name": "Get Job Output",
+      "description": "Get job run output",
+      "http_method": "GET",
+      "endpoint": "/actions/get_job_output",
+      "action_type": "generic",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "run_id",
+          "type": "number",
+          "description": "Job run id",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_alerts",
+      "name": "List Alerts",
+      "description": "List alerts",
+      "http_method": "GET",
+      "endpoint": "/actions/list_alerts",
+      "action_type": "generic",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "list_clusters",
+      "name": "List Clusters",
+      "description": "List clusters",
+      "http_method": "GET",
+      "endpoint": "/actions/list_clusters",
+      "action_type": "generic",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "create_alert",
+      "name": "Create Alert",
+      "description": "Create a new alert",
+      "http_method": "GET",
+      "endpoint": "/actions/create_alert",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Name of channel",
+          "required": true
+        },
+        {
+          "name": "query_id",
+          "type": "string",
+          "description": "ID of the query evaluated by the alert",
+          "required": true,
+          "contains": [
+            "databricks query id"
+          ]
+        },
+        {
+          "name": "column",
+          "type": "string",
+          "description": "Name of column in the query result to compare in alert evaluation",
+          "required": true
+        },
+        {
+          "name": "operator",
+          "type": "string",
+          "description": "Operator used to compare in alert evaluation",
+          "required": true
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "description": "Value used to compare in alert evaluation",
+          "required": true
+        },
+        {
+          "name": "custom_body",
+          "type": "string",
+          "description": "Custom body of alert notification",
+          "required": false
+        },
+        {
+          "name": "custom_subject",
+          "type": "string",
+          "description": "Custom subject of alert notification",
+          "required": false
+        },
+        {
+          "name": "muted",
+          "type": "boolean",
+          "description": "Whether or not the alert is muted",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "rearm",
+          "type": "number",
+          "description": "Number of seconds after being triggered before the alert rearms itself and can be triggered again. If not set, alert will never be triggered again",
+          "required": false
+        },
+        {
+          "name": "parent",
+          "type": "string",
+          "description": "The identifier of the workspace folder containing the alert. The default is the user's home folder",
+          "required": false
+        },
+        {
+          "name": "empty_result_state",
+          "type": "string",
+          "description": "State that alert evaluates to when query result is empty",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "delete_alert",
+      "name": "Delete Alert",
+      "description": "Delete an alert",
+      "http_method": "GET",
+      "endpoint": "/actions/delete_alert",
+      "action_type": "investigate",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "alert_id",
+          "type": "string",
+          "description": "ID of the alert to delete",
+          "required": true,
+          "contains": [
+            "databricks alert id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_warehouses",
+      "name": "List Warehouses",
+      "description": "List all SQL warehouses for which a user has manager permissions",
+      "http_method": "GET",
+      "endpoint": "/actions/list_warehouses",
+      "action_type": "generic",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "cancel_query",
+      "name": "Cancel Query",
+      "description": "Request that an executing SQL statement be cancelled. Callers must poll for a status of the end state",
+      "http_method": "GET",
+      "endpoint": "/actions/cancel_query",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "statement_id",
+          "type": "string",
+          "description": "SQL statement id",
+          "required": true,
+          "contains": [
+            "databricks statement id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_query_status",
+      "name": "Get Query Status",
+      "description": "Get status, manifest, and result first chunk of a SQL query",
+      "http_method": "GET",
+      "endpoint": "/actions/get_query_status",
+      "action_type": "generic",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "statement_id",
+          "type": "string",
+          "description": "SQL statement id",
+          "required": true,
+          "contains": [
+            "databricks statement id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "perform_query",
+      "name": "Perform Query",
+      "description": "Perform a SQL query",
+      "http_method": "GET",
+      "endpoint": "/actions/perform_query",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "statement",
+          "type": "string",
+          "description": "SQL statement to execute",
+          "required": true
+        },
+        {
+          "name": "warehouse_id",
+          "type": "string",
+          "description": "Warehouse upon which to execute a statement",
+          "required": true
+        },
+        {
+          "name": "wait_timeout",
+          "type": "number",
+          "description": "The time in seconds the API service will wait for the statement's result. Can be set to 0 or to a value between 5 and 50. When set to 0 the statement will execute in asynchronous mode",
+          "required": false
+        },
+        {
+          "name": "on_wait_timeout",
+          "type": "string",
+          "description": "When in synchronous mode with wait_timeout > 0s the action taken when the timeout is reached",
+          "required": true,
+          "default": "CANCEL"
+        },
+        {
+          "name": "byte_limit",
+          "type": "number",
+          "description": "Applies the given byte limit to the statement's result size",
+          "required": false
+        },
+        {
+          "name": "catalog",
+          "type": "string",
+          "description": "Sets default catalog for statement execution, similar to USE CATALOG in SQL",
+          "required": false
+        },
+        {
+          "name": "schema",
+          "type": "string",
+          "description": "Sets default schema for statement execution, similar to USE SCHEMA in SQL.",
+          "required": false
+        },
+        {
+          "name": "disposition",
+          "type": "string",
+          "description": "The result disposition",
+          "required": true,
+          "default": "INLINE"
+        },
+        {
+          "name": "format",
+          "type": "string",
+          "description": "The result format",
+          "required": true,
+          "default": "JSON_ARRAY"
+        }
+      ]
+    },
+    {
+      "id": "execute_notebook",
+      "name": "Execute Notebook",
+      "description": "Execute a Databricks notebook",
+      "http_method": "GET",
+      "endpoint": "/actions/execute_notebook",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "notebook_path",
+          "type": "string",
+          "description": "The path of the notebook to be run in the Databricks workspace or remote repository",
+          "required": true
+        },
+        {
+          "name": "git_source",
+          "type": "string",
+          "description": "An optional specification for a remote repository containing the notebook",
+          "required": false
+        },
+        {
+          "name": "existing_cluster_id",
+          "type": "string",
+          "description": "The ID of an existing cluster to use for all runs of this task (required if new_cluster is unspecified)",
+          "required": false
+        },
+        {
+          "name": "new_cluster",
+          "type": "string",
+          "description": "An object specifying the details of the new cluster to use for this task (required if existing_cluster_id is unspecified)",
+          "required": false
+        },
+        {
+          "name": "libraries",
+          "type": "string",
+          "description": "An optional list of libraries to be installed on the cluster that executes the task",
+          "required": false
+        },
+        {
+          "name": "timeout_seconds",
+          "type": "number",
+          "description": "An optional timeout applied to the job",
+          "required": false
+        },
+        {
+          "name": "run_name",
+          "type": "string",
+          "description": "An optional name for the run",
+          "required": false,
+          "default": "Untitled"
+        },
+        {
+          "name": "idempotency_token",
+          "type": "string",
+          "description": "An optional token that can be used to guarantee the idempotency of job run requests. If a run with the provided token already exists, the request does not create a new run but returns the info of the existing run instead. If a run with the provided token is deleted, an error is returned",
+          "required": false
+        },
+        {
+          "name": "access_control_list",
+          "type": "string",
+          "description": "An optional list of permissions to set for the run",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "on_poll",
+      "name": "On Poll",
+      "description": "Ingest tickets from Databricks",
+      "http_method": "GET",
+      "endpoint": "/actions/on_poll",
+      "action_type": "ingest",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "start_time",
+          "type": "number",
+          "description": "Parameter ignored in this app",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "number",
+          "description": "Parameter ignored in this app",
+          "required": false
+        },
+        {
+          "name": "container_id",
+          "type": "string",
+          "description": "Parameter ignored in this app",
+          "required": false
+        },
+        {
+          "name": "container_count",
+          "type": "number",
+          "description": "Parameter ignored in this app",
+          "required": false
+        },
+        {
+          "name": "artifact_count",
+          "type": "number",
+          "description": "Parameter ignored in this app",
+          "required": false
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Databricks",
+    "original_type": "investigative",
+    "converted_at": "2025-12-18T16:25:28.728602",
+    "source_version": "1.0.4"
+  }
+}

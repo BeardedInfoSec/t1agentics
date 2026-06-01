@@ -1,0 +1,247 @@
+{
+  "name": "Cloud Security Alert Triage",
+  "slug": "cloud-security-alert-triage",
+  "description": "AI-powered triage for cloud security alerts. Riggs analyzes the alert using the cloud_security template to assess severity and blast radius. Critical findings trigger automatic remediation of the misconfiguration via cloud API, incident ticket creation in Jira, and Slack notification to the cloud security team. Non-critical alerts receive AI-recommended severity updates and an analyst review note.",
+  "category": "cloud",
+  "subcategory": "triage",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "10 minutes",
+  "tags": ["cloud", "aws", "misconfiguration", "automated"],
+  "alert_types": ["cloud_security"],
+  "severity_filter": ["low", "medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["cloud_security", "cloud_misconfiguration"],
+    "min_severity": "low"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "aws_security_hub",
+      "name": "AWS Security Hub",
+      "category": "cloud_security",
+      "reason": "Source of cloud security findings and remediation API for misconfigurations"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create incident tickets for critical cloud security findings"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Notify the cloud security team of critical findings and remediation actions"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Cloud Security Alert Received",
+          "config": {
+            "alert_types": ["cloud_security", "cloud_misconfiguration"],
+            "description": "Triggers when a cloud security finding is ingested from AWS Security Hub or similar cloud security platform"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — Cloud Security Assessment",
+          "config": {
+            "template_id": "cloud_security",
+            "description": "AI-powered cloud security analysis using the curated cloud_security template to assess severity, blast radius, and recommended remediation"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "label": "Severity Critical?",
+          "config": {
+            "condition": "{{analyze_1.severity}} == 'critical'",
+            "description": "Routes based on whether the AI assessment classified the finding as critical severity"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "respond",
+          "label": "Auto-Remediate Misconfiguration",
+          "config": {
+            "integration_action": {
+              "connector_id": "aws_security_hub",
+              "action": "remediate_finding",
+              "parameters": {
+                "finding_id": "{{trigger_1.alert.finding_id}}",
+                "resource_arn": "{{trigger_1.alert.resource_arn}}",
+                "remediation_type": "auto",
+                "reason": "Critical cloud misconfiguration auto-remediated — AI severity: {{analyze_1.severity}}"
+              }
+            },
+            "description": "Automatically remediate the cloud misconfiguration via the cloud provider API"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "label": "Create Incident Ticket",
+          "config": {
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_ticket",
+              "parameters": {
+                "project": "SEC",
+                "issue_type": "Incident",
+                "priority": "Critical",
+                "summary": "Critical Cloud Misconfiguration: {{trigger_1.alert.resource_type}} — {{trigger_1.alert.title}}",
+                "description": "Auto-remediated cloud security finding.\n\nResource: {{trigger_1.alert.resource_arn}}\nFinding: {{trigger_1.alert.title}}\nSeverity: Critical\n\nRiggs AI Assessment:\n{{analyze_1.summary}}\n\nRemediation: Applied automatically via cloud API."
+              }
+            },
+            "description": "Create an incident ticket in Jira to track the critical cloud security finding"
+          }
+        }
+      },
+      {
+        "id": "respond_3",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "label": "Notify Cloud Security Team",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#cloud-security-alerts",
+              "message": "CRITICAL CLOUD MISCONFIGURATION REMEDIATED\nResource: {{trigger_1.alert.resource_arn}}\nFinding: {{trigger_1.alert.title}}\nAction Taken: Auto-remediated via cloud API\nTicket: {{respond_2.ticket_url}}\n\nRiggs Assessment:\n{{analyze_1.summary}}"
+            },
+            "description": "Send Slack notification to the cloud security team with finding details and remediation status"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "utility",
+          "label": "Update Severity per AI Recommendation",
+          "config": {
+            "action": "update_severity",
+            "parameters": {
+              "severity": "{{analyze_1.recommended_severity}}"
+            },
+            "description": "Adjust alert severity based on AI recommendation for non-critical findings"
+          }
+        }
+      },
+      {
+        "id": "utility_2",
+        "type": "signal",
+        "position": { "x": 700, "y": 700 },
+        "data": {
+          "kind": "utility",
+          "label": "Add Note: Reviewed by AI",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "Reviewed by Riggs AI (cloud_security template). Severity adjusted to {{analyze_1.recommended_severity}}. Assessment: {{analyze_1.summary}}"
+            },
+            "description": "Attach an analyst note confirming the alert was reviewed by AI triage"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1020 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "Cloud security alert triage complete"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_analyze",
+        "source": "trigger_1",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_analyze_decision",
+        "source": "analyze_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "respond_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "utility_1",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_remediate_ticket",
+        "source": "respond_1",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_ticket_notify",
+        "source": "respond_2",
+        "target": "respond_3",
+        "type": "default"
+      },
+      {
+        "id": "e_notify_end",
+        "source": "respond_3",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_severity_note",
+        "source": "utility_1",
+        "target": "utility_2",
+        "type": "default"
+      },
+      {
+        "id": "e_note_end",
+        "source": "utility_2",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

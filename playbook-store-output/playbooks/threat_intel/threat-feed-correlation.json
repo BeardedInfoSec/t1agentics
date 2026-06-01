@@ -1,0 +1,314 @@
+{
+  "name": "Threat Feed Correlation",
+  "slug": "threat-feed-correlation",
+  "description": "Advanced threat feed correlation playbook that performs AI-powered IOC analysis against threat intelligence feeds to identify APT campaign matches. When campaign matches are found, the playbook automatically blocks matched indicators on the firewall, initiates endpoint-wide IOC scans via EDR, generates an executive threat briefing with ATT&CK mapping, and distributes it to the SOC team. Unmatched alerts are annotated and placed in monitoring status.",
+  "category": "threat_intel",
+  "subcategory": "correlation",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "advanced",
+  "estimated_time": "20 minutes",
+  "tags": ["threat_feed", "correlation", "apt", "campaign", "threat_intel"],
+  "alert_types": ["threat_intel"],
+  "severity_filter": ["medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["threat_intel", "threat_feed_match", "indicator_alert"],
+    "min_severity": "medium"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "virustotal",
+      "name": "VirusTotal",
+      "category": "threat_intel",
+      "reason": "Correlate indicators against VirusTotal threat intelligence for campaign attribution"
+    },
+    {
+      "connector_id": "crowdstrike",
+      "name": "CrowdStrike Falcon",
+      "category": "edr",
+      "reason": "Scan all endpoints for related IOCs when APT campaign match is confirmed"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create threat tracking tickets for confirmed campaign matches"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Threat Feed Alert Received",
+          "config": {
+            "alert_types": ["threat_intel", "threat_feed_match", "indicator_alert"],
+            "description": "Triggers when a threat feed match or threat intel indicator alert is ingested"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — IOC Correlation Analysis",
+          "config": {
+            "template_id": "ioc_correlation",
+            "additional_instructions": "Analyze all indicators in the alert against known threat feeds. Identify any matches to known APT campaigns, threat groups, or active operations.",
+            "description": "AI-powered initial correlation of alert indicators against threat intelligence to identify campaign associations"
+          }
+        }
+      },
+      {
+        "id": "code_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "code",
+          "label": "Extract Matched Indicators",
+          "config": {
+            "code": "analysis = inputs.get('analysis', {})\nmatched_indicators = analysis.get('matched_indicators', [])\ncampaign_match = analysis.get('campaign_match', False)\ncampaign_name = analysis.get('campaign_name', 'Unknown')\nconfidence = analysis.get('confidence', 0)\n\nips = [i for i in matched_indicators if i.get('type') == 'ip']\ndomains = [i for i in matched_indicators if i.get('type') == 'domain']\nhashes = [i for i in matched_indicators if i.get('type') == 'hash']\n\nresult = {\n    'matched_indicators': matched_indicators,\n    'total_matched': len(matched_indicators),\n    'campaign_match': campaign_match or confidence >= 70,\n    'campaign_name': campaign_name,\n    'confidence': confidence,\n    'ips': ips,\n    'domains': domains,\n    'hashes': hashes,\n    'block_list': [i['value'] for i in matched_indicators]\n}",
+            "inputs": {
+              "analysis": "{{analyze_1.outputs}}"
+            },
+            "description": "Extracts matched indicators from the AI correlation analysis and categorizes them by type for downstream actions"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 540 },
+        "data": {
+          "kind": "decision",
+          "label": "Matches Known APT Campaign?",
+          "config": {
+            "condition": "{{code_1.outputs.result.campaign_match}} == true",
+            "description": "Routes based on whether the correlated indicators match a known APT campaign or threat group operation"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "label": "Block Matched Indicators on Firewall",
+          "config": {
+            "integration_action": {
+              "action": "block_indicators",
+              "parameters": {
+                "indicators": "{{code_1.outputs.result.block_list}}",
+                "rule_name": "TI-{{code_1.outputs.result.campaign_name}}-block",
+                "source": "threat-feed-correlation",
+                "expiry_days": 30
+              }
+            },
+            "description": "Blocks all matched indicators on the firewall to prevent communication with threat infrastructure"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "label": "Scan Endpoints for Related IOCs",
+          "config": {
+            "integration_action": {
+              "connector_id": "crowdstrike",
+              "action": "ioc_scan",
+              "parameters": {
+                "indicators": "{{code_1.outputs.result.matched_indicators}}",
+                "scan_scope": "all_endpoints",
+                "priority": "high"
+              }
+            },
+            "description": "Initiates an endpoint-wide IOC sweep via CrowdStrike EDR to detect any endpoints communicating with matched threat infrastructure"
+          }
+        }
+      },
+      {
+        "id": "analyze_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — Threat Briefing",
+          "config": {
+            "template_id": "executive_summary",
+            "additional_instructions": "Generate threat briefing with ATT&CK mapping and recommended defensive actions. Include campaign attribution, indicator details, and tactical recommendations for the SOC team.",
+            "description": "AI-generated executive threat briefing with MITRE ATT&CK technique mapping and recommended defensive actions"
+          }
+        }
+      },
+      {
+        "id": "respond_3",
+        "type": "signal",
+        "position": { "x": 340, "y": 1180 },
+        "data": {
+          "kind": "respond",
+          "label": "Distribute Threat Briefing to SOC",
+          "config": {
+            "notify": {
+              "channel": "email",
+              "target": "soc-team@organization.com",
+              "subject": "THREAT BRIEFING: {{code_1.outputs.result.campaign_name}} Campaign Detected",
+              "message": "Campaign: {{code_1.outputs.result.campaign_name}}\nConfidence: {{code_1.outputs.result.confidence}}%\nMatched Indicators: {{code_1.outputs.result.total_matched}}\n\nActions Taken:\n- All indicators blocked on firewall\n- Endpoint IOC sweep initiated via CrowdStrike\n\nThreat Briefing:\n{{analyze_2.summary}}"
+            },
+            "description": "Distributes the AI-generated threat briefing to the SOC team via email with campaign details and actions taken"
+          }
+        }
+      },
+      {
+        "id": "respond_4",
+        "type": "signal",
+        "position": { "x": 340, "y": 1340 },
+        "data": {
+          "kind": "respond",
+          "label": "Create Threat Tracking Ticket",
+          "config": {
+            "create_ticket": {
+              "connector_id": "jira",
+              "title": "Threat Campaign: {{code_1.outputs.result.campaign_name}} — {{code_1.outputs.result.total_matched}} IOCs",
+              "priority": "high",
+              "description": "Threat feed correlation identified indicators matching the {{code_1.outputs.result.campaign_name}} campaign.\n\nConfidence: {{code_1.outputs.result.confidence}}%\nMatched IOCs: {{code_1.outputs.result.total_matched}}\nIPs: {{code_1.outputs.result.ips | length}}\nDomains: {{code_1.outputs.result.domains | length}}\nHashes: {{code_1.outputs.result.hashes | length}}\n\nActions Taken:\n1. Indicators blocked on firewall\n2. Endpoint IOC sweep initiated\n3. Threat briefing distributed to SOC\n\nRiggs AI Assessment:\n{{analyze_2.summary}}",
+              "labels": ["threat-intel", "campaign", "automated"],
+              "assignee": "soc-tier3"
+            },
+            "description": "Creates a Jira ticket to track the threat campaign investigation and response for SOC Tier 3"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 700, "y": 700 },
+        "data": {
+          "kind": "utility",
+          "label": "Note: No Campaign Match",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "Threat feed correlation completed. No APT campaign match identified. Individual IOC handling recommended.\n\nCorrelation Confidence: {{code_1.outputs.result.confidence}}%\nIndicators Analyzed: {{code_1.outputs.result.total_matched}}\n\nRiggs AI Summary:\n{{analyze_1.summary}}"
+            },
+            "description": "Adds a note documenting that no campaign match was found and individual IOC handling is recommended"
+          }
+        }
+      },
+      {
+        "id": "utility_2",
+        "type": "signal",
+        "position": { "x": 700, "y": 860 },
+        "data": {
+          "kind": "utility",
+          "label": "Set Status: Monitoring",
+          "config": {
+            "action": "update_status",
+            "parameters": {
+              "status": "monitoring"
+            },
+            "description": "Places the alert in monitoring status for continued observation when no campaign match is confirmed"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1500 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "Threat feed correlation complete"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_analyze",
+        "source": "trigger_1",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_analyze_code",
+        "source": "analyze_1",
+        "target": "code_1",
+        "type": "default"
+      },
+      {
+        "id": "e_code_decision",
+        "source": "code_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "respond_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "utility_1",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_block_scan",
+        "source": "respond_1",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_scan_briefing",
+        "source": "respond_2",
+        "target": "analyze_2",
+        "type": "default"
+      },
+      {
+        "id": "e_briefing_distribute",
+        "source": "analyze_2",
+        "target": "respond_3",
+        "type": "default"
+      },
+      {
+        "id": "e_distribute_ticket",
+        "source": "respond_3",
+        "target": "respond_4",
+        "type": "default"
+      },
+      {
+        "id": "e_ticket_end",
+        "source": "respond_4",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_nonmatch_monitoring",
+        "source": "utility_1",
+        "target": "utility_2",
+        "type": "default"
+      },
+      {
+        "id": "e_monitoring_end",
+        "source": "utility_2",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

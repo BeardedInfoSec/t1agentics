@@ -1,0 +1,196 @@
+{
+  "name": "Dormant Account Auto-Disable",
+  "slug": "identity-dormant-account-disable",
+  "description": "Scheduled playbook that identifies and disables dormant user accounts that have not logged in within a configurable inactivity period. Loops over all inactive accounts, checks last login dates, disables accounts exceeding the threshold, notifies account owners, and generates a summary report for compliance tracking.",
+  "category": "identity",
+  "subcategory": "account_lifecycle",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "beginner",
+  "estimated_time": "15 minutes",
+  "tags": ["dormant_account", "lifecycle", "compliance", "scheduled", "auto_disable"],
+  "alert_types": ["scheduled"],
+  "severity_filter": ["low", "medium"],
+  "trigger_conditions": {
+    "alert_types": ["scheduled"],
+    "min_severity": "low"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "microsoft_graph",
+      "name": "Microsoft Graph",
+      "category": "identity",
+      "reason": "Query last sign-in dates and disable dormant accounts"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "da-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "title": "Scheduled Dormant Account Check",
+          "summary": "Runs on schedule to check for inactive user accounts",
+          "config": {
+            "trigger_type": "schedule",
+            "schedule": "0 6 * * 1",
+            "description": "Weekly Monday 6 AM dormant account scan"
+          }
+        }
+      },
+      {
+        "id": "da-2",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "code",
+          "title": "Query Inactive Accounts",
+          "summary": "Retrieve all accounts with no login in the past 90 days",
+          "config": {
+            "language": "python",
+            "code": "from datetime import datetime, timedelta\ninactivity_threshold = datetime.utcnow() - timedelta(days=90)\nresult = {'threshold_date': inactivity_threshold.isoformat(), 'inactive_accounts': context.get('identity_provider_accounts', [])}"
+          }
+        }
+      },
+      {
+        "id": "da-3",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "loop",
+          "title": "Loop Over Inactive Accounts",
+          "summary": "Iterate over each inactive account for processing",
+          "config": {
+            "collection_path": "$.nodes.da-2.result.inactive_accounts",
+            "iterator_variable": "account",
+            "max_iterations": 500
+          }
+        }
+      },
+      {
+        "id": "da-4",
+        "type": "signal",
+        "position": { "x": 520, "y": 540 },
+        "data": {
+          "kind": "decision",
+          "title": "Last Login > 90 Days?",
+          "summary": "Check if account last login exceeds 90-day threshold",
+          "config": {
+            "conditions": {
+              "operator": "AND",
+              "conditions": [
+                {
+                  "field": "$.loop.account.days_since_last_login",
+                  "operator": "greater_than",
+                  "value": "90"
+                }
+              ],
+              "groups": []
+            },
+            "expression": "$.loop.account.days_since_last_login > 90",
+            "default_branch": "no"
+          }
+        }
+      },
+      {
+        "id": "da-5",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "title": "Disable Account",
+          "summary": "Disable the dormant user account in the identity provider",
+          "config": {
+            "response_type": "integration_action",
+            "integration_instance_id": "microsoft_graph",
+            "action_type": "disable_account",
+            "params": {
+              "user_id": "$.loop.account.user_id",
+              "reason": "Account dormant for over 90 days — automated disable"
+            },
+            "requires_approval": false,
+            "priority": "medium"
+          }
+        }
+      },
+      {
+        "id": "da-6",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "title": "Notify Account Owner",
+          "summary": "Email the account owner or manager about the disabled account",
+          "config": {
+            "response_type": "notification",
+            "channel": "email",
+            "email_recipients": "$.loop.account.manager_email",
+            "email_subject": "Dormant Account Disabled: {{$.loop.account.display_name}}",
+            "message": "The account for {{$.loop.account.display_name}} ({{$.loop.account.email}}) has been disabled due to 90+ days of inactivity. If this account is still needed, please submit a reactivation request.",
+            "requires_approval": false,
+            "priority": "medium"
+          }
+        }
+      },
+      {
+        "id": "da-7",
+        "type": "signal",
+        "position": { "x": 700, "y": 700 },
+        "data": {
+          "kind": "utility",
+          "title": "Skip Active Account",
+          "summary": "Account is still active, skip to next iteration",
+          "config": {
+            "operation": "add_note",
+            "note": "Account {{$.loop.account.email}} still active within 90-day window. Skipped."
+          }
+        }
+      },
+      {
+        "id": "da-8",
+        "type": "signal",
+        "position": { "x": 520, "y": 1020 },
+        "data": {
+          "kind": "analyze",
+          "title": "Generate Summary Report",
+          "summary": "AI-generated summary of all dormant accounts processed",
+          "config": {
+            "mode": "ai_analysis",
+            "template_id": "executive_summary",
+            "custom_instructions": "",
+            "alert_path": "$.nodes.da-2.result",
+            "include_context": true
+          }
+        }
+      },
+      {
+        "id": "da-9",
+        "type": "signal",
+        "position": { "x": 520, "y": 1180 },
+        "data": {
+          "kind": "end",
+          "title": "Playbook Complete",
+          "summary": "Dormant account disable cycle finished",
+          "config": {
+            "disposition": "completed",
+            "summary": "Dormant account auto-disable cycle completed"
+          }
+        }
+      }
+    ],
+    "edges": [
+      { "id": "da-e1", "source": "da-1", "target": "da-2", "animated": true, "type": "smoothstep" },
+      { "id": "da-e2", "source": "da-2", "target": "da-3", "animated": true, "type": "smoothstep" },
+      { "id": "da-e3", "source": "da-3", "target": "da-4", "animated": true, "type": "smoothstep" },
+      { "id": "da-e4", "source": "da-4", "target": "da-5", "sourceHandle": "yes", "label": "Yes", "animated": true, "type": "smoothstep" },
+      { "id": "da-e5", "source": "da-4", "target": "da-7", "sourceHandle": "no", "label": "No", "animated": true, "type": "smoothstep" },
+      { "id": "da-e6", "source": "da-5", "target": "da-6", "animated": true, "type": "smoothstep" },
+      { "id": "da-e7", "source": "da-6", "target": "da-3", "animated": true, "type": "smoothstep", "label": "Next" },
+      { "id": "da-e8", "source": "da-7", "target": "da-3", "animated": true, "type": "smoothstep", "label": "Next" },
+      { "id": "da-e9", "source": "da-3", "target": "da-8", "animated": true, "type": "smoothstep", "label": "Done" },
+      { "id": "da-e10", "source": "da-8", "target": "da-9", "animated": true, "type": "smoothstep" }
+    ]
+  }
+}

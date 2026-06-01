@@ -1,0 +1,100 @@
+{
+  "id": "servicenow_grc",
+  "name": "ServiceNow GRC",
+  "description": "Integrates with ServiceNow GRC Table API for governance, risk management, and compliance operations including policy management, risk assessments, and control monitoring",
+  "version": "1.0.0",
+  "category": "grc",
+  "vendor": "ServiceNow",
+  "auth_type": "basic",
+  "auth_config": {
+    "type": "basic",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "https://{instance}.service-now.com/api/now",
+  "actions": [
+    {
+      "id": "list_controls",
+      "name": "List Controls",
+      "description": "List GRC control records from ServiceNow",
+      "http_method": "GET",
+      "endpoint": "/table/sn_compliance_control",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "sysparm_query", "type": "string", "description": "Encoded query string to filter controls", "required": false},
+        {"name": "sysparm_limit", "type": "number", "description": "Maximum number of records to return", "required": false, "default": 50},
+        {"name": "sysparm_offset", "type": "number", "description": "Starting record index", "required": false, "default": 0},
+        {"name": "sysparm_display_value", "type": "string", "description": "Return display values (true/false/all)", "required": false, "default": "true"},
+        {"name": "sysparm_fields", "type": "string", "description": "Comma-separated list of fields to return", "required": false}
+      ]
+    },
+    {
+      "id": "get_control",
+      "name": "Get Control",
+      "description": "Retrieve a specific GRC control record",
+      "http_method": "GET",
+      "endpoint": "/table/sn_compliance_control/{sys_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "sys_id", "type": "string", "description": "Sys ID of the control record", "required": true}
+      ]
+    },
+    {
+      "id": "list_policies",
+      "name": "List Policies",
+      "description": "List GRC policy records",
+      "http_method": "GET",
+      "endpoint": "/table/sn_compliance_policy",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "sysparm_query", "type": "string", "description": "Encoded query string", "required": false},
+        {"name": "sysparm_limit", "type": "number", "description": "Maximum records to return", "required": false, "default": 50},
+        {"name": "sysparm_offset", "type": "number", "description": "Starting record index", "required": false, "default": 0}
+      ]
+    },
+    {
+      "id": "list_risks",
+      "name": "List Risks",
+      "description": "List GRC risk records",
+      "http_method": "GET",
+      "endpoint": "/table/sn_risk_risk",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "sysparm_query", "type": "string", "description": "Encoded query string to filter risks", "required": false},
+        {"name": "sysparm_limit", "type": "number", "description": "Maximum records to return", "required": false, "default": 50},
+        {"name": "sysparm_offset", "type": "number", "description": "Starting record index", "required": false, "default": 0},
+        {"name": "sysparm_display_value", "type": "string", "description": "Return display values (true/false/all)", "required": false, "default": "true"}
+      ]
+    },
+    {
+      "id": "get_risk",
+      "name": "Get Risk",
+      "description": "Retrieve details of a specific risk record",
+      "http_method": "GET",
+      "endpoint": "/table/sn_risk_risk/{sys_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "sys_id", "type": "string", "description": "Sys ID of the risk record", "required": true}
+      ]
+    },
+    {
+      "id": "list_control_tests",
+      "name": "List Control Tests",
+      "description": "List control test results and compliance attestations",
+      "http_method": "GET",
+      "endpoint": "/table/sn_compliance_control_test",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "sysparm_query", "type": "string", "description": "Encoded query string", "required": false},
+        {"name": "sysparm_limit", "type": "number", "description": "Maximum records to return", "required": false, "default": 50},
+        {"name": "sysparm_offset", "type": "number", "description": "Starting record index", "required": false, "default": 0}
+      ]
+    }
+  ]
+}

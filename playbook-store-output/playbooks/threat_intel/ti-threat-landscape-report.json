@@ -1,0 +1,200 @@
+{
+  "name": "Threat Landscape Report Generation",
+  "slug": "ti-threat-landscape-report",
+  "description": "Generates periodic threat landscape reports by aggregating recent threat intelligence data, active campaigns, and emerging threats. The playbook collects recent IOCs and alerts from the past reporting period, uses AI to analyze trends, identify emerging threat patterns, and generate an executive-level threat landscape summary with MITRE ATT&CK heatmap data. The report is distributed to security leadership and archived for compliance. Runs on a scheduled trigger or on-demand.",
+  "category": "threat_intel",
+  "subcategory": "reporting",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "10 minutes",
+  "tags": ["report", "threat_landscape", "executive", "summary", "threat_intel", "periodic"],
+  "alert_types": ["threat_intel"],
+  "severity_filter": ["low", "medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["scheduled", "manual", "threat_landscape_report"],
+    "min_severity": "low"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "virustotal",
+      "name": "VirusTotal",
+      "category": "threat_intel",
+      "reason": "Aggregate recent threat intelligence data and trending malware families"
+    },
+    {
+      "connector_id": "misp",
+      "name": "MISP",
+      "category": "threat_intel",
+      "reason": "Pull recent threat events, campaign data, and IOC statistics for the reporting period"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Scheduled Report Trigger",
+          "config": {
+            "alert_types": ["scheduled", "manual", "threat_landscape_report"],
+            "schedule": "weekly",
+            "description": "Triggers on a weekly schedule or on-demand request to generate the threat landscape report"
+          }
+        }
+      },
+      {
+        "id": "code_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "code",
+          "label": "Collect Reporting Period Data",
+          "config": {
+            "code": "from datetime import datetime, timedelta\n\nreporting_period_days = inputs.get('period_days', 7)\nend_date = datetime.utcnow()\nstart_date = end_date - timedelta(days=reporting_period_days)\n\nresult = {\n    'start_date': start_date.isoformat(),\n    'end_date': end_date.isoformat(),\n    'period_days': reporting_period_days,\n    'report_title': f'Threat Landscape Report — {start_date.strftime(\"%Y-%m-%d\")} to {end_date.strftime(\"%Y-%m-%d\")}',\n    'query_params': {\n        'date_from': start_date.isoformat(),\n        'date_to': end_date.isoformat(),\n        'include_campaigns': True,\n        'include_ioc_stats': True,\n        'include_severity_breakdown': True\n    }\n}",
+            "inputs": {
+              "period_days": "{{trigger_1.config.period_days}}"
+            },
+            "description": "Calculates the reporting period and prepares query parameters for data collection"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "analyze",
+          "label": "Aggregate Threat Intel Data",
+          "config": {
+            "mode": "enrich",
+            "observable_type": "report",
+            "data_path": "$.code_1.outputs.result.query_params",
+            "sources": ["virustotal", "misp"],
+            "description": "Aggregates recent threat intelligence data from VirusTotal and MISP including IOC counts, campaign activity, and trending threats"
+          }
+        }
+      },
+      {
+        "id": "analyze_2",
+        "type": "signal",
+        "position": { "x": 520, "y": 540 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — Threat Trend Analysis",
+          "config": {
+            "template_id": "ioc_correlation",
+            "additional_instructions": "Analyze all aggregated threat data for the reporting period. Identify trending threat patterns, emerging attack techniques, top threat actors, most targeted sectors, and shifts in the threat landscape. Map key threats to MITRE ATT&CK techniques.",
+            "description": "AI-powered trend analysis identifying emerging threats, attack patterns, and MITRE ATT&CK technique prevalence"
+          }
+        }
+      },
+      {
+        "id": "analyze_3",
+        "type": "signal",
+        "position": { "x": 520, "y": 700 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — Executive Summary Report",
+          "config": {
+            "template_id": "executive_summary",
+            "additional_instructions": "Generate a comprehensive executive-level threat landscape report. Include: 1) Executive Summary, 2) Key Findings, 3) Top Threats and Campaigns, 4) MITRE ATT&CK Technique Heatmap data, 5) IOC Statistics, 6) Recommendations for defensive posture improvements. Write for CISO-level audience.",
+            "description": "AI-generated executive threat landscape report with key findings, recommendations, and ATT&CK heatmap data"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "label": "Distribute Report to Leadership",
+          "config": {
+            "notify": {
+              "channel": "email",
+              "target": "ciso@organization.com,security-leadership@organization.com",
+              "subject": "{{code_1.outputs.result.report_title}}",
+              "message": "Please find the weekly threat landscape report attached.\n\nReporting Period: {{code_1.outputs.result.start_date}} to {{code_1.outputs.result.end_date}}\n\n{{analyze_3.summary}}"
+            },
+            "description": "Distributes the AI-generated threat landscape report to CISO and security leadership via email"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1020 },
+        "data": {
+          "kind": "utility",
+          "label": "Archive Report",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "Threat Landscape Report Generated and Distributed\n\nPeriod: {{code_1.outputs.result.period_days}} days\nDate Range: {{code_1.outputs.result.start_date}} to {{code_1.outputs.result.end_date}}\n\nReport distributed to security leadership.\nArchived for compliance records.\n\nTrend Analysis:\n{{analyze_2.summary}}\n\nFull Report:\n{{analyze_3.summary}}"
+            },
+            "description": "Archives the report data as a note for compliance records and future reference"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1180 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "Threat landscape report generation complete"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_collect",
+        "source": "trigger_1",
+        "target": "code_1",
+        "type": "default"
+      },
+      {
+        "id": "e_collect_aggregate",
+        "source": "code_1",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_aggregate_trend",
+        "source": "analyze_1",
+        "target": "analyze_2",
+        "type": "default"
+      },
+      {
+        "id": "e_trend_report",
+        "source": "analyze_2",
+        "target": "analyze_3",
+        "type": "default"
+      },
+      {
+        "id": "e_report_distribute",
+        "source": "analyze_3",
+        "target": "respond_1",
+        "type": "default"
+      },
+      {
+        "id": "e_distribute_archive",
+        "source": "respond_1",
+        "target": "utility_1",
+        "type": "default"
+      },
+      {
+        "id": "e_archive_end",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

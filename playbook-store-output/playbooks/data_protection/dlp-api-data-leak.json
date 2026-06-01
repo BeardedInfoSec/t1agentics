@@ -1,0 +1,254 @@
+{
+  "name": "API Data Leakage Detection",
+  "slug": "dlp-api-data-leak",
+  "description": "Detects and responds to API data leakage incidents where API endpoints return excessive data, expose sensitive fields, or exhibit anomalous response patterns. Riggs AI analyzes the alert to determine if the API is leaking sensitive data beyond its intended scope. Confirmed leaks trigger API rate limiting or blocking, security team notification, and a remediation ticket for the API development team. Includes an approval gate for blocking production API endpoints.",
+  "category": "data_protection",
+  "subcategory": "api_security",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "advanced",
+  "estimated_time": "20 minutes",
+  "tags": ["dlp", "api", "data_leak", "excessive_response", "api_security", "rate_limit"],
+  "alert_types": ["dlp", "api_data_leak", "api_anomaly"],
+  "severity_filter": ["medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["dlp", "api_data_leak", "excessive_api_response", "api_sensitive_data_exposure", "api_enumeration"],
+    "min_severity": "medium"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create remediation ticket for API development team to fix data leakage"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Notify API security team and SOC of data leakage incident"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "adl-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "title": "API Data Leakage Alert",
+          "summary": "Triggers on API monitoring alerts for excessive response data or sensitive field exposure",
+          "config": {
+            "trigger_type": "alert",
+            "alert_types": ["dlp", "api_data_leak", "excessive_api_response", "api_sensitive_data_exposure", "api_enumeration"]
+          }
+        }
+      },
+      {
+        "id": "adl-2",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "title": "AI API Data Leak Analysis",
+          "summary": "Riggs AI analyzes API response patterns, data sensitivity, and caller context",
+          "config": {
+            "mode": "ai_analysis",
+            "template_id": "data_exfil",
+            "custom_instructions": "Analyze the API endpoint response for sensitive data exposure. Check response size against baseline, identify PII or credential fields in responses, evaluate caller authentication and authorization, and determine if this is a misconfigured endpoint or active exploitation.",
+            "alert_path": "$.trigger.alert",
+            "include_context": true
+          }
+        }
+      },
+      {
+        "id": "adl-3",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "title": "Data Leakage Confirmed?",
+          "summary": "Branch based on whether API data leakage is confirmed",
+          "config": {
+            "conditions": {
+              "operator": "AND",
+              "conditions": [
+                {
+                  "field": "$.nodes.adl-2.result.verdict",
+                  "operator": "in",
+                  "value": ["MALICIOUS", "SUSPICIOUS"]
+                }
+              ],
+              "groups": []
+            },
+            "expression": "$.nodes.adl-2.result.verdict in ['MALICIOUS', 'SUSPICIOUS']",
+            "default_branch": "no"
+          }
+        }
+      },
+      {
+        "id": "adl-4",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "decision",
+          "title": "Active Exploitation?",
+          "summary": "Determine if the API leak is being actively exploited vs misconfigured",
+          "config": {
+            "conditions": {
+              "operator": "AND",
+              "conditions": [
+                {
+                  "field": "$.nodes.adl-2.result.threat_type",
+                  "operator": "equals",
+                  "value": "active_exploitation"
+                }
+              ],
+              "groups": []
+            },
+            "expression": "$.nodes.adl-2.result.threat_type == 'active_exploitation'",
+            "default_branch": "no"
+          }
+        }
+      },
+      {
+        "id": "adl-5",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "approval",
+          "title": "Approve API Endpoint Blocking",
+          "summary": "Requires approval before blocking a production API endpoint",
+          "config": {
+            "approver_role": "api_security_lead",
+            "timeout_minutes": 30,
+            "message": "API DATA LEAKAGE — ACTIVE EXPLOITATION DETECTED\n\nEndpoint: {{$.trigger.alert.api_endpoint}}\nMethod: {{$.trigger.alert.http_method}}\nCaller: {{$.trigger.alert.caller_ip}} ({{$.trigger.alert.api_key_owner}})\nResponse Size: {{$.trigger.alert.response_size}} bytes (baseline: {{$.trigger.alert.baseline_size}} bytes)\nSensitive Fields: {{$.nodes.adl-2.result.sensitive_fields}}\n\nRiggs Assessment: {{$.nodes.adl-2.result.summary}}\n\nApprove blocking this API endpoint? This will affect all callers."
+          }
+        }
+      },
+      {
+        "id": "adl-6",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "title": "Block API Endpoint",
+          "summary": "Apply rate limiting or block the leaking API endpoint",
+          "config": {
+            "response_type": "integration_action",
+            "action_type": "block_api_endpoint",
+            "params": {
+              "endpoint": "$.trigger.alert.api_endpoint",
+              "action": "block",
+              "reason": "Active data leakage exploitation — endpoint blocked pending remediation"
+            },
+            "requires_approval": false,
+            "priority": "critical"
+          }
+        }
+      },
+      {
+        "id": "adl-7",
+        "type": "signal",
+        "position": { "x": 700, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "title": "Apply Rate Limiting",
+          "summary": "Apply aggressive rate limiting to the misconfigured API endpoint",
+          "config": {
+            "response_type": "integration_action",
+            "action_type": "rate_limit_api",
+            "params": {
+              "endpoint": "$.trigger.alert.api_endpoint",
+              "rate_limit": "10_per_minute",
+              "reason": "API data leakage detected — rate limiting applied pending fix"
+            },
+            "requires_approval": false,
+            "priority": "high"
+          }
+        }
+      },
+      {
+        "id": "adl-8",
+        "type": "signal",
+        "position": { "x": 520, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "title": "Create API Remediation Ticket",
+          "summary": "Create a Jira ticket for the API development team to fix the data leakage",
+          "config": {
+            "response_type": "create_ticket",
+            "system": "jira",
+            "project_key": "SEC",
+            "issue_type": "Bug",
+            "title": "API Data Leakage: {{$.trigger.alert.api_endpoint}} — Sensitive fields exposed",
+            "description": "API endpoint is leaking sensitive data beyond its intended scope.\n\nEndpoint: {{$.trigger.alert.api_endpoint}}\nMethod: {{$.trigger.alert.http_method}}\nResponse Size: {{$.trigger.alert.response_size}} bytes (baseline: {{$.trigger.alert.baseline_size}})\nSensitive Fields Exposed: {{$.nodes.adl-2.result.sensitive_fields}}\nThreat Type: {{$.nodes.adl-2.result.threat_type}}\n\nRemediation Required:\n- Add response field filtering to exclude sensitive data\n- Implement proper authorization checks per field\n- Add response size limits\n- Review API documentation for intended response schema\n\nRiggs Assessment: {{$.nodes.adl-2.result.summary}}",
+            "priority": "critical",
+            "requires_approval": false
+          }
+        }
+      },
+      {
+        "id": "adl-9",
+        "type": "signal",
+        "position": { "x": 520, "y": 1180 },
+        "data": {
+          "kind": "respond",
+          "title": "Notify API Security Team",
+          "summary": "Alert the API security team and SOC about the data leakage incident",
+          "config": {
+            "response_type": "notification",
+            "channel": "slack",
+            "slack_channel": "#api-security",
+            "message": "API DATA LEAKAGE DETECTED\n\nEndpoint: {{$.trigger.alert.api_endpoint}}\nSensitive Fields: {{$.nodes.adl-2.result.sensitive_fields}}\nThreat Type: {{$.nodes.adl-2.result.threat_type}}\n\nContainment applied. Remediation ticket: {{$.nodes.adl-8.ticket_key}}\n\nAPI team: immediate review required.",
+            "priority": "critical"
+          }
+        }
+      },
+      {
+        "id": "adl-10",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "utility",
+          "title": "Close Alert — Normal Behavior",
+          "summary": "API behavior is within expected parameters, close alert",
+          "config": {
+            "operation": "add_note",
+            "note": "API data leakage alert reviewed by Riggs AI. Verdict: {{$.nodes.adl-2.result.verdict}}. Response data is within expected parameters and no sensitive fields are improperly exposed. Closing alert.",
+            "close_alert": true
+          }
+        }
+      },
+      {
+        "id": "adl-11",
+        "type": "signal",
+        "position": { "x": 520, "y": 1340 },
+        "data": {
+          "kind": "end",
+          "title": "Playbook Complete",
+          "summary": "API data leakage detection and response workflow finished",
+          "config": {
+            "disposition": "completed",
+            "summary": "API data leakage detection and response completed"
+          }
+        }
+      }
+    ],
+    "edges": [
+      { "id": "adl-e1", "source": "adl-1", "target": "adl-2", "animated": true, "type": "smoothstep" },
+      { "id": "adl-e2", "source": "adl-2", "target": "adl-3", "animated": true, "type": "smoothstep" },
+      { "id": "adl-e3", "source": "adl-3", "target": "adl-4", "sourceHandle": "yes", "label": "Yes", "animated": true, "type": "smoothstep" },
+      { "id": "adl-e4", "source": "adl-3", "target": "adl-10", "sourceHandle": "no", "label": "No", "animated": true, "type": "smoothstep" },
+      { "id": "adl-e5", "source": "adl-4", "target": "adl-5", "sourceHandle": "yes", "label": "Yes", "animated": true, "type": "smoothstep" },
+      { "id": "adl-e6", "source": "adl-4", "target": "adl-7", "sourceHandle": "no", "label": "No", "animated": true, "type": "smoothstep" },
+      { "id": "adl-e7", "source": "adl-5", "target": "adl-6", "animated": true, "type": "smoothstep" },
+      { "id": "adl-e8", "source": "adl-6", "target": "adl-8", "animated": true, "type": "smoothstep" },
+      { "id": "adl-e9", "source": "adl-7", "target": "adl-8", "animated": true, "type": "smoothstep" },
+      { "id": "adl-e10", "source": "adl-8", "target": "adl-9", "animated": true, "type": "smoothstep" },
+      { "id": "adl-e11", "source": "adl-9", "target": "adl-11", "animated": true, "type": "smoothstep" },
+      { "id": "adl-e12", "source": "adl-10", "target": "adl-11", "animated": true, "type": "smoothstep" }
+    ]
+  }
+}

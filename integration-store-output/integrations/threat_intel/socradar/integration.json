@@ -1,0 +1,155 @@
+{
+  "id": "socradar",
+  "name": "SOCRadar",
+  "description": "Integrate with SOCRadar Extended Threat Intelligence platform to analyze IOCs, retrieve threat feeds, and monitor alerts for digital risk protection",
+  "version": "1.0.0",
+  "category": "threat_intel",
+  "vendor": "SOCRadar",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "x-api-key",
+    "location": "header",
+    "note": "API key generated from SOCRadar platform Settings > API & Integrations > API Options"
+  },
+  "base_url": "https://platform.socradar.com/api/v1",
+  "actions": [
+    {
+      "id": "analyze_ip",
+      "name": "Analyze IP Address",
+      "description": "Analyze an IP address for threat score, reputation, ASN/GEO location, whitelist status, and passive DNS",
+      "http_method": "GET",
+      "endpoint": "/threat/analysis/ip/{ip_address}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "ip_address",
+          "type": "string",
+          "description": "IP address to analyze",
+          "required": true,
+          "contains": ["ip"]
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "analyze_domain",
+      "name": "Analyze Domain",
+      "description": "Analyze a domain for threat score, reputation, WHOIS data, and associated threat intelligence",
+      "http_method": "GET",
+      "endpoint": "/threat/analysis/domain/{domain}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "domain",
+          "type": "string",
+          "description": "Domain to analyze",
+          "required": true,
+          "contains": ["domain"]
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "analyze_hash",
+      "name": "Analyze File Hash",
+      "description": "Analyze a file hash for threat score, malware classification, and associated intelligence",
+      "http_method": "GET",
+      "endpoint": "/threat/analysis/hash/{hash}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "hash",
+          "type": "string",
+          "description": "File hash (MD5, SHA-1, or SHA-256) to analyze",
+          "required": true,
+          "contains": ["hash", "md5", "sha1", "sha256"]
+        }
+      ],
+      "observable_type": "hash"
+    },
+    {
+      "id": "get_alerts",
+      "name": "Get Alerts",
+      "description": "Retrieve SOCRadar alerts for monitored assets including brand abuse, data leaks, and attack surface findings",
+      "http_method": "GET",
+      "endpoint": "/alerts",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Filter by severity: critical, high, medium, low, informational",
+          "required": false
+        },
+        {
+          "name": "alert_type",
+          "type": "string",
+          "description": "Filter by alert type",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of results",
+          "required": false
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Pagination offset",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_threat_feed",
+      "name": "Get Threat Feed",
+      "description": "Retrieve SOCRadar threat feed IOCs for ingestion into SIEM or threat intelligence platforms",
+      "http_method": "GET",
+      "endpoint": "/threat/feed/ioc",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "ioc_type",
+          "type": "string",
+          "description": "IOC type filter: ip, domain, hash, url",
+          "required": false
+        },
+        {
+          "name": "from",
+          "type": "string",
+          "description": "Start date (ISO 8601 format)",
+          "required": false
+        },
+        {
+          "name": "to",
+          "type": "string",
+          "description": "End date (ISO 8601 format)",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of IOCs to return",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "check_token_status",
+      "name": "Check Token Status",
+      "description": "Check the status and remaining quota of your SOCRadar API token",
+      "http_method": "GET",
+      "endpoint": "/token/status",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    }
+  ]
+}

@@ -1,0 +1,329 @@
+{
+  "id": "cape_sandbox",
+  "name": "CAPE Sandbox",
+  "description": "CAPE (Configuration And Payload Extraction) is an open-source malware sandbox derived from Cuckoo, specializing in automated malware configuration and payload extraction with behavioral analysis",
+  "version": "1.0.0",
+  "category": "sandbox",
+  "vendor": "CAPE",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header",
+    "prefix": "Token"
+  },
+  "base_url": "https://{cape_host}:8000/apiv2",
+  "actions": [
+    {
+      "id": "submit_file",
+      "name": "Submit File",
+      "description": "Submit a file for CAPE sandbox analysis with optional configuration for package, timeout, and VM selection",
+      "http_method": "POST",
+      "endpoint": "/tasks/create/file/",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "file",
+          "type": "file",
+          "description": "File to submit for analysis (multipart form data)",
+          "required": true
+        },
+        {
+          "name": "package",
+          "type": "string",
+          "description": "Analysis package to use (e.g., exe, dll, pdf, doc, zip, jar, python)",
+          "required": false
+        },
+        {
+          "name": "timeout",
+          "type": "integer",
+          "description": "Analysis timeout in seconds (default: 200)",
+          "required": false,
+          "default": 200
+        },
+        {
+          "name": "priority",
+          "type": "integer",
+          "description": "Priority of the analysis task (1=low, 2=medium, 3=high)",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "options",
+          "type": "string",
+          "description": "Comma-separated analysis options (e.g., procmemdump=yes,free=yes)",
+          "required": false
+        },
+        {
+          "name": "machine",
+          "type": "string",
+          "description": "Specific analysis machine/VM name to use",
+          "required": false
+        },
+        {
+          "name": "platform",
+          "type": "string",
+          "description": "Target platform (e.g., windows, linux)",
+          "required": false
+        },
+        {
+          "name": "tags",
+          "type": "string",
+          "description": "Comma-separated tags for machine selection",
+          "required": false
+        },
+        {
+          "name": "custom",
+          "type": "string",
+          "description": "Custom data string passed to the analysis package",
+          "required": false
+        },
+        {
+          "name": "memory",
+          "type": "boolean",
+          "description": "Enable full memory dump of the analysis machine",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "enforce_timeout",
+          "type": "boolean",
+          "description": "Force the full analysis timeout even if the target process terminates early",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "clock",
+          "type": "string",
+          "description": "Virtual clock to set during analysis (format: %m-%d-%Y %H:%M:%S)",
+          "required": false
+        }
+      ],
+      "observable_type": "hash"
+    },
+    {
+      "id": "submit_url",
+      "name": "Submit URL",
+      "description": "Submit a URL for analysis in the CAPE sandbox",
+      "http_method": "POST",
+      "endpoint": "/tasks/create/url/",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "URL to analyze",
+          "required": true
+        },
+        {
+          "name": "package",
+          "type": "string",
+          "description": "Analysis package to use (e.g., ie, edge, chrome, firefox)",
+          "required": false
+        },
+        {
+          "name": "timeout",
+          "type": "integer",
+          "description": "Analysis timeout in seconds",
+          "required": false,
+          "default": 200
+        },
+        {
+          "name": "priority",
+          "type": "integer",
+          "description": "Priority of the analysis task (1-3)",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "options",
+          "type": "string",
+          "description": "Comma-separated analysis options",
+          "required": false
+        },
+        {
+          "name": "machine",
+          "type": "string",
+          "description": "Specific VM name to use",
+          "required": false
+        },
+        {
+          "name": "platform",
+          "type": "string",
+          "description": "Target platform (windows, linux)",
+          "required": false
+        },
+        {
+          "name": "memory",
+          "type": "boolean",
+          "description": "Enable full memory dump",
+          "required": false,
+          "default": false
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "get_task_status",
+      "name": "Get Task Status",
+      "description": "Check the current status of a submitted analysis task",
+      "http_method": "GET",
+      "endpoint": "/tasks/view/{task_id}/",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "task_id",
+          "type": "integer",
+          "description": "Task ID returned from submission",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_report",
+      "name": "Get Report",
+      "description": "Retrieve the full analysis report for a completed task in JSON format including behavioral analysis, CAPE extractions, and network activity",
+      "http_method": "GET",
+      "endpoint": "/tasks/report/{task_id}/",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "task_id",
+          "type": "integer",
+          "description": "Task ID to get the report for",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_tasks",
+      "name": "List Tasks",
+      "description": "List analysis tasks with optional pagination",
+      "http_method": "GET",
+      "endpoint": "/tasks/list/",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "limit",
+          "type": "integer",
+          "description": "Maximum number of tasks to return",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "offset",
+          "type": "integer",
+          "description": "Offset for pagination",
+          "required": false,
+          "default": 0
+        }
+      ]
+    },
+    {
+      "id": "delete_task",
+      "name": "Delete Task",
+      "description": "Delete a task and its associated results from the CAPE database",
+      "http_method": "GET",
+      "endpoint": "/tasks/delete/{task_id}/",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "task_id",
+          "type": "integer",
+          "description": "Task ID to delete",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_screenshots",
+      "name": "Get Screenshots",
+      "description": "Retrieve screenshots captured during sandbox analysis",
+      "http_method": "GET",
+      "endpoint": "/tasks/screenshots/{task_id}/",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "task_id",
+          "type": "integer",
+          "description": "Task ID to get screenshots for",
+          "required": true
+        },
+        {
+          "name": "screenshot",
+          "type": "string",
+          "description": "Specific screenshot number to retrieve (optional, returns all if omitted)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "search_by_hash",
+      "name": "Search by Hash",
+      "description": "Search for files in the CAPE database by MD5, SHA256, or internal ID",
+      "http_method": "GET",
+      "endpoint": "/files/view/{hash_type}/{hash_value}/",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "hash_type",
+          "type": "string",
+          "description": "Type of identifier: md5, sha256, or id",
+          "required": true
+        },
+        {
+          "name": "hash_value",
+          "type": "string",
+          "description": "The hash value or file ID to search for",
+          "required": true
+        }
+      ],
+      "observable_type": "hash"
+    },
+    {
+      "id": "get_pcap",
+      "name": "Get PCAP",
+      "description": "Download the network packet capture from an analysis",
+      "http_method": "GET",
+      "endpoint": "/pcap/get/{task_id}/",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "task_id",
+          "type": "integer",
+          "description": "Task ID to download PCAP for",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_machine_list",
+      "name": "List Machines",
+      "description": "List all available analysis VMs/machines in the CAPE environment",
+      "http_method": "GET",
+      "endpoint": "/machines/list/",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "get_status",
+      "name": "Get Server Status",
+      "description": "Return the current server status including version, task counts, and machine availability",
+      "http_method": "GET",
+      "endpoint": "/cuckoo/status/",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    }
+  ]
+}

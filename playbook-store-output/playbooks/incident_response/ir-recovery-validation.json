@@ -1,0 +1,302 @@
+{
+  "name": "Recovery Validation Checklist",
+  "slug": "ir-recovery-validation",
+  "description": "Validates that systems have been properly restored after an incident by executing a recovery verification checklist. A code node queries the list of affected systems from the investigation. Riggs AI assesses the restoration state and generates validation criteria. A loop iterates through each affected system to run health checks. A decision node evaluates whether all systems pass validation. Passing systems receive sign-off, while failing systems are flagged for re-remediation. The final recovery status is posted to stakeholders and the incident status is updated.",
+  "category": "incident_response",
+  "subcategory": "recovery",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "20 minutes",
+  "tags": ["recovery", "validation", "checklist", "health_check", "sign_off", "restore"],
+  "alert_types": [],
+  "severity_filter": [],
+  "trigger_conditions": {
+    "alert_types": [],
+    "trigger_type": "manual"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "crowdstrike",
+      "name": "CrowdStrike Falcon",
+      "category": "edr",
+      "reason": "Run endpoint health checks to verify systems are clean and operational"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Track recovery validation results and flag systems requiring re-remediation"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Post recovery validation results to stakeholders"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Manual Trigger — Recovery Validation",
+          "config": {
+            "trigger_type": "manual",
+            "description": "Manually triggered after incident remediation to validate that all affected systems are properly restored"
+          }
+        }
+      },
+      {
+        "id": "code_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "code",
+          "label": "Query Affected Systems",
+          "config": {
+            "mode": "query",
+            "query": "SELECT hostname, device_id, remediation_action, remediation_time FROM affected_systems WHERE investigation_id = '{{trigger_1.investigation_id}}' AND status = 'remediated'",
+            "output_variable": "affected_systems",
+            "description": "Retrieve the list of all affected and remediated systems that require recovery validation"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — Validation Criteria",
+          "config": {
+            "template_id": "executive_summary",
+            "additional_instructions": "Based on the incident type and remediation actions taken, generate specific recovery validation criteria. Include: endpoint health checks, service availability, IOC re-scan, user access verification, and data integrity checks.",
+            "description": "AI-powered generation of recovery validation criteria tailored to the incident type and remediation performed"
+          }
+        }
+      },
+      {
+        "id": "loop_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 540 },
+        "data": {
+          "kind": "loop",
+          "label": "For Each Affected System",
+          "config": {
+            "items_path": "$.nodes.code_1.result.affected_systems",
+            "loop_variable": "system",
+            "max_iterations": 100,
+            "description": "Iterate over each affected system to run recovery health checks"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "label": "Run Endpoint Health Check",
+          "config": {
+            "integration_action": {
+              "connector_id": "crowdstrike",
+              "action": "run_scan",
+              "parameters": {
+                "device_id": "{{loop.system.device_id}}",
+                "scan_type": "full",
+                "reason": "Recovery validation — post-incident health check"
+              }
+            },
+            "description": "Execute a full endpoint health scan to verify the system is clean and operational"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 860 },
+        "data": {
+          "kind": "decision",
+          "label": "All Systems Passed Validation?",
+          "config": {
+            "condition": "{{loop.failed_count}} == 0",
+            "description": "Check whether all systems passed the recovery validation health checks"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "label": "Post Recovery Sign-Off",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#soc-operations",
+              "message": "RECOVERY VALIDATION COMPLETE — ALL SYSTEMS PASSED\n\nIncident: {{trigger_1.investigation_title}}\nSystems Validated: {{code_1.affected_systems.length}}\nFailed: 0\n\n{{analyze_1.summary}}\n\nAll affected systems have passed recovery validation. Incident is ready for formal closure."
+            },
+            "description": "Post recovery sign-off confirmation to stakeholders when all systems pass validation"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 1180 },
+        "data": {
+          "kind": "utility",
+          "label": "Set Status: Recovered",
+          "config": {
+            "action": "update_status",
+            "parameters": {
+              "status": "recovered"
+            },
+            "description": "Update the incident status to recovered after all systems pass validation"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 1340 },
+        "data": {
+          "kind": "end",
+          "label": "End — Recovery Validated",
+          "config": {
+            "description": "Recovery validation complete — all systems passed health checks, incident marked as recovered"
+          }
+        }
+      },
+      {
+        "id": "respond_3",
+        "type": "signal",
+        "position": { "x": 700, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "label": "Create Re-Remediation Ticket",
+          "config": {
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_issue",
+              "parameters": {
+                "project": "IR",
+                "issue_type": "Task",
+                "priority": "P2 - High",
+                "summary": "RE-REMEDIATION REQUIRED: {{trigger_1.investigation_title}}",
+                "description": "Recovery validation found systems that did not pass health checks.\n\nIncident: {{trigger_1.investigation_title}}\nTotal Systems Checked: {{code_1.affected_systems.length}}\nFailed Systems: {{loop.failed_count}}\n\nFailed systems require re-remediation and a second round of recovery validation.\n\nValidation Criteria:\n{{analyze_1.summary}}"
+              }
+            },
+            "description": "Create a Jira ticket for systems that failed recovery validation and require re-remediation"
+          }
+        }
+      },
+      {
+        "id": "respond_4",
+        "type": "signal",
+        "position": { "x": 700, "y": 1180 },
+        "data": {
+          "kind": "respond",
+          "label": "Alert SOC — Validation Failures",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#soc-operations",
+              "message": "RECOVERY VALIDATION — FAILURES DETECTED\n\nIncident: {{trigger_1.investigation_title}}\nSystems Checked: {{code_1.affected_systems.length}}\nFailed: {{loop.failed_count}}\n\nRe-remediation ticket: {{respond_3.issue_key}}\n\nFailed systems require additional remediation before the incident can be closed."
+            },
+            "description": "Alert the SOC team about systems that failed recovery validation"
+          }
+        }
+      },
+      {
+        "id": "end_2",
+        "type": "signal",
+        "position": { "x": 700, "y": 1340 },
+        "data": {
+          "kind": "end",
+          "label": "End — Re-Remediation Required",
+          "config": {
+            "description": "Recovery validation found failures — re-remediation ticket created, SOC alerted"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_code",
+        "source": "trigger_1",
+        "target": "code_1",
+        "type": "default"
+      },
+      {
+        "id": "e_code_analyze",
+        "source": "code_1",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_analyze_loop",
+        "source": "analyze_1",
+        "target": "loop_1",
+        "type": "default"
+      },
+      {
+        "id": "e_loop_respond1",
+        "source": "loop_1",
+        "target": "respond_1",
+        "type": "default"
+      },
+      {
+        "id": "e_respond1_decision",
+        "source": "respond_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "respond_2",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "respond_3",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_respond2_utility",
+        "source": "respond_2",
+        "target": "utility_1",
+        "type": "default"
+      },
+      {
+        "id": "e_utility_end1",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_respond3_respond4",
+        "source": "respond_3",
+        "target": "respond_4",
+        "type": "default"
+      },
+      {
+        "id": "e_respond4_end2",
+        "source": "respond_4",
+        "target": "end_2",
+        "type": "default"
+      }
+    ]
+  }
+}

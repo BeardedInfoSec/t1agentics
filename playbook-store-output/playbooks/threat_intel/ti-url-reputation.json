@@ -1,0 +1,244 @@
+{
+  "name": "URL Reputation Assessment",
+  "slug": "ti-url-reputation",
+  "description": "Assesses the reputation of suspicious URLs by enriching against multiple threat feeds and URL analysis services. The playbook extracts URLs from the alert, checks each against VirusTotal and URL scanning services, then uses AI to determine if URLs are phishing, malware delivery, C2 communication, or benign. Malicious URLs are blocked on the web proxy, added to the URL blocklist, and users who accessed the URL are notified. Clean URLs are annotated and closed.",
+  "category": "threat_intel",
+  "subcategory": "reputation",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "beginner",
+  "estimated_time": "8 minutes",
+  "tags": ["url", "reputation", "phishing", "threat_intel", "web_proxy", "blocklist"],
+  "alert_types": ["threat_intel", "url"],
+  "severity_filter": ["low", "medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["threat_intel", "suspicious_url", "url_alert", "proxy_alert"],
+    "min_severity": "low"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "virustotal",
+      "name": "VirusTotal",
+      "category": "threat_intel",
+      "reason": "Scan URLs for malicious content, phishing indicators, and detection ratios across security vendors"
+    },
+    {
+      "connector_id": "urlscan",
+      "name": "urlscan.io",
+      "category": "threat_intel",
+      "reason": "Perform live URL scanning to capture page screenshots, DOM content, and network requests"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Suspicious URL Alert Received",
+          "config": {
+            "alert_types": ["threat_intel", "suspicious_url", "url_alert", "proxy_alert"],
+            "description": "Triggers when a suspicious URL alert is ingested from proxy logs, threat feeds, or user reports"
+          }
+        }
+      },
+      {
+        "id": "code_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "code",
+          "label": "Extract and Normalize URLs",
+          "config": {
+            "code": "import re\nfrom urllib.parse import urlparse\n\nalert = inputs.get('alert', {})\nraw_text = str(alert)\n\nurl_pattern = r'https?://[^\\s<>\"\\')]+'\nurls = list(set(re.findall(url_pattern, raw_text)))\n\nnormalized = []\nfor url in urls:\n    parsed = urlparse(url)\n    normalized.append({\n        'url': url,\n        'domain': parsed.hostname or '',\n        'scheme': parsed.scheme,\n        'path': parsed.path\n    })\n\nresult = {\n    'urls': normalized,\n    'total_count': len(normalized),\n    'domains': list(set([u['domain'] for u in normalized]))\n}",
+            "inputs": {
+              "alert": "{{trigger_1.alert}}"
+            },
+            "description": "Extracts and normalizes all URLs from the alert, parsing out domains, paths, and schemes"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "analyze",
+          "label": "Enrich URLs — VT & urlscan",
+          "config": {
+            "mode": "enrich",
+            "observable_type": "url",
+            "data_path": "$.code_1.outputs.result.urls",
+            "sources": ["virustotal", "urlscan"],
+            "description": "Enriches all extracted URLs against VirusTotal and urlscan.io for detection ratios, page analysis, and threat categorization"
+          }
+        }
+      },
+      {
+        "id": "analyze_2",
+        "type": "signal",
+        "position": { "x": 520, "y": 540 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — URL Threat Assessment",
+          "config": {
+            "template_id": "ioc_correlation",
+            "additional_instructions": "Assess each URL for threat type: phishing, malware delivery, C2 communication, exploit kit, or benign. Consider domain age, hosting infrastructure, page content analysis, and threat feed matches. Provide confidence level for each URL.",
+            "description": "AI-powered assessment determining the threat type and confidence level for each suspicious URL"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 700 },
+        "data": {
+          "kind": "decision",
+          "label": "Any Malicious URLs?",
+          "config": {
+            "condition": "{{analyze_2.malicious_count}} > 0 or {{analyze_2.severity}} in ['high', 'critical']",
+            "description": "Routes based on whether any URLs were assessed as malicious by the enrichment and AI analysis"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "label": "Block URLs on Web Proxy",
+          "config": {
+            "integration_action": {
+              "action": "block_urls",
+              "parameters": {
+                "urls": "{{analyze_2.malicious_urls}}",
+                "domains": "{{analyze_2.malicious_domains}}",
+                "block_type": "proxy_block",
+                "source": "ti-url-reputation",
+                "reason": "Confirmed malicious — {{analyze_2.threat_types}}"
+              }
+            },
+            "description": "Blocks all malicious URLs and their domains on the web proxy to prevent user access"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "label": "Add to URL Blocklist & Notify",
+          "config": {
+            "integration_action": {
+              "action": "edl_add",
+              "parameters": {
+                "list_name": "malicious_urls",
+                "indicators": "{{analyze_2.malicious_urls}}",
+                "source": "ti-url-reputation",
+                "expiry_days": 90
+              }
+            },
+            "notify": {
+              "channel": "slack",
+              "target": "#soc-alerts",
+              "message": "MALICIOUS URLs BLOCKED\nTotal Assessed: {{code_1.outputs.result.total_count}}\nMalicious: {{analyze_2.malicious_count}}\nThreat Types: {{analyze_2.threat_types}}\n\nBlocked on proxy and added to URL blocklist.\n\n{{analyze_2.summary}}"
+            },
+            "description": "Adds malicious URLs to the blocklist EDL and notifies the SOC team"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 700, "y": 860 },
+        "data": {
+          "kind": "utility",
+          "label": "Note: All URLs Clean",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "URL reputation assessment completed. All {{code_1.outputs.result.total_count}} URLs assessed as clean or benign.\n\nDomains Checked: {{code_1.outputs.result.domains}}\n\nNo blocking action required.\n\nRiggs AI Summary:\n{{analyze_2.summary}}"
+            },
+            "description": "Documents that all URLs were assessed as clean with no blocking action taken"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1180 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "URL reputation assessment complete"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_extract",
+        "source": "trigger_1",
+        "target": "code_1",
+        "type": "default"
+      },
+      {
+        "id": "e_extract_enrich",
+        "source": "code_1",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_enrich_assess",
+        "source": "analyze_1",
+        "target": "analyze_2",
+        "type": "default"
+      },
+      {
+        "id": "e_assess_decision",
+        "source": "analyze_2",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "respond_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "utility_1",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_block_edl",
+        "source": "respond_1",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_edl_end",
+        "source": "respond_2",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_clean_end",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

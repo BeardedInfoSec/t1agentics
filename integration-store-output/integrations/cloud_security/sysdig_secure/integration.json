@@ -1,0 +1,188 @@
+{
+  "id": "sysdig_secure",
+  "name": "Sysdig Secure",
+  "description": "Cloud and container security platform providing runtime threat detection, vulnerability management, posture management, and compliance via REST API",
+  "version": "1.0.0",
+  "category": "cloud_security",
+  "vendor": "Sysdig",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "header_name": "Authorization",
+    "prefix": "Bearer",
+    "location": "header"
+  },
+  "base_url": "https://{region}.app.sysdig.com/api",
+  "actions": [
+    {
+      "id": "list_policy_events",
+      "name": "List Policy Events",
+      "description": "Retrieve runtime policy events and security violations detected by Sysdig agents",
+      "http_method": "GET",
+      "endpoint": "/v1/secureEvents",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "from",
+          "type": "number",
+          "description": "Start of time range in epoch seconds",
+          "required": false
+        },
+        {
+          "name": "to",
+          "type": "number",
+          "description": "End of time range in epoch seconds",
+          "required": false
+        },
+        {
+          "name": "severity",
+          "type": "number",
+          "description": "Minimum severity level (0-7)",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum events to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "list_vulnerabilities",
+      "name": "List Vulnerabilities",
+      "description": "Retrieve vulnerability scan results across runtime and pipeline images",
+      "http_method": "GET",
+      "endpoint": "/scanning/v1/resultsDirect",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "imageDigest",
+          "type": "string",
+          "description": "Container image digest to query",
+          "required": false
+        },
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Filter by severity (Critical, High, Medium, Low, Negligible)",
+          "required": false
+        },
+        {
+          "name": "has_fix",
+          "type": "boolean",
+          "description": "Filter for vulnerabilities with available fixes",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_compliance_results",
+      "name": "Get Compliance Results",
+      "description": "Retrieve compliance check results for a specific benchmark framework",
+      "http_method": "GET",
+      "endpoint": "/cspm/v1/policy/evaluations",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "framework",
+          "type": "string",
+          "description": "Compliance framework (e.g., CIS, NIST, SOC2, PCI)",
+          "required": false
+        },
+        {
+          "name": "scope",
+          "type": "string",
+          "description": "Scope of compliance (cloud, kubernetes, host)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_posture_findings",
+      "name": "List Posture Findings",
+      "description": "List cloud security posture findings and misconfigurations",
+      "http_method": "GET",
+      "endpoint": "/cspm/v1/policy/findings",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Filter by severity level",
+          "required": false
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Filter by status (pass, fail, warn)",
+          "required": false
+        },
+        {
+          "name": "cloud_provider",
+          "type": "string",
+          "description": "Filter by cloud provider",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum findings to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "list_runtime_policies",
+      "name": "List Runtime Policies",
+      "description": "List all runtime security policies and their configuration",
+      "http_method": "GET",
+      "endpoint": "/v1/policies",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Policy type filter (falco, list_matching, k8s_audit)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "run_sysql_query",
+      "name": "Run SysQL Query",
+      "description": "Execute a SysQL query against the Sysdig Secure datastore for advanced threat hunting",
+      "http_method": "POST",
+      "endpoint": "/api/sysql/v1/query",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "SysQL query statement",
+          "required": true
+        },
+        {
+          "name": "from",
+          "type": "number",
+          "description": "Start of time range in epoch seconds",
+          "required": false
+        },
+        {
+          "name": "to",
+          "type": "number",
+          "description": "End of time range in epoch seconds",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

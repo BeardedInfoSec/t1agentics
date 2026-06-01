@@ -1,0 +1,239 @@
+{
+  "id": "secureworks_taegis",
+  "name": "Secureworks Taegis XDR",
+  "description": "Integrates with Secureworks Taegis XDR GraphQL and REST APIs for alert management, endpoint asset visibility, investigation queries, and countermeasure deployment",
+  "version": "1.0.0",
+  "category": "edr",
+  "vendor": "Secureworks (Dell)",
+  "auth_type": "oauth2_client",
+  "auth_config": {
+    "type": "oauth2_client",
+    "token_url": "https://api.ctpx.secureworks.com/auth/api/v2/auth/token"
+  },
+  "base_url": "https://api.ctpx.secureworks.com",
+  "actions": [
+    {
+      "id": "list_alerts",
+      "name": "List Alerts",
+      "description": "Retrieve alerts from Taegis XDR with filtering by severity, status, and time range",
+      "http_method": "POST",
+      "endpoint": "/graphql",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "GraphQL query for alerts (e.g., allAlerts with filters)",
+          "required": true
+        },
+        {
+          "name": "variables",
+          "type": "string",
+          "description": "JSON object of GraphQL query variables for filtering",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_alert",
+      "name": "Get Alert Details",
+      "description": "Retrieve detailed information about a specific alert by ID",
+      "http_method": "POST",
+      "endpoint": "/graphql",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "alert_id",
+          "type": "string",
+          "description": "The unique identifier of the alert",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "update_alert",
+      "name": "Update Alert",
+      "description": "Update the status, assignee, or resolution of an alert",
+      "http_method": "POST",
+      "endpoint": "/graphql",
+      "action_type": "correct",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "alert_id",
+          "type": "string",
+          "description": "The unique identifier of the alert to update",
+          "required": true
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "New alert status: open, suppressed, inProgress, closed",
+          "required": false
+        },
+        {
+          "name": "resolution",
+          "type": "string",
+          "description": "Resolution type for closed alerts: truePositive, falsePositive, notActionable",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_investigations",
+      "name": "List Investigations",
+      "description": "Retrieve the list of investigations created in Taegis XDR",
+      "http_method": "POST",
+      "endpoint": "/graphql",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "GraphQL query for investigations",
+          "required": true
+        },
+        {
+          "name": "variables",
+          "type": "string",
+          "description": "JSON object of query variables",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "create_investigation",
+      "name": "Create Investigation",
+      "description": "Create a new investigation and optionally associate alerts",
+      "http_method": "POST",
+      "endpoint": "/graphql",
+      "action_type": "correct",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "title",
+          "type": "string",
+          "description": "Title of the investigation",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Description of the investigation",
+          "required": false
+        },
+        {
+          "name": "priority",
+          "type": "string",
+          "description": "Investigation priority: critical, high, medium, low",
+          "required": false,
+          "default": "medium"
+        },
+        {
+          "name": "alert_ids",
+          "type": "string",
+          "description": "JSON array of alert IDs to associate with the investigation",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_endpoint_assets",
+      "name": "List Endpoint Assets",
+      "description": "Retrieve endpoint assets monitored by the Taegis agent",
+      "http_method": "POST",
+      "endpoint": "/graphql",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "GraphQL query for endpoint assets",
+          "required": true
+        },
+        {
+          "name": "variables",
+          "type": "string",
+          "description": "JSON object of query variables for filtering",
+          "required": false
+        }
+      ],
+      "observable_type": "hostname"
+    },
+    {
+      "id": "isolate_endpoint",
+      "name": "Isolate Endpoint",
+      "description": "Isolate an endpoint from the network using Taegis agent countermeasure",
+      "http_method": "POST",
+      "endpoint": "/graphql",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "endpoint_id",
+          "type": "string",
+          "description": "The unique identifier of the endpoint to isolate",
+          "required": true
+        },
+        {
+          "name": "reason",
+          "type": "string",
+          "description": "Reason for isolating the endpoint",
+          "required": false
+        }
+      ],
+      "observable_type": "hostname"
+    },
+    {
+      "id": "unisolate_endpoint",
+      "name": "Release Endpoint",
+      "description": "Remove network isolation from a previously isolated endpoint",
+      "http_method": "POST",
+      "endpoint": "/graphql",
+      "action_type": "correct",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "endpoint_id",
+          "type": "string",
+          "description": "The unique identifier of the endpoint to release",
+          "required": true
+        }
+      ],
+      "observable_type": "hostname"
+    },
+    {
+      "id": "run_query",
+      "name": "Run Threat Hunting Query",
+      "description": "Execute a custom threat hunting query against Taegis XDR data lake using QL2 query language",
+      "http_method": "POST",
+      "endpoint": "/graphql",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "query_string",
+          "type": "string",
+          "description": "The QL2 hunt query to execute",
+          "required": true
+        },
+        {
+          "name": "from_time",
+          "type": "string",
+          "description": "Start time for the query window (ISO 8601)",
+          "required": false
+        },
+        {
+          "name": "to_time",
+          "type": "string",
+          "description": "End time for the query window (ISO 8601)",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

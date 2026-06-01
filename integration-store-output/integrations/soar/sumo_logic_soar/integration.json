@@ -1,0 +1,161 @@
+{
+  "id": "sumo_logic_soar",
+  "name": "Sumo Logic Cloud SOAR",
+  "description": "Sumo Logic Cloud SOAR platform for security incident management, automated playbook execution, and triage operations via the v3 REST API.",
+  "version": "1.0.0",
+  "category": "soar",
+  "vendor": "Sumo Logic",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "header_name": "Authorization",
+    "location": "header",
+    "token_prefix": "Bearer"
+  },
+  "base_url": "https://{host}/incmansuite_ng/api/v3",
+  "actions": [
+    {
+      "id": "list_incidents",
+      "name": "List Incidents",
+      "description": "Retrieve a list of incidents with optional filters.",
+      "http_method": "GET",
+      "endpoint": "/incidents",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "offset", "type": "integer", "description": "Starting offset for pagination.", "required": false},
+        {"name": "limit", "type": "integer", "description": "Maximum records to return.", "required": false},
+        {"name": "status", "type": "string", "description": "Filter by status.", "required": false},
+        {"name": "severity", "type": "string", "description": "Filter by severity.", "required": false},
+        {"name": "from", "type": "string", "description": "Start date filter in ISO 8601.", "required": false},
+        {"name": "to", "type": "string", "description": "End date filter in ISO 8601.", "required": false}
+      ]
+    },
+    {
+      "id": "get_incident",
+      "name": "Get Incident",
+      "description": "Retrieve details of a specific incident.",
+      "http_method": "GET",
+      "endpoint": "/incidents/{incidentId}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "incidentId", "type": "string", "description": "The incident ID.", "required": true}
+      ]
+    },
+    {
+      "id": "create_incident",
+      "name": "Create Incident",
+      "description": "Create a new incident in Cloud SOAR.",
+      "http_method": "POST",
+      "endpoint": "/incidents",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "name", "type": "string", "description": "Incident name.", "required": true},
+        {"name": "description", "type": "string", "description": "Incident description.", "required": false},
+        {"name": "severity", "type": "string", "description": "Severity: 'Low', 'Medium', 'High', 'Critical'.", "required": false},
+        {"name": "type", "type": "string", "description": "Incident type.", "required": false},
+        {"name": "assignee", "type": "string", "description": "Assigned analyst.", "required": false}
+      ]
+    },
+    {
+      "id": "update_incident",
+      "name": "Update Incident",
+      "description": "Update an existing incident's properties.",
+      "http_method": "PUT",
+      "endpoint": "/incidents/{incidentId}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "incidentId", "type": "string", "description": "The incident ID.", "required": true},
+        {"name": "name", "type": "string", "description": "Updated name.", "required": false},
+        {"name": "severity", "type": "string", "description": "Updated severity.", "required": false},
+        {"name": "status", "type": "string", "description": "Updated status.", "required": false},
+        {"name": "assignee", "type": "string", "description": "Updated assignee.", "required": false}
+      ]
+    },
+    {
+      "id": "close_incident",
+      "name": "Close Incident",
+      "description": "Close an incident with resolution details.",
+      "http_method": "PUT",
+      "endpoint": "/incidents/{incidentId}/close",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "incidentId", "type": "string", "description": "The incident ID to close.", "required": true},
+        {"name": "resolution", "type": "string", "description": "Resolution summary.", "required": true},
+        {"name": "closureReason", "type": "string", "description": "Reason for closure.", "required": false}
+      ]
+    },
+    {
+      "id": "run_playbook",
+      "name": "Run Playbook",
+      "description": "Execute a playbook on an incident.",
+      "http_method": "POST",
+      "endpoint": "/incidents/{incidentId}/playbook",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "incidentId", "type": "string", "description": "The incident ID.", "required": true},
+        {"name": "playbookId", "type": "string", "description": "The playbook ID to execute.", "required": true}
+      ]
+    },
+    {
+      "id": "list_playbooks",
+      "name": "List Playbooks",
+      "description": "Retrieve a list of available playbooks.",
+      "http_method": "GET",
+      "endpoint": "/playbooks",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "offset", "type": "integer", "description": "Starting offset.", "required": false},
+        {"name": "limit", "type": "integer", "description": "Maximum results.", "required": false}
+      ]
+    },
+    {
+      "id": "list_triage_events",
+      "name": "List Triage Events",
+      "description": "Retrieve triage events pending review.",
+      "http_method": "GET",
+      "endpoint": "/triage",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "offset", "type": "integer", "description": "Starting offset.", "required": false},
+        {"name": "limit", "type": "integer", "description": "Maximum results.", "required": false},
+        {"name": "status", "type": "string", "description": "Filter by triage status.", "required": false}
+      ]
+    },
+    {
+      "id": "add_artifact",
+      "name": "Add Artifact",
+      "description": "Add an artifact to an incident.",
+      "http_method": "POST",
+      "endpoint": "/incidents/{incidentId}/artifacts",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "incidentId", "type": "string", "description": "The incident ID.", "required": true},
+        {"name": "type", "type": "string", "description": "Artifact type.", "required": true},
+        {"name": "value", "type": "string", "description": "Artifact value.", "required": true},
+        {"name": "description", "type": "string", "description": "Artifact description.", "required": false}
+      ]
+    },
+    {
+      "id": "add_note",
+      "name": "Add Note",
+      "description": "Add a note to an incident.",
+      "http_method": "POST",
+      "endpoint": "/incidents/{incidentId}/notes",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "incidentId", "type": "string", "description": "The incident ID.", "required": true},
+        {"name": "text", "type": "string", "description": "Note text.", "required": true}
+      ]
+    }
+  ]
+}

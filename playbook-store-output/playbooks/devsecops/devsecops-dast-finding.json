@@ -1,0 +1,230 @@
+{
+  "name": "DAST Finding Triage",
+  "slug": "devsecops-dast-finding",
+  "description": "Automated triage for Dynamic Application Security Testing (DAST) findings. Riggs AI verifies exploitability of the runtime vulnerability, checks if the finding is a true positive, and routes confirmed exploitable issues to development with a fix ticket. False positives are closed with documentation.",
+  "category": "devsecops",
+  "subcategory": "dast",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "10 minutes",
+  "tags": ["devsecops", "dast", "dynamic-analysis", "web-security", "owasp", "exploitability"],
+  "alert_types": ["dast_finding", "web_vulnerability"],
+  "severity_filter": ["low", "medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["dast_finding", "web_vulnerability", "dynamic_scan_alert"],
+    "min_severity": "low"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create fix tickets for confirmed exploitable DAST findings"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Notify the application security team about exploitable vulnerabilities"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "title": "DAST Finding Received",
+          "summary": "Triggers when a DAST scanner reports a runtime vulnerability",
+          "config": {
+            "trigger_type": "alert",
+            "alert_types": ["dast_finding", "web_vulnerability", "dynamic_scan_alert"],
+            "description": "Ingests findings from DAST tools such as OWASP ZAP, Burp Suite, or Nuclei"
+          }
+        }
+      },
+      {
+        "id": "analyze-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "title": "AI Exploitability Assessment",
+          "summary": "Riggs AI evaluates whether the DAST finding is truly exploitable",
+          "config": {
+            "template_id": "vuln_risk",
+            "additional_instructions": "Analyze the DAST finding for real-world exploitability. Check the OWASP category, HTTP evidence, request/response pairs, and whether the vulnerability can be triggered by an unauthenticated attacker. Distinguish true positives from scanner false positives.",
+            "description": "AI-powered exploitability verification using the vuln_risk analysis template"
+          }
+        }
+      },
+      {
+        "id": "decision-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "title": "Confirmed Exploitable?",
+          "summary": "Route based on whether the AI confirms the finding is exploitable",
+          "config": {
+            "conditions": {
+              "operator": "AND",
+              "conditions": [
+                {
+                  "left": { "type": "path", "value": "$.nodes.analyze-1.result.exploitable" },
+                  "operator": "equals",
+                  "right": { "type": "value", "value": true }
+                }
+              ],
+              "groups": []
+            },
+            "expression": "$.nodes.analyze-1.result.exploitable == true",
+            "default_branch": "no"
+          }
+        }
+      },
+      {
+        "id": "decision-2",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "decision",
+          "title": "Critical Severity?",
+          "summary": "Check if the exploitable finding is critical severity requiring approval",
+          "config": {
+            "conditions": {
+              "operator": "AND",
+              "conditions": [
+                {
+                  "left": { "type": "path", "value": "$.nodes.analyze-1.result.severity" },
+                  "operator": "equals",
+                  "right": { "type": "value", "value": "critical" }
+                }
+              ],
+              "groups": []
+            },
+            "expression": "$.nodes.analyze-1.result.severity == \"critical\"",
+            "default_branch": "no"
+          }
+        }
+      },
+      {
+        "id": "approval-1",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "approval",
+          "title": "AppSec Lead Approval",
+          "summary": "Require AppSec lead sign-off before creating critical fix ticket",
+          "config": {
+            "approvers": ["appsec-lead"],
+            "timeout_hours": 4,
+            "message": "Critical DAST finding requires approval before ticket creation.\n\nURL: {{trigger-1.alert.target_url}}\nVulnerability: {{trigger-1.alert.vulnerability_type}}\nOWASP: {{trigger-1.alert.owasp_category}}\n\nRiggs Assessment:\n{{analyze-1.result.summary}}",
+            "description": "Require application security lead approval for critical exploitable findings"
+          }
+        }
+      },
+      {
+        "id": "respond-1",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "title": "Create Fix Ticket in Jira",
+          "summary": "Create a prioritized Jira ticket for the development team to fix the vulnerability",
+          "config": {
+            "response_type": "integration_action",
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_issue",
+              "parameters": {
+                "project": "{{trigger-1.alert.jira_project | default('APPSEC')}}",
+                "issue_type": "Bug",
+                "priority": "{{analyze-1.result.severity | upper}}",
+                "summary": "DAST: {{trigger-1.alert.owasp_category}} — {{trigger-1.alert.vulnerability_type}} at {{trigger-1.alert.target_url}}",
+                "description": "Severity: {{analyze-1.result.severity}}\nOWASP: {{trigger-1.alert.owasp_category}}\nURL: {{trigger-1.alert.target_url}}\nMethod: {{trigger-1.alert.http_method}}\nParameter: {{trigger-1.alert.vulnerable_parameter}}\n\nRiggs Assessment:\n{{analyze-1.result.summary}}\n\nRemediation:\n{{analyze-1.result.remediation}}\n\nEvidence:\n{{trigger-1.alert.evidence}}",
+                "labels": ["dast", "security", "exploitable", "{{trigger-1.alert.owasp_category}}"]
+              }
+            },
+            "description": "Create a Jira ticket with full DAST finding details and remediation steps"
+          }
+        }
+      },
+      {
+        "id": "respond-2",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "title": "Notify AppSec Team",
+          "summary": "Send Slack notification to the application security channel",
+          "config": {
+            "response_type": "notify",
+            "channel": "slack",
+            "slack_channel": "#devsecops-alerts",
+            "message": "DAST Finding Confirmed — {{analyze-1.result.severity | upper}}\nVulnerability: {{trigger-1.alert.vulnerability_type}}\nURL: {{trigger-1.alert.target_url}}\nOWASP: {{trigger-1.alert.owasp_category}}\nJira: {{respond-1.ticket_url}}\n\n{{analyze-1.result.summary}}",
+            "priority": "high"
+          }
+        }
+      },
+      {
+        "id": "utility-1",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "utility",
+          "title": "Close as False Positive",
+          "summary": "Mark the DAST finding as a false positive with AI justification",
+          "config": {
+            "operation": "update_status",
+            "status": "closed",
+            "note": "DAST finding assessed as not exploitable by AI analysis. Reason: {{analyze-1.result.false_positive_reason}}. Closing as false positive."
+          }
+        }
+      },
+      {
+        "id": "end-1",
+        "type": "signal",
+        "position": { "x": 340, "y": 1180 },
+        "data": {
+          "kind": "end",
+          "title": "End — Fix Ticket Created",
+          "summary": "Exploitable DAST finding triaged and assigned for remediation",
+          "config": {
+            "disposition": "true_positive",
+            "summary": "DAST finding confirmed exploitable. Fix ticket created and AppSec team notified."
+          }
+        }
+      },
+      {
+        "id": "end-2",
+        "type": "signal",
+        "position": { "x": 700, "y": 700 },
+        "data": {
+          "kind": "end",
+          "title": "End — False Positive Closed",
+          "summary": "DAST finding determined to be a false positive",
+          "config": {
+            "disposition": "false_positive",
+            "summary": "DAST finding assessed as not exploitable. Closed as false positive with AI justification."
+          }
+        }
+      }
+    ],
+    "edges": [
+      { "id": "e1", "source": "trigger-1", "target": "analyze-1", "animated": true, "type": "smoothstep" },
+      { "id": "e2", "source": "analyze-1", "target": "decision-1", "animated": true, "type": "smoothstep" },
+      { "id": "e3", "source": "decision-1", "target": "decision-2", "sourceHandle": "yes", "label": "Yes", "animated": true, "type": "smoothstep" },
+      { "id": "e4", "source": "decision-1", "target": "utility-1", "sourceHandle": "no", "label": "No", "animated": true, "type": "smoothstep" },
+      { "id": "e5", "source": "decision-2", "target": "approval-1", "sourceHandle": "yes", "label": "Yes", "animated": true, "type": "smoothstep" },
+      { "id": "e6", "source": "decision-2", "target": "respond-1", "sourceHandle": "no", "label": "No", "animated": true, "type": "smoothstep" },
+      { "id": "e7", "source": "approval-1", "target": "respond-1", "animated": true, "type": "smoothstep" },
+      { "id": "e8", "source": "respond-1", "target": "respond-2", "animated": true, "type": "smoothstep" },
+      { "id": "e9", "source": "respond-2", "target": "end-1", "animated": true, "type": "smoothstep" },
+      { "id": "e10", "source": "utility-1", "target": "end-2", "animated": true, "type": "smoothstep" }
+    ]
+  }
+}

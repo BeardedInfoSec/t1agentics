@@ -1,0 +1,239 @@
+{
+  "id": "fortinet_fortisandbox",
+  "name": "Fortinet FortiSandbox",
+  "description": "Fortinet FortiSandbox provides advanced threat detection through dynamic malware analysis, file sandboxing, and URL scanning with integration into the Fortinet Security Fabric",
+  "version": "1.0.0",
+  "category": "sandbox",
+  "vendor": "Fortinet",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "session",
+    "location": "body"
+  },
+  "base_url": "https://{fortisandbox_host}/jsonrpc",
+  "actions": [
+    {
+      "id": "login",
+      "name": "Login",
+      "description": "Authenticate with FortiSandbox and obtain a session ID for subsequent API calls",
+      "http_method": "POST",
+      "endpoint": "/jsonrpc",
+      "action_type": "generic",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "user",
+          "type": "string",
+          "description": "FortiSandbox username",
+          "required": true
+        },
+        {
+          "name": "passwd",
+          "type": "string",
+          "description": "FortiSandbox password",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "submit_file",
+      "name": "Submit File",
+      "description": "Upload a file to FortiSandbox for on-demand malware analysis and sandboxing",
+      "http_method": "POST",
+      "endpoint": "/jsonrpc",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "file",
+          "type": "file",
+          "description": "Base64-encoded file content to submit for analysis (max 200MB)",
+          "required": true
+        },
+        {
+          "name": "filename",
+          "type": "string",
+          "description": "Name of the file being submitted",
+          "required": true
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Submission type: file",
+          "required": true,
+          "default": "file"
+        },
+        {
+          "name": "overwrite_vm_list",
+          "type": "string",
+          "description": "Comma-separated VM IDs to use for analysis (overrides default VM selection)",
+          "required": false
+        },
+        {
+          "name": "archive_passwords",
+          "type": "string",
+          "description": "Newline-separated passwords to try on encrypted archives",
+          "required": false
+        },
+        {
+          "name": "timeout",
+          "type": "integer",
+          "description": "Analysis timeout in seconds",
+          "required": false
+        },
+        {
+          "name": "depth",
+          "type": "integer",
+          "description": "Scanning depth for nested/embedded files",
+          "required": false
+        },
+        {
+          "name": "skip_steps",
+          "type": "string",
+          "description": "Comma-separated scan steps to skip (e.g., av_scan, cloud_query, sandbox)",
+          "required": false
+        }
+      ],
+      "observable_type": "hash"
+    },
+    {
+      "id": "submit_urls",
+      "name": "Submit URLs",
+      "description": "Submit one or more URLs for FortiSandbox analysis and URL rating",
+      "http_method": "POST",
+      "endpoint": "/jsonrpc",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "urls",
+          "type": "string",
+          "description": "Comma-separated list of URLs to submit for analysis",
+          "required": true
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "get_submission_job_id",
+      "name": "Get Submission Job ID",
+      "description": "Retrieve the job ID(s) associated with a file submission using the submission ID",
+      "http_method": "POST",
+      "endpoint": "/jsonrpc",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "sid",
+          "type": "string",
+          "description": "Submission ID returned from the file upload",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_scan_result",
+      "name": "Get Scan Result",
+      "description": "Query the scan result and verdict for a completed job, including risk rating and detected malware details",
+      "http_method": "POST",
+      "endpoint": "/jsonrpc",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "jid",
+          "type": "string",
+          "description": "Job ID to query for results",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_file_verdict_by_hash",
+      "name": "Get File Verdict by Hash",
+      "description": "Look up the scan verdict for a previously analyzed file by its SHA256 or SHA1 hash",
+      "http_method": "POST",
+      "endpoint": "/jsonrpc",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "checksum",
+          "type": "string",
+          "description": "SHA256 or SHA1 hash of the file to look up",
+          "required": true
+        }
+      ],
+      "observable_type": "hash"
+    },
+    {
+      "id": "get_url_rating",
+      "name": "Get URL Rating",
+      "description": "Query the FortiSandbox URL rating for a given URL",
+      "http_method": "POST",
+      "endpoint": "/jsonrpc",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "URL to check rating for",
+          "required": true
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "get_pdf_report",
+      "name": "Get PDF Report",
+      "description": "Download the detailed PDF analysis report for a completed job",
+      "http_method": "POST",
+      "endpoint": "/jsonrpc",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "jid",
+          "type": "string",
+          "description": "Job ID to get the PDF report for",
+          "required": false
+        },
+        {
+          "name": "sha256",
+          "type": "string",
+          "description": "SHA256 hash of the file to get the report for (alternative to jid)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "cancel_submission",
+      "name": "Cancel Submission",
+      "description": "Cancel a pending or in-progress file analysis submission",
+      "http_method": "POST",
+      "endpoint": "/jsonrpc",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "sid",
+          "type": "string",
+          "description": "Submission ID to cancel",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_scan_stats",
+      "name": "Get Scan Statistics",
+      "description": "Retrieve overall scanning statistics and system health from the FortiSandbox appliance",
+      "http_method": "POST",
+      "endpoint": "/jsonrpc",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    }
+  ]
+}

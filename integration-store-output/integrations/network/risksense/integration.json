@@ -1,0 +1,541 @@
+{
+  "id": "risksense",
+  "name": "RiskSense",
+  "description": "This app integrates with the RiskSense platform to perform investigative and generic actions to detect and monitor vulnerabilities across the entire attack surface, hosts and applications, using RiskSense's inherent intelligence-driven risk analytics to manage and control an organization's cyber risk",
+  "version": "1.0.0",
+  "category": "network",
+  "vendor": "RiskSense",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "list_users",
+      "name": "List Users",
+      "description": "List all the users",
+      "http_method": "GET",
+      "endpoint": "/client/{client_id}/user/search",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "max_results",
+          "type": "number",
+          "description": "Maximum number of users to return (Default: 1000)",
+          "required": false,
+          "default": 1000
+        }
+      ]
+    },
+    {
+      "id": "list_tags",
+      "name": "List Tags",
+      "description": "List all the tags",
+      "http_method": "GET",
+      "endpoint": "/client/{client_id}/tag/search",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "max_results",
+          "type": "number",
+          "description": "Maximum number of tags to return (Default: 1000)",
+          "required": false,
+          "default": 1000
+        }
+      ]
+    },
+    {
+      "id": "list_hosts",
+      "name": "List Hosts",
+      "description": "List all the hosts",
+      "http_method": "GET",
+      "endpoint": "/client/{client_id}/host/search",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "fieldname",
+          "type": "string",
+          "description": "Host attributes to filter the results (allows comma-separated)",
+          "required": false
+        },
+        {
+          "name": "operator",
+          "type": "string",
+          "description": "Operators to be applied on the provided fieldnames (allows comma-separated)",
+          "required": false
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "description": "Values for the respective fieldnames (allows JSON formatted list)",
+          "required": false
+        },
+        {
+          "name": "exclusivity",
+          "type": "string",
+          "description": "This parameter allows the user to determine whether to fetch the results that are matching the filter criteria (defined by the Fieldname, Operator, and Value parameter) or to fetch the results that are not matching the filter criteria",
+          "required": false
+        },
+        {
+          "name": "sort_by",
+          "type": "string",
+          "description": "Host attributes to sort the results (allows comma-separated)",
+          "required": false,
+          "default": "rs3"
+        },
+        {
+          "name": "sort_direction",
+          "type": "string",
+          "description": "Sort direction values for the respective host attributes in sort by parameter (allows comma-separated)",
+          "required": false,
+          "default": "ASC"
+        },
+        {
+          "name": "page",
+          "type": "number",
+          "description": "Index of the starting page to fetch the results (Default: 0)",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "max_results",
+          "type": "number",
+          "description": "Maximum number of hosts to return (Default: 1000)",
+          "required": false,
+          "default": 1000
+        }
+      ]
+    },
+    {
+      "id": "list_apps",
+      "name": "List Apps",
+      "description": "List all the applications",
+      "http_method": "GET",
+      "endpoint": "/client/{client_id}/application/search",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "fieldname",
+          "type": "string",
+          "description": "App attributes to filter the results (allows comma-separated)",
+          "required": false
+        },
+        {
+          "name": "operator",
+          "type": "string",
+          "description": "Operators to be applied on the provided fieldnames (allows comma-separated)",
+          "required": false
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "description": "Values for the respective fieldnames (allows JSON formatted list)",
+          "required": false
+        },
+        {
+          "name": "exclusivity",
+          "type": "string",
+          "description": "This parameter allows the user to determine whether to fetch the results that are matching the filter criteria (defined by the Fieldname, Operator, and Value parameter) or to fetch the results that are not matching the filter criteria",
+          "required": false
+        },
+        {
+          "name": "sort_by",
+          "type": "string",
+          "description": "App attributes to sort the results (allows comma-separated)",
+          "required": false,
+          "default": "name"
+        },
+        {
+          "name": "sort_direction",
+          "type": "string",
+          "description": "Sort direction values for the respective app attributes in sort by parameter (allows comma-separated)",
+          "required": false,
+          "default": "ASC"
+        },
+        {
+          "name": "page",
+          "type": "number",
+          "description": "Index of the starting page to fetch the results (Default: 0)",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "max_results",
+          "type": "number",
+          "description": "Maximum number of apps to return (Default: 1000)",
+          "required": false,
+          "default": 1000
+        }
+      ]
+    },
+    {
+      "id": "list_unique_findings",
+      "name": "List Unique Findings",
+      "description": "List all the unique findings",
+      "http_method": "GET",
+      "endpoint": "/client",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "fieldname",
+          "type": "string",
+          "description": "Unique host finding attributes to filter the results (allows comma-separated)",
+          "required": false
+        },
+        {
+          "name": "operator",
+          "type": "string",
+          "description": "Operators to be applied on the provided fieldnames (allows comma-separated)",
+          "required": false
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "description": "Values for the respective fieldnames (allows JSON formatted list)",
+          "required": false
+        },
+        {
+          "name": "exclusivity",
+          "type": "string",
+          "description": "This parameter allows the user to determine whether to fetch the results that are matching the filter criteria (defined by the Fieldname, Operator, and Value parameter) or to fetch the results that are not matching the filter criteria",
+          "required": false
+        },
+        {
+          "name": "sort_by",
+          "type": "string",
+          "description": "Unique host finding attributes to sort the results (allows comma-separated)",
+          "required": false,
+          "default": "name"
+        },
+        {
+          "name": "sort_direction",
+          "type": "string",
+          "description": "Sort direction values for the respective unique host finding attributes in sort by parameter (allows comma-separated)",
+          "required": false,
+          "default": "ASC"
+        },
+        {
+          "name": "page",
+          "type": "number",
+          "description": "Index of the starting page to fetch the results (Default: 0)",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "max_results",
+          "type": "number",
+          "description": "Maximum number of unique findings to return (Default: 1000)",
+          "required": false,
+          "default": 1000
+        }
+      ]
+    },
+    {
+      "id": "list_host_findings",
+      "name": "List Host Findings",
+      "description": "List all the host findings",
+      "http_method": "GET",
+      "endpoint": "/client/{client_id}/hostFinding/search",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "fieldname",
+          "type": "string",
+          "description": "Host finding attributes to filter the results (allows comma-separated)",
+          "required": false
+        },
+        {
+          "name": "operator",
+          "type": "string",
+          "description": "Operators to be applied on the provided fieldnames (allows comma-separated)",
+          "required": false
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "description": "Values for the respective fieldnames (allows JSON formatted list)",
+          "required": false
+        },
+        {
+          "name": "exclusivity",
+          "type": "string",
+          "description": "This parameter allows the user to determine whether to fetch the results that are matching the filter criteria (defined by the Fieldname, Operator, and Value parameter) or to fetch the results that are not matching the filter criteria",
+          "required": false
+        },
+        {
+          "name": "sort_by",
+          "type": "string",
+          "description": "Host finding attributes to sort the results (allows comma-separated)",
+          "required": false,
+          "default": "riskRating"
+        },
+        {
+          "name": "sort_direction",
+          "type": "string",
+          "description": "Sort direction values for the respective host finding attributes in sort by parameter (allows comma-separated)",
+          "required": false,
+          "default": "DESC"
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Status of the host findings. Valid values: Open/Closed",
+          "required": false
+        },
+        {
+          "name": "page",
+          "type": "number",
+          "description": "Index of the starting page to fetch the results (Default: 0)",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "max_results",
+          "type": "number",
+          "description": "Maximum number of host findings to return (Default: 1000)",
+          "required": false,
+          "default": 1000
+        }
+      ]
+    },
+    {
+      "id": "list_filter_attributes",
+      "name": "List Filter Attributes",
+      "description": "List all the filter attributes of a given asset type",
+      "http_method": "GET",
+      "endpoint": "/client/{client_id}/{asset_type}/filter",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "asset_type",
+          "type": "string",
+          "description": "Type of the asset of which the filter attributes will be fetched. Example: host, hostFinding, application, applicationFinding",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_hosts",
+      "name": "Get Hosts",
+      "description": "Fetch the details for the host(s) for the given host name or host ID",
+      "http_method": "GET",
+      "endpoint": "/actions/get_hosts",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "host_id",
+          "type": "number",
+          "description": "The host ID of the host to be fetched",
+          "required": false,
+          "contains": [
+            "risksense host id"
+          ]
+        },
+        {
+          "name": "host_name",
+          "type": "string",
+          "description": "The host name of the host to be fetched",
+          "required": false,
+          "contains": [
+            "risksense host name"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_host_finding",
+      "name": "Get Host Finding",
+      "description": "Fetch the details for the single host finding for the given host finding ID",
+      "http_method": "GET",
+      "endpoint": "/actions/get_host_finding",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "host_finding_id",
+          "type": "number",
+          "description": "The host finding ID of the host finding to be fetched",
+          "required": true,
+          "contains": [
+            "risksense host finding id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_app",
+      "name": "Get App",
+      "description": "Fetch the details for the single app for the given app ID",
+      "http_method": "GET",
+      "endpoint": "/actions/get_app",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "app_id",
+          "type": "number",
+          "description": "The app ID of the application to be fetched",
+          "required": true,
+          "contains": [
+            "risksense app id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_vulnerabilities",
+      "name": "List Vulnerabilities",
+      "description": "List all the vulnerabilities",
+      "http_method": "GET",
+      "endpoint": "/client",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "host_finding_id",
+          "type": "number",
+          "description": "The host finding ID for which the vulnerabilities is to be fetched",
+          "required": true,
+          "contains": [
+            "risksense host finding id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tag_asset",
+      "name": "Tag Asset",
+      "description": "Tag the assets that are fetched using the filter",
+      "http_method": "GET",
+      "endpoint": "/actions/tag_asset",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "tag_name",
+          "type": "string",
+          "description": "Name of the tag to be associated",
+          "required": true,
+          "contains": [
+            "risksense tag name"
+          ]
+        },
+        {
+          "name": "entity_type",
+          "type": "string",
+          "description": "Type of the asset/entity to which the tag will be applied",
+          "required": true
+        },
+        {
+          "name": "fieldname",
+          "type": "string",
+          "description": "Attributes of the asset type to filter the results (allows comma-separated)",
+          "required": false
+        },
+        {
+          "name": "operator",
+          "type": "string",
+          "description": "Operators to be applied on the provided fieldnames (allows comma-separated)",
+          "required": false
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "description": "Values for the respective fieldnames (allows JSON formatted list)",
+          "required": false
+        },
+        {
+          "name": "exclusivity",
+          "type": "string",
+          "description": "This parameter allows the user to determine whether to fetch the results that are matching the filter criteria (defined by the Fieldname, Operator, and Value parameter) or to fetch the results that are not matching the filter criteria",
+          "required": false
+        },
+        {
+          "name": "create_new_tag",
+          "type": "boolean",
+          "description": "Create a new tag or not if the tag does not exist",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "tag_type",
+          "type": "string",
+          "description": "Type of the new tag (required field when Create New Tag is enabled)",
+          "required": false
+        },
+        {
+          "name": "tag_description",
+          "type": "string",
+          "description": "Description of the new tag (required field when Create New Tag is enabled)",
+          "required": false
+        },
+        {
+          "name": "tag_owner_id",
+          "type": "number",
+          "description": "Owner of the new tag (required field when Create New Tag is enabled)",
+          "required": false,
+          "contains": [
+            "risksense owner id"
+          ]
+        },
+        {
+          "name": "tag_color",
+          "type": "string",
+          "description": "Color of the new tag (required field when Create New Tag is enabled)",
+          "required": false,
+          "contains": [
+            "risksense tag color"
+          ]
+        },
+        {
+          "name": "propagate_to_all_findings",
+          "type": "boolean",
+          "description": "Detonates if an asset tag should be applied to all its findings (required field when Create New Tag is enabled)",
+          "required": false,
+          "default": false
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "RiskSense",
+    "original_type": "network security",
+    "converted_at": "2025-12-18T16:25:29.087155",
+    "source_version": "1.0.0"
+  }
+}

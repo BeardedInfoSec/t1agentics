@@ -1,0 +1,191 @@
+{
+  "id": "rsa_security_analytics",
+  "name": "RSA Security Analytics",
+  "description": "This App supports ingestion and investigative actions on RSA Security Analytics",
+  "version": "2.0.5",
+  "category": "siem",
+  "vendor": "RSA",
+  "auth_type": "basic_auth",
+  "auth_config": {
+    "type": "basic_auth",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "on_poll",
+      "name": "On Poll",
+      "description": "Ingest incidents from RSA Security Analytics",
+      "http_method": "GET",
+      "endpoint": "/actions/on_poll",
+      "action_type": "ingest",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "start_time",
+          "type": "number",
+          "description": "Parameter ignored in this app",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "number",
+          "description": "Parameter ignored in this app",
+          "required": false
+        },
+        {
+          "name": "container_id",
+          "type": "string",
+          "description": "Parameter ignored in this app",
+          "required": false
+        },
+        {
+          "name": "container_count",
+          "type": "number",
+          "description": "Maximum number of incidents to ingest during poll now",
+          "required": false,
+          "default": 10
+        },
+        {
+          "name": "artifact_count",
+          "type": "number",
+          "description": "Parameter ignored in this app",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "restart_service",
+      "name": "Restart Service",
+      "description": "DEPRECATED",
+      "http_method": "GET",
+      "endpoint": "/actions/restart_service",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "device",
+          "type": "string",
+          "description": "Device ID/Name",
+          "required": true,
+          "contains": [
+            "rsa sa device"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_incidents",
+      "name": "List Incidents",
+      "description": "List incidents within a time frame",
+      "http_method": "GET",
+      "endpoint": "/actions/list_incidents",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "start_time",
+          "type": "string",
+          "description": "Start time in format YYYY-MM-DD HH:MM:SS (UTC)",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "string",
+          "description": "End time in format YYYY-MM-DD HH:MM:SS (UTC)",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of incidents to list",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "list_alerts",
+      "name": "List Alerts",
+      "description": "List alerts for an incident",
+      "http_method": "GET",
+      "endpoint": "/actions/list_alerts",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Incident ID",
+          "required": false,
+          "contains": [
+            "rsa incident id"
+          ]
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of alerts to list",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "list_events",
+      "name": "List Events",
+      "description": "List events for an alert",
+      "http_method": "GET",
+      "endpoint": "/actions/list_events",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Alert ID",
+          "required": true,
+          "contains": [
+            "rsa alert id"
+          ]
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of events to list",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "list_devices",
+      "name": "List Devices",
+      "description": "List devices connected to RSA Security Analytics",
+      "http_method": "GET",
+      "endpoint": "/actions/list_devices",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    }
+  ],
+  "source_metadata": {
+    "original_name": "RSA Security Analytics",
+    "original_type": "siem",
+    "converted_at": "2025-12-18T16:25:29.092156",
+    "source_version": "2.0.5"
+  }
+}

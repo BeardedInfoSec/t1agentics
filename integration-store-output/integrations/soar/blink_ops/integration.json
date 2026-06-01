@@ -1,0 +1,156 @@
+{
+  "id": "blink_ops",
+  "name": "Blink Ops",
+  "description": "Agentic security operations platform for no-code workflow automation, case management, and orchestrated security response with 8000+ pre-built automations.",
+  "version": "1.0.0",
+  "category": "soar",
+  "vendor": "Blink Ops",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "header_name": "Authorization",
+    "location": "header",
+    "token_prefix": "Bearer"
+  },
+  "base_url": "https://api.blinkops.com/v1",
+  "actions": [
+    {
+      "id": "list_workflows",
+      "name": "List Workflows",
+      "description": "Retrieve a list of all automation workflows.",
+      "http_method": "GET",
+      "endpoint": "/workflows",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "page", "type": "integer", "description": "Page number.", "required": false},
+        {"name": "per_page", "type": "integer", "description": "Results per page.", "required": false},
+        {"name": "status", "type": "string", "description": "Filter by status: 'active', 'inactive'.", "required": false}
+      ]
+    },
+    {
+      "id": "get_workflow",
+      "name": "Get Workflow",
+      "description": "Retrieve details of a specific workflow.",
+      "http_method": "GET",
+      "endpoint": "/workflows/{workflowId}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "workflowId", "type": "string", "description": "The workflow ID.", "required": true}
+      ]
+    },
+    {
+      "id": "trigger_workflow",
+      "name": "Trigger Workflow",
+      "description": "Execute a workflow via API trigger.",
+      "http_method": "POST",
+      "endpoint": "/workflows/{workflowId}/trigger",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "workflowId", "type": "string", "description": "The workflow ID to trigger.", "required": true},
+        {"name": "input", "type": "object", "description": "Input data payload for the workflow.", "required": false}
+      ]
+    },
+    {
+      "id": "list_executions",
+      "name": "List Executions",
+      "description": "Retrieve workflow execution history.",
+      "http_method": "GET",
+      "endpoint": "/executions",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "workflowId", "type": "string", "description": "Filter by workflow ID.", "required": false},
+        {"name": "status", "type": "string", "description": "Filter by status: 'running', 'completed', 'failed'.", "required": false},
+        {"name": "page", "type": "integer", "description": "Page number.", "required": false},
+        {"name": "per_page", "type": "integer", "description": "Results per page.", "required": false}
+      ]
+    },
+    {
+      "id": "get_execution",
+      "name": "Get Execution",
+      "description": "Retrieve details and results of a specific execution.",
+      "http_method": "GET",
+      "endpoint": "/executions/{executionId}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "executionId", "type": "string", "description": "The execution ID.", "required": true}
+      ]
+    },
+    {
+      "id": "list_cases",
+      "name": "List Cases",
+      "description": "Retrieve a list of security cases.",
+      "http_method": "GET",
+      "endpoint": "/cases",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "status", "type": "string", "description": "Filter by status.", "required": false},
+        {"name": "severity", "type": "string", "description": "Filter by severity.", "required": false},
+        {"name": "page", "type": "integer", "description": "Page number.", "required": false},
+        {"name": "per_page", "type": "integer", "description": "Results per page.", "required": false}
+      ]
+    },
+    {
+      "id": "get_case",
+      "name": "Get Case",
+      "description": "Retrieve details of a specific case.",
+      "http_method": "GET",
+      "endpoint": "/cases/{caseId}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "caseId", "type": "string", "description": "The case ID.", "required": true}
+      ]
+    },
+    {
+      "id": "create_case",
+      "name": "Create Case",
+      "description": "Create a new security case.",
+      "http_method": "POST",
+      "endpoint": "/cases",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "name", "type": "string", "description": "Case name.", "required": true},
+        {"name": "description", "type": "string", "description": "Case description.", "required": false},
+        {"name": "severity", "type": "string", "description": "Severity: 'low', 'medium', 'high', 'critical'.", "required": false},
+        {"name": "assignee", "type": "string", "description": "Assigned analyst.", "required": false},
+        {"name": "tags", "type": "array", "description": "Tags for the case.", "required": false}
+      ]
+    },
+    {
+      "id": "update_case",
+      "name": "Update Case",
+      "description": "Update an existing case.",
+      "http_method": "PATCH",
+      "endpoint": "/cases/{caseId}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "caseId", "type": "string", "description": "The case ID.", "required": true},
+        {"name": "status", "type": "string", "description": "Updated status.", "required": false},
+        {"name": "severity", "type": "string", "description": "Updated severity.", "required": false},
+        {"name": "assignee", "type": "string", "description": "Updated assignee.", "required": false}
+      ]
+    },
+    {
+      "id": "close_case",
+      "name": "Close Case",
+      "description": "Close a case with resolution details.",
+      "http_method": "PATCH",
+      "endpoint": "/cases/{caseId}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "caseId", "type": "string", "description": "The case ID.", "required": true},
+        {"name": "status", "type": "string", "description": "Set to 'closed'.", "required": true},
+        {"name": "resolution", "type": "string", "description": "Resolution details.", "required": false}
+      ]
+    }
+  ]
+}

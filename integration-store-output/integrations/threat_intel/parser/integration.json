@@ -1,0 +1,131 @@
+{
+  "id": "parser",
+  "name": "Parser",
+  "description": "This app extracts IOCs from various files such as PDFs, emails, or raw text",
+  "version": "2.10.5",
+  "category": "threat_intel",
+  "vendor": "Splunk",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "parse_file",
+      "name": "Extract Ioc",
+      "description": "Create IOC artifacts from a file in the vault or raw text",
+      "http_method": "GET",
+      "endpoint": "/actions/parse_file",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "vault_id",
+          "type": "string",
+          "description": "Vault ID",
+          "required": false,
+          "contains": [
+            "vault id"
+          ]
+        },
+        {
+          "name": "file_type",
+          "type": "string",
+          "description": "Type of the file",
+          "required": false
+        },
+        {
+          "name": "text",
+          "type": "string",
+          "description": "Raw text from which to extract IOCs",
+          "required": false
+        },
+        {
+          "name": "is_structured",
+          "type": "boolean",
+          "description": "Use first row of CSV file as field names",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "description": "Add container to this label",
+          "required": false
+        },
+        {
+          "name": "max_artifacts",
+          "type": "number",
+          "description": "Maximum number of artifacts",
+          "required": false
+        },
+        {
+          "name": "container_id",
+          "type": "number",
+          "description": "Add created artifacts to this container",
+          "required": false
+        },
+        {
+          "name": "remap_cef_fields",
+          "type": "string",
+          "description": "Remap the CEF fields with new field names; Optionally, also apply an internal CEF -> CIM field name mapping. Note: (source|destination)Address will be mapped to (src|dest)_ip respectively instead of src|dest (not applicable to .eml filetype)",
+          "required": false,
+          "default": "Do not apply CEF -> CIM remapping, only apply custom remap"
+        },
+        {
+          "name": "custom_remap_json",
+          "type": "string",
+          "description": "Custom set of CEF field name mappings. This is a serialized json dictionary (json.dumps) of Key/Value pairs where Key is an existing field name and Value is the resultant name (not applicable to .eml filetype)",
+          "required": false,
+          "default": "{}"
+        },
+        {
+          "name": "run_automation",
+          "type": "boolean",
+          "description": "Enable run_automation for newly created artifacts",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Severity for the newly created artifacts",
+          "required": false,
+          "default": "medium"
+        },
+        {
+          "name": "parse_domains",
+          "type": "boolean",
+          "description": "Parse domains from artifacts",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "artifact_tags",
+          "type": "string",
+          "description": "Tags to add to artifacts (comma separated). Tag should only contain characters A-Z, a-z, 0-9, _, and -. Blank spaces will be ignored",
+          "required": false
+        },
+        {
+          "name": "keep_raw",
+          "type": "boolean",
+          "description": "Save raw text to artifact",
+          "required": false,
+          "default": false
+        }
+      ],
+      "observable_type": "file_hash"
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Parser",
+    "original_type": "information",
+    "converted_at": "2025-12-18T16:25:29.028065",
+    "source_version": "2.10.5"
+  }
+}

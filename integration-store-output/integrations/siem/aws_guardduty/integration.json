@@ -1,0 +1,418 @@
+{
+  "id": "aws_guardduty_siem",
+  "name": "AWS GuardDuty",
+  "description": "This app integrates with AWS GuardDuty to investigate findings",
+  "version": "2.1.10",
+  "category": "siem",
+  "vendor": "AWS",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "on_poll",
+      "name": "On Poll",
+      "description": "Callback action for the on_poll ingest functionality",
+      "http_method": "GET",
+      "endpoint": "/actions/on_poll",
+      "action_type": "ingest",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "container_id",
+          "type": "string",
+          "description": "Container IDs to limit the ingestion to",
+          "required": false
+        },
+        {
+          "name": "start_time",
+          "type": "number",
+          "description": "Start of time range, in epoch time (milliseconds)",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "number",
+          "description": "End of time range, in epoch time (milliseconds)",
+          "required": false
+        },
+        {
+          "name": "container_count",
+          "type": "number",
+          "description": "Maximum number of container records to query for",
+          "required": false
+        },
+        {
+          "name": "artifact_count",
+          "type": "number",
+          "description": "Maximum number of artifact records to query for",
+          "required": false
+        },
+        {
+          "name": "credentials",
+          "type": "string",
+          "description": "Assumed role credentials",
+          "required": false,
+          "contains": [
+            "aws credentials"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "update_finding",
+      "name": "Update Finding",
+      "description": "Updates specified Amazon GuardDuty findings as useful or not useful",
+      "http_method": "GET",
+      "endpoint": "/actions/update_finding",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "detector_id",
+          "type": "string",
+          "description": "The ID of the detector",
+          "required": true,
+          "contains": [
+            "aws guardduty detector id"
+          ]
+        },
+        {
+          "name": "finding_id",
+          "type": "string",
+          "description": "The IDs of the findings (Comma separated IDs allowed)",
+          "required": true,
+          "contains": [
+            "aws guardduty finding id"
+          ]
+        },
+        {
+          "name": "feedback",
+          "type": "string",
+          "description": "Feedback value of the finding",
+          "required": true,
+          "default": "USEFUL"
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "Additional feedback about the finding",
+          "required": false
+        },
+        {
+          "name": "credentials",
+          "type": "string",
+          "description": "Assumed role credentials",
+          "required": false,
+          "contains": [
+            "aws credentials"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "run_query",
+      "name": "Run Query",
+      "description": "Fetch the findings as per the filters applied",
+      "http_method": "GET",
+      "endpoint": "/actions/run_query",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "detector_id",
+          "type": "string",
+          "description": "The ID of the detector",
+          "required": true,
+          "contains": [
+            "aws guardduty detector id"
+          ]
+        },
+        {
+          "name": "instance_id",
+          "type": "string",
+          "description": "The ID of the EC2 instance",
+          "required": false,
+          "contains": [
+            "aws guardduty instance id"
+          ]
+        },
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "The severity of the finding",
+          "required": false,
+          "default": "High",
+          "contains": [
+            "aws guardduty severity"
+          ]
+        },
+        {
+          "name": "public_ip",
+          "type": "string",
+          "description": "Public IP address of the EC2 instance",
+          "required": false,
+          "contains": [
+            "ip"
+          ]
+        },
+        {
+          "name": "private_ip",
+          "type": "string",
+          "description": "Private IP address of the EC2 instance",
+          "required": false,
+          "contains": [
+            "ip"
+          ]
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "The maximum number of results to be fetched. If not provided, then all the results will be fetched",
+          "required": false
+        },
+        {
+          "name": "credentials",
+          "type": "string",
+          "description": "Assumed role credentials",
+          "required": false,
+          "contains": [
+            "aws credentials"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "archive_finding",
+      "name": "Archive Finding",
+      "description": "Archives Amazon GuardDuty findings specified by the detector ID and list of finding IDs",
+      "http_method": "POST",
+      "endpoint": "/actions/archive_finding",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "detector_id",
+          "type": "string",
+          "description": "The ID of the detector",
+          "required": true,
+          "contains": [
+            "aws guardduty detector id"
+          ]
+        },
+        {
+          "name": "finding_id",
+          "type": "string",
+          "description": "The IDs of the findings (Comma separated IDs allowed)",
+          "required": true,
+          "contains": [
+            "aws guardduty finding id"
+          ]
+        },
+        {
+          "name": "credentials",
+          "type": "string",
+          "description": "Assumed role credentials",
+          "required": false,
+          "contains": [
+            "aws credentials"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "unarchive_finding",
+      "name": "Unarchive Finding",
+      "description": "Unarchives Amazon GuardDuty findings specified by the detector ID and list of finding IDs",
+      "http_method": "POST",
+      "endpoint": "/actions/unarchive_finding",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "detector_id",
+          "type": "string",
+          "description": "The ID of the detector",
+          "required": true,
+          "contains": [
+            "aws guardduty detector id"
+          ]
+        },
+        {
+          "name": "finding_id",
+          "type": "string",
+          "description": "The IDs of the findings (Comma separated IDs allowed)",
+          "required": true,
+          "contains": [
+            "aws guardduty finding id"
+          ]
+        },
+        {
+          "name": "credentials",
+          "type": "string",
+          "description": "Assumed role credentials",
+          "required": false,
+          "contains": [
+            "aws credentials"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_filters",
+      "name": "List Filters",
+      "description": "Returns a paginated list of the current filters",
+      "http_method": "GET",
+      "endpoint": "/actions/list_filters",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "detector_id",
+          "type": "string",
+          "description": "The ID of the detector",
+          "required": true,
+          "contains": [
+            "aws guardduty detector id"
+          ]
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "The maximum number of filters to be fetched",
+          "required": false
+        },
+        {
+          "name": "credentials",
+          "type": "string",
+          "description": "Assumed role credentials",
+          "required": false,
+          "contains": [
+            "aws credentials"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_threats",
+      "name": "List Threats",
+      "description": "Lists the ThreatIntelSets of the GuardDuty service specified by the detector ID",
+      "http_method": "GET",
+      "endpoint": "/actions/list_threats",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "detector_id",
+          "type": "string",
+          "description": "The ID of the detector",
+          "required": true,
+          "contains": [
+            "aws guardduty detector id"
+          ]
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "The maximum number of threat intel sets to be fetched. If not provided, then all the threat intel sets will be fetched",
+          "required": false,
+          "default": 7
+        },
+        {
+          "name": "credentials",
+          "type": "string",
+          "description": "Assumed role credentials",
+          "required": false,
+          "contains": [
+            "aws credentials"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_ip_sets",
+      "name": "List Ip Sets",
+      "description": "Lists the IPSets of the GuardDuty service specified by the detector ID",
+      "http_method": "GET",
+      "endpoint": "/actions/list_ip_sets",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "detector_id",
+          "type": "string",
+          "description": "The ID of the detector",
+          "required": true,
+          "contains": [
+            "aws guardduty detector id"
+          ]
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "The maximum number of IP sets to be fetched. If not provided, then all the IP sets will be fetched",
+          "required": false,
+          "default": 7
+        },
+        {
+          "name": "credentials",
+          "type": "string",
+          "description": "Assumed role credentials",
+          "required": false,
+          "contains": [
+            "aws credentials"
+          ]
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "list_detectors",
+      "name": "List Detectors",
+      "description": "Lists detectorIds of all the existing Amazon GuardDuty detector resources",
+      "http_method": "GET",
+      "endpoint": "/actions/list_detectors",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "credentials",
+          "type": "string",
+          "description": "Assumed role credentials",
+          "required": false,
+          "contains": [
+            "aws credentials"
+          ]
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "AWS GuardDuty",
+    "original_type": "siem",
+    "converted_at": "2025-12-18T16:25:28.580573",
+    "source_version": "2.1.10"
+  }
+}

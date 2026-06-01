@@ -1,0 +1,277 @@
+{
+  "id": "cyberark_pam",
+  "name": "CyberArk PAM",
+  "description": "Privileged Access Management through CyberArk PAM Self-Hosted REST API for managing accounts, safes, users, and privileged sessions",
+  "version": "1.0.0",
+  "category": "identity",
+  "vendor": "CyberArk",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "token_url": "https://{host}/PasswordVault/API/Auth/CyberArk/Logon",
+    "token_field": "CyberArkLogonResult"
+  },
+  "base_url": "https://{host}/PasswordVault/API",
+  "actions": [
+    {
+      "id": "list_accounts",
+      "name": "List Accounts",
+      "description": "List all privileged accounts in the vault with optional search and filtering",
+      "http_method": "GET",
+      "endpoint": "/Accounts",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "search",
+          "type": "string",
+          "description": "Search term to filter accounts",
+          "required": false
+        },
+        {
+          "name": "searchType",
+          "type": "string",
+          "description": "Type of search: contains or startswith",
+          "required": false
+        },
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "Filter expression for account properties",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of accounts to return",
+          "required": false
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Offset for pagination",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_account",
+      "name": "Get Account Details",
+      "description": "Retrieve details of a specific privileged account",
+      "http_method": "GET",
+      "endpoint": "/Accounts/{accountId}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "accountId",
+          "type": "string",
+          "description": "Unique ID of the account",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_password",
+      "name": "Get Password Value",
+      "description": "Retrieve the password value of a specific account",
+      "http_method": "POST",
+      "endpoint": "/Accounts/{accountId}/Password/Retrieve",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "accountId",
+          "type": "string",
+          "description": "Unique ID of the account",
+          "required": true
+        },
+        {
+          "name": "reason",
+          "type": "string",
+          "description": "Reason for retrieving the password",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "change_password",
+      "name": "Change Password",
+      "description": "Initiate an immediate password change on the target system",
+      "http_method": "POST",
+      "endpoint": "/Accounts/{accountId}/Change",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "accountId",
+          "type": "string",
+          "description": "Unique ID of the account",
+          "required": true
+        },
+        {
+          "name": "ChangeEntireGroup",
+          "type": "boolean",
+          "description": "Change password for all accounts in the group",
+          "required": false,
+          "default": false
+        }
+      ]
+    },
+    {
+      "id": "verify_password",
+      "name": "Verify Password",
+      "description": "Verify that the stored password matches the actual password on the target",
+      "http_method": "POST",
+      "endpoint": "/Accounts/{accountId}/Verify",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "accountId",
+          "type": "string",
+          "description": "Unique ID of the account",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "reconcile_password",
+      "name": "Reconcile Password",
+      "description": "Reconcile a password that is out of sync with the target system",
+      "http_method": "POST",
+      "endpoint": "/Accounts/{accountId}/Reconcile",
+      "action_type": "correct",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "accountId",
+          "type": "string",
+          "description": "Unique ID of the account",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_safes",
+      "name": "List Safes",
+      "description": "List all safes the authenticated user has access to",
+      "http_method": "GET",
+      "endpoint": "/Safes",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "search",
+          "type": "string",
+          "description": "Search term to filter safes by name",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of safes to return",
+          "required": false
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Offset for pagination",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_safe",
+      "name": "Get Safe Details",
+      "description": "Retrieve details of a specific safe",
+      "http_method": "GET",
+      "endpoint": "/Safes/{safeUrlId}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "safeUrlId",
+          "type": "string",
+          "description": "Safe name or URL-encoded safe name",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_safe_members",
+      "name": "List Safe Members",
+      "description": "List all members with permissions on a specific safe",
+      "http_method": "GET",
+      "endpoint": "/Safes/{safeUrlId}/Members",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "safeUrlId",
+          "type": "string",
+          "description": "Safe name or URL-encoded safe name",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_users",
+      "name": "List Users",
+      "description": "List all users in the CyberArk vault",
+      "http_method": "GET",
+      "endpoint": "/Users",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "search",
+          "type": "string",
+          "description": "Search for users by name",
+          "required": false
+        },
+        {
+          "name": "componentUser",
+          "type": "boolean",
+          "description": "Include component/system users",
+          "required": false,
+          "default": false
+        }
+      ]
+    },
+    {
+      "id": "get_user",
+      "name": "Get User",
+      "description": "Retrieve details of a specific vault user",
+      "http_method": "GET",
+      "endpoint": "/Users/{userId}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "userId",
+          "type": "string",
+          "description": "User ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_activities",
+      "name": "List Account Activities",
+      "description": "Get activities for a specific account for auditing",
+      "http_method": "GET",
+      "endpoint": "/Accounts/{accountId}/Activities",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "accountId",
+          "type": "string",
+          "description": "Unique ID of the account",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

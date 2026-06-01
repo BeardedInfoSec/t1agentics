@@ -1,0 +1,638 @@
+{
+  "id": "tanium_threat_response",
+  "name": "Tanium Threat Response",
+  "description": "This app supports various generic and investigate actions on Tanium Threat Response",
+  "version": "3.0.1",
+  "category": "utility",
+  "vendor": "Tanium",
+  "auth_type": "basic_auth",
+  "auth_config": {
+    "type": "basic_auth",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "list_connections",
+      "name": "List Connections",
+      "description": "Get a list of connections",
+      "http_method": "GET",
+      "endpoint": "/plugin/products/threat-response/api/v1/conns",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "create_connection",
+      "name": "Create Connection",
+      "description": "Create a new live endpoint connection",
+      "http_method": "GET",
+      "endpoint": "/plugin/products/threat-response/api/v1/conns/connect",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "destination",
+          "type": "string",
+          "description": "Client ID, Hostname, or IP address",
+          "required": true,
+          "contains": [
+            "threatresponse client id",
+            "host name",
+            "ip"
+          ]
+        },
+        {
+          "name": "destination_type",
+          "type": "string",
+          "description": "Type of destination",
+          "required": true,
+          "default": "hostname"
+        }
+      ]
+    },
+    {
+      "id": "get_endpoint",
+      "name": "Get Endpoint",
+      "description": "Get information for an endpoint",
+      "http_method": "GET",
+      "endpoint": "/actions/get_endpoint",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "destination",
+          "type": "string",
+          "description": "Client ID, Hostname, or IP Address",
+          "required": true,
+          "contains": [
+            "threatresponse client id",
+            "host name",
+            "ip"
+          ]
+        },
+        {
+          "name": "destination_type",
+          "type": "string",
+          "description": "Type of destination information",
+          "required": true,
+          "default": "hostname"
+        }
+      ]
+    },
+    {
+      "id": "close_connection",
+      "name": "Close Connection",
+      "description": "Close an endpoint connection",
+      "http_method": "GET",
+      "endpoint": "/plugin/products/threat-response/api/v1/conns/close/{cid}",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "connection_id",
+          "type": "string",
+          "description": "Connection ID",
+          "required": true,
+          "contains": [
+            "threatresponse connection id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "delete_connection",
+      "name": "Delete Connection",
+      "description": "Delete an endpoint connection",
+      "http_method": "GET",
+      "endpoint": "/plugin/products/threat-response/api/v1/conns/delete/{cid}",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "connection_id",
+          "type": "string",
+          "description": "Connection ID",
+          "required": true,
+          "contains": [
+            "threatresponse connection id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "create_snapshot",
+      "name": "Create Snapshot",
+      "description": "Capture a new snapshot",
+      "http_method": "GET",
+      "endpoint": "/plugin/products/threat-response/api/v1/conns/{cid}/snapshot",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "connection_id",
+          "type": "string",
+          "description": "Connection ID",
+          "required": true,
+          "contains": [
+            "threatresponse connection id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_snapshots",
+      "name": "List Snapshots",
+      "description": "Get a list of all snapshots",
+      "http_method": "GET",
+      "endpoint": "/plugin/products/threat-response/api/v1/alerts",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of results to return (Default: 1000)",
+          "required": false,
+          "default": 1000
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Offset into the result set (Default: 0)",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "sort",
+          "type": "string",
+          "description": "Column by which to sort",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "delete_snapshot",
+      "name": "Delete Snapshot",
+      "description": "Delete a snapshot",
+      "http_method": "GET",
+      "endpoint": "/plugin/products/threat-response/api/v1/snapshot",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "snapshot_ids",
+          "type": "string",
+          "description": "Comma-separated Snapshot IDs",
+          "required": true,
+          "contains": [
+            "threatresponse snapshot id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_process",
+      "name": "Get Process",
+      "description": "Get information for a process",
+      "http_method": "GET",
+      "endpoint": "/plugin/products/threat-response/api/v1/conns/{cid}/processevents/{ptid}/{type}",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "connection_id",
+          "type": "string",
+          "description": "Connection ID",
+          "required": true,
+          "contains": [
+            "threatresponse connection id"
+          ]
+        },
+        {
+          "name": "process_table_id",
+          "type": "string",
+          "description": "Process Table ID",
+          "required": true,
+          "contains": [
+            "threatresponse process table id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_process_tree",
+      "name": "Get Process Tree",
+      "description": "Get process tree for a process instance",
+      "http_method": "GET",
+      "endpoint": "/plugin/products/threat-response/api/v1/conns/{cid}/processtrees/{ptid}",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "connection_id",
+          "type": "string",
+          "description": "Connection ID",
+          "required": true,
+          "contains": [
+            "threatresponse connection id"
+          ]
+        },
+        {
+          "name": "process_table_id",
+          "type": "string",
+          "description": "Process Table ID",
+          "required": true,
+          "contains": [
+            "threatresponse process table id"
+          ]
+        },
+        {
+          "name": "process_context",
+          "type": "string",
+          "description": "Comma-separated list of process contexts to include ('parent', 'node', 'siblings', 'children'), if not provided then return all contexts",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of siblings and children to return (Default: 100)",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "get_events",
+      "name": "Get Events",
+      "description": "Build a query to get events of a certain type from a connection",
+      "http_method": "GET",
+      "endpoint": "/plugin/products/threat-response/api/v1/conns/{cid}/views/{type}/events",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "connection_id",
+          "type": "string",
+          "description": "Connection ID",
+          "required": true,
+          "contains": [
+            "threatresponse connection id"
+          ]
+        },
+        {
+          "name": "event_type",
+          "type": "string",
+          "description": "Type of event",
+          "required": true
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of results to return with a hard limit 1000 (Default: 1000)",
+          "required": false,
+          "default": 1000
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Offset into the result set (Default: 0)",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "sort",
+          "type": "string",
+          "description": "Comma-separated list of fields to sort on (prefixed by '-' for descending and ordered by priority left to right)",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "type": "string",
+          "description": "Comma-separated list of fields to search on",
+          "required": false
+        },
+        {
+          "name": "values",
+          "type": "string",
+          "description": "Comma-separated list of values to search",
+          "required": false
+        },
+        {
+          "name": "operators",
+          "type": "string",
+          "description": "Comma-separated list of operators (co,nc,isempty,isnull,eq,ne,gt,gte,lt,lte,range) for filter conditions",
+          "required": false
+        },
+        {
+          "name": "filter_type",
+          "type": "string",
+          "description": "Operator to be applied between filters (Default: 'all')",
+          "required": false,
+          "default": "all"
+        }
+      ]
+    },
+    {
+      "id": "get_events_summary",
+      "name": "Get Events Summary",
+      "description": "Returns counts of given event type",
+      "http_method": "GET",
+      "endpoint": "/plugin/products/threat-response/api/v1/conns/{cid}/views/{type}/eventsCount",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "connection_id",
+          "type": "string",
+          "description": "Connection ID",
+          "required": true,
+          "contains": [
+            "threatresponse connection id"
+          ]
+        },
+        {
+          "name": "event_type",
+          "type": "string",
+          "description": "Type of event",
+          "required": true
+        },
+        {
+          "name": "fields",
+          "type": "string",
+          "description": "Comma-separated list of fields to search on",
+          "required": false
+        },
+        {
+          "name": "values",
+          "type": "string",
+          "description": "Comma-separated list of values to search",
+          "required": false
+        },
+        {
+          "name": "operators",
+          "type": "string",
+          "description": "Comma-separated list of operators (co,nc,isempty,isnull,eq,ne,gt,gte,lt,lte,range) for filter conditions",
+          "required": false
+        },
+        {
+          "name": "filter_type",
+          "type": "string",
+          "description": "Operator to be applied between filters (Default: 'all')",
+          "required": false,
+          "default": "all"
+        }
+      ]
+    },
+    {
+      "id": "list_files",
+      "name": "List Files",
+      "description": "List downloaded files in Tanium Threat Response",
+      "http_method": "GET",
+      "endpoint": "/plugin/products/threat-response/api/v1/alerts",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of results to return (Default: 1000)",
+          "required": false,
+          "default": 1000
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Offset into the result set (Default: 0)",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "sort",
+          "type": "string",
+          "description": "Column by which to sort (prefixed by '-' for descending order)",
+          "required": false
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "save_file",
+      "name": "Save File",
+      "description": "Save a file from a remote connection to Tanium Threat Response",
+      "http_method": "GET",
+      "endpoint": "/plugin/products/threat-response/api/v1/conns/{cid}/file",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "connection_id",
+          "type": "string",
+          "description": "Connection ID",
+          "required": true,
+          "contains": [
+            "threatresponse connection id"
+          ]
+        },
+        {
+          "name": "file_path",
+          "type": "string",
+          "description": "Location of file on remote computer",
+          "required": true,
+          "contains": [
+            "file path"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "delete_file",
+      "name": "Delete File",
+      "description": "Delete a file evidence from disk and Tanium Threat Response database",
+      "http_method": "GET",
+      "endpoint": "/plugin/products/threat-response/api/v1/filedownload/{file_id}",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "file_id",
+          "type": "string",
+          "description": "ID of file on Tanium",
+          "required": true,
+          "contains": [
+            "threatresponse file id"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "get_file",
+      "name": "Get File",
+      "description": "Download a file from Tanium Threat Response to the SOAR Vault",
+      "http_method": "GET",
+      "endpoint": "/plugin/products/threat-response/api/v1/filedownload/{file_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "file_id",
+          "type": "string",
+          "description": "ID of file on Tanium",
+          "required": true,
+          "contains": [
+            "threatresponse file id"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "upload_intel_doc",
+      "name": "Upload Intel Doc",
+      "description": "Upload intel document to Tanium Threat Response",
+      "http_method": "GET",
+      "endpoint": "/plugin/products/threat-response/api/v1/intels",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "file_name",
+          "type": "string",
+          "description": "The target file name of the intel document",
+          "required": false
+        },
+        {
+          "name": "intel_doc",
+          "type": "string",
+          "description": "The text of the intel document",
+          "required": false,
+          "contains": [
+            "threatresponse intel doc"
+          ]
+        },
+        {
+          "name": "vault_id",
+          "type": "string",
+          "description": "Vault ID",
+          "required": false,
+          "contains": [
+            "vault id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "start_quick_scan",
+      "name": "Start Quick Scan",
+      "description": "Scan a computer group for hashes in intel document",
+      "http_method": "GET",
+      "endpoint": "/actions/start_quick_scan",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "intel_doc_id",
+          "type": "number",
+          "description": "ID of the intel document to scan",
+          "required": true,
+          "contains": [
+            "threatresponse intel doc id"
+          ]
+        },
+        {
+          "name": "computer_group_name",
+          "type": "string",
+          "description": "Name or ID of a Tanium computer group to scan",
+          "required": true,
+          "contains": [
+            "tanium computer group name"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_alerts",
+      "name": "List Alerts",
+      "description": "List alerts with optional filtering",
+      "http_method": "GET",
+      "endpoint": "/plugin/products/threat-response/api/v1/alerts",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Query to filter alerts (e.g. 'intelDocId=1&priority=high')",
+          "required": false
+        },
+        {
+          "name": "ph",
+          "type": "string",
+          "description": "Placeholder",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "The maximum number of alerts to return (Default: 100)",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Offset into the result set (Default: 0)",
+          "required": false,
+          "default": 0
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Tanium Threat Response",
+    "original_type": "network device",
+    "converted_at": "2025-12-18T16:25:29.194259",
+    "source_version": "3.0.1"
+  }
+}

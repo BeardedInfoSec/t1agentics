@@ -1,0 +1,832 @@
+{
+  "id": "cydarm",
+  "name": "Cydarm",
+  "description": "Integration with Cydarm API",
+  "version": "1.0.1",
+  "category": "edr",
+  "vendor": "Cydarm",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "get_case",
+      "name": "Get Case",
+      "description": "Get a Cydarm case by UUID",
+      "http_method": "GET",
+      "endpoint": "/actions/get_case",
+      "action_type": "generic",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "case_uuid",
+          "type": "string",
+          "description": "UUID of case to get",
+          "required": true,
+          "contains": [
+            "cydarm case uuid"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_case_quick_search",
+      "name": "Quick Search Cases",
+      "description": "Query Cydarm cases with a keyword filter",
+      "http_method": "GET",
+      "endpoint": "/actions/get_case_quick_search",
+      "action_type": "generic",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "search_string",
+          "type": "string",
+          "description": "Search string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "create_action_instance_data",
+      "name": "Create Action Comment",
+      "description": "Create a plaintext comment on an action instance",
+      "http_method": "GET",
+      "endpoint": "/actions/create_action_instance_data",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "action_instance_uuid",
+          "type": "string",
+          "description": "UUID of action instance",
+          "required": true,
+          "contains": [
+            "cydarm action instance uuid"
+          ]
+        },
+        {
+          "name": "data",
+          "type": "string",
+          "description": "Comment to add to action instance",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "create_case_data_comment",
+      "name": "Create Case Comment",
+      "description": "Create a plaintext comment on a case",
+      "http_method": "GET",
+      "endpoint": "/actions/create_case_data_comment",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "case_uuid",
+          "type": "string",
+          "description": "UUID of the case",
+          "required": true,
+          "contains": [
+            "cydarm case uuid"
+          ]
+        },
+        {
+          "name": "data",
+          "type": "string",
+          "description": "Comment text",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "create_case",
+      "name": "Create Case",
+      "description": "Create case",
+      "http_method": "GET",
+      "endpoint": "/actions/create_case",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "acl",
+          "type": "string",
+          "description": "The ACL of the data object",
+          "required": false
+        },
+        {
+          "name": "assignee",
+          "type": "string",
+          "description": "The email address of the current assignee",
+          "required": false
+        },
+        {
+          "name": "closed",
+          "type": "string",
+          "description": "The time at which the case was closed. Expected format: ISO-8601",
+          "required": false
+        },
+        {
+          "name": "created",
+          "type": "string",
+          "description": "The time at which the case was created. Expected format: ISO-8601",
+          "required": false
+        },
+        {
+          "name": "deletable",
+          "type": "boolean",
+          "description": "Whether the data is deletable in the current context",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Description",
+          "required": true
+        },
+        {
+          "name": "editable",
+          "type": "boolean",
+          "description": "Whether the data is editable in the current context",
+          "required": true
+        },
+        {
+          "name": "locator",
+          "type": "string",
+          "description": "The locator of the case",
+          "required": false
+        },
+        {
+          "name": "manageable",
+          "type": "boolean",
+          "description": "Whether the data is manageable in the current context",
+          "required": true
+        },
+        {
+          "name": "members",
+          "type": "string",
+          "description": "UUIDs of member cases (if this case is a group).\n                           Expected format: JSON Array.\n                           Example: [\"d9e526e8-59fc-44e3-8458-08da3269e0b0\", \"bd10075d-740c-4a7c-931c-c2a65843f3dc\"]\n                           ",
+          "required": false
+        },
+        {
+          "name": "metadata",
+          "type": "string",
+          "description": "Metadata fields attached to the case.\n               Expected format: JSON Object. Example:\n               {\n                \"Email-From\" : { \"value\" : \"sender@email.com\"},\n                \"Email-To\" : { \"value\" : \"recipient@email.com\"}\n               }\n               ",
+          "required": false
+        },
+        {
+          "name": "minSlaName",
+          "type": "string",
+          "description": "The minimum SLA name",
+          "required": false
+        },
+        {
+          "name": "minSlaSeconds",
+          "type": "number",
+          "description": "The minimum SLA remaining time, in seconds",
+          "required": false
+        },
+        {
+          "name": "org",
+          "type": "string",
+          "description": "The name of the organisation who the case is relevant to",
+          "required": true
+        },
+        {
+          "name": "readable",
+          "type": "boolean",
+          "description": "Whether the data is readable in the current context",
+          "required": true
+        },
+        {
+          "name": "severity",
+          "type": "number",
+          "description": "An integer 1 to 5",
+          "required": false
+        },
+        {
+          "name": "severityName",
+          "type": "string",
+          "description": "The severity name for the case",
+          "required": false
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "The current status of the case",
+          "required": false
+        },
+        {
+          "name": "tags",
+          "type": "string",
+          "description": "The tags attached to this case. Expected format: JSON Array",
+          "required": false
+        },
+        {
+          "name": "totalActionsInAllPlaybooks",
+          "type": "number",
+          "description": "The total number of actions for all playbooks in a case",
+          "required": false
+        },
+        {
+          "name": "totalCompletedActionsInAllPlaybooks",
+          "type": "number",
+          "description": "The number of actions that are completed for all playbooks in a case",
+          "required": false
+        },
+        {
+          "name": "updateAcls",
+          "type": "boolean",
+          "description": "Update all ACLS for the case including data items",
+          "required": false
+        },
+        {
+          "name": "uuid",
+          "type": "string",
+          "description": "The UUID of the case",
+          "required": false,
+          "contains": [
+            "cydarm case uuid"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "update_case",
+      "name": "Update Case",
+      "description": "Update a case",
+      "http_method": "GET",
+      "endpoint": "/actions/update_case",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "case_uuid",
+          "type": "string",
+          "description": "Case UUID",
+          "required": true,
+          "contains": [
+            "cydarm case uuid"
+          ]
+        },
+        {
+          "name": "acl",
+          "type": "string",
+          "description": "The ACL of the data object",
+          "required": false
+        },
+        {
+          "name": "assignee",
+          "type": "string",
+          "description": "The email address of the current assignee",
+          "required": false
+        },
+        {
+          "name": "closed",
+          "type": "string",
+          "description": "The time at which the case was closed. Expected format: ISO-8601",
+          "required": false
+        },
+        {
+          "name": "created",
+          "type": "string",
+          "description": "The time at which the case was created. Expected format: ISO-8601",
+          "required": false
+        },
+        {
+          "name": "deletable",
+          "type": "boolean",
+          "description": "Whether the data is deletable in the current context",
+          "required": false
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Description",
+          "required": false
+        },
+        {
+          "name": "editable",
+          "type": "boolean",
+          "description": "Whether the data is editable in the current context",
+          "required": false
+        },
+        {
+          "name": "locator",
+          "type": "string",
+          "description": "The locator of the case",
+          "required": false
+        },
+        {
+          "name": "manageable",
+          "type": "boolean",
+          "description": "Whether the data is manageable in the current context",
+          "required": false
+        },
+        {
+          "name": "members",
+          "type": "string",
+          "description": "UUIDs of member cases (if this case is a group).\n                           Expected format: JSON Array.\n                           Example: [\"d9e526e8-59fc-44e3-8458-08da3269e0b0\", \"bd10075d-740c-4a7c-931c-c2a65843f3dc\"]\n                           ",
+          "required": false
+        },
+        {
+          "name": "metadata",
+          "type": "string",
+          "description": "Metadata fields attached to the case.\n               Expected format: JSON Object. Example:\n               {\n                \"Email-From\" : { \"value\" : \"sender@email.com\"},\n                \"Email-To\" : { \"value\" : \"recipient@email.com\"}\n               }\n               ",
+          "required": false
+        },
+        {
+          "name": "minSlaName",
+          "type": "string",
+          "description": "The minimum SLA name",
+          "required": false
+        },
+        {
+          "name": "minSlaSeconds",
+          "type": "number",
+          "description": "The minimum SLA remaining time, in seconds",
+          "required": false
+        },
+        {
+          "name": "org",
+          "type": "string",
+          "description": "The name of the organisation who the case is relevant to",
+          "required": false
+        },
+        {
+          "name": "readable",
+          "type": "boolean",
+          "description": "Whether the data is readable in the current context",
+          "required": false
+        },
+        {
+          "name": "severity",
+          "type": "number",
+          "description": "An integer 1 to 5",
+          "required": false
+        },
+        {
+          "name": "severityName",
+          "type": "string",
+          "description": "The severity name for the case",
+          "required": false
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "The current status of the case",
+          "required": false
+        },
+        {
+          "name": "tags",
+          "type": "string",
+          "description": "The tags attached to this case. Expected format: JSON Array",
+          "required": false
+        },
+        {
+          "name": "totalActionsInAllPlaybooks",
+          "type": "number",
+          "description": "The total number of actions for all playbooks in a case",
+          "required": false
+        },
+        {
+          "name": "totalCompletedActionsInAllPlaybooks",
+          "type": "number",
+          "description": "The number of actions that are completed for all playbooks in a case",
+          "required": false
+        },
+        {
+          "name": "updateAcls",
+          "type": "boolean",
+          "description": "Update all ACLS for the case including data items",
+          "required": false
+        },
+        {
+          "name": "uuid",
+          "type": "string",
+          "description": "The UUID of the case",
+          "required": false,
+          "contains": [
+            "cydarm case uuid"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "update_case_history",
+      "name": "Update Case History",
+      "description": "Update a case's history",
+      "http_method": "GET",
+      "endpoint": "/actions/update_case_history",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "case_uuid",
+          "type": "string",
+          "description": "Case UUID",
+          "required": true,
+          "contains": [
+            "cydarm case uuid"
+          ]
+        },
+        {
+          "name": "modified",
+          "type": "string",
+          "description": "The time at which the case was modified. Expected format: ISO-8601",
+          "required": true
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Case's status. Currently only supports value of 'Event'",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "create_case_playbook",
+      "name": "Create Case Playbook",
+      "description": "Add a playbook to a case",
+      "http_method": "GET",
+      "endpoint": "/actions/create_case_playbook",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "case_uuid",
+          "type": "string",
+          "description": "Case UUID",
+          "required": true,
+          "contains": [
+            "cydarm case uuid"
+          ]
+        },
+        {
+          "name": "playbook_uuid",
+          "type": "string",
+          "description": "Playbook UUID",
+          "required": true,
+          "contains": [
+            "cydarm playbook uuid"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_case_playbook",
+      "name": "Get Case Playbook",
+      "description": "Get a playbook instance associated with a case",
+      "http_method": "GET",
+      "endpoint": "/actions/get_case_playbook",
+      "action_type": "generic",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "case_uuid",
+          "type": "string",
+          "description": "Case UUID",
+          "required": true,
+          "contains": [
+            "cydarm case uuid"
+          ]
+        },
+        {
+          "name": "case_playbook_uuid",
+          "type": "string",
+          "description": "Case Playbook instance UUID",
+          "required": true,
+          "contains": [
+            "cydarm case playbook uuid"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_case_playbooks",
+      "name": "Get Case Playbooks",
+      "description": "Gets a list of playbooks for a case",
+      "http_method": "GET",
+      "endpoint": "/actions/get_case_playbooks",
+      "action_type": "generic",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "case_uuid",
+          "type": "string",
+          "description": "Case UUID",
+          "required": true,
+          "contains": [
+            "cydarm case uuid"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_playbook_action",
+      "name": "Get Playbook Action",
+      "description": "Get playbook action",
+      "http_method": "GET",
+      "endpoint": "/actions/get_playbook_action",
+      "action_type": "generic",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "action_uuid",
+          "type": "string",
+          "description": "UUID of the action",
+          "required": true,
+          "contains": [
+            "cydarm action uuid"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "create_playbook_action",
+      "name": "Create Playbook Action",
+      "description": "Create playbook action",
+      "http_method": "GET",
+      "endpoint": "/actions/create_playbook_action",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "The name of the action",
+          "required": true
+        },
+        {
+          "name": "acl",
+          "type": "string",
+          "description": "The UUID of the ACL of the action",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Action description",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "create_playbook",
+      "name": "Create Playbook",
+      "description": "Create playbook",
+      "http_method": "GET",
+      "endpoint": "/actions/create_playbook",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "The name of the playbook",
+          "required": true
+        },
+        {
+          "name": "acl",
+          "type": "string",
+          "description": "The UUID of the ACL of the playbook",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Playbook description",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "add_action_to_playbook",
+      "name": "Add Playbook Action",
+      "description": "Add an existing action to a playbook",
+      "http_method": "GET",
+      "endpoint": "/actions/add_action_to_playbook",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "playbook_uuid",
+          "type": "string",
+          "description": "UUID of playbook",
+          "required": true,
+          "contains": [
+            "cydarm playbook uuid"
+          ]
+        },
+        {
+          "name": "action_uuid",
+          "type": "string",
+          "description": "UUID of action to add",
+          "required": true,
+          "contains": [
+            "cydarm action uuid"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_acl",
+      "name": "Get Acl",
+      "description": "Get an ACL by UUID",
+      "http_method": "GET",
+      "endpoint": "/actions/get_acl",
+      "action_type": "generic",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "acl_uuid",
+          "type": "string",
+          "description": "UUID of acl to get",
+          "required": true,
+          "contains": [
+            "cydarm acl uuid"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_user",
+      "name": "Get User",
+      "description": "Get a user by UUID",
+      "http_method": "GET",
+      "endpoint": "/actions/get_user",
+      "action_type": "generic",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "user_uuid",
+          "type": "string",
+          "description": "UUID of user to get",
+          "required": true,
+          "contains": [
+            "cydarm user uuid"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "add_watcher_to_case",
+      "name": "Add Case Watcher",
+      "description": "Add watcher to case",
+      "http_method": "GET",
+      "endpoint": "/actions/add_watcher_to_case",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "case_uuid",
+          "type": "string",
+          "description": "Case UUID",
+          "required": true,
+          "contains": [
+            "cydarm case uuid"
+          ]
+        },
+        {
+          "name": "user_uuid",
+          "type": "string",
+          "description": "UUID of user to add as watcher",
+          "required": true,
+          "contains": [
+            "cydarm user uuid"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "add_member_to_case",
+      "name": "Add Case Member",
+      "description": "Adds a case as a member of another case",
+      "http_method": "GET",
+      "endpoint": "/actions/add_member_to_case",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "case_uuid",
+          "type": "string",
+          "description": "Case UUID",
+          "required": true,
+          "contains": [
+            "cydarm case uuid"
+          ]
+        },
+        {
+          "name": "member_case_uuid",
+          "type": "string",
+          "description": "UUID of case to add as a member of the case group",
+          "required": true,
+          "contains": [
+            "cydarm case uuid"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "add_case_tag",
+      "name": "Add Case Tag",
+      "description": "Add tag to case",
+      "http_method": "GET",
+      "endpoint": "/actions/add_case_tag",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "case_uuid",
+          "type": "string",
+          "description": "Case UUID",
+          "required": true,
+          "contains": [
+            "cydarm case uuid"
+          ]
+        },
+        {
+          "name": "tag_value",
+          "type": "string",
+          "description": "Name of tag",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "delete_case_tag",
+      "name": "Delete Case Tag",
+      "description": "Delete tag from case",
+      "http_method": "GET",
+      "endpoint": "/actions/delete_case_tag",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "case_uuid",
+          "type": "string",
+          "description": "Case UUID",
+          "required": true,
+          "contains": [
+            "cydarm case uuid"
+          ]
+        },
+        {
+          "name": "tag_value",
+          "type": "string",
+          "description": "Name of tag",
+          "required": true
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Cydarm",
+    "original_type": "endpoint",
+    "converted_at": "2025-12-18T16:25:28.720947",
+    "source_version": "1.0.1"
+  }
+}

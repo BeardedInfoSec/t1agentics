@@ -1,0 +1,258 @@
+{
+  "id": "sailpoint",
+  "name": "SailPoint IdentityNow",
+  "description": "Identity governance and administration through SailPoint Identity Security Cloud V3 APIs for managing identities, accounts, entitlements, and access certifications",
+  "version": "1.0.0",
+  "category": "identity",
+  "vendor": "SailPoint",
+  "auth_type": "oauth2_client",
+  "auth_config": {
+    "type": "oauth2_client",
+    "token_url": "https://{tenant}.api.identitynow.com/oauth/token",
+    "grant_type": "client_credentials"
+  },
+  "base_url": "https://{tenant}.api.identitynow.com/v3",
+  "actions": [
+    {
+      "id": "list_identities",
+      "name": "List Identities",
+      "description": "List all identities in the IdentityNow tenant with optional filtering",
+      "http_method": "GET",
+      "endpoint": "/search/identities",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Search query string",
+          "required": false
+        },
+        {
+          "name": "filters",
+          "type": "string",
+          "description": "Filter expression for identity properties",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of results to return",
+          "required": false
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Offset for pagination",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_identity",
+      "name": "Get Identity",
+      "description": "Retrieve details of a specific identity",
+      "http_method": "GET",
+      "endpoint": "/identities/{id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Identity ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_accounts",
+      "name": "List Accounts",
+      "description": "List all source accounts associated with identities",
+      "http_method": "GET",
+      "endpoint": "/accounts",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "filters",
+          "type": "string",
+          "description": "Filter expression for account properties",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of results",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_account",
+      "name": "Get Account",
+      "description": "Retrieve details of a specific account",
+      "http_method": "GET",
+      "endpoint": "/accounts/{id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Account ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "disable_account",
+      "name": "Disable Account",
+      "description": "Disable a source account to prevent access",
+      "http_method": "POST",
+      "endpoint": "/accounts/{id}/disable",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Account ID to disable",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "enable_account",
+      "name": "Enable Account",
+      "description": "Enable a previously disabled source account",
+      "http_method": "POST",
+      "endpoint": "/accounts/{id}/enable",
+      "action_type": "correct",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Account ID to enable",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_entitlements",
+      "name": "List Entitlements",
+      "description": "List all entitlements available across sources",
+      "http_method": "GET",
+      "endpoint": "/entitlements",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "filters",
+          "type": "string",
+          "description": "Filter expression for entitlement properties",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of results",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_access_profiles",
+      "name": "List Access Profiles",
+      "description": "List all access profiles for governance review",
+      "http_method": "GET",
+      "endpoint": "/access-profiles",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "filters",
+          "type": "string",
+          "description": "Filter expression",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of results",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_roles",
+      "name": "List Roles",
+      "description": "List all governance roles",
+      "http_method": "GET",
+      "endpoint": "/roles",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "filters",
+          "type": "string",
+          "description": "Filter expression for role properties",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of results",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_certifications",
+      "name": "List Certifications",
+      "description": "List access certifications/campaigns for compliance review",
+      "http_method": "GET",
+      "endpoint": "/certifications",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "filters",
+          "type": "string",
+          "description": "Filter expression",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of results",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "search_events",
+      "name": "Search Events",
+      "description": "Search audit events and activity logs",
+      "http_method": "POST",
+      "endpoint": "/search/events",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Search query for audit events",
+          "required": false
+        },
+        {
+          "name": "timeZone",
+          "type": "string",
+          "description": "Timezone for date filters",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,255 @@
+{
+  "name": "CI/CD Pipeline Security Audit",
+  "slug": "devsecops-pipeline-security",
+  "description": "Automated security audit workflow for CI/CD pipeline configurations. Monitors for suspicious changes to pipeline files (Jenkinsfile, .github/workflows, .gitlab-ci.yml), audits pipeline permissions for least-privilege violations, and detects potential tampering or injection attacks in the build process.",
+  "category": "devsecops",
+  "subcategory": "pipeline_security",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "advanced",
+  "estimated_time": "12 minutes",
+  "tags": ["devsecops", "cicd", "pipeline", "github-actions", "jenkins", "permissions", "tampering"],
+  "alert_types": ["pipeline_change", "cicd_security"],
+  "severity_filter": ["medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["pipeline_change", "cicd_security", "workflow_modification", "pipeline_permission_change"],
+    "min_severity": "medium"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "github",
+      "name": "GitHub",
+      "category": "scm",
+      "reason": "Monitor and audit CI/CD workflow file changes and repository permissions"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Alert security and DevOps teams about suspicious pipeline modifications"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create audit tickets for pipeline security findings"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "title": "Pipeline Configuration Changed",
+          "summary": "Triggers when CI/CD pipeline files are modified or pipeline permissions change",
+          "config": {
+            "trigger_type": "alert",
+            "alert_types": ["pipeline_change", "cicd_security", "workflow_modification", "pipeline_permission_change"],
+            "description": "Monitors changes to CI/CD configuration files (Jenkinsfile, .github/workflows/*.yml, .gitlab-ci.yml, Dockerfile, docker-compose.yml)"
+          }
+        }
+      },
+      {
+        "id": "analyze-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "title": "AI Pipeline Security Analysis",
+          "summary": "Riggs AI audits the pipeline change for security risks and tampering",
+          "config": {
+            "template_id": "credential_access",
+            "additional_instructions": "Audit the CI/CD pipeline configuration change: check for overly broad permissions (write-all, admin), use of untrusted third-party actions, secret exfiltration patterns, script injection via user-controlled inputs, self-hosted runner abuse risk, lack of pinned action versions (using @main instead of SHA), and privilege escalation in the build environment.",
+            "description": "AI-powered CI/CD pipeline security audit for tampering and permission violations"
+          }
+        }
+      },
+      {
+        "id": "decision-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "title": "Tampering or Injection Detected?",
+          "summary": "Check if the AI detected signs of pipeline tampering or injection",
+          "config": {
+            "conditions": {
+              "operator": "OR",
+              "conditions": [
+                {
+                  "left": { "type": "path", "value": "$.nodes.analyze-1.result.tampering_detected" },
+                  "operator": "equals",
+                  "right": { "type": "value", "value": true }
+                },
+                {
+                  "left": { "type": "path", "value": "$.nodes.analyze-1.result.injection_risk" },
+                  "operator": "equals",
+                  "right": { "type": "value", "value": true }
+                }
+              ],
+              "groups": []
+            },
+            "expression": "$.nodes.analyze-1.result.tampering_detected == true or $.nodes.analyze-1.result.injection_risk == true",
+            "default_branch": "no"
+          }
+        }
+      },
+      {
+        "id": "respond-1",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "respond",
+          "title": "Block Pipeline & Alert",
+          "summary": "Block the pipeline change and alert the security team",
+          "config": {
+            "response_type": "notify",
+            "channel": "slack",
+            "slack_channel": "#security-incidents",
+            "message": "PIPELINE SECURITY ALERT — Potential Tampering Detected\n\nFile: {{trigger-1.alert.pipeline_file}}\nRepo: {{trigger-1.alert.repository}}\nModified By: {{trigger-1.alert.modifier}}\nBranch: {{trigger-1.alert.branch}}\n\nFindings:\n{{analyze-1.result.summary}}\n\nTampering indicators: {{analyze-1.result.tampering_indicators}}\n\nPipeline change blocked pending security review.",
+            "priority": "critical"
+          }
+        }
+      },
+      {
+        "id": "respond-2",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "title": "Create Security Incident Ticket",
+          "summary": "Create a Jira incident ticket for the pipeline tampering",
+          "config": {
+            "response_type": "integration_action",
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_issue",
+              "parameters": {
+                "project": "SEC",
+                "issue_type": "Incident",
+                "priority": "P1",
+                "summary": "PIPELINE TAMPERING: {{trigger-1.alert.pipeline_file}} in {{trigger-1.alert.repository}}",
+                "description": "Potential CI/CD pipeline tampering detected.\n\nFile: {{trigger-1.alert.pipeline_file}}\nRepo: {{trigger-1.alert.repository}}\nModified By: {{trigger-1.alert.modifier}}\nBranch: {{trigger-1.alert.branch}}\nCommit: {{trigger-1.alert.commit_sha}}\n\nRiggs Assessment:\n{{analyze-1.result.summary}}\n\nTampering Indicators:\n{{analyze-1.result.tampering_indicators}}\n\nRecommendation:\n{{analyze-1.result.remediation}}",
+                "labels": ["pipeline-security", "tampering", "incident"]
+              }
+            },
+            "description": "Create a security incident ticket for pipeline tampering"
+          }
+        }
+      },
+      {
+        "id": "decision-2",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "decision",
+          "title": "Permission Violations?",
+          "summary": "Check if the pipeline has least-privilege permission violations",
+          "config": {
+            "conditions": {
+              "operator": "AND",
+              "conditions": [
+                {
+                  "left": { "type": "path", "value": "$.nodes.analyze-1.result.permission_violations" },
+                  "operator": "greater_than",
+                  "right": { "type": "value", "value": 0 }
+                }
+              ],
+              "groups": []
+            },
+            "expression": "$.nodes.analyze-1.result.permission_violations > 0",
+            "default_branch": "no"
+          }
+        }
+      },
+      {
+        "id": "respond-3",
+        "type": "signal",
+        "position": { "x": 600, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "title": "Create Audit Ticket",
+          "summary": "Create a Jira ticket for pipeline permission audit findings",
+          "config": {
+            "response_type": "integration_action",
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_issue",
+              "parameters": {
+                "project": "{{trigger-1.alert.jira_project | default('APPSEC')}}",
+                "issue_type": "Task",
+                "priority": "P2",
+                "summary": "PIPELINE AUDIT: {{analyze-1.result.permission_violations}} permission violations in {{trigger-1.alert.repository}}",
+                "description": "CI/CD pipeline permission audit findings.\n\nFile: {{trigger-1.alert.pipeline_file}}\nRepo: {{trigger-1.alert.repository}}\nViolations: {{analyze-1.result.permission_violations}}\n\nRiggs Assessment:\n{{analyze-1.result.summary}}\n\nRecommendation:\n{{analyze-1.result.remediation}}",
+                "labels": ["pipeline-audit", "permissions", "least-privilege"]
+              }
+            },
+            "description": "Create a ticket for pipeline permission violations"
+          }
+        }
+      },
+      {
+        "id": "respond-4",
+        "type": "signal",
+        "position": { "x": 600, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "title": "Notify DevOps Team",
+          "summary": "Notify the DevOps team about pipeline permission findings",
+          "config": {
+            "response_type": "notify",
+            "channel": "slack",
+            "slack_channel": "#devsecops-alerts",
+            "message": "Pipeline Permission Audit — {{analyze-1.result.permission_violations}} Violations\n\nRepo: {{trigger-1.alert.repository}}\nFile: {{trigger-1.alert.pipeline_file}}\nJira: {{respond-3.ticket_url}}\n\n{{analyze-1.result.summary}}\n\nPlease tighten pipeline permissions to follow least-privilege.",
+            "priority": "medium"
+          }
+        }
+      },
+      {
+        "id": "utility-1",
+        "type": "signal",
+        "position": { "x": 860, "y": 540 },
+        "data": {
+          "kind": "utility",
+          "title": "Approve — Clean Audit",
+          "summary": "Pipeline change passed security audit with no findings",
+          "config": {
+            "operation": "update_status",
+            "status": "approved",
+            "note": "CI/CD pipeline configuration change passed security audit. No tampering, injection risks, or permission violations detected."
+          }
+        }
+      },
+      {
+        "id": "end-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1020 },
+        "data": {
+          "kind": "end",
+          "title": "End",
+          "summary": "CI/CD pipeline security audit complete",
+          "config": {
+            "disposition": "audited",
+            "summary": "CI/CD pipeline security audit complete."
+          }
+        }
+      }
+    ],
+    "edges": [
+      { "id": "e1", "source": "trigger-1", "target": "analyze-1", "animated": true, "type": "smoothstep" },
+      { "id": "e2", "source": "analyze-1", "target": "decision-1", "animated": true, "type": "smoothstep" },
+      { "id": "e3", "source": "decision-1", "target": "respond-1", "sourceHandle": "yes", "label": "Yes", "animated": true, "type": "smoothstep" },
+      { "id": "e4", "source": "decision-1", "target": "decision-2", "sourceHandle": "no", "label": "No", "animated": true, "type": "smoothstep" },
+      { "id": "e5", "source": "respond-1", "target": "respond-2", "animated": true, "type": "smoothstep" },
+      { "id": "e6", "source": "respond-2", "target": "end-1", "animated": true, "type": "smoothstep" },
+      { "id": "e7", "source": "decision-2", "target": "respond-3", "sourceHandle": "yes", "label": "Yes", "animated": true, "type": "smoothstep" },
+      { "id": "e8", "source": "decision-2", "target": "utility-1", "sourceHandle": "no", "label": "No", "animated": true, "type": "smoothstep" },
+      { "id": "e9", "source": "respond-3", "target": "respond-4", "animated": true, "type": "smoothstep" },
+      { "id": "e10", "source": "respond-4", "target": "end-1", "animated": true, "type": "smoothstep" },
+      { "id": "e11", "source": "utility-1", "target": "end-1", "animated": true, "type": "smoothstep" }
+    ]
+  }
+}

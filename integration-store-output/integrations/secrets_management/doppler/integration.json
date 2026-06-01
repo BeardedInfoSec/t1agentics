@@ -1,0 +1,250 @@
+{
+  "id": "doppler",
+  "name": "Doppler",
+  "description": "Centralized secrets management through Doppler REST API v3 for managing projects, configs, secrets, and activity logs",
+  "version": "1.0.0",
+  "category": "secrets_management",
+  "vendor": "Doppler",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "header_name": "Authorization",
+    "header_prefix": "Bearer",
+    "location": "header"
+  },
+  "base_url": "https://api.doppler.com/v3",
+  "actions": [
+    {
+      "id": "list_projects",
+      "name": "List Projects",
+      "description": "List all projects in the Doppler workspace",
+      "http_method": "GET",
+      "endpoint": "/projects",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "per_page",
+          "type": "number",
+          "description": "Number of results per page",
+          "required": false
+        },
+        {
+          "name": "page",
+          "type": "number",
+          "description": "Page number",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_project",
+      "name": "Get Project",
+      "description": "Retrieve details of a specific project",
+      "http_method": "GET",
+      "endpoint": "/projects/project",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "project",
+          "type": "string",
+          "description": "Project slug name",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_configs",
+      "name": "List Configs",
+      "description": "List all configs (environments) in a project",
+      "http_method": "GET",
+      "endpoint": "/configs",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "project",
+          "type": "string",
+          "description": "Project slug name",
+          "required": true
+        },
+        {
+          "name": "per_page",
+          "type": "number",
+          "description": "Number of results per page",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_secrets",
+      "name": "List Secrets",
+      "description": "List all secrets in a project config",
+      "http_method": "GET",
+      "endpoint": "/configs/config/secrets",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "project",
+          "type": "string",
+          "description": "Project slug name",
+          "required": true
+        },
+        {
+          "name": "config",
+          "type": "string",
+          "description": "Config slug name (e.g. dev, stg, prd)",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_secret",
+      "name": "Get Secret",
+      "description": "Retrieve a specific secret by name from a config",
+      "http_method": "GET",
+      "endpoint": "/configs/config/secret",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "project",
+          "type": "string",
+          "description": "Project slug name",
+          "required": true
+        },
+        {
+          "name": "config",
+          "type": "string",
+          "description": "Config slug name",
+          "required": true
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Secret name",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "set_secret",
+      "name": "Set Secret",
+      "description": "Create or update a secret in a project config",
+      "http_method": "POST",
+      "endpoint": "/configs/config/secrets",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "project",
+          "type": "string",
+          "description": "Project slug name",
+          "required": true
+        },
+        {
+          "name": "config",
+          "type": "string",
+          "description": "Config slug name",
+          "required": true
+        },
+        {
+          "name": "secrets",
+          "type": "object",
+          "description": "Key-value pairs of secrets to set",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "delete_secret",
+      "name": "Delete Secret",
+      "description": "Delete a specific secret from a config",
+      "http_method": "DELETE",
+      "endpoint": "/configs/config/secret",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "project",
+          "type": "string",
+          "description": "Project slug name",
+          "required": true
+        },
+        {
+          "name": "config",
+          "type": "string",
+          "description": "Config slug name",
+          "required": true
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Secret name to delete",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "download_secrets",
+      "name": "Download Secrets",
+      "description": "Download all secrets from a config in a specific format",
+      "http_method": "GET",
+      "endpoint": "/configs/config/secrets/download",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "project",
+          "type": "string",
+          "description": "Project slug name",
+          "required": true
+        },
+        {
+          "name": "config",
+          "type": "string",
+          "description": "Config slug name",
+          "required": true
+        },
+        {
+          "name": "format",
+          "type": "string",
+          "description": "Format (json, env, yaml, docker)",
+          "required": false,
+          "default": "json"
+        }
+      ]
+    },
+    {
+      "id": "list_activity_logs",
+      "name": "List Activity Logs",
+      "description": "Retrieve activity logs for auditing secret access and changes",
+      "http_method": "GET",
+      "endpoint": "/logs",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "project",
+          "type": "string",
+          "description": "Filter by project",
+          "required": false
+        },
+        {
+          "name": "per_page",
+          "type": "number",
+          "description": "Number of results per page",
+          "required": false
+        },
+        {
+          "name": "page",
+          "type": "number",
+          "description": "Page number",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

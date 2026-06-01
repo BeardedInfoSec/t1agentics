@@ -1,0 +1,200 @@
+{
+  "name": "Print and Screen Capture Policy Violation",
+  "slug": "dlp-print-screen-capture",
+  "description": "Responds to print and screen capture policy violations on endpoints handling sensitive data. Riggs AI analyzes the alert to determine if the capture involved sensitive content (classified documents, PII, financial data) and whether the user has authorization. Confirmed violations trigger evidence logging, user warning, and manager notification. Repeat offenders are escalated to the insider threat team. Designed for SOC analysts handling endpoint DLP alerts.",
+  "category": "data_protection",
+  "subcategory": "endpoint_dlp",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "beginner",
+  "estimated_time": "8 minutes",
+  "tags": ["dlp", "print", "screen_capture", "screenshot", "endpoint", "insider_threat"],
+  "alert_types": ["dlp", "print_violation", "screen_capture"],
+  "severity_filter": ["low", "medium", "high"],
+  "trigger_conditions": {
+    "alert_types": ["dlp", "print_policy_violation", "screen_capture_violation", "clipboard_exfil"],
+    "min_severity": "low"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Warn user of policy violation and notify manager for repeat offenses"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "psc-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "title": "Print/Screen Capture Alert",
+          "summary": "Triggers on endpoint DLP alerts for print or screen capture of sensitive content",
+          "config": {
+            "trigger_type": "alert",
+            "alert_types": ["dlp", "print_policy_violation", "screen_capture_violation", "clipboard_exfil"]
+          }
+        }
+      },
+      {
+        "id": "psc-2",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "title": "AI Insider Threat Assessment",
+          "summary": "Riggs AI assesses the capture event for insider threat indicators and data sensitivity",
+          "config": {
+            "mode": "ai_analysis",
+            "template_id": "insider_threat",
+            "custom_instructions": "Evaluate whether the print or screen capture involved sensitive data. Check user's role, authorization level, and recent behavior patterns. Determine if this is a policy awareness issue or potential insider threat.",
+            "alert_path": "$.trigger.alert",
+            "include_context": true
+          }
+        }
+      },
+      {
+        "id": "psc-3",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "title": "Sensitive Content Captured?",
+          "summary": "Branch based on whether the captured content is confirmed sensitive",
+          "config": {
+            "conditions": {
+              "operator": "AND",
+              "conditions": [
+                {
+                  "field": "$.nodes.psc-2.result.verdict",
+                  "operator": "in",
+                  "value": ["MALICIOUS", "SUSPICIOUS"]
+                }
+              ],
+              "groups": []
+            },
+            "expression": "$.nodes.psc-2.result.verdict in ['MALICIOUS', 'SUSPICIOUS']",
+            "default_branch": "no"
+          }
+        }
+      },
+      {
+        "id": "psc-4",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "utility",
+          "title": "Log Evidence",
+          "summary": "Record the violation evidence including timestamp, user, application, and content metadata",
+          "config": {
+            "operation": "add_note",
+            "note": "POLICY VIOLATION EVIDENCE LOGGED\n\nUser: {{$.trigger.alert.username}}\nEndpoint: {{$.trigger.alert.hostname}}\nAction: {{$.trigger.alert.action_type}}\nApplication: {{$.trigger.alert.application}}\nContent: {{$.trigger.alert.content_description}}\nTimestamp: {{$.trigger.alert.timestamp}}\nData Classification: {{$.nodes.psc-2.result.data_classification}}\nRisk Assessment: {{$.nodes.psc-2.result.summary}}"
+          }
+        }
+      },
+      {
+        "id": "psc-5",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "decision",
+          "title": "Repeat Offender?",
+          "summary": "Check if the user has prior print/capture policy violations",
+          "config": {
+            "conditions": {
+              "operator": "AND",
+              "conditions": [
+                {
+                  "field": "$.nodes.psc-2.result.prior_violations",
+                  "operator": "greater_than",
+                  "value": 0
+                }
+              ],
+              "groups": []
+            },
+            "expression": "$.nodes.psc-2.result.prior_violations > 0",
+            "default_branch": "no"
+          }
+        }
+      },
+      {
+        "id": "psc-6",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "title": "Escalate to Insider Threat Team",
+          "summary": "Escalate repeat offender to insider threat team and notify manager",
+          "config": {
+            "response_type": "notification",
+            "channel": "slack",
+            "slack_channel": "#insider-threat",
+            "message": "REPEAT DLP VIOLATION — Print/Screen Capture\n\nUser: {{$.trigger.alert.username}}\nPrior Violations: {{$.nodes.psc-2.result.prior_violations}}\nLatest Action: {{$.trigger.alert.action_type}}\nContent: {{$.trigger.alert.content_description}}\nClassification: {{$.nodes.psc-2.result.data_classification}}\n\nThis user has repeated print/capture policy violations. Insider threat review recommended.\n\nRiggs Assessment: {{$.nodes.psc-2.result.summary}}",
+            "priority": "high"
+          }
+        }
+      },
+      {
+        "id": "psc-7",
+        "type": "signal",
+        "position": { "x": 700, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "title": "Warn User — First Offense",
+          "summary": "Send a policy awareness warning to the user for first-time violation",
+          "config": {
+            "response_type": "notification",
+            "channel": "slack",
+            "recipient": "$.trigger.alert.username",
+            "message": "Your recent {{$.trigger.alert.action_type}} action was flagged as a data protection policy violation.\n\nContent involved: {{$.trigger.alert.content_description}}\nData Classification: {{$.nodes.psc-2.result.data_classification}}\n\nPlease review the Data Protection Policy regarding print and screen capture of sensitive materials. Repeated violations will be escalated to your manager.\n\nIf this was a business necessity, please submit an exception request.",
+            "priority": "medium"
+          }
+        }
+      },
+      {
+        "id": "psc-8",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "utility",
+          "title": "Close Alert — Non-Sensitive",
+          "summary": "Captured content is not sensitive, close alert",
+          "config": {
+            "operation": "add_note",
+            "note": "Print/screen capture alert reviewed by Riggs AI. Content captured does not contain sensitive data or user has appropriate authorization. Closing alert.",
+            "close_alert": true
+          }
+        }
+      },
+      {
+        "id": "psc-9",
+        "type": "signal",
+        "position": { "x": 520, "y": 1020 },
+        "data": {
+          "kind": "end",
+          "title": "Playbook Complete",
+          "summary": "Print/screen capture policy violation workflow finished",
+          "config": {
+            "disposition": "completed",
+            "summary": "Print and screen capture policy violation response completed"
+          }
+        }
+      }
+    ],
+    "edges": [
+      { "id": "psc-e1", "source": "psc-1", "target": "psc-2", "animated": true, "type": "smoothstep" },
+      { "id": "psc-e2", "source": "psc-2", "target": "psc-3", "animated": true, "type": "smoothstep" },
+      { "id": "psc-e3", "source": "psc-3", "target": "psc-4", "sourceHandle": "yes", "label": "Yes", "animated": true, "type": "smoothstep" },
+      { "id": "psc-e4", "source": "psc-3", "target": "psc-8", "sourceHandle": "no", "label": "No", "animated": true, "type": "smoothstep" },
+      { "id": "psc-e5", "source": "psc-4", "target": "psc-5", "animated": true, "type": "smoothstep" },
+      { "id": "psc-e6", "source": "psc-5", "target": "psc-6", "sourceHandle": "yes", "label": "Yes", "animated": true, "type": "smoothstep" },
+      { "id": "psc-e7", "source": "psc-5", "target": "psc-7", "sourceHandle": "no", "label": "No", "animated": true, "type": "smoothstep" },
+      { "id": "psc-e8", "source": "psc-6", "target": "psc-9", "animated": true, "type": "smoothstep" },
+      { "id": "psc-e9", "source": "psc-7", "target": "psc-9", "animated": true, "type": "smoothstep" },
+      { "id": "psc-e10", "source": "psc-8", "target": "psc-9", "animated": true, "type": "smoothstep" }
+    ]
+  }
+}

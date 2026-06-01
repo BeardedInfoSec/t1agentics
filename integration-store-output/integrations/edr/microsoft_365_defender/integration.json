@@ -1,0 +1,302 @@
+{
+  "id": "microsoft_365_defender",
+  "name": "Microsoft 365 Defender",
+  "description": "This app integrates with Microsoft 365 Defender to execute various generic and investigative actions",
+  "version": "1.4.3",
+  "category": "edr",
+  "vendor": "Microsoft",
+  "auth_type": "oauth2",
+  "auth_config": {
+    "type": "oauth2",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "{soar_base_url}rest",
+  "actions": [
+    {
+      "id": "on_poll",
+      "name": "On Poll",
+      "description": "Callback action for the on_poll ingest functionality",
+      "http_method": "GET",
+      "endpoint": "/actions/on_poll",
+      "action_type": "ingest",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "start_time",
+          "type": "number",
+          "description": "Parameter ignored in this app",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "number",
+          "description": "Parameter ignored in this app",
+          "required": false
+        },
+        {
+          "name": "container_count",
+          "type": "number",
+          "description": "Parameter ignored for schedule/interval polling only",
+          "required": false
+        },
+        {
+          "name": "artifact_count",
+          "type": "number",
+          "description": "Parameter ignored in this app",
+          "required": false
+        },
+        {
+          "name": "container_id",
+          "type": "number",
+          "description": "Parameter ignored in this app",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "run_query",
+      "name": "Run Query",
+      "description": "An advanced search query",
+      "http_method": "GET",
+      "endpoint": "/security/runHuntingQuery",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Query to fetch results",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_incidents",
+      "name": "List Incidents",
+      "description": "List all the incidents",
+      "http_method": "GET",
+      "endpoint": "/security/incidents",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of incidents to return (Defaults to 50)",
+          "required": false,
+          "default": 50
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Number of incidents to skip (Defaults to 0)",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "Filter incidents based on property",
+          "required": false
+        },
+        {
+          "name": "orderby",
+          "type": "string",
+          "description": "Sort the incidents based on property",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_alerts",
+      "name": "List Alerts",
+      "description": "List all the alerts",
+      "http_method": "GET",
+      "endpoint": "/security/incidents",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of alerts to return (Defaults to 2000)",
+          "required": false,
+          "default": 2000
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Number of alerts to skip (Defaults to 0)",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "Filter alerts based on property",
+          "required": false
+        },
+        {
+          "name": "orderby",
+          "type": "string",
+          "description": "Sort the alerts based on property",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_incident",
+      "name": "Get Incident",
+      "description": "Retrieve specific incident by its ID",
+      "http_method": "GET",
+      "endpoint": "/actions/get_incident",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "incident_id",
+          "type": "string",
+          "description": "ID of the incident",
+          "required": true,
+          "contains": [
+            "defender incident id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "update_incident",
+      "name": "Update Incident",
+      "description": "Update the properties of an incident object",
+      "http_method": "GET",
+      "endpoint": "/actions/update_incident",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "incident_id",
+          "type": "string",
+          "description": "ID of the incident",
+          "required": true,
+          "contains": [
+            "defender incident id"
+          ]
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "The status of the incident",
+          "required": false
+        },
+        {
+          "name": "assign_to",
+          "type": "string",
+          "description": "Owner of the incident, or null if no owner is assigned. Free editable text",
+          "required": false
+        },
+        {
+          "name": "classification",
+          "type": "string",
+          "description": "The specification for the incident",
+          "required": false
+        },
+        {
+          "name": "determination",
+          "type": "string",
+          "description": "Specifies the determination of the incident",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_alert",
+      "name": "Get Alert",
+      "description": "Retrieve specific alert by its ID",
+      "http_method": "GET",
+      "endpoint": "/actions/get_alert",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "alert_id",
+          "type": "string",
+          "description": "ID of the alert",
+          "required": true,
+          "contains": [
+            "defender alert id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "update_alert",
+      "name": "Update Alert",
+      "description": "Update properties of existing alert",
+      "http_method": "GET",
+      "endpoint": "/actions/update_alert",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "alert_id",
+          "type": "string",
+          "description": "ID of the alert",
+          "required": true,
+          "contains": [
+            "defender alert id"
+          ]
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Specifies the status of the alert",
+          "required": false
+        },
+        {
+          "name": "assign_to",
+          "type": "string",
+          "description": "Owner of the alert",
+          "required": false,
+          "contains": [
+            "email"
+          ]
+        },
+        {
+          "name": "classification",
+          "type": "string",
+          "description": "Specifies the specification of the alert",
+          "required": false
+        },
+        {
+          "name": "determination",
+          "type": "string",
+          "description": "Specifies the determination of the alert",
+          "required": false
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Microsoft 365 Defender",
+    "original_type": "endpoint",
+    "converted_at": "2025-12-18T16:25:28.927549",
+    "source_version": "1.4.3"
+  }
+}

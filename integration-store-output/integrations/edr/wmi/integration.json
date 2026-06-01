@@ -1,0 +1,145 @@
+{
+  "id": "wmi",
+  "name": "WMI",
+  "description": "This App uses the WMI WQL to implement investigative actions that are executed on a Windows endpoint",
+  "version": "2.1.8",
+  "category": "edr",
+  "vendor": "Microsoft",
+  "auth_type": "basic_auth",
+  "auth_config": {
+    "type": "basic_auth",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "get_services",
+      "name": "List Services",
+      "description": "Get the list of installed services on the system",
+      "http_method": "GET",
+      "endpoint": "/actions/get_services",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "ip_hostname",
+          "type": "string",
+          "description": "Hostname/IP to list services running on",
+          "required": true,
+          "contains": [
+            "ip",
+            "host name"
+          ]
+        },
+        {
+          "name": "namespace",
+          "type": "string",
+          "description": "Namespace",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_sysinfo",
+      "name": "Get System Info",
+      "description": "Get information about a system",
+      "http_method": "GET",
+      "endpoint": "/actions/get_sysinfo",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "ip_hostname",
+          "type": "string",
+          "description": "Hostname/IP address to get info of",
+          "required": true,
+          "contains": [
+            "ip",
+            "host name"
+          ]
+        },
+        {
+          "name": "namespace",
+          "type": "string",
+          "description": "Namespace",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_users",
+      "name": "List Users",
+      "description": "List users configured on a system",
+      "http_method": "GET",
+      "endpoint": "/actions/get_users",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "ip_hostname",
+          "type": "string",
+          "description": "Hostname/IP address to get users of",
+          "required": true,
+          "contains": [
+            "ip",
+            "host name"
+          ]
+        },
+        {
+          "name": "namespace",
+          "type": "string",
+          "description": "Namespace",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "run_query",
+      "name": "Run Query",
+      "description": "Run an arbitrary query using WQL on the system",
+      "http_method": "GET",
+      "endpoint": "/actions/run_query",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "ip_hostname",
+          "type": "string",
+          "description": "Hostname/IP to run WMI query on",
+          "required": true,
+          "contains": [
+            "ip",
+            "host name"
+          ]
+        },
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Query (in WQL format)",
+          "required": true
+        },
+        {
+          "name": "namespace",
+          "type": "string",
+          "description": "Namespace",
+          "required": false
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "WMI",
+    "original_type": "endpoint",
+    "converted_at": "2025-12-18T16:25:29.315148",
+    "source_version": "2.1.8"
+  }
+}

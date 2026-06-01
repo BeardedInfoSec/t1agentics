@@ -1,0 +1,108 @@
+{
+  "id": "slack",
+  "name": "Slack",
+  "description": "Integrates with Slack Web API for team messaging, channel management, and notification workflows",
+  "version": "1.0.0",
+  "category": "communication",
+  "vendor": "Salesforce",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "https://slack.com/api",
+  "documentation_url": "https://api.slack.com/start/quickstart",
+  "setup_instructions": "## Get a Slack bot token\n\nSlack uses a **bot user OAuth token** (starts with `xoxb-`). You create a Slack app in your workspace, give it permission scopes, install it, then copy the token.\n\n### 1. Create the Slack app\n1. Open https://api.slack.com/apps and click **Create New App** → **From scratch**.\n2. Name it (e.g. `T1 Agentics`) and pick the workspace it should live in. Click **Create App**.\n\n### 2. Add bot scopes\n1. In the left sidebar, click **OAuth & Permissions**.\n2. Scroll to **Scopes → Bot Token Scopes** and click **Add an OAuth Scope** for each of:\n   - `chat:write` — required to send messages\n   - `chat:write.public` — post in channels the bot isn't a member of (optional but recommended)\n   - `channels:read` — list public channels\n   - `groups:read` — list private channels the bot is in\n   - `users:read` — look up users by ID\n   - `files:write` — only if you'll upload files\n\n### 3. Install to workspace\n1. Scroll back to the top of **OAuth & Permissions** and click **Install to Workspace**.\n2. Approve the scopes. Slack returns you to the OAuth page showing a **Bot User OAuth Token** that starts with `xoxb-`.\n3. Copy that token.\n\n### 4. Invite the bot to channels\nIn Slack, open each channel you want the bot to post in and run:\n```\n/invite @T1 Agentics\n```\n(or whatever you named the app). `chat:write.public` lets it post in public channels without this, but private channels always require an invite.\n\n### 5. Find channel IDs\nT1 actions take channel IDs (e.g. `C01ABCDEF`), not `#channel-name`. To get one: right-click the channel in Slack → **View channel details** → scroll to the bottom — the ID is shown.\n\n### 6. Paste the token below\nPaste the **full `xoxb-...` token** in the **Token** field. Slack does not require a prefix — T1 sends it as `Authorization: Bearer <token>` automatically.\n\nClick **Test Authentication** to confirm.\n\n### Troubleshooting\n- **`invalid_auth`**: Token is wrong, revoked, or the app was uninstalled. Re-install from **OAuth & Permissions**.\n- **`not_in_channel`**: Bot can't post in that channel. `/invite` it, or add the `chat:write.public` scope and re-install.\n- **`missing_scope`**: You added a scope after install. Re-install the app so the new scope takes effect.\n- **`channel_not_found`**: You're passing a channel name instead of an ID. Use the `C…` ID from channel details.",
+  "actions": [
+    {
+      "id": "send_message",
+      "name": "Send Message",
+      "description": "Send a message to a Slack channel or direct message",
+      "http_method": "POST",
+      "endpoint": "/chat.postMessage",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "channel", "type": "string", "description": "Channel ID, DM ID, or conversation ID to post to", "required": true},
+        {"name": "text", "type": "string", "description": "Message text (supports mrkdwn formatting)", "required": true},
+        {"name": "blocks", "type": "string", "description": "JSON array of Block Kit blocks for rich message formatting", "required": false},
+        {"name": "thread_ts", "type": "string", "description": "Timestamp of parent message to reply in thread", "required": false},
+        {"name": "unfurl_links", "type": "boolean", "description": "Enable URL unfurling", "required": false, "default": true},
+        {"name": "unfurl_media", "type": "boolean", "description": "Enable media unfurling", "required": false, "default": true}
+      ]
+    },
+    {
+      "id": "list_channels",
+      "name": "List Channels",
+      "description": "List all channels in the workspace accessible to the bot",
+      "http_method": "GET",
+      "endpoint": "/conversations.list",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "types", "type": "string", "description": "Comma-separated channel types (public_channel, private_channel, mpim, im)", "required": false, "default": "public_channel"},
+        {"name": "exclude_archived", "type": "boolean", "description": "Exclude archived channels", "required": false, "default": true},
+        {"name": "limit", "type": "number", "description": "Maximum results per page (max 1000)", "required": false, "default": 100},
+        {"name": "cursor", "type": "string", "description": "Pagination cursor", "required": false}
+      ]
+    },
+    {
+      "id": "get_message",
+      "name": "Get Message",
+      "description": "Retrieve a specific message and its replies from a channel",
+      "http_method": "GET",
+      "endpoint": "/conversations.replies",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "channel", "type": "string", "description": "Channel ID containing the message", "required": true},
+        {"name": "ts", "type": "string", "description": "Timestamp of the message to retrieve", "required": true},
+        {"name": "limit", "type": "number", "description": "Maximum replies to return", "required": false, "default": 10},
+        {"name": "cursor", "type": "string", "description": "Pagination cursor for replies", "required": false}
+      ]
+    },
+    {
+      "id": "create_channel",
+      "name": "Create Channel",
+      "description": "Create a new Slack channel",
+      "http_method": "POST",
+      "endpoint": "/conversations.create",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "name", "type": "string", "description": "Channel name (lowercase, no spaces, max 80 chars)", "required": true},
+        {"name": "is_private", "type": "boolean", "description": "Create as private channel", "required": false, "default": false},
+        {"name": "team_id", "type": "string", "description": "Team ID for Enterprise Grid workspaces", "required": false}
+      ]
+    },
+    {
+      "id": "get_channel_info",
+      "name": "Get Channel Info",
+      "description": "Get detailed information about a specific channel",
+      "http_method": "GET",
+      "endpoint": "/conversations.info",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "channel", "type": "string", "description": "Channel ID", "required": true},
+        {"name": "include_num_members", "type": "boolean", "description": "Include member count", "required": false, "default": false}
+      ]
+    },
+    {
+      "id": "update_message",
+      "name": "Update Message",
+      "description": "Update an existing message in a channel",
+      "http_method": "POST",
+      "endpoint": "/chat.update",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "channel", "type": "string", "description": "Channel ID containing the message", "required": true},
+        {"name": "ts", "type": "string", "description": "Timestamp of the message to update", "required": true},
+        {"name": "text", "type": "string", "description": "Updated message text", "required": true},
+        {"name": "blocks", "type": "string", "description": "Updated Block Kit blocks JSON", "required": false}
+      ]
+    }
+  ]
+}

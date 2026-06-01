@@ -1,0 +1,219 @@
+{
+  "id": "cloudflare_gateway",
+  "name": "Cloudflare Gateway DNS",
+  "description": "Cloudflare Gateway DNS filtering API for managing DNS policies, domain categories, block lists, and DNS query analytics",
+  "version": "1.0.0",
+  "category": "dns_security",
+  "vendor": "Cloudflare",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "header_name": "Authorization",
+    "location": "header",
+    "token_prefix": "Bearer"
+  },
+  "base_url": "https://api.cloudflare.com/client/v4",
+  "actions": [
+    {
+      "id": "list_dns_policies",
+      "name": "List DNS Policies",
+      "description": "Retrieve all DNS filtering policies (Gateway rules with DNS filter type)",
+      "http_method": "GET",
+      "endpoint": "/accounts/{account_id}/gateway/rules",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "account_id",
+          "type": "string",
+          "description": "Cloudflare account identifier",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "create_dns_policy",
+      "name": "Create DNS Policy",
+      "description": "Create a new DNS filtering policy to block or allow domains/categories",
+      "http_method": "POST",
+      "endpoint": "/accounts/{account_id}/gateway/rules",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "account_id",
+          "type": "string",
+          "description": "Cloudflare account identifier",
+          "required": true
+        },
+        {
+          "name": "body",
+          "type": "object",
+          "description": "DNS policy including name, action (block, allow, safesearch, override), traffic expression (dns.fqdn, dns.content_category, dns.security_category), filters ['dns'], and optional block_page_enabled flag",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "update_dns_policy",
+      "name": "Update DNS Policy",
+      "description": "Update an existing DNS filtering policy",
+      "http_method": "PUT",
+      "endpoint": "/accounts/{account_id}/gateway/rules/{rule_id}",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "account_id",
+          "type": "string",
+          "description": "Cloudflare account identifier",
+          "required": true
+        },
+        {
+          "name": "rule_id",
+          "type": "string",
+          "description": "Gateway rule identifier",
+          "required": true
+        },
+        {
+          "name": "body",
+          "type": "object",
+          "description": "Updated DNS policy configuration",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "delete_dns_policy",
+      "name": "Delete DNS Policy",
+      "description": "Delete a DNS filtering policy",
+      "http_method": "DELETE",
+      "endpoint": "/accounts/{account_id}/gateway/rules/{rule_id}",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "account_id",
+          "type": "string",
+          "description": "Cloudflare account identifier",
+          "required": true
+        },
+        {
+          "name": "rule_id",
+          "type": "string",
+          "description": "Gateway rule identifier to delete",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_domain_lists",
+      "name": "List Domain Lists",
+      "description": "Retrieve all custom domain/URL lists used in DNS policies",
+      "http_method": "GET",
+      "endpoint": "/accounts/{account_id}/gateway/lists",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "account_id",
+          "type": "string",
+          "description": "Cloudflare account identifier",
+          "required": true
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Filter by list type: DOMAIN, IP, URL, SERIAL, EMAIL",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "create_domain_list",
+      "name": "Create Domain Block List",
+      "description": "Create a new custom domain list for DNS blocking policies",
+      "http_method": "POST",
+      "endpoint": "/accounts/{account_id}/gateway/lists",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "account_id",
+          "type": "string",
+          "description": "Cloudflare account identifier",
+          "required": true
+        },
+        {
+          "name": "body",
+          "type": "object",
+          "description": "Domain list including name, description, type (DOMAIN), and items array with domain values",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "add_to_domain_list",
+      "name": "Add Domains to List",
+      "description": "Append domains to an existing custom domain list",
+      "http_method": "PATCH",
+      "endpoint": "/accounts/{account_id}/gateway/lists/{list_id}",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "account_id",
+          "type": "string",
+          "description": "Cloudflare account identifier",
+          "required": true
+        },
+        {
+          "name": "list_id",
+          "type": "string",
+          "description": "ID of the domain list to update",
+          "required": true
+        },
+        {
+          "name": "body",
+          "type": "object",
+          "description": "Append operation including items array with domains to add",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_domain_categories",
+      "name": "Get Domain Categories",
+      "description": "Retrieve all available domain categories (content and security categories) for DNS policies",
+      "http_method": "GET",
+      "endpoint": "/accounts/{account_id}/gateway/categories",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "account_id",
+          "type": "string",
+          "description": "Cloudflare account identifier",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_dns_locations",
+      "name": "Get DNS Locations",
+      "description": "Retrieve all DNS locations (source IP configurations for DNS filtering)",
+      "http_method": "GET",
+      "endpoint": "/accounts/{account_id}/gateway/locations",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "account_id",
+          "type": "string",
+          "description": "Cloudflare account identifier",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

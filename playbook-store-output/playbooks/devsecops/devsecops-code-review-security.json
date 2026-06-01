@@ -1,0 +1,222 @@
+{
+  "name": "Security-Focused Code Review",
+  "slug": "devsecops-code-review-security",
+  "description": "AI-powered security code review triggered on pull requests that modify security-sensitive files. Riggs AI analyzes the PR diff for common vulnerability patterns (injection, auth bypass, insecure crypto, SSRF), checks for compliance with secure coding guidelines, and posts a detailed review with findings directly on the PR.",
+  "category": "devsecops",
+  "subcategory": "code_review",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "8 minutes",
+  "tags": ["devsecops", "code-review", "pull-request", "secure-coding", "ai-review", "injection", "auth"],
+  "alert_types": ["pull_request", "code_change"],
+  "severity_filter": ["medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["pull_request", "code_change", "security_review_trigger"],
+    "min_severity": "medium"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "github",
+      "name": "GitHub",
+      "category": "scm",
+      "reason": "Read PR diffs and post security review comments"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Notify the AppSec team when critical security issues are found in code reviews"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "title": "PR Opened on Security-Sensitive Files",
+          "summary": "Triggers when a pull request modifies authentication, authorization, crypto, or input handling code",
+          "config": {
+            "trigger_type": "alert",
+            "alert_types": ["pull_request", "code_change", "security_review_trigger"],
+            "description": "Monitors PRs that touch security-sensitive paths (auth/, crypto/, middleware/, input validation, API endpoints)"
+          }
+        }
+      },
+      {
+        "id": "analyze-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "title": "AI Security Code Review",
+          "summary": "Riggs AI performs a security-focused review of the PR diff",
+          "config": {
+            "template_id": "vuln_risk",
+            "additional_instructions": "Review the code diff for security vulnerabilities: check for SQL injection, command injection, XSS, SSRF, path traversal, insecure deserialization, hardcoded secrets, broken authentication, missing authorization checks, insecure cryptographic usage, and race conditions. Assess each finding with severity and provide specific remediation suggestions with code examples.",
+            "description": "AI-powered security code review analyzing PR diffs for vulnerability patterns"
+          }
+        }
+      },
+      {
+        "id": "decision-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "title": "Security Issues Found?",
+          "summary": "Check if the AI review identified any security issues in the code",
+          "config": {
+            "conditions": {
+              "operator": "AND",
+              "conditions": [
+                {
+                  "left": { "type": "path", "value": "$.nodes.analyze-1.result.findings_count" },
+                  "operator": "greater_than",
+                  "right": { "type": "value", "value": 0 }
+                }
+              ],
+              "groups": []
+            },
+            "expression": "$.nodes.analyze-1.result.findings_count > 0",
+            "default_branch": "no"
+          }
+        }
+      },
+      {
+        "id": "decision-2",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "decision",
+          "title": "Any Critical/High Findings?",
+          "summary": "Check if any findings are critical or high severity requiring PR block",
+          "config": {
+            "conditions": {
+              "operator": "AND",
+              "conditions": [
+                {
+                  "left": { "type": "path", "value": "$.nodes.analyze-1.result.critical_high_count" },
+                  "operator": "greater_than",
+                  "right": { "type": "value", "value": 0 }
+                }
+              ],
+              "groups": []
+            },
+            "expression": "$.nodes.analyze-1.result.critical_high_count > 0",
+            "default_branch": "no"
+          }
+        }
+      },
+      {
+        "id": "respond-1",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "title": "Request Changes on PR",
+          "summary": "Post a review requesting changes for critical/high security findings",
+          "config": {
+            "response_type": "integration_action",
+            "integration_action": {
+              "connector_id": "github",
+              "action": "create_review",
+              "parameters": {
+                "repository": "{{trigger-1.alert.repository}}",
+                "pull_request": "{{trigger-1.alert.pull_request_number}}",
+                "event": "REQUEST_CHANGES",
+                "body": "Security Review — Changes Required\n\nFindings: {{analyze-1.result.findings_count}} ({{analyze-1.result.critical_high_count}} critical/high)\n\n{{analyze-1.result.review_body}}\n\nPlease address the critical and high findings before merging."
+              }
+            },
+            "description": "Request changes on the PR due to critical/high security findings"
+          }
+        }
+      },
+      {
+        "id": "respond-2",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "title": "Alert AppSec Team",
+          "summary": "Notify the AppSec team about critical security findings in the PR",
+          "config": {
+            "response_type": "notify",
+            "channel": "slack",
+            "slack_channel": "#devsecops-alerts",
+            "message": "Security Code Review — Critical Findings\n\nRepo: {{trigger-1.alert.repository}}\nPR: #{{trigger-1.alert.pull_request_number}} — {{trigger-1.alert.pull_request_title}}\nAuthor: {{trigger-1.alert.pr_author}}\nFindings: {{analyze-1.result.findings_count}} ({{analyze-1.result.critical_high_count}} critical/high)\n\nChanges requested. PR blocked until security findings are resolved.\n\n{{analyze-1.result.summary}}",
+            "priority": "high"
+          }
+        }
+      },
+      {
+        "id": "respond-3",
+        "type": "signal",
+        "position": { "x": 600, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "title": "Post Review Comments",
+          "summary": "Post informational review comments for medium/low findings",
+          "config": {
+            "response_type": "integration_action",
+            "integration_action": {
+              "connector_id": "github",
+              "action": "create_review",
+              "parameters": {
+                "repository": "{{trigger-1.alert.repository}}",
+                "pull_request": "{{trigger-1.alert.pull_request_number}}",
+                "event": "COMMENT",
+                "body": "Security Review — Advisory Notes\n\nFindings: {{analyze-1.result.findings_count}} (medium/low severity)\n\n{{analyze-1.result.review_body}}\n\nThese are advisory — consider addressing them but they do not block merging."
+              }
+            },
+            "description": "Post advisory review comments for medium/low severity findings"
+          }
+        }
+      },
+      {
+        "id": "utility-1",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "utility",
+          "title": "Approve PR — Clean Review",
+          "summary": "No security issues found — approve the PR from a security perspective",
+          "config": {
+            "operation": "update_status",
+            "status": "approved",
+            "note": "Security code review complete. No security issues found in the PR diff."
+          }
+        }
+      },
+      {
+        "id": "end-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1020 },
+        "data": {
+          "kind": "end",
+          "title": "End",
+          "summary": "Security code review complete",
+          "config": {
+            "disposition": "reviewed",
+            "summary": "Security-focused code review complete."
+          }
+        }
+      }
+    ],
+    "edges": [
+      { "id": "e1", "source": "trigger-1", "target": "analyze-1", "animated": true, "type": "smoothstep" },
+      { "id": "e2", "source": "analyze-1", "target": "decision-1", "animated": true, "type": "smoothstep" },
+      { "id": "e3", "source": "decision-1", "target": "decision-2", "sourceHandle": "yes", "label": "Yes", "animated": true, "type": "smoothstep" },
+      { "id": "e4", "source": "decision-1", "target": "utility-1", "sourceHandle": "no", "label": "No", "animated": true, "type": "smoothstep" },
+      { "id": "e5", "source": "decision-2", "target": "respond-1", "sourceHandle": "yes", "label": "Yes", "animated": true, "type": "smoothstep" },
+      { "id": "e6", "source": "decision-2", "target": "respond-3", "sourceHandle": "no", "label": "No", "animated": true, "type": "smoothstep" },
+      { "id": "e7", "source": "respond-1", "target": "respond-2", "animated": true, "type": "smoothstep" },
+      { "id": "e8", "source": "respond-2", "target": "end-1", "animated": true, "type": "smoothstep" },
+      { "id": "e9", "source": "respond-3", "target": "end-1", "animated": true, "type": "smoothstep" },
+      { "id": "e10", "source": "utility-1", "target": "end-1", "animated": true, "type": "smoothstep" }
+    ]
+  }
+}

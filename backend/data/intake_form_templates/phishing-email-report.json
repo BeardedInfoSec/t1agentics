@@ -1,0 +1,116 @@
+{
+  "template_id": "phishing-email-report",
+  "name": "Phishing Email Report",
+  "description": "Internal form for employees to report suspicious emails that look like phishing. Submissions go to the SOC queue for Riggs to triage and an analyst to action.",
+  "title": "Report a Phishing Email",
+  "intro": "Got an email that feels off? Send it our way. You don't need to be sure it's phishing — if something seems wrong (unexpected sender, urgent wording, weird links, a login page that doesn't look right), reporting it is the right call. Filling this out takes about 3 minutes. If you can, attach the original .eml file so we can inspect the headers.",
+  "submit_message": "Thanks — your report is now in the security queue. An analyst will follow up if we need anything else. You can delete the email from your inbox now.",
+  "fields": [
+    {
+      "key": "reporter_email",
+      "label": "Your email",
+      "type": "email",
+      "required": true,
+      "help": "We'll use this to follow up if we need more details.",
+      "placeholder": "you@company.com",
+      "sample_value": "alice.chen@northwindcloud.com"
+    },
+    {
+      "key": "sender_email",
+      "label": "Who did the email come from?",
+      "type": "email",
+      "required": true,
+      "help": "The 'From' address on the suspicious email. Copy it exactly if you can.",
+      "placeholder": "sender@example.com",
+      "sample_value": "support@suspicious-domain-similar-to-okta.com"
+    },
+    {
+      "key": "email_subject",
+      "label": "Subject line",
+      "type": "text",
+      "required": true,
+      "help": "What was the subject of the email?",
+      "placeholder": "Subject line of the email",
+      "sample_value": "URGENT: Verify your account access within 24 hours"
+    },
+    {
+      "key": "received_at",
+      "label": "When did you receive it?",
+      "type": "datetime",
+      "required": false,
+      "help": "Approximate is fine.",
+      "sample_value": "2026-05-08T09:14:00"
+    },
+    {
+      "key": "what_felt_wrong",
+      "label": "What made you suspicious?",
+      "type": "multiselect",
+      "required": false,
+      "help": "Pick anything that applies. Skip if you're not sure.",
+      "options": [
+        "Unexpected sender",
+        "Urgent or threatening language",
+        "Asks me to click a link and sign in",
+        "Asks for credentials, MFA codes, or personal info",
+        "Has an attachment I didn't expect",
+        "Lookalike domain or misspelled sender",
+        "Display name doesn't match the email address",
+        "Generic greeting (Dear customer, etc.)",
+        "Just a gut feeling"
+      ],
+      "sample_value": ["Unexpected sender", "Urgent or threatening language", "Asks me to click a link and sign in"]
+    },
+    {
+      "key": "interaction",
+      "label": "Did you click anything or enter credentials?",
+      "type": "select",
+      "required": true,
+      "help": "Be honest — this is the most important thing for us to know. You're not in trouble.",
+      "options": [
+        "No, I didn't click or open anything",
+        "I clicked a link but didn't enter anything",
+        "I clicked a link and a page loaded but I closed it",
+        "I entered my credentials or an MFA code",
+        "I opened an attachment",
+        "Not sure"
+      ],
+      "sample_value": "I clicked a link but didn't enter anything"
+    },
+    {
+      "key": "email_body_excerpt",
+      "label": "Paste the email body (or a snippet)",
+      "type": "textarea",
+      "required": false,
+      "help": "Copy as much of the email text as you can. If you're attaching the .eml file below, a short snippet is fine.",
+      "placeholder": "Paste the body of the email here...",
+      "sample_value": "Dear user, We have detected unusual activity on your account. Please verify your identity within 24 hours or your access will be suspended. Click here to verify: http://okta-verify-now.suspicious-domain.com/login"
+    },
+    {
+      "key": "eml_attachment",
+      "label": "Attach the original email (.eml or .msg)",
+      "type": "file",
+      "required": false,
+      "help": "In Outlook: drag the email to your desktop, then upload it here. This gives us the headers we need to investigate.",
+      "sample_value": "phishing-email-2026-05-08.eml"
+    },
+    {
+      "key": "additional_notes",
+      "label": "Anything else we should know?",
+      "type": "textarea",
+      "required": false,
+      "help": "Optional. Other people getting the same email? Anything unusual you noticed?",
+      "placeholder": "Optional notes",
+      "sample_value": "Two of my teammates got the same email at around the same time."
+    }
+  ],
+  "alert_template": {
+    "title": "Phishing report from {{reporter_email}}: {{email_subject}}",
+    "description": "User {{reporter_email}} reported a suspicious email from {{sender_email}} received around {{received_at}}.\n\nSubject: {{email_subject}}\nReasons flagged: {{what_felt_wrong}}\nUser interaction: {{interaction}}\n\nBody excerpt:\n{{email_body_excerpt}}\n\nAdditional notes: {{additional_notes}}\n.eml attached: {{eml_attachment}}",
+    "severity": "medium",
+    "source": "intake_form",
+    "category": "phishing"
+  },
+  "icon": "MailWarning",
+  "category": "Email Threats",
+  "estimated_minutes": 3
+}

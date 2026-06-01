@@ -1,0 +1,280 @@
+{
+  "name": "Exposed Cloud Resource Response",
+  "slug": "cloud-exposed-resource",
+  "description": "Responds to publicly exposed cloud resources such as S3 buckets, databases, or security groups with overly permissive rules. Riggs AI assesses the risk of the exposed resource including data sensitivity, access patterns, and blast radius. Public exposures require team lead approval before automated remediation restricts access, scans for data exposure indicators, creates a compliance incident ticket, and notifies both compliance and security teams. Resources with restricted access are documented with an analyst note.",
+  "category": "cloud",
+  "subcategory": "exposure_remediation",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "advanced",
+  "estimated_time": "15 minutes",
+  "tags": ["cloud", "exposure", "s3", "misconfiguration", "compliance"],
+  "alert_types": ["cloud_security", "misconfiguration"],
+  "severity_filter": ["medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["cloud_security", "misconfiguration", "data_exposure"],
+    "min_severity": "medium"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "aws_security_hub",
+      "name": "AWS Security Hub",
+      "category": "cloud_security",
+      "reason": "Source of exposure findings and API for restricting resource access via security groups and policies"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create compliance incident tickets for publicly exposed resources"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Notify compliance and security teams of exposed resources and remediation actions"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Exposed Resource Alert",
+          "config": {
+            "alert_types": ["cloud_security", "misconfiguration", "data_exposure"],
+            "description": "Triggers when a cloud resource is flagged as publicly exposed or improperly configured by AWS Security Hub"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — Exposure Risk Assessment",
+          "config": {
+            "template_id": "cloud_security",
+            "additional_instructions": "Assess the risk of the exposed resource - evaluate data sensitivity, access patterns, and blast radius",
+            "description": "AI-powered risk assessment evaluating the severity of the exposure, potential data sensitivity, and overall blast radius"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "label": "Publicly Exposed?",
+          "config": {
+            "condition": "{{analyze_1.exposure_level}} == 'public' || {{analyze_1.is_publicly_accessible}} == true",
+            "description": "Routes based on whether the AI assessment confirmed the resource is publicly accessible"
+          }
+        }
+      },
+      {
+        "id": "approval_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "approval",
+          "label": "Team Lead Approval for Remediation",
+          "config": {
+            "approvers": ["team_lead", "security_lead"],
+            "timeout_minutes": 15,
+            "prompt": "Resource {{trigger_1.alert.resource_arn}} has been confirmed as publicly exposed.\n\nResource Type: {{trigger_1.alert.resource_type}}\nExposure: Public internet access\n\nRiggs AI Risk Assessment:\n{{analyze_1.summary}}\nBlast Radius: {{analyze_1.blast_radius}}\nData Sensitivity: {{analyze_1.data_sensitivity}}\n\nApprove automatic remediation to restrict access?",
+            "description": "Requires team lead approval before automatically restricting access to the publicly exposed resource"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "label": "Restrict Resource Access",
+          "config": {
+            "integration_action": {
+              "connector_id": "aws_security_hub",
+              "action": "remediate_finding",
+              "parameters": {
+                "finding_id": "{{trigger_1.alert.finding_id}}",
+                "resource_arn": "{{trigger_1.alert.resource_arn}}",
+                "remediation_type": "restrict_access",
+                "settings": {
+                  "block_public_access": true,
+                  "revoke_public_grants": true,
+                  "restrict_security_group": true
+                },
+                "reason": "Public exposure remediated — approved by team lead"
+              }
+            },
+            "description": "Restrict access to the exposed resource via cloud security group or IAM policy changes"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "label": "Scan for Data Exposure Indicators",
+          "config": {
+            "integration_action": {
+              "connector_id": "aws_security_hub",
+              "action": "scan_resource",
+              "parameters": {
+                "resource_arn": "{{trigger_1.alert.resource_arn}}",
+                "scan_type": "data_exposure",
+                "check_access_logs": true,
+                "check_data_classification": true
+              }
+            },
+            "description": "Scan the resource for indicators of data exposure such as access log anomalies and sensitive data classification hits"
+          }
+        }
+      },
+      {
+        "id": "respond_3",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "label": "Create Compliance Incident Ticket",
+          "config": {
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_ticket",
+              "parameters": {
+                "project": "COMP",
+                "issue_type": "Compliance Incident",
+                "priority": "High",
+                "summary": "Publicly Exposed Cloud Resource: {{trigger_1.alert.resource_type}} — {{trigger_1.alert.resource_arn}}",
+                "description": "A publicly exposed cloud resource has been detected and remediated.\n\nResource: {{trigger_1.alert.resource_arn}}\nType: {{trigger_1.alert.resource_type}}\nExposure Duration: {{trigger_1.alert.exposure_duration}}\n\nRiggs AI Risk Assessment:\n{{analyze_1.summary}}\nBlast Radius: {{analyze_1.blast_radius}}\nData Sensitivity: {{analyze_1.data_sensitivity}}\n\nData Exposure Scan:\n{{respond_2.scan_results}}\n\nRemediation: Access restricted via security group/policy. Approved by team lead."
+              }
+            },
+            "description": "Create a compliance incident ticket documenting the exposure, risk assessment, and remediation actions"
+          }
+        }
+      },
+      {
+        "id": "respond_4",
+        "type": "signal",
+        "position": { "x": 340, "y": 1180 },
+        "data": {
+          "kind": "respond",
+          "label": "Notify Compliance & Security Teams",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "targets": ["#compliance-alerts", "#cloud-security-alerts"],
+              "message": "PUBLICLY EXPOSED RESOURCE REMEDIATED\nResource: {{trigger_1.alert.resource_arn}}\nType: {{trigger_1.alert.resource_type}}\nAction: Access restricted (approved by team lead)\nData Exposure Scan: {{respond_2.scan_results.summary}}\nCompliance Ticket: {{respond_3.ticket_url}}\n\nRiggs Assessment:\n{{analyze_1.summary}}"
+            },
+            "description": "Notify both compliance and security teams with details of the exposure and remediation status"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "utility",
+          "label": "Add Note: Access Restricted to Authorized Networks",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "Reviewed by Riggs AI (cloud_security template). Resource is not publicly exposed — access is restricted to authorized networks only. Assessment: {{analyze_1.summary}}"
+            },
+            "description": "Document that AI analysis confirmed the resource is not publicly exposed and access is properly restricted"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1340 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "Exposed cloud resource response complete"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_analyze",
+        "source": "trigger_1",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_analyze_decision",
+        "source": "analyze_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "approval_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "utility_1",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_approval_restrict",
+        "source": "approval_1",
+        "target": "respond_1",
+        "type": "default"
+      },
+      {
+        "id": "e_restrict_scan",
+        "source": "respond_1",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_scan_ticket",
+        "source": "respond_2",
+        "target": "respond_3",
+        "type": "default"
+      },
+      {
+        "id": "e_ticket_notify",
+        "source": "respond_3",
+        "target": "respond_4",
+        "type": "default"
+      },
+      {
+        "id": "e_notify_end",
+        "source": "respond_4",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_utility_end",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

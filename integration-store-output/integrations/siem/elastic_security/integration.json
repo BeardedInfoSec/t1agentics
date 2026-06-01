@@ -1,0 +1,246 @@
+{
+  "id": "elastic_security",
+  "name": "Elastic Security",
+  "description": "Integrates with Elastic Security (Kibana SIEM) for detection rule management, alert triage, event search, and timeline investigation via the Kibana Security API",
+  "version": "1.0.0",
+  "category": "siem",
+  "vendor": "Elastic",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "prefix": "ApiKey",
+    "location": "header"
+  },
+  "base_url": "https://{host}:5601",
+  "actions": [
+    {
+      "id": "search_alerts",
+      "name": "Search Detection Alerts",
+      "description": "Search for detection alerts in Elastic Security with filtering by status, severity, and time range",
+      "http_method": "POST",
+      "endpoint": "/api/detection_engine/signals/search",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "object",
+          "description": "Elasticsearch query DSL object to filter alerts",
+          "required": false
+        },
+        {
+          "name": "from",
+          "type": "number",
+          "description": "Offset for pagination",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "size",
+          "type": "number",
+          "description": "Number of alerts to return",
+          "required": false,
+          "default": 20
+        },
+        {
+          "name": "sort",
+          "type": "array",
+          "description": "Sort criteria array",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "update_alert_status",
+      "name": "Update Alert Status",
+      "description": "Update the status of detection alerts (open, acknowledged, closed)",
+      "http_method": "POST",
+      "endpoint": "/api/detection_engine/signals/status",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "signal_ids",
+          "type": "array",
+          "description": "Array of alert IDs to update",
+          "required": true
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "New status (open, acknowledged, closed)",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_detection_rules",
+      "name": "List Detection Rules",
+      "description": "List all detection rules configured in Elastic Security",
+      "http_method": "GET",
+      "endpoint": "/api/detection_engine/rules/_find",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "page",
+          "type": "number",
+          "description": "Page number for pagination",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "per_page",
+          "type": "number",
+          "description": "Number of rules per page",
+          "required": false,
+          "default": 20
+        },
+        {
+          "name": "sort_field",
+          "type": "string",
+          "description": "Field to sort by (e.g., name, enabled, updated_at)",
+          "required": false
+        },
+        {
+          "name": "sort_order",
+          "type": "string",
+          "description": "Sort order (asc or desc)",
+          "required": false,
+          "default": "desc"
+        },
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "KQL filter expression",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_detection_rule",
+      "name": "Get Detection Rule",
+      "description": "Retrieve a specific detection rule by its ID",
+      "http_method": "GET",
+      "endpoint": "/api/detection_engine/rules",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Rule ID to retrieve",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "create_detection_rule",
+      "name": "Create Detection Rule",
+      "description": "Create a new detection rule in Elastic Security",
+      "http_method": "POST",
+      "endpoint": "/api/detection_engine/rules",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Rule name",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Rule description",
+          "required": true
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Rule type (query, eql, threshold, machine_learning, threat_match)",
+          "required": true
+        },
+        {
+          "name": "query",
+          "type": "string",
+          "description": "KQL or EQL query for the rule",
+          "required": false
+        },
+        {
+          "name": "index",
+          "type": "array",
+          "description": "Array of index patterns to search",
+          "required": false
+        },
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Rule severity (low, medium, high, critical)",
+          "required": true
+        },
+        {
+          "name": "risk_score",
+          "type": "number",
+          "description": "Risk score (0-100)",
+          "required": true
+        },
+        {
+          "name": "enabled",
+          "type": "boolean",
+          "description": "Whether the rule is enabled",
+          "required": false,
+          "default": true
+        }
+      ]
+    },
+    {
+      "id": "search_events",
+      "name": "Search Events",
+      "description": "Search raw security events in Elasticsearch indices",
+      "http_method": "POST",
+      "endpoint": "/api/console/proxy",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "path",
+          "type": "string",
+          "description": "Elasticsearch path (e.g., filebeat-*/_search)",
+          "required": true
+        },
+        {
+          "name": "method",
+          "type": "string",
+          "description": "HTTP method (GET or POST)",
+          "required": true,
+          "default": "POST"
+        },
+        {
+          "name": "body",
+          "type": "object",
+          "description": "Elasticsearch query DSL body",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_timeline",
+      "name": "Get Timeline",
+      "description": "Retrieve a security investigation timeline",
+      "http_method": "GET",
+      "endpoint": "/api/timeline",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Timeline ID to retrieve",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

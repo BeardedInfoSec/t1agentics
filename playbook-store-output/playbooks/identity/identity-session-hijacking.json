@@ -1,0 +1,219 @@
+{
+  "name": "Session Hijacking Response",
+  "slug": "identity-session-hijacking",
+  "description": "Responds to session hijacking detections including cookie theft, session fixation, and token replay. Terminates all active sessions for the affected user, rotates session tokens, forces re-authentication, notifies the user of the compromise, and creates an incident ticket for forensic investigation.",
+  "category": "identity",
+  "subcategory": "session_hijacking",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "10 minutes",
+  "tags": ["session_hijacking", "cookie_theft", "session_fixation", "token_rotation", "re_authentication"],
+  "alert_types": ["session_hijacking", "session_anomaly", "token_replay"],
+  "severity_filter": ["high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["session_hijacking", "session_anomaly"],
+    "min_severity": "high"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "microsoft_graph",
+      "name": "Microsoft Graph",
+      "category": "identity",
+      "reason": "Terminate user sessions and force re-authentication"
+    },
+    {
+      "connector_id": "okta",
+      "name": "Okta",
+      "category": "identity",
+      "reason": "Clear Okta sessions and rotate session tokens"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create incident ticket for session hijacking investigation"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "sh-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "title": "Session Hijacking Alert",
+          "summary": "Fires on session hijacking or session anomaly detection",
+          "config": {
+            "trigger_type": "alert",
+            "alert_filter": "session_hijacking OR session_anomaly OR token_replay"
+          }
+        }
+      },
+      {
+        "id": "sh-2",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "title": "AI Session Hijack Analysis",
+          "summary": "Analyze session anomaly for hijacking indicators and attacker context",
+          "config": {
+            "mode": "ai_analysis",
+            "template_id": "suspicious_login",
+            "custom_instructions": "",
+            "alert_path": "$.trigger.alert",
+            "include_context": true
+          }
+        }
+      },
+      {
+        "id": "sh-3",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "title": "Confirmed Hijack?",
+          "summary": "Branch based on whether session hijacking is confirmed",
+          "config": {
+            "conditions": {
+              "operator": "AND",
+              "conditions": [
+                {
+                  "field": "$.nodes.sh-2.result.hijack_confirmed",
+                  "operator": "equals",
+                  "value": "true"
+                }
+              ],
+              "groups": []
+            },
+            "expression": "$.nodes.sh-2.result.hijack_confirmed == true",
+            "default_branch": "no"
+          }
+        }
+      },
+      {
+        "id": "sh-4",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "respond",
+          "title": "Terminate All Sessions",
+          "summary": "Kill all active sessions for the affected user across all providers",
+          "config": {
+            "response_type": "integration_action",
+            "integration_instance_id": "microsoft_graph",
+            "action_type": "revoke_sessions",
+            "params": {
+              "user_id": "$.trigger.alert.target_user_id",
+              "reason": "Session hijacking confirmed — terminating all active sessions"
+            },
+            "requires_approval": false,
+            "priority": "critical"
+          }
+        }
+      },
+      {
+        "id": "sh-5",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "title": "Rotate Session Tokens",
+          "summary": "Rotate all session tokens and refresh tokens for the user",
+          "config": {
+            "response_type": "integration_action",
+            "integration_instance_id": "okta",
+            "action_type": "clear_user_sessions",
+            "params": {
+              "user_id": "$.trigger.alert.target_user_id",
+              "rotate_tokens": true,
+              "reason": "Session hijacking — token rotation required"
+            },
+            "requires_approval": false,
+            "priority": "critical"
+          }
+        }
+      },
+      {
+        "id": "sh-6",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "title": "Notify User",
+          "summary": "Inform the affected user their session was compromised and to re-authenticate",
+          "config": {
+            "response_type": "notification",
+            "channel": "email",
+            "email_recipients": "$.trigger.alert.target_user_email",
+            "email_subject": "Security Alert: Your Session Was Compromised",
+            "message": "We detected unauthorized access to your session from IP {{$.trigger.alert.attacker_ip}}. All your sessions have been terminated for your protection. Please log in again with fresh credentials. If you did not recognize this activity, contact the security team immediately.",
+            "requires_approval": false,
+            "priority": "high"
+          }
+        }
+      },
+      {
+        "id": "sh-7",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "title": "Create Incident Ticket",
+          "summary": "Create incident ticket for session hijacking forensic investigation",
+          "config": {
+            "response_type": "create_ticket",
+            "system": "jira",
+            "project_key": "SEC",
+            "issue_type": "Incident",
+            "title": "Session Hijacking: {{$.trigger.alert.target_user_email}} — Attacker IP {{$.trigger.alert.attacker_ip}}",
+            "description": "Session hijacking confirmed for {{$.trigger.alert.target_user_email}}. Attacker IP: {{$.trigger.alert.attacker_ip}}. All sessions terminated and tokens rotated. Forensic investigation of attacker access scope required.",
+            "priority": "high",
+            "requires_approval": false
+          }
+        }
+      },
+      {
+        "id": "sh-8",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "utility",
+          "title": "Log Suspicious Session",
+          "summary": "Log the session anomaly for monitoring — hijack not confirmed",
+          "config": {
+            "operation": "add_note",
+            "note": "Session anomaly detected but hijacking not confirmed. Session fingerprint logged for continued behavioral monitoring."
+          }
+        }
+      },
+      {
+        "id": "sh-9",
+        "type": "signal",
+        "position": { "x": 520, "y": 1180 },
+        "data": {
+          "kind": "end",
+          "title": "Playbook Complete",
+          "summary": "Session hijacking response finished",
+          "config": {
+            "disposition": "completed",
+            "summary": "Session hijacking response actions completed"
+          }
+        }
+      }
+    ],
+    "edges": [
+      { "id": "sh-e1", "source": "sh-1", "target": "sh-2", "animated": true, "type": "smoothstep" },
+      { "id": "sh-e2", "source": "sh-2", "target": "sh-3", "animated": true, "type": "smoothstep" },
+      { "id": "sh-e3", "source": "sh-3", "target": "sh-4", "sourceHandle": "yes", "label": "Yes", "animated": true, "type": "smoothstep" },
+      { "id": "sh-e4", "source": "sh-3", "target": "sh-8", "sourceHandle": "no", "label": "No", "animated": true, "type": "smoothstep" },
+      { "id": "sh-e5", "source": "sh-4", "target": "sh-5", "animated": true, "type": "smoothstep" },
+      { "id": "sh-e6", "source": "sh-5", "target": "sh-6", "animated": true, "type": "smoothstep" },
+      { "id": "sh-e7", "source": "sh-6", "target": "sh-7", "animated": true, "type": "smoothstep" },
+      { "id": "sh-e8", "source": "sh-7", "target": "sh-9", "animated": true, "type": "smoothstep" },
+      { "id": "sh-e9", "source": "sh-8", "target": "sh-9", "animated": true, "type": "smoothstep" }
+    ]
+  }
+}

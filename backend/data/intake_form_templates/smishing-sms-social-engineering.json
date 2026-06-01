@@ -1,0 +1,143 @@
+{
+  "template_id": "smishing-sms-social-engineering",
+  "name": "Smishing / Suspicious Text or Chat Message Report",
+  "description": "Internal form for employees to report suspicious text messages or messaging-app pings (SMS, iMessage, WhatsApp, Teams, Slack, Signal, LinkedIn DMs) asking for information, links, money, or impersonating an executive or vendor. Severity escalates if the user clicked, replied, or sent something.",
+  "title": "Report a Suspicious Text or Chat Message",
+  "intro": "Got a text or chat message that feels off? Someone claiming to be your CEO asking for help 'real quick,' a delivery service link, a bank fraud alert, a recruiter with a too-good offer, a WhatsApp from an unknown number that knew your name? Send it to us. Reporting takes a couple of minutes and helps us protect everyone else. Don't worry if you replied or clicked — just tell us what happened.",
+  "submit_message": "Thanks — your report is in the queue. If you clicked, replied, or sent anything, an analyst will follow up shortly. Otherwise, we'll review and watch for the same pattern hitting others.",
+  "fields": [
+    {
+      "key": "reporter_email",
+      "label": "Your email",
+      "type": "email",
+      "required": true,
+      "help": "So we can follow up if we need more details.",
+      "placeholder": "you@company.com",
+      "sample_value": "sam.okonkwo@northwindcloud.com"
+    },
+    {
+      "key": "platform",
+      "label": "Where did the message come in?",
+      "type": "select",
+      "required": true,
+      "help": "Pick the closest match.",
+      "options": [
+        "SMS / text message",
+        "iMessage",
+        "WhatsApp",
+        "Microsoft Teams",
+        "Slack",
+        "Signal / Telegram",
+        "LinkedIn message",
+        "Facebook / Instagram DM",
+        "Other messaging app"
+      ],
+      "sample_value": "WhatsApp"
+    },
+    {
+      "key": "sender_number_or_handle",
+      "label": "Sender's number, email, or handle",
+      "type": "text",
+      "required": false,
+      "help": "The phone number, email, or username it came from. Include country code if you have it. 'Unknown' is also useful.",
+      "placeholder": "e.g., +1 555-867-5309 or @username",
+      "sample_value": "+44 7700 900142 (unknown UK number, contact name unsaved)"
+    },
+    {
+      "key": "claimed_identity",
+      "label": "Who did the sender claim to be?",
+      "type": "text",
+      "required": false,
+      "help": "If they identified themselves — name, role, or company.",
+      "placeholder": "e.g., 'Marcus Webb, your CEO'",
+      "sample_value": "Marcus Webb, our CEO — message said 'It's Marcus, I got a new number, save it.'"
+    },
+    {
+      "key": "what_they_wanted",
+      "label": "What were they asking for?",
+      "type": "multiselect",
+      "required": true,
+      "help": "Pick anything that applies.",
+      "options": [
+        "Click a link",
+        "An MFA / verification code",
+        "Login credentials or account info",
+        "Money, gift cards, or crypto",
+        "Bank or payment details",
+        "Personal information (SSN, address, DOB)",
+        "Buy something on their behalf",
+        "Move the conversation off-platform (to WhatsApp, personal email, etc.)",
+        "Confirm I'm available / build rapport before asking",
+        "Reply with a code I just received",
+        "Other"
+      ],
+      "sample_value": [
+        "Buy something on their behalf",
+        "Confirm I'm available / build rapport before asking"
+      ]
+    },
+    {
+      "key": "link_included",
+      "label": "Was there a link in the message?",
+      "type": "text",
+      "required": false,
+      "help": "Paste the link here if there was one. Don't click it. If it's long, just paste what you can.",
+      "placeholder": "https://...",
+      "sample_value": ""
+    },
+    {
+      "key": "did_you_engage",
+      "label": "Did you reply, click, or send anything?",
+      "type": "select",
+      "required": true,
+      "help": "Be honest — knowing the truth lets us help. You're not in trouble.",
+      "options": [
+        "No, I ignored it / deleted it",
+        "I replied but gave them nothing",
+        "I clicked the link but didn't enter anything",
+        "I clicked the link and a page loaded — not sure if I entered info",
+        "I shared an MFA / verification code",
+        "I shared credentials or account info",
+        "I sent money, gift cards, or crypto",
+        "I bought something they asked me to",
+        "Not sure"
+      ],
+      "sample_value": "I replied but gave them nothing"
+    },
+    {
+      "key": "when_received",
+      "label": "When did the message come in?",
+      "type": "datetime",
+      "required": false,
+      "help": "Approximate is fine.",
+      "sample_value": "2026-05-11T08:47:00"
+    },
+    {
+      "key": "message_text",
+      "label": "Paste the message text (or describe it)",
+      "type": "textarea",
+      "required": true,
+      "help": "Copy the message exactly if you can — punctuation, emojis, and odd phrasing matter for pattern matching. A screenshot below is great too.",
+      "placeholder": "Paste the full message here...",
+      "sample_value": "Hey Sam, this is Marcus. I got a new number, save it. Are you free for a quick favor? I'm in a board meeting and can't talk but I need you to help me with something quickly. Let me know."
+    },
+    {
+      "key": "screenshot",
+      "label": "Screenshot of the message (optional)",
+      "type": "file",
+      "required": false,
+      "help": "A screenshot helps us see formatting and any preview cards. Crop out personal info if you want.",
+      "sample_value": "smishing-whatsapp-2026-05-11.png"
+    }
+  ],
+  "alert_template": {
+    "title": "Smishing / suspicious message reported by {{reporter_email}}",
+    "description": "Employee reported a suspicious text or chat message. Escalate severity if 'did_you_engage' indicates any disclosure, click-through, or payment.\n\nReporter: {{reporter_email}}\nWhen: {{when_received}}\nPlatform: {{platform}}\nSender: {{sender_number_or_handle}}\nClaimed identity: {{claimed_identity}}\nAsked for: {{what_they_wanted}}\nLink in message: {{link_included}}\nEngagement: {{did_you_engage}}\n\nMessage text:\n{{message_text}}\n\nScreenshot: {{screenshot}}\n\nTriage note: if engagement indicates disclosure, treat as account/payment compromise; if multiple reports of same sender, raise as active campaign.",
+    "severity": "medium",
+    "source": "intake_form",
+    "category": "smishing"
+  },
+  "icon": "MessageSquareWarning",
+  "category": "Insider / Policy",
+  "estimated_minutes": 4
+}

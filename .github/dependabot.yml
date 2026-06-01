@@ -1,0 +1,64 @@
+version: 2
+
+# Schedules dependency update PRs across every ecosystem this repo uses.
+# Grouped by ecosystem so we don't get one PR per dependency on update day.
+# Security advisories fire independently of the schedule — those land
+# as PRs the moment GitHub knows about them.
+
+updates:
+  - package-ecosystem: pip
+    directory: /backend
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    labels:
+      - dependencies
+      - backend
+    groups:
+      patch-and-minor:
+        update-types:
+          - patch
+          - minor
+
+  - package-ecosystem: npm
+    directory: /frontend
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    labels:
+      - dependencies
+      - frontend
+    groups:
+      patch-and-minor:
+        update-types:
+          - patch
+          - minor
+
+  - package-ecosystem: docker
+    directory: /backend
+    schedule:
+      interval: weekly
+      day: monday
+    labels:
+      - dependencies
+      - docker
+
+  - package-ecosystem: docker
+    directory: /frontend
+    schedule:
+      interval: weekly
+      day: monday
+    labels:
+      - dependencies
+      - docker
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    labels:
+      - dependencies
+      - ci

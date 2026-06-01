@@ -1,0 +1,177 @@
+{
+  "id": "netskope_dlp",
+  "name": "Netskope DLP",
+  "description": "Integrates with Netskope REST API v2 for DLP alert retrieval, incident monitoring, policy management, and cloud application data security",
+  "version": "1.0.0",
+  "category": "dlp",
+  "vendor": "Netskope",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Netskope-Api-Token",
+    "location": "header"
+  },
+  "base_url": "https://{tenant}.goskope.com/api/v2",
+  "actions": [
+    {
+      "id": "get_dlp_alerts",
+      "name": "Get DLP Alerts",
+      "description": "Retrieve DLP alerts from Netskope with filtering by time range, severity, and alert type",
+      "http_method": "GET",
+      "endpoint": "/events/data/alert",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Filter query string (e.g., alert_type eq 'DLP')",
+          "required": false
+        },
+        {
+          "name": "starttime",
+          "type": "number",
+          "description": "Start time as epoch timestamp in seconds",
+          "required": false
+        },
+        {
+          "name": "endtime",
+          "type": "number",
+          "description": "End time as epoch timestamp in seconds",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of alerts to return",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Offset for pagination",
+          "required": false,
+          "default": 0
+        }
+      ]
+    },
+    {
+      "id": "get_dlp_incidents",
+      "name": "Get DLP Incidents",
+      "description": "Retrieve DLP incidents with details about policy violations, sensitive data matches, and affected users",
+      "http_method": "GET",
+      "endpoint": "/incidents/dlp",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "starttime",
+          "type": "number",
+          "description": "Start time as epoch timestamp in seconds",
+          "required": false
+        },
+        {
+          "name": "endtime",
+          "type": "number",
+          "description": "End time as epoch timestamp in seconds",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of incidents to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "get_dlp_events",
+      "name": "Get DLP Events",
+      "description": "Retrieve DLP-specific event data including file operations and data transfer events",
+      "http_method": "GET",
+      "endpoint": "/events/data/application",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Filter query string for DLP events",
+          "required": false
+        },
+        {
+          "name": "starttime",
+          "type": "number",
+          "description": "Start time as epoch timestamp in seconds",
+          "required": false
+        },
+        {
+          "name": "endtime",
+          "type": "number",
+          "description": "End time as epoch timestamp in seconds",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of events to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "list_dlp_profiles",
+      "name": "List DLP Profiles",
+      "description": "Retrieve all configured DLP profiles and their associated rules",
+      "http_method": "GET",
+      "endpoint": "/policy/dlpprofile",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "list_dlp_rules",
+      "name": "List DLP Rules",
+      "description": "Retrieve all DLP rules associated with configured policies",
+      "http_method": "GET",
+      "endpoint": "/policy/dlprule",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "profileId",
+          "type": "string",
+          "description": "Filter rules by specific DLP profile ID",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_uci_impact",
+      "name": "Get UCI Impact Score",
+      "description": "Retrieve User Confidence Index impact scores related to DLP policy violations",
+      "http_method": "GET",
+      "endpoint": "/ubadatascore/uci",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "user",
+          "type": "string",
+          "description": "User email or identifier to query",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of results to return",
+          "required": false,
+          "default": 50
+        }
+      ]
+    }
+  ]
+}

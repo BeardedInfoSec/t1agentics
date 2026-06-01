@@ -1,0 +1,271 @@
+{
+  "id": "joe_sandbox_v2",
+  "name": "Joe Sandbox v2",
+  "description": "This app supports executing investigative actions to analyze files and URLs on Joe Sandbox",
+  "version": "2.1.2",
+  "category": "sandbox",
+  "vendor": "Joe Security LLC",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "detonate_file",
+      "name": "Detonate File",
+      "description": "Retrieve detonation analysis results for file",
+      "http_method": "GET",
+      "endpoint": "/actions/detonate_file",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "vault_id",
+          "type": "string",
+          "description": "Vault ID of file to detonate",
+          "required": true,
+          "contains": [
+            "vault id",
+            "sha1"
+          ]
+        },
+        {
+          "name": "cookbook_vault_id",
+          "type": "string",
+          "description": "Vault ID of cookbook script",
+          "required": false,
+          "contains": [
+            "vault id",
+            "sha1"
+          ]
+        },
+        {
+          "name": "internet_access",
+          "type": "boolean",
+          "description": "Allow full internet access",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "report_cache",
+          "type": "boolean",
+          "description": "Enable the report cache",
+          "required": false,
+          "default": false
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "get_pcap",
+      "name": "Get Pcap",
+      "description": "Download the pcap file and add it to the vault",
+      "http_method": "GET",
+      "endpoint": "/actions/get_pcap",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Web ID of JoeSandbox analysis process",
+          "required": true,
+          "contains": [
+            "joesandbox task id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_report",
+      "name": "Get Report",
+      "description": "Download the detonation report and add it to the vault",
+      "http_method": "GET",
+      "endpoint": "/api/v2/analysis/download",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Web ID of JoeSandbox analysis process",
+          "required": true,
+          "contains": [
+            "joesandbox task id"
+          ]
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Type of report",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "check_status",
+      "name": "Check Status",
+      "description": "Check status of sample file or URL submitted for analysis",
+      "http_method": "GET",
+      "endpoint": "/api/v2/analysis/info",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Web ID of JoeSandbox analysis process",
+          "required": true,
+          "contains": [
+            "joesandbox task id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "detonate_url",
+      "name": "Detonate Url",
+      "description": "Retrieve detonation analysis results for URL",
+      "http_method": "GET",
+      "endpoint": "/actions/detonate_url",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "URL to be analyzed",
+          "required": true,
+          "contains": [
+            "url",
+            "domain"
+          ]
+        },
+        {
+          "name": "placeholder",
+          "type": "string",
+          "description": "Placeholder",
+          "required": false
+        },
+        {
+          "name": "internet_access",
+          "type": "boolean",
+          "description": "Allow full internet access",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "report_cache",
+          "type": "boolean",
+          "description": "Enable the report cache",
+          "required": false,
+          "default": false
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "url_reputation",
+      "name": "Url Reputation",
+      "description": "Query Joe Sandbox for URL reputation",
+      "http_method": "GET",
+      "endpoint": "/actions/url_reputation",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "URL",
+          "required": true,
+          "contains": [
+            "url",
+            "domain"
+          ]
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "file_reputation",
+      "name": "File Reputation",
+      "description": "Query Joe Sandbox for file reputation",
+      "http_method": "GET",
+      "endpoint": "/actions/file_reputation",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "hash",
+          "type": "string",
+          "description": "File Hash (MD5, SHA-1 or SHA-256)",
+          "required": true,
+          "contains": [
+            "hash",
+            "md5",
+            "sha1",
+            "sha256"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "list_cookbooks",
+      "name": "List Cookbooks",
+      "description": "List all cookbooks",
+      "http_method": "GET",
+      "endpoint": "/api/v2/cookbook/list",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "get_cookbook",
+      "name": "Get Cookbook",
+      "description": "Get a cookbook and add it to vault",
+      "http_method": "GET",
+      "endpoint": "/api/v2/cookbook/info",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Cookbook ID",
+          "required": true,
+          "contains": [
+            "joesandbox cookbook id"
+          ]
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Joe Sandbox v2",
+    "original_type": "sandbox",
+    "converted_at": "2025-12-18T16:25:28.892194",
+    "source_version": "2.1.2"
+  }
+}

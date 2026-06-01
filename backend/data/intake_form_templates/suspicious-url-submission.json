@@ -1,0 +1,95 @@
+{
+  "template_id": "suspicious-url-submission",
+  "name": "Suspicious URL / Link Submission",
+  "description": "Employee wants security to check a URL, either before clicking or after they already clicked.",
+  "title": "Check a Suspicious Link",
+  "intro": "Not sure about a link? Send it over. We'll check whether it's safe and let you know.\n\nIf you've already clicked it, that's okay, just tell us below so we can check whether anything needs to be done on your device.",
+  "submit_message": "Thanks. We'll review the link and email you back. If you already entered any credentials, please change that password from a different device while you wait.",
+  "fields": [
+    {
+      "key": "reporter_email",
+      "label": "Your email",
+      "type": "email",
+      "required": true,
+      "help": "We'll reply with what we find.",
+      "placeholder": "you@company.com",
+      "sample_value": "priya.shah@northwindcloud.com"
+    },
+    {
+      "key": "url",
+      "label": "The suspicious link",
+      "type": "url",
+      "required": true,
+      "help": "Paste the full URL. If it was a shortened link (bit.ly etc.), paste that too.",
+      "placeholder": "https://...",
+      "sample_value": "https://secure-portal-microsoft-account.tk/login?id=8821"
+    },
+    {
+      "key": "where_seen",
+      "label": "Where did you see this link?",
+      "type": "select",
+      "required": true,
+      "options": [
+        "Email",
+        "Text message / SMS",
+        "Teams or Slack message",
+        "Social media (LinkedIn, etc.)",
+        "Website or ad",
+        "QR code",
+        "Other"
+      ],
+      "sample_value": "Email"
+    },
+    {
+      "key": "clicked",
+      "label": "Did you click the link?",
+      "type": "select",
+      "required": true,
+      "help": "Be honest, we don't judge. It helps us prioritize.",
+      "options": [
+        "No, I haven't clicked it",
+        "Yes, I clicked but didn't enter anything",
+        "Yes, I clicked and entered my username/password",
+        "Yes, I clicked and downloaded a file",
+        "Not sure"
+      ],
+      "sample_value": "Yes, I clicked but didn't enter anything"
+    },
+    {
+      "key": "why_suspicious",
+      "label": "What made it feel off?",
+      "type": "textarea",
+      "required": true,
+      "help": "A sentence or two. Urgent tone? Misspelled sender? Odd domain?",
+      "placeholder": "Tell us what raised your eyebrow.",
+      "sample_value": "Email said my Microsoft 365 account would be locked in 24 hours unless I verified my password. Sender address was 'security@m1crosoft-alerts.com' which looked wrong, and the link domain ended in .tk."
+    },
+    {
+      "key": "screenshot",
+      "label": "Screenshot of the message or page (optional)",
+      "type": "file",
+      "required": false,
+      "help": "Helps us see what you saw without you having to forward anything.",
+      "sample_value": "phishing_email_screenshot.png"
+    },
+    {
+      "key": "device_name",
+      "label": "Device where you saw / clicked the link",
+      "type": "text",
+      "required": false,
+      "help": "Hostname, asset tag, or a quick description.",
+      "placeholder": "e.g. LAPTOP-PSHAH-04 or 'my work iPhone'",
+      "sample_value": "LAPTOP-PSHAH-04"
+    }
+  ],
+  "alert_template": {
+    "title": "Suspicious URL reported by {{reporter_email}}: {{url}}",
+    "description": "Employee submitted a URL for review.\n\nReporter: {{reporter_email}}\nURL: {{url}}\nSeen via: {{where_seen}}\nClicked: {{clicked}}\nDevice: {{device_name}}\n\nWhy it seemed suspicious:\n{{why_suspicious}}\n\nIf clicked indicates credentials entered or file downloaded, escalate severity and investigate host.",
+    "severity": "low",
+    "source": "intake_form",
+    "category": "url_analysis"
+  },
+  "icon": "Link",
+  "category": "File / Malware",
+  "estimated_minutes": 2
+}

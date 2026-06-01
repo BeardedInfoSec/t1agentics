@@ -1,0 +1,58 @@
+# T1 Agentics - Caddy reverse proxy
+# DOMAIN and ADMIN_EMAIL are injected from the compose environment.
+# Caddy auto-provisions a Let's Encrypt cert for {$DOMAIN} on first boot.
+
+{
+	email {$ADMIN_EMAIL}
+	# Use the staging directory while debugging certs; comment out for prod.
+	# acme_ca https://acme-staging-v02.api.letsencrypt.org/directory
+}
+
+{$DOMAIN} {
+	encode zstd gzip
+
+	log {
+		output stdout
+		format console
+		level INFO
+	}
+
+	# API + websocket routes go to the FastAPI backend.
+	@api {
+		path /api/* /ws/* /docs /openapi.json /redoc
+	}
+	handle @api {
+		reverse_proxy backend:8000 {
+			transport http {
+				read_timeout 300s
+				write_timeout 300s
+				dial_timeout 10s
+			}
+			header_up Host {host}
+			header_up X-Real-IP {remote_host}
+			header_up X-Forwarded-For {remote_host}
+			header_up X-Forwarded-Proto {scheme}
+		}
+	}
+
+	# Everything else is the React SPA served by nginx on :80 inside the container.
+	handle {
+		reverse_proxy frontend:80
+	}
+
+	# Sensible security headers. CSP is intentionally permissive — the SPA
+	# loads inline styles and the analyst can paste arbitrary external IOCs;
+	# tighten per deployment if required.
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+}
+
+# Health endpoint that does not require TLS / a hostname.
+:80 {
+	respond /healthz "ok" 200
+}

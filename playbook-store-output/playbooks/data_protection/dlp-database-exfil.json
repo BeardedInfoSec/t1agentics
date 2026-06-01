@@ -1,0 +1,252 @@
+{
+  "name": "Database Exfiltration Detection",
+  "slug": "dlp-database-exfil",
+  "description": "Detects and responds to database exfiltration attempts such as bulk data exports, anomalous query patterns, or unauthorized database dumps. Riggs AI analyzes the alert to confirm exfiltration activity, then blocks the offending query session, isolates the database user, and triggers a full investigation with IR lead approval. Generates an executive summary for compliance and legal stakeholders. Designed for advanced SOC analysts and DBAs.",
+  "category": "data_protection",
+  "subcategory": "database_security",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "advanced",
+  "estimated_time": "25 minutes",
+  "tags": ["dlp", "database", "exfiltration", "bulk_export", "sql", "insider_threat"],
+  "alert_types": ["dlp", "database_exfil", "bulk_export", "anomalous_query"],
+  "severity_filter": ["high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["dlp", "database_exfiltration", "bulk_data_export", "anomalous_query", "unauthorized_dump"],
+    "min_severity": "high"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "microsoft_graph",
+      "name": "Microsoft Graph",
+      "category": "identity",
+      "reason": "Disable the database user account to prevent further access"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create P1 incident ticket for database exfiltration investigation"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Notify DBA team and SOC of database exfiltration containment"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "dbe-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "title": "Database Exfiltration Alert",
+          "summary": "Triggers on bulk export, anomalous query, or unauthorized database dump alerts",
+          "config": {
+            "trigger_type": "alert",
+            "alert_types": ["dlp", "database_exfiltration", "bulk_data_export", "anomalous_query", "unauthorized_dump"]
+          }
+        }
+      },
+      {
+        "id": "dbe-2",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "title": "AI Database Exfiltration Analysis",
+          "summary": "Riggs AI analyzes query patterns, data volume, and user context for exfiltration indicators",
+          "config": {
+            "mode": "ai_analysis",
+            "template_id": "data_exfil",
+            "custom_instructions": "Analyze the database query patterns, exported data volume vs baseline, user role and access history, and destination of exported data. Determine if this is authorized ETL activity or unauthorized exfiltration.",
+            "alert_path": "$.trigger.alert",
+            "include_context": true
+          }
+        }
+      },
+      {
+        "id": "dbe-3",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "title": "Exfiltration Confirmed?",
+          "summary": "Branch based on whether database exfiltration is confirmed",
+          "config": {
+            "conditions": {
+              "operator": "AND",
+              "conditions": [
+                {
+                  "field": "$.nodes.dbe-2.result.verdict",
+                  "operator": "in",
+                  "value": ["MALICIOUS", "SUSPICIOUS"]
+                }
+              ],
+              "groups": []
+            },
+            "expression": "$.nodes.dbe-2.result.verdict in ['MALICIOUS', 'SUSPICIOUS']",
+            "default_branch": "no"
+          }
+        }
+      },
+      {
+        "id": "dbe-4",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "respond",
+          "title": "Block Database Session",
+          "summary": "Terminate the active database session executing the exfiltration query",
+          "config": {
+            "response_type": "integration_action",
+            "action_type": "terminate_session",
+            "params": {
+              "session_id": "$.trigger.alert.session_id",
+              "database": "$.trigger.alert.database_name",
+              "reason": "Database exfiltration detected — terminating active session"
+            },
+            "requires_approval": false,
+            "priority": "critical"
+          }
+        }
+      },
+      {
+        "id": "dbe-5",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "title": "Disable Database User Account",
+          "summary": "Disable the user account that executed the exfiltration query",
+          "config": {
+            "response_type": "integration_action",
+            "integration_instance_id": "microsoft_graph",
+            "action_type": "disable_account",
+            "params": {
+              "user_id": "$.trigger.alert.user_id",
+              "reason": "Database exfiltration — account disabled pending investigation"
+            },
+            "requires_approval": false,
+            "priority": "critical"
+          }
+        }
+      },
+      {
+        "id": "dbe-6",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "approval",
+          "title": "IR Lead Approves Investigation",
+          "summary": "Requires IR lead approval before full investigation and executive escalation",
+          "config": {
+            "approver_role": "ir_lead",
+            "timeout_minutes": 60,
+            "message": "DATABASE EXFILTRATION CONFIRMED\n\nUser: {{$.trigger.alert.username}}\nDatabase: {{$.trigger.alert.database_name}}\nQuery Volume: {{$.trigger.alert.rows_exported}} rows\nData Tables: {{$.trigger.alert.tables_accessed}}\n\nContainment:\n- Database session terminated\n- User account disabled\n\nRiggs Assessment: {{$.nodes.dbe-2.result.summary}}\n\nApprove full investigation with executive summary and P1 ticket?"
+          }
+        }
+      },
+      {
+        "id": "dbe-7",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "analyze",
+          "title": "Generate Executive Summary",
+          "summary": "Riggs AI generates executive summary of the database exfiltration incident",
+          "config": {
+            "mode": "ai_analysis",
+            "template_id": "executive_summary",
+            "custom_instructions": "Summarize the database exfiltration incident for CISO and legal. Include affected tables, data sensitivity, volume exported, user context, containment actions, and compliance implications.",
+            "alert_path": "$.trigger.alert",
+            "include_context": true
+          }
+        }
+      },
+      {
+        "id": "dbe-8",
+        "type": "signal",
+        "position": { "x": 340, "y": 1180 },
+        "data": {
+          "kind": "respond",
+          "title": "Create P1 Incident Ticket",
+          "summary": "Create a P1 Jira ticket with full exfiltration timeline and executive summary",
+          "config": {
+            "response_type": "create_ticket",
+            "system": "jira",
+            "project_key": "IR",
+            "issue_type": "Incident",
+            "priority": "P1",
+            "title": "DATABASE EXFILTRATION — {{$.trigger.alert.database_name}} by {{$.trigger.alert.username}}",
+            "description": "Database exfiltration incident confirmed.\n\nUser: {{$.trigger.alert.username}}\nDatabase: {{$.trigger.alert.database_name}}\nTables: {{$.trigger.alert.tables_accessed}}\nRows Exported: {{$.trigger.alert.rows_exported}}\n\nContainment:\n- Session terminated\n- Account disabled\n\nExecutive Summary:\n{{$.nodes.dbe-7.result.summary}}\n\nApproved by: {{$.nodes.dbe-6.approver}}",
+            "labels": ["database-exfiltration", "p1", "data-protection"],
+            "requires_approval": false
+          }
+        }
+      },
+      {
+        "id": "dbe-9",
+        "type": "signal",
+        "position": { "x": 340, "y": 1340 },
+        "data": {
+          "kind": "respond",
+          "title": "Notify DBA Team & SOC",
+          "summary": "Alert DBA team and SOC channel about containment actions",
+          "config": {
+            "response_type": "notification",
+            "channel": "slack",
+            "slack_channel": "#dba-alerts",
+            "message": "DATABASE EXFILTRATION CONTAINED\n\nUser: {{$.trigger.alert.username}} — account disabled\nDatabase: {{$.trigger.alert.database_name}}\nVolume: {{$.trigger.alert.rows_exported}} rows from {{$.trigger.alert.tables_accessed}}\n\nJira: {{$.nodes.dbe-8.ticket_key}}\n\nDBA team: please audit database access logs and verify no additional unauthorized queries.",
+            "priority": "critical"
+          }
+        }
+      },
+      {
+        "id": "dbe-10",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "utility",
+          "title": "Close Alert — Authorized Activity",
+          "summary": "Query activity is authorized ETL or reporting, close alert",
+          "config": {
+            "operation": "add_note",
+            "note": "Database query alert reviewed by Riggs AI. Verdict: {{$.nodes.dbe-2.result.verdict}}. Activity determined to be authorized (ETL, scheduled report, or approved export). Closing alert.",
+            "close_alert": true
+          }
+        }
+      },
+      {
+        "id": "dbe-11",
+        "type": "signal",
+        "position": { "x": 520, "y": 1500 },
+        "data": {
+          "kind": "end",
+          "title": "Playbook Complete",
+          "summary": "Database exfiltration response workflow finished",
+          "config": {
+            "disposition": "completed",
+            "summary": "Database exfiltration detection and response completed"
+          }
+        }
+      }
+    ],
+    "edges": [
+      { "id": "dbe-e1", "source": "dbe-1", "target": "dbe-2", "animated": true, "type": "smoothstep" },
+      { "id": "dbe-e2", "source": "dbe-2", "target": "dbe-3", "animated": true, "type": "smoothstep" },
+      { "id": "dbe-e3", "source": "dbe-3", "target": "dbe-4", "sourceHandle": "yes", "label": "Yes", "animated": true, "type": "smoothstep" },
+      { "id": "dbe-e4", "source": "dbe-3", "target": "dbe-10", "sourceHandle": "no", "label": "No", "animated": true, "type": "smoothstep" },
+      { "id": "dbe-e5", "source": "dbe-4", "target": "dbe-5", "animated": true, "type": "smoothstep" },
+      { "id": "dbe-e6", "source": "dbe-5", "target": "dbe-6", "animated": true, "type": "smoothstep" },
+      { "id": "dbe-e7", "source": "dbe-6", "target": "dbe-7", "animated": true, "type": "smoothstep" },
+      { "id": "dbe-e8", "source": "dbe-7", "target": "dbe-8", "animated": true, "type": "smoothstep" },
+      { "id": "dbe-e9", "source": "dbe-8", "target": "dbe-9", "animated": true, "type": "smoothstep" },
+      { "id": "dbe-e10", "source": "dbe-9", "target": "dbe-11", "animated": true, "type": "smoothstep" },
+      { "id": "dbe-e11", "source": "dbe-10", "target": "dbe-11", "animated": true, "type": "smoothstep" }
+    ]
+  }
+}

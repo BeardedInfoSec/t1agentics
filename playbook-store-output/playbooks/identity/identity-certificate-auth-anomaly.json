@@ -1,0 +1,205 @@
+{
+  "name": "Certificate-Based Auth Anomaly",
+  "slug": "identity-certificate-auth-anomaly",
+  "description": "Investigates anomalies in certificate-based authentication including expired certificates, certificate chain validation failures, and certificates used from unexpected locations. Verifies the certificate chain, analyzes the anomaly with AI, revokes compromised certificates, and alerts the PKI team for investigation.",
+  "category": "identity",
+  "subcategory": "certificate_auth",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "advanced",
+  "estimated_time": "12 minutes",
+  "tags": ["certificate", "pki", "authentication", "cert_chain", "anomaly", "mutual_tls"],
+  "alert_types": ["certificate_anomaly", "authentication_anomaly", "cert_validation_failure"],
+  "severity_filter": ["medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["certificate_anomaly", "cert_validation_failure"],
+    "min_severity": "medium"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "microsoft_graph",
+      "name": "Microsoft Graph",
+      "category": "identity",
+      "reason": "Query certificate-based authentication logs and user certificate mappings"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create investigation ticket for PKI team"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "ca-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "title": "Certificate Auth Anomaly Alert",
+          "summary": "Fires on certificate-based authentication anomaly or validation failure",
+          "config": {
+            "trigger_type": "alert",
+            "alert_filter": "certificate_anomaly OR cert_validation_failure"
+          }
+        }
+      },
+      {
+        "id": "ca-2",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "code",
+          "title": "Verify Certificate Chain",
+          "summary": "Validate the certificate chain and check expiration, revocation status, and issuer",
+          "config": {
+            "language": "python",
+            "code": "cert = context['trigger']['alert'].get('certificate', {})\nchain_valid = cert.get('chain_valid', False)\nis_expired = cert.get('is_expired', False)\nis_revoked = cert.get('is_revoked', False)\nissuer_trusted = cert.get('issuer_trusted', True)\nresult = {'chain_valid': chain_valid, 'is_expired': is_expired, 'is_revoked': is_revoked, 'issuer_trusted': issuer_trusted, 'cert_subject': cert.get('subject', ''), 'cert_serial': cert.get('serial_number', ''), 'is_compromised': not chain_valid or is_revoked or not issuer_trusted}"
+          }
+        }
+      },
+      {
+        "id": "ca-3",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "analyze",
+          "title": "AI Certificate Anomaly Analysis",
+          "summary": "Analyze the certificate anomaly context and usage patterns",
+          "config": {
+            "mode": "ai_analysis",
+            "template_id": "credential_access",
+            "custom_instructions": "",
+            "alert_path": "$.trigger.alert",
+            "include_context": true
+          }
+        }
+      },
+      {
+        "id": "ca-4",
+        "type": "signal",
+        "position": { "x": 520, "y": 540 },
+        "data": {
+          "kind": "decision",
+          "title": "Certificate Compromised?",
+          "summary": "Branch if the certificate chain is invalid, revoked, or from untrusted issuer",
+          "config": {
+            "conditions": {
+              "operator": "AND",
+              "conditions": [
+                {
+                  "field": "$.nodes.ca-2.result.is_compromised",
+                  "operator": "equals",
+                  "value": "true"
+                }
+              ],
+              "groups": []
+            },
+            "expression": "$.nodes.ca-2.result.is_compromised == true",
+            "default_branch": "no"
+          }
+        }
+      },
+      {
+        "id": "ca-5",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "title": "Revoke Certificate",
+          "summary": "Add the compromised certificate to the revocation list",
+          "config": {
+            "response_type": "integration_action",
+            "integration_instance_id": "microsoft_graph",
+            "action_type": "revoke_certificate",
+            "params": {
+              "cert_serial": "$.nodes.ca-2.result.cert_serial",
+              "user_id": "$.trigger.alert.target_user_id",
+              "reason": "Certificate anomaly — chain validation failure or untrusted issuer"
+            },
+            "requires_approval": false,
+            "priority": "high"
+          }
+        }
+      },
+      {
+        "id": "ca-6",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "title": "Create PKI Investigation Ticket",
+          "summary": "Create Jira ticket for PKI team to investigate the certificate anomaly",
+          "config": {
+            "response_type": "create_ticket",
+            "system": "jira",
+            "project_key": "SEC",
+            "issue_type": "Incident",
+            "title": "Certificate Auth Anomaly: {{$.nodes.ca-2.result.cert_subject}} — Compromised Certificate",
+            "description": "Certificate-based authentication anomaly detected. Subject: {{$.nodes.ca-2.result.cert_subject}}. Serial: {{$.nodes.ca-2.result.cert_serial}}. Chain valid: {{$.nodes.ca-2.result.chain_valid}}. Issuer trusted: {{$.nodes.ca-2.result.issuer_trusted}}. Certificate has been revoked. PKI team investigation required.",
+            "priority": "high",
+            "requires_approval": false
+          }
+        }
+      },
+      {
+        "id": "ca-7",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "title": "Alert PKI Team",
+          "summary": "Notify the PKI team of the compromised certificate",
+          "config": {
+            "response_type": "notification",
+            "channel": "slack",
+            "slack_channel": "#pki-operations",
+            "message": "Certificate auth anomaly detected. Subject: {{$.nodes.ca-2.result.cert_subject}}. Certificate revoked. Chain valid: {{$.nodes.ca-2.result.chain_valid}}, Issuer trusted: {{$.nodes.ca-2.result.issuer_trusted}}. Investigation ticket created.",
+            "requires_approval": false,
+            "priority": "high"
+          }
+        }
+      },
+      {
+        "id": "ca-8",
+        "type": "signal",
+        "position": { "x": 700, "y": 700 },
+        "data": {
+          "kind": "utility",
+          "title": "Log Anomaly for Review",
+          "summary": "Log the certificate anomaly as informational for monitoring",
+          "config": {
+            "operation": "add_note",
+            "note": "Certificate auth anomaly detected but certificate chain is valid and issuer is trusted. Logged for monitoring. Possible causes: unusual location, time-based anomaly."
+          }
+        }
+      },
+      {
+        "id": "ca-9",
+        "type": "signal",
+        "position": { "x": 520, "y": 1180 },
+        "data": {
+          "kind": "end",
+          "title": "Playbook Complete",
+          "summary": "Certificate auth anomaly response finished",
+          "config": {
+            "disposition": "completed",
+            "summary": "Certificate-based authentication anomaly response completed"
+          }
+        }
+      }
+    ],
+    "edges": [
+      { "id": "ca-e1", "source": "ca-1", "target": "ca-2", "animated": true, "type": "smoothstep" },
+      { "id": "ca-e2", "source": "ca-2", "target": "ca-3", "animated": true, "type": "smoothstep" },
+      { "id": "ca-e3", "source": "ca-3", "target": "ca-4", "animated": true, "type": "smoothstep" },
+      { "id": "ca-e4", "source": "ca-4", "target": "ca-5", "sourceHandle": "yes", "label": "Yes", "animated": true, "type": "smoothstep" },
+      { "id": "ca-e5", "source": "ca-4", "target": "ca-8", "sourceHandle": "no", "label": "No", "animated": true, "type": "smoothstep" },
+      { "id": "ca-e6", "source": "ca-5", "target": "ca-6", "animated": true, "type": "smoothstep" },
+      { "id": "ca-e7", "source": "ca-6", "target": "ca-7", "animated": true, "type": "smoothstep" },
+      { "id": "ca-e8", "source": "ca-7", "target": "ca-9", "animated": true, "type": "smoothstep" },
+      { "id": "ca-e9", "source": "ca-8", "target": "ca-9", "animated": true, "type": "smoothstep" }
+    ]
+  }
+}

@@ -1,0 +1,308 @@
+{
+  "id": "darktrace_siem",
+  "name": "Darktrace",
+  "description": "This app integrates with Darktrace to perform investigative and containment actions",
+  "version": "1.0.8",
+  "category": "siem",
+  "vendor": "Darktrace",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "get_device_tags",
+      "name": "Get Device Tags",
+      "description": "Receive all of the tags that are currently applied to a device",
+      "http_method": "GET",
+      "endpoint": "/actions/get_device_tags",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "device_id",
+          "type": "number",
+          "description": "See artifact details to get the device_ID",
+          "required": true,
+          "contains": [
+            "darktrace device id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_tagged_devices",
+      "name": "Get Tagged Devices",
+      "description": "Receive all of the devices that currently have a given tag",
+      "http_method": "GET",
+      "endpoint": "/actions/get_tagged_devices",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "tag",
+          "type": "string",
+          "description": "The name of an existing tag",
+          "required": true,
+          "contains": [
+            "darktrace tag"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_breach_comments",
+      "name": "Get Breach Comments",
+      "description": "Receive all comments made on a model breach",
+      "http_method": "GET",
+      "endpoint": "/actions/get_breach_comments",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "model_breach_id",
+          "type": "number",
+          "description": "See artifact details to get the model_breach_id",
+          "required": true,
+          "contains": [
+            "darktrace model breach id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "on_poll",
+      "name": "On Poll",
+      "description": "Ingests Darktrace model breaches and Cyber AI Analyst investigations",
+      "http_method": "GET",
+      "endpoint": "/actions/on_poll",
+      "action_type": "ingest",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "artifact_count",
+          "type": "number",
+          "description": "Maximum number of artifact records to query for",
+          "required": false
+        },
+        {
+          "name": "container_count",
+          "type": "number",
+          "description": "Maximum number of container records to query for",
+          "required": false
+        },
+        {
+          "name": "container_id",
+          "type": "string",
+          "description": "Container IDs to limit the ingestion to",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "number",
+          "description": "End of the time range, in epoch time (milliseconds)",
+          "required": false
+        },
+        {
+          "name": "start_time",
+          "type": "number",
+          "description": "Start of the time range, in epoch time (milliseconds)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_device_description",
+      "name": "Get Device Description",
+      "description": "Receive device description for the specified device",
+      "http_method": "GET",
+      "endpoint": "/actions/get_device_description",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "device_id",
+          "type": "number",
+          "description": "See artifact details to get the device_id",
+          "required": true,
+          "contains": [
+            "darktrace device id"
+          ]
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "get_device_model_breaches",
+      "name": "Get Device Modelbreaches",
+      "description": "Receive recent model breaches for the specified device",
+      "http_method": "GET",
+      "endpoint": "/actions/get_device_model_breaches",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "device_id",
+          "type": "number",
+          "description": "See artifact details to get the device_id",
+          "required": true,
+          "contains": [
+            "darktrace device id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "acknowledge_breach",
+      "name": "Acknowledge Breach",
+      "description": "Acknowledge a model breach",
+      "http_method": "POST",
+      "endpoint": "/actions/acknowledge_breach",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "model_breach_id",
+          "type": "number",
+          "description": "See artifact details to get the model_breach_id",
+          "required": true,
+          "contains": [
+            "darktrace model breach id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "unacknowledge_breach",
+      "name": "Unacknowledge Breach",
+      "description": "Unacknowledge a model breach",
+      "http_method": "POST",
+      "endpoint": "/actions/unacknowledge_breach",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "model_breach_id",
+          "type": "number",
+          "description": "See artifact details to get the model_breach_id",
+          "required": true,
+          "contains": [
+            "darktrace model breach id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "post_comment",
+      "name": "Post Comment",
+      "description": "Post a comment to a model breach",
+      "http_method": "POST",
+      "endpoint": "/actions/post_comment",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "message",
+          "type": "string",
+          "description": "Comment to post",
+          "required": true
+        },
+        {
+          "name": "model_breach_id",
+          "type": "number",
+          "description": "See artifact details to get the model_breach_id",
+          "required": true,
+          "contains": [
+            "darktrace model breach id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "post_tag",
+      "name": "Post Tag",
+      "description": "Post a tag to a device",
+      "http_method": "POST",
+      "endpoint": "/actions/post_tag",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "device_id",
+          "type": "number",
+          "description": "See artifact details to get the device_id",
+          "required": true,
+          "contains": [
+            "darktrace device id"
+          ]
+        },
+        {
+          "name": "duration",
+          "type": "number",
+          "description": "How long this tag be applied for (seconds). Ex: enter 3600 for 1 hour. Leave this entry empty if you do not want it to expire",
+          "required": false
+        },
+        {
+          "name": "tag",
+          "type": "string",
+          "description": "Choose a tag to apply to the device",
+          "required": true,
+          "contains": [
+            "darktrace tag"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_breach_connections",
+      "name": "Get Breach Connections",
+      "description": "Receive connections involved in a model breach",
+      "http_method": "GET",
+      "endpoint": "/actions/get_breach_connections",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "model_breach_id",
+          "type": "string",
+          "description": "See artifact details to get the model_breach_id",
+          "required": true,
+          "contains": [
+            "darktrace model breach id"
+          ]
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Darktrace",
+    "original_type": "siem",
+    "converted_at": "2025-12-18T16:25:28.726612",
+    "source_version": "1.0.8"
+  }
+}

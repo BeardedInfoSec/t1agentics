@@ -1,0 +1,229 @@
+{
+  "id": "splunk_soar",
+  "name": "Splunk SOAR",
+  "description": "Security Orchestration, Automation and Response platform (formerly Phantom) for automating security workflows, managing containers/cases, running playbooks, and coordinating incident response across security tools.",
+  "version": "1.0.0",
+  "category": "soar",
+  "vendor": "Splunk (Cisco)",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "header_name": "Authorization",
+    "location": "header",
+    "token_prefix": "Bearer"
+  },
+  "base_url": "https://{host}/rest",
+  "actions": [
+    {
+      "id": "list_containers",
+      "name": "List Containers",
+      "description": "Retrieve a list of containers (cases/incidents) with optional filtering and pagination.",
+      "http_method": "GET",
+      "endpoint": "/container",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "page", "type": "integer", "description": "Page number for pagination.", "required": false},
+        {"name": "page_size", "type": "integer", "description": "Number of results per page (default 10).", "required": false},
+        {"name": "sort", "type": "string", "description": "Field to sort results by (e.g., 'create_time').", "required": false},
+        {"name": "order", "type": "string", "description": "Sort order: 'asc' or 'desc'.", "required": false},
+        {"name": "_filter_status", "type": "string", "description": "Filter containers by status (e.g., 'open', 'closed', 'new').", "required": false},
+        {"name": "_filter_severity", "type": "string", "description": "Filter containers by severity (e.g., 'high', 'medium', 'low').", "required": false},
+        {"name": "_filter_label", "type": "string", "description": "Filter containers by label.", "required": false}
+      ]
+    },
+    {
+      "id": "get_container",
+      "name": "Get Container",
+      "description": "Retrieve details of a specific container (case/incident) by its ID.",
+      "http_method": "GET",
+      "endpoint": "/container/{id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "id", "type": "integer", "description": "The container ID.", "required": true}
+      ]
+    },
+    {
+      "id": "create_container",
+      "name": "Create Container",
+      "description": "Create a new container (case/incident) in Splunk SOAR.",
+      "http_method": "POST",
+      "endpoint": "/container",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "name", "type": "string", "description": "Name/title of the container.", "required": true},
+        {"name": "label", "type": "string", "description": "Label to categorize the container (e.g., 'events', 'incidents').", "required": true},
+        {"name": "description", "type": "string", "description": "Description of the container.", "required": false},
+        {"name": "severity", "type": "string", "description": "Severity level: 'low', 'medium', 'high'.", "required": false},
+        {"name": "status", "type": "string", "description": "Container status: 'new', 'open', 'closed'.", "required": false},
+        {"name": "sensitivity", "type": "string", "description": "Data sensitivity level: 'white', 'green', 'amber', 'red'.", "required": false},
+        {"name": "owner_id", "type": "integer", "description": "User ID of the container owner.", "required": false},
+        {"name": "tags", "type": "array", "description": "Array of tags to apply to the container.", "required": false}
+      ]
+    },
+    {
+      "id": "update_container",
+      "name": "Update Container",
+      "description": "Update an existing container's properties such as status, severity, or owner.",
+      "http_method": "POST",
+      "endpoint": "/container/{id}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "id", "type": "integer", "description": "The container ID to update.", "required": true},
+        {"name": "name", "type": "string", "description": "Updated container name.", "required": false},
+        {"name": "status", "type": "string", "description": "Updated status: 'new', 'open', 'closed'.", "required": false},
+        {"name": "severity", "type": "string", "description": "Updated severity: 'low', 'medium', 'high'.", "required": false},
+        {"name": "owner_id", "type": "integer", "description": "Updated owner user ID.", "required": false},
+        {"name": "description", "type": "string", "description": "Updated description.", "required": false},
+        {"name": "tags", "type": "array", "description": "Updated tags array.", "required": false}
+      ]
+    },
+    {
+      "id": "close_container",
+      "name": "Close Container",
+      "description": "Close a container by setting its status to closed.",
+      "http_method": "POST",
+      "endpoint": "/container/{id}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "id", "type": "integer", "description": "The container ID to close.", "required": true},
+        {"name": "status", "type": "string", "description": "Set to 'closed'.", "required": true},
+        {"name": "close_time", "type": "string", "description": "Closure timestamp in ISO 8601 format.", "required": false}
+      ]
+    },
+    {
+      "id": "add_artifact",
+      "name": "Add Artifact",
+      "description": "Add an artifact (indicator/evidence) to a container.",
+      "http_method": "POST",
+      "endpoint": "/artifact",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "container_id", "type": "integer", "description": "The container ID to add the artifact to.", "required": true},
+        {"name": "name", "type": "string", "description": "Name of the artifact.", "required": true},
+        {"name": "cef", "type": "object", "description": "CEF (Common Event Format) field-value pairs for the artifact.", "required": false},
+        {"name": "label", "type": "string", "description": "Label for the artifact (e.g., 'event').", "required": false},
+        {"name": "severity", "type": "string", "description": "Severity of the artifact.", "required": false},
+        {"name": "type", "type": "string", "description": "Artifact type (e.g., 'ip', 'domain', 'hash').", "required": false},
+        {"name": "source_data_identifier", "type": "string", "description": "Unique identifier from the source system.", "required": false},
+        {"name": "tags", "type": "array", "description": "Array of tags for the artifact.", "required": false}
+      ]
+    },
+    {
+      "id": "list_artifacts",
+      "name": "List Artifacts",
+      "description": "List artifacts for a specific container.",
+      "http_method": "GET",
+      "endpoint": "/container/{container_id}/artifacts",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "container_id", "type": "integer", "description": "The container ID to list artifacts for.", "required": true},
+        {"name": "page", "type": "integer", "description": "Page number for pagination.", "required": false},
+        {"name": "page_size", "type": "integer", "description": "Number of results per page.", "required": false}
+      ]
+    },
+    {
+      "id": "run_action",
+      "name": "Run Action",
+      "description": "Execute an action (app action) on a container with specified targets and parameters.",
+      "http_method": "POST",
+      "endpoint": "/action_run",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "action", "type": "string", "description": "Name of the action to run.", "required": true},
+        {"name": "container_id", "type": "integer", "description": "Container ID to run the action against.", "required": true},
+        {"name": "name", "type": "string", "description": "Descriptive name for this action run.", "required": true},
+        {"name": "type", "type": "string", "description": "Action type (e.g., 'investigate', 'generic', 'correct', 'contain').", "required": false},
+        {"name": "targets", "type": "array", "description": "Array of target objects specifying assets and parameters.", "required": true},
+        {"name": "parameters", "type": "array", "description": "Array of parameter objects for the action.", "required": false}
+      ]
+    },
+    {
+      "id": "get_action_run",
+      "name": "Get Action Run Status",
+      "description": "Get the status and results of a previously launched action run.",
+      "http_method": "GET",
+      "endpoint": "/action_run/{action_run_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "action_run_id", "type": "integer", "description": "The action run ID to retrieve.", "required": true}
+      ]
+    },
+    {
+      "id": "run_playbook",
+      "name": "Run Playbook",
+      "description": "Execute a playbook on a specific container.",
+      "http_method": "POST",
+      "endpoint": "/playbook_run",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "container_id", "type": "integer", "description": "Container ID to run the playbook against.", "required": true},
+        {"name": "playbook_id", "type": "integer", "description": "ID of the playbook to execute.", "required": true},
+        {"name": "scope", "type": "string", "description": "Scope of the playbook run: 'all' or 'new'.", "required": false},
+        {"name": "run_as", "type": "string", "description": "Username to run the playbook as.", "required": false}
+      ]
+    },
+    {
+      "id": "list_playbooks",
+      "name": "List Playbooks",
+      "description": "Retrieve a list of available playbooks.",
+      "http_method": "GET",
+      "endpoint": "/playbook",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "page", "type": "integer", "description": "Page number for pagination.", "required": false},
+        {"name": "page_size", "type": "integer", "description": "Number of results per page.", "required": false}
+      ]
+    },
+    {
+      "id": "get_playbook_run",
+      "name": "Get Playbook Run Status",
+      "description": "Get the status and details of a playbook run.",
+      "http_method": "GET",
+      "endpoint": "/playbook_run/{playbook_run_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "playbook_run_id", "type": "integer", "description": "The playbook run ID.", "required": true}
+      ]
+    },
+    {
+      "id": "search",
+      "name": "Search",
+      "description": "Search across containers, artifacts, and other objects using query parameters.",
+      "http_method": "GET",
+      "endpoint": "/search",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "query", "type": "string", "description": "Search query string.", "required": true},
+        {"name": "categories", "type": "string", "description": "Comma-separated categories to search (e.g., 'container,artifact').", "required": false},
+        {"name": "page", "type": "integer", "description": "Page number.", "required": false},
+        {"name": "page_size", "type": "integer", "description": "Results per page.", "required": false}
+      ]
+    },
+    {
+      "id": "add_comment",
+      "name": "Add Comment",
+      "description": "Add a comment/note to a container.",
+      "http_method": "POST",
+      "endpoint": "/container/{container_id}/comments",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "container_id", "type": "integer", "description": "Container ID to add the comment to.", "required": true},
+        {"name": "comment", "type": "string", "description": "The comment text.", "required": true}
+      ]
+    }
+  ]
+}

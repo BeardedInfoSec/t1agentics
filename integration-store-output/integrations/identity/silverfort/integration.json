@@ -1,0 +1,231 @@
+{
+  "id": "silverfort",
+  "name": "Silverfort",
+  "description": "Unified identity protection through Silverfort REST API for managing authentication policies, MFA enforcement, risk scoring, and identity threat detection",
+  "version": "1.0.0",
+  "category": "identity",
+  "vendor": "Silverfort",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "header_prefix": "Bearer",
+    "location": "header"
+  },
+  "base_url": "https://{host}/api/v1",
+  "actions": [
+    {
+      "id": "get_user_risk",
+      "name": "Get User Risk Score",
+      "description": "Retrieve the current risk score and risk indicators for a user",
+      "http_method": "GET",
+      "endpoint": "/users/{userId}/risk",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "userId",
+          "type": "string",
+          "description": "User identifier (UPN or SamAccountName)",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_users",
+      "name": "List Users",
+      "description": "List all users monitored by Silverfort with risk information",
+      "http_method": "GET",
+      "endpoint": "/users",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "Filter expression for users",
+          "required": false
+        },
+        {
+          "name": "riskLevel",
+          "type": "string",
+          "description": "Filter by risk level (low, medium, high, critical)",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of results",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "block_user",
+      "name": "Block User Authentication",
+      "description": "Block all authentication attempts for a user",
+      "http_method": "POST",
+      "endpoint": "/users/{userId}/block",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "userId",
+          "type": "string",
+          "description": "User identifier to block",
+          "required": true
+        },
+        {
+          "name": "reason",
+          "type": "string",
+          "description": "Reason for blocking the user",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "unblock_user",
+      "name": "Unblock User Authentication",
+      "description": "Unblock a previously blocked user to allow authentication",
+      "http_method": "POST",
+      "endpoint": "/users/{userId}/unblock",
+      "action_type": "correct",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "userId",
+          "type": "string",
+          "description": "User identifier to unblock",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "require_mfa",
+      "name": "Require MFA for User",
+      "description": "Force MFA requirement for a specific user on all authentications",
+      "http_method": "POST",
+      "endpoint": "/users/{userId}/mfa/require",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "userId",
+          "type": "string",
+          "description": "User identifier",
+          "required": true
+        },
+        {
+          "name": "duration",
+          "type": "number",
+          "description": "Duration in hours for MFA requirement (0 for permanent)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_policies",
+      "name": "List Policies",
+      "description": "List all authentication and access policies",
+      "http_method": "GET",
+      "endpoint": "/policies",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Filter by policy type (mfa, block, allow)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_authentication_events",
+      "name": "Get Authentication Events",
+      "description": "Retrieve authentication events for a user or across the environment",
+      "http_method": "GET",
+      "endpoint": "/authentications",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "userId",
+          "type": "string",
+          "description": "Filter by user identifier",
+          "required": false
+        },
+        {
+          "name": "startTime",
+          "type": "string",
+          "description": "Start time (ISO 8601)",
+          "required": false
+        },
+        {
+          "name": "endTime",
+          "type": "string",
+          "description": "End time (ISO 8601)",
+          "required": false
+        },
+        {
+          "name": "result",
+          "type": "string",
+          "description": "Filter by result (success, failure, blocked)",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of results",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_service_accounts",
+      "name": "List Service Accounts",
+      "description": "List all discovered service accounts and machine identities",
+      "http_method": "GET",
+      "endpoint": "/service-accounts",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "Filter expression",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_threats",
+      "name": "Get Identity Threats",
+      "description": "Retrieve detected identity-based threats and anomalies",
+      "http_method": "GET",
+      "endpoint": "/threats",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Filter by threat severity (low, medium, high, critical)",
+          "required": false
+        },
+        {
+          "name": "startTime",
+          "type": "string",
+          "description": "Start time (ISO 8601)",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of results",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

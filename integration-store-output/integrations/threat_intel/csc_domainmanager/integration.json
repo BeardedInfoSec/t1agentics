@@ -1,0 +1,233 @@
+{
+  "id": "csc_domainmanager",
+  "name": "CSC DomainManager",
+  "description": "Connects to CSC Domain manager platform using CSC Domain manager API services",
+  "version": "1.2.1",
+  "category": "threat_intel",
+  "vendor": "Corporation Services Company",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "get_all_domains",
+      "name": "Get All Domains",
+      "description": "Get all domain portfolio data",
+      "http_method": "GET",
+      "endpoint": "/domains",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "selector",
+          "type": "string",
+          "description": "The attribute of the domain to search with. For example, \"qualifiedDomainName=like='example\\*'\" or \"nameservers=in=('dns1.mydns.com', 'dns2.mydns.com')\"",
+          "required": false,
+          "contains": [
+            "csc domain selector"
+          ]
+        },
+        {
+          "name": "operator",
+          "type": "string",
+          "description": "Search operators used to clarify selector. == for Equals, =gt= for Greater Than, =le= for Less Than or Equal To, etc",
+          "required": false
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "description": "Value to compare to selector based on operator. For example, \"filter=qualifiedDomainName=={value}\"",
+          "required": false
+        },
+        {
+          "name": "sort",
+          "type": "string",
+          "description": "Specify how results should be sorted: Ex: propertyName,(desc|asc)",
+          "required": false
+        },
+        {
+          "name": "custom",
+          "type": "string",
+          "description": "For custom or more complex searches that use joiner values",
+          "required": false
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "get_specific_domain",
+      "name": "Get Specific Domain",
+      "description": "Get domain data by qualified domain name",
+      "http_method": "GET",
+      "endpoint": "/actions/get_specific_domain",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "fqdn",
+          "type": "string",
+          "description": "Qualified domain name",
+          "required": true,
+          "contains": [
+            "domain"
+          ]
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "check_domain_available",
+      "name": "Check Domain Available",
+      "description": "Check registration availability for one or more domain names",
+      "http_method": "GET",
+      "endpoint": "/actions/check_domain_available",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "fqdn",
+          "type": "string",
+          "description": "Values of one or more domains to check for availability, separated by a comma. Max 50 domains in one query",
+          "required": true,
+          "contains": [
+            "domain"
+          ]
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "register_domain",
+      "name": "Register Domain",
+      "description": "Place a domain registration order",
+      "http_method": "GET",
+      "endpoint": "/actions/register_domain",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "qualifieddomainname",
+          "type": "string",
+          "description": "Domain to register",
+          "required": true,
+          "contains": [
+            "domain"
+          ]
+        },
+        {
+          "name": "businessunit",
+          "type": "string",
+          "description": "Business Unit abbreviation to use in domain registration",
+          "required": true
+        },
+        {
+          "name": "term",
+          "type": "string",
+          "description": "Term, in months, to register domain. Defaults to 12 months",
+          "required": false
+        },
+        {
+          "name": "brand",
+          "type": "string",
+          "description": "Brand name value to provide in domain registration. Defaults to empty string",
+          "required": false
+        },
+        {
+          "name": "registrantprofile",
+          "type": "string",
+          "description": "Value to list as whois contact. Must exist already in CSC or order will be incomplete",
+          "required": true
+        },
+        {
+          "name": "adminprofile",
+          "type": "string",
+          "description": "Value to list as whois contact. Must exist already in CSC or order will be incomplete",
+          "required": true
+        },
+        {
+          "name": "technicalprofile",
+          "type": "string",
+          "description": "Value to list as whois contact. Must exist already in CSC or order will be incomplete",
+          "required": true
+        },
+        {
+          "name": "nameservers",
+          "type": "string",
+          "description": "Comma-separated string of name servers to use in registration. Only required if there is no order template mapped to your bearer token",
+          "required": true
+        },
+        {
+          "name": "dnstype",
+          "type": "string",
+          "description": "Type of DNS configuration. Defaults to CSC_BASIC",
+          "required": false
+        },
+        {
+          "name": "notes",
+          "type": "string",
+          "description": "Notes to provide in registration payload. Defaults to \"Registered by Security Automation\" if not provided",
+          "required": false
+        },
+        {
+          "name": "notificationsenabled",
+          "type": "boolean",
+          "description": "Whether or not email notifications are enabled for domain registration. Defaults to False",
+          "required": false
+        },
+        {
+          "name": "additionalnotificationemails",
+          "type": "string",
+          "description": "Comma-separated string of email addresses to add as receivers of notifications related to this domain",
+          "required": false
+        },
+        {
+          "name": "redactpublicwhois",
+          "type": "boolean",
+          "description": "Whether to anonymize public whois info. Defaults to False",
+          "required": false
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "get_order_status",
+      "name": "Get Order Status",
+      "description": "Get one or more orders for a purchase request for a particular fqdn",
+      "http_method": "GET",
+      "endpoint": "/actions/get_order_status",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "fqdn",
+          "type": "string",
+          "description": "The domain which was purchased and is the subject of the query to see the purchase status",
+          "required": true,
+          "contains": [
+            "domain"
+          ]
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "CSC DomainManager",
+    "original_type": "information",
+    "converted_at": "2025-12-18T16:25:28.713438",
+    "source_version": "1.2.1"
+  }
+}

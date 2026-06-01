@@ -1,0 +1,174 @@
+{
+  "id": "bitdefender_gravityzone",
+  "name": "Bitdefender GravityZone",
+  "description": "This app integrates with Bitdefender GravityZone to execute various containment, corrective and investigative actions",
+  "version": "1.0.2",
+  "category": "edr",
+  "vendor": "Bitdefender",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "delete_quarantine",
+      "name": "Delete Quarantine",
+      "description": "Delete items from quarantine",
+      "http_method": "POST",
+      "endpoint": "v1.0/jsonrpc/quarantine/{service}",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "service_name",
+          "type": "string",
+          "description": "Service name (computers or exchange)",
+          "required": true,
+          "default": "computers"
+        },
+        {
+          "name": "empty_all",
+          "type": "boolean",
+          "description": "Check to remove all items from quarantine",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "item_ids",
+          "type": "string",
+          "description": "List of quarantined IDs to be removed (comma separated)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "unquarantine_computer",
+      "name": "Unquarantine Computer",
+      "description": "Unquarantine Computers and Virtual Machines",
+      "http_method": "POST",
+      "endpoint": "v1.0/jsonrpc/quarantine/{service}",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "item_ids",
+          "type": "string",
+          "description": "List of quarantined IDs to be restored (comma separated)",
+          "required": true
+        },
+        {
+          "name": "location",
+          "type": "string",
+          "description": "Absolute path to the folder where items will be restored",
+          "required": false
+        },
+        {
+          "name": "add_exclusion_policy",
+          "type": "boolean",
+          "description": "Exclude files to be restored from future scans",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "unquarantine_exchange",
+      "name": "Unquarantine Exchange",
+      "description": "Unquarantine items for Exchange Servers",
+      "http_method": "POST",
+      "endpoint": "v1.0/jsonrpc/quarantine/{service}",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "item_ids",
+          "type": "string",
+          "description": "List of quarantined IDs to be restored (comma separated)",
+          "required": true
+        },
+        {
+          "name": "username",
+          "type": "string",
+          "description": "Username of a MS Exchange user (incl. domain name)",
+          "required": true
+        },
+        {
+          "name": "password",
+          "type": "string",
+          "description": "Password of a MS Exchange user",
+          "required": true
+        },
+        {
+          "name": "email",
+          "type": "string",
+          "description": "Email address of the MS Exchange user",
+          "required": false,
+          "contains": [
+            "email"
+          ]
+        },
+        {
+          "name": "ews_url",
+          "type": "string",
+          "description": "MS Exchange Web Services URL",
+          "required": false,
+          "contains": [
+            "url"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_quarantine",
+      "name": "List Quarantine",
+      "description": "Get list of available quarantined items related to a company",
+      "http_method": "GET",
+      "endpoint": "v1.0/jsonrpc/quarantine/{service}",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "service_name",
+          "type": "string",
+          "description": "Service name (computers or exchange)",
+          "required": true,
+          "default": "computers"
+        },
+        {
+          "name": "endpoint_id",
+          "type": "string",
+          "description": "ID of device for which quarantined items are retrieved. Empty to fetch all quarantined items in the network",
+          "required": false
+        },
+        {
+          "name": "page",
+          "type": "number",
+          "description": "Results page",
+          "required": false
+        },
+        {
+          "name": "per_page",
+          "type": "number",
+          "description": "Number of items per page",
+          "required": false
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Bitdefender GravityZone",
+    "original_type": "endpoint",
+    "converted_at": "2025-12-18T16:25:28.610413",
+    "source_version": "1.0.2"
+  }
+}

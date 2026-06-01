@@ -1,0 +1,520 @@
+{
+  "id": "venafi",
+  "name": "Venafi",
+  "description": "This app integrates with an instance of Venafi to perform generic and investigative actions",
+  "version": "2.1.2",
+  "category": "identity",
+  "vendor": "Venafi",
+  "auth_type": "basic_auth",
+  "auth_config": {
+    "type": "basic_auth",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "list_policies",
+      "name": "List Policies",
+      "description": "Returns a list of all policies in Venafi",
+      "http_method": "GET",
+      "endpoint": "/actions/list_policies",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "create_certificate",
+      "name": "Create Certificate",
+      "description": "Enrolls a certificate in Venafi",
+      "http_method": "GET",
+      "endpoint": "/actions/create_certificate",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "policy_dn",
+          "type": "string",
+          "description": "The folder DN for the new certificate",
+          "required": true,
+          "contains": [
+            "venafi policy dn"
+          ]
+        },
+        {
+          "name": "subject",
+          "type": "string",
+          "description": "The Common Name (CN) field for the certificate. Either the subject or object_name parameter must be filled in",
+          "required": false
+        },
+        {
+          "name": "object_name",
+          "type": "string",
+          "description": "The Common Name (CN) field for the certificate. Either the subject or object_name parameter must be filled in",
+          "required": false
+        },
+        {
+          "name": "approvers",
+          "type": "string",
+          "description": "An array of one or more identities for certificate workflow approvers",
+          "required": false
+        },
+        {
+          "name": "cadn",
+          "type": "string",
+          "description": "The Distinguished Name (DN) of the Trust Protection Platform Certificate Authority Template object",
+          "required": false
+        },
+        {
+          "name": "ca_specific_attributes",
+          "type": "string",
+          "description": "An array of name/value pairs providing any CA attributes to be stored with the Certificate object and submitted to the CA during enrollment",
+          "required": false
+        },
+        {
+          "name": "city",
+          "type": "string",
+          "description": "Locality/City attribute of Certificate",
+          "required": false
+        },
+        {
+          "name": "contacts",
+          "type": "string",
+          "description": "An array of one or more identities for users or groups who receive notifications about events pertaining to the object",
+          "required": false
+        },
+        {
+          "name": "country",
+          "type": "string",
+          "description": "The Country field for the certificate Subject DN",
+          "required": false
+        },
+        {
+          "name": "created_by",
+          "type": "string",
+          "description": "The setting to identify the object that initiated enrollment or provisioning changes",
+          "required": false
+        },
+        {
+          "name": "devices",
+          "type": "string",
+          "description": "An array of devices that require enrollment or provisioning",
+          "required": false
+        },
+        {
+          "name": "disable_automatic_renewal",
+          "type": "boolean",
+          "description": "The setting to control whether manual intervention is required for certificate renewal",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "elliptical_curve",
+          "type": "string",
+          "description": "P256, P384, or P521 encryption for Elliptical Curve Cryptography",
+          "required": false
+        },
+        {
+          "name": "key_algorithm",
+          "type": "string",
+          "description": "Algorithm for public key of Certificate",
+          "required": false
+        },
+        {
+          "name": "key_bit_size",
+          "type": "number",
+          "description": "The number of bits to allow for key generation",
+          "required": false
+        },
+        {
+          "name": "management_type",
+          "type": "string",
+          "description": "The level of management that Trust Protection Platform applies to the certificate",
+          "required": false
+        },
+        {
+          "name": "organization",
+          "type": "string",
+          "description": "Organization attribute of the certificate",
+          "required": false
+        },
+        {
+          "name": "organizational_unit",
+          "type": "string",
+          "description": "Organizational unit attribute of the certificate",
+          "required": false
+        },
+        {
+          "name": "pkcs10",
+          "type": "string",
+          "description": "The PKCS10 formatted CSR for the certificate",
+          "required": false
+        },
+        {
+          "name": "reenable",
+          "type": "boolean",
+          "description": "Option to renew a previously disabled certificate",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "set_work_to_do",
+          "type": "boolean",
+          "description": "Option to control certificate processing",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "state",
+          "type": "string",
+          "description": "State/Province attribute of Certificate",
+          "required": false
+        },
+        {
+          "name": "subject_alt_names",
+          "type": "string",
+          "description": "Skip parameter if the policy already specifies SAN Types. Array of subject alternative names (SANS) for the certificate. For each SAN, specify an array element with a Type and a corresponding Name. For example, SubjectAltNames:[ {Type:2, Name:www.example.com}, {Type:7, Name:122.122.122.122} ]. The Type parameter is an integer that represents the kind of SAN which can be 0:OtherName, 1: Email, 2:DNS, 6: URI, or 7:IPAddress. The Name value is the SAN Friendly name that corresponds to the Type parameter",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_certificates",
+      "name": "List Certificates",
+      "description": "Returns a list of certificates in Venafi",
+      "http_method": "GET",
+      "endpoint": "/actions/list_certificates",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of certificates to return. Possible values are 1-100",
+          "required": false
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Number of results to skip (offset=5 begins results at page five)",
+          "required": false
+        },
+        {
+          "name": "country",
+          "type": "string",
+          "description": "Country attribute of Certificate",
+          "required": false
+        },
+        {
+          "name": "common_name",
+          "type": "string",
+          "description": "Common name attribute of Certificate",
+          "required": false,
+          "contains": [
+            "domain",
+            "url"
+          ]
+        },
+        {
+          "name": "key_algorithm",
+          "type": "string",
+          "description": "Algorithm for public key of Certificate",
+          "required": false
+        },
+        {
+          "name": "key_size",
+          "type": "number",
+          "description": "Public key size of Certificate",
+          "required": false
+        },
+        {
+          "name": "key_size_greater",
+          "type": "number",
+          "description": "Find certificates with a key size greater than the specified value",
+          "required": false
+        },
+        {
+          "name": "key_size_less",
+          "type": "number",
+          "description": "Find certificates with a key size less than the specified value",
+          "required": false
+        },
+        {
+          "name": "city",
+          "type": "string",
+          "description": "Locality/City attribute of Certificate",
+          "required": false
+        },
+        {
+          "name": "organization",
+          "type": "string",
+          "description": "Organization attribute of Certificate",
+          "required": false
+        },
+        {
+          "name": "organization_unit",
+          "type": "string",
+          "description": "Organization unit attribute of Certificate",
+          "required": false
+        },
+        {
+          "name": "state",
+          "type": "string",
+          "description": "State/Province attribute of Certificate",
+          "required": false
+        },
+        {
+          "name": "san_dns",
+          "type": "string",
+          "description": "Subject Alternative Name (SAN) Distinguished Name Server (DNS) attribute of Certificate",
+          "required": false,
+          "contains": [
+            "domain",
+            "url"
+          ]
+        },
+        {
+          "name": "san_email",
+          "type": "string",
+          "description": "Subject Alternative Name (SAN) Email RFC822 attribute of Certificate",
+          "required": false,
+          "contains": [
+            "email"
+          ]
+        },
+        {
+          "name": "san_ip",
+          "type": "string",
+          "description": "Subject Alternative Name (SAN) IP Address attribute of Certificate",
+          "required": false,
+          "contains": [
+            "ip"
+          ]
+        },
+        {
+          "name": "san_upn",
+          "type": "string",
+          "description": "Subject Alternative Name (SAN) User Principle Name (UPN) attribute of Certificate",
+          "required": false,
+          "contains": [
+            "email"
+          ]
+        },
+        {
+          "name": "san_uri",
+          "type": "string",
+          "description": "Subject Alternative Name (SAN) Uniform Resource Identifier (URI) attribute of Certificate",
+          "required": false,
+          "contains": [
+            "url"
+          ]
+        },
+        {
+          "name": "serial",
+          "type": "string",
+          "description": "Serial number attribute of Certificate",
+          "required": false
+        },
+        {
+          "name": "signature_algorithm",
+          "type": "string",
+          "description": "Algorithm used to sign the Certificate",
+          "required": false
+        },
+        {
+          "name": "thumbprint",
+          "type": "string",
+          "description": "SHA-1 thumbprint of the Certificate",
+          "required": false,
+          "contains": [
+            "sha1"
+          ]
+        },
+        {
+          "name": "valid_from",
+          "type": "string",
+          "description": "YYYY-MM-DD or ISO 8601 format YYYY-MM-DDTHH:MM:SS.mmmmmmmZ (Find certificates by the date of issue)",
+          "required": false
+        },
+        {
+          "name": "valid_to",
+          "type": "string",
+          "description": "YYYY-MM-DD or ISO 8601 format YYYY-MM-DDTHH:MM:SS.mmmmmmmZ (Find certificates by expiration date)",
+          "required": false
+        },
+        {
+          "name": "valid_to_greater",
+          "type": "string",
+          "description": "YYYY-MM-DD or ISO 8601 format YYYY-MM-DDTHH:MM:SS.mmmmmmmZ (Find certificates that expire after a certain date)",
+          "required": false
+        },
+        {
+          "name": "valid_to_less",
+          "type": "string",
+          "description": "YYYY-MM-DD or ISO 8601 format YYYY-MM-DDTHH:MM:SS.mmmmmmmZ (Find certificates that expire before a certain date)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "renew_certificate",
+      "name": "Renew Certificate",
+      "description": "Requests immediate renewal for an existing certificate in Venafi",
+      "http_method": "GET",
+      "endpoint": "/actions/renew_certificate",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "certificate_dn",
+          "type": "string",
+          "description": "The Distinguished Name (DN) of the certificate to renew",
+          "required": true,
+          "contains": [
+            "venafi certificate dn"
+          ]
+        },
+        {
+          "name": "pkcs10",
+          "type": "string",
+          "description": "The PKCS10 formatted CSR to use for the renewal",
+          "required": false
+        },
+        {
+          "name": "reenable",
+          "type": "boolean",
+          "description": "Option to renew a previously disabled certificate",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "revoke_certificate",
+      "name": "Revoke Certificate",
+      "description": "Requests to revoke an existing certificate in Venafi",
+      "http_method": "POST",
+      "endpoint": "/actions/revoke_certificate",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "certificate_dn",
+          "type": "string",
+          "description": "The Distinguished Name (DN) of the certificate to revoke",
+          "required": false,
+          "contains": [
+            "venafi certificate dn"
+          ]
+        },
+        {
+          "name": "thumbprint",
+          "type": "string",
+          "description": "The thumbprint (hash) of the certificate to revoke",
+          "required": false,
+          "contains": [
+            "sha1"
+          ]
+        },
+        {
+          "name": "reason",
+          "type": "number",
+          "description": "The reason for revocation of the certificate. 0: None, 1: User key compromised, 2: CA key compromised, 3: User changed affiliation, 4: Certificate superseded, 5: Original use no longer valid",
+          "required": false
+        },
+        {
+          "name": "comments",
+          "type": "string",
+          "description": "Details about why the certificate is being revoked",
+          "required": false
+        },
+        {
+          "name": "disable",
+          "type": "boolean",
+          "description": "The setting to manage the certificate upon revocation. If true, the certificate is disabled and no new certificate may replace it. If false, the certificate is allowed to be replaced by a new certificate",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_certificate",
+      "name": "Get Certificate",
+      "description": "Downloads specified certificate to the vault",
+      "http_method": "GET",
+      "endpoint": "/actions/get_certificate",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "certificate_dn",
+          "type": "string",
+          "description": "The Distinguished Name (DN) of the certificate to download",
+          "required": true,
+          "contains": [
+            "venafi certificate dn"
+          ]
+        },
+        {
+          "name": "format",
+          "type": "string",
+          "description": "The certificate format for the return data",
+          "required": false,
+          "default": "Base64"
+        },
+        {
+          "name": "friendly_name",
+          "type": "string",
+          "description": "The label or alias to use for Base64, JKS, or PKCS #12 formats. Required for the JKS format",
+          "required": false
+        },
+        {
+          "name": "include_chain",
+          "type": "boolean",
+          "description": "When the Format is Base64, PKCS #7, PKCS #12, or JKS, you can include the parent or root chain in the return data",
+          "required": false
+        },
+        {
+          "name": "include_private_key",
+          "type": "boolean",
+          "description": "When the Format is Base64, PKCS #12, or JKS, you can specify whether to return the private key",
+          "required": false
+        },
+        {
+          "name": "keystore_password",
+          "type": "string",
+          "description": "If the Format is JKS, you must set a keystore password. Use the same requirements as required for the Password parameter",
+          "required": false
+        },
+        {
+          "name": "password",
+          "type": "string",
+          "description": "If the IncludePrivateKey value is true, you must create a password. Password must be 12 characters and comprised of at least 3 of the following: uppercase alphabetic letters, lowercase alphabetic letters, numeric characters, special characters",
+          "required": false
+        },
+        {
+          "name": "root_first_order",
+          "type": "boolean",
+          "description": "The order of the certificate chain to trust",
+          "required": false
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Venafi",
+    "original_type": "identity management",
+    "converted_at": "2025-12-18T16:25:29.272434",
+    "source_version": "2.1.2"
+  }
+}

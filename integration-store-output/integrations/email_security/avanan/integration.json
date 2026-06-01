@@ -1,0 +1,171 @@
+{
+  "id": "avanan",
+  "name": "Avanan (Check Point)",
+  "description": "API-based cloud email security protecting Microsoft 365 and Google Workspace with inline and post-delivery scanning for phishing, malware, and BEC",
+  "version": "1.0.0",
+  "category": "email_security",
+  "vendor": "Check Point (Avanan)",
+  "auth_type": "oauth2_client",
+  "auth_config": {
+    "type": "oauth2_client",
+    "header_name": "Authorization",
+    "location": "header",
+    "prefix": "Bearer",
+    "token_url": "https://cloudinfra-gw.portal.checkpoint.com/auth/external"
+  },
+  "base_url": "https://cloudinfra-gw.portal.checkpoint.com/app/avanan-api/v1.0",
+  "actions": [
+    {
+      "id": "get_security_events",
+      "name": "Get Security Events",
+      "description": "Retrieve security events detected by Avanan across email and collaboration",
+      "http_method": "GET",
+      "endpoint": "/event/query",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "startDate",
+          "type": "string",
+          "description": "Start date in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "endDate",
+          "type": "string",
+          "description": "End date in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "saas",
+          "type": "string",
+          "description": "SaaS application filter (office365_emails, gmail)",
+          "required": false
+        },
+        {
+          "name": "threat_type",
+          "type": "string",
+          "description": "Filter by threat type (phishing, malware, dlp, spam)",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of events to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "get_quarantine",
+      "name": "Get Quarantine",
+      "description": "Retrieve quarantined emails and files",
+      "http_method": "GET",
+      "endpoint": "/quarantine/query",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "startDate",
+          "type": "string",
+          "description": "Start date in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "endDate",
+          "type": "string",
+          "description": "End date in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of results to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "restore_quarantine_item",
+      "name": "Restore Quarantine Item",
+      "description": "Restore a quarantined email or file to the user",
+      "http_method": "POST",
+      "endpoint": "/quarantine/{item_id}/restore",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "item_id",
+          "type": "string",
+          "description": "The quarantine item ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "quarantine_email",
+      "name": "Quarantine Email",
+      "description": "Quarantine a specific email to prevent user access",
+      "http_method": "POST",
+      "endpoint": "/email/{email_id}/quarantine",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "email_id",
+          "type": "string",
+          "description": "The email ID to quarantine",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_entity_details",
+      "name": "Get Entity Details",
+      "description": "Retrieve detailed analysis information about an email or file entity",
+      "http_method": "GET",
+      "endpoint": "/entity/{entity_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "entity_id",
+          "type": "string",
+          "description": "The entity ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "add_exception",
+      "name": "Add Exception Rule",
+      "description": "Add an allow or block exception rule for senders or domains",
+      "http_method": "POST",
+      "endpoint": "/exception",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Exception type (sender, domain)",
+          "required": true
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "description": "The sender or domain value",
+          "required": true
+        },
+        {
+          "name": "action",
+          "type": "string",
+          "description": "Action (allow, block)",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

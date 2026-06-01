@@ -1,0 +1,141 @@
+# AgentCore Tool Settings Configuration
+# Configure enrichment tools and external integrations
+
+# Global tool settings
+global:
+  timeout: 10                  # Default timeout in seconds
+  retry_attempts: 2            # Number of retries on failure
+  retry_delay: 1               # Delay between retries in seconds
+  rate_limit_enabled: true     # Enable rate limiting
+  rate_limit_calls_per_minute: 60
+
+# Individual tool configurations
+tools:
+  ip_reputation:
+    enabled: true
+    timeout: 15
+    # Production: Add API keys for services
+    # providers:
+    #   abuseipdb:
+    #     api_key: "YOUR_API_KEY"
+    #     enabled: true
+    #   virustotal:
+    #     api_key: "YOUR_API_KEY"
+    #     enabled: true
+    #   alienvault:
+    #     api_key: "YOUR_API_KEY"
+    #     enabled: false
+    mock_mode: true            # Use mock data instead of real APIs
+    cache_results: true
+    cache_ttl: 3600           # Cache time-to-live in seconds
+  
+  domain_reputation:
+    enabled: true
+    timeout: 15
+    # providers:
+    #   virustotal:
+    #     api_key: "YOUR_API_KEY"
+    #   opendns:
+    #     api_key: "YOUR_API_KEY"
+    mock_mode: true
+    cache_results: true
+    cache_ttl: 3600
+  
+  hash_analysis:
+    enabled: true
+    timeout: 20
+    # providers:
+    #   virustotal:
+    #     api_key: "YOUR_API_KEY"
+    #   malwarebazaar:
+    #     api_key: "YOUR_API_KEY"
+    #   hybrid_analysis:
+    #     api_key: "YOUR_API_KEY"
+    mock_mode: true
+    cache_results: true
+    cache_ttl: 86400          # 24 hours for file hashes
+  
+  whois_lookup:
+    enabled: true
+    timeout: 10
+    # providers:
+    #   whoisxml:
+    #     api_key: "YOUR_API_KEY"
+    mock_mode: true
+    cache_results: true
+    cache_ttl: 86400
+  
+  geoip_lookup:
+    enabled: true
+    timeout: 5
+    # Local database path for MaxMind GeoIP2
+    # database_path: "/opt/geoip/GeoLite2-City.mmdb"
+    mock_mode: true
+    cache_results: true
+    cache_ttl: 86400
+  
+  url_analysis:
+    enabled: true
+    timeout: 20
+    # providers:
+    #   urlscan:
+    #     api_key: "YOUR_API_KEY"
+    #   googlesafebrowsing:
+    #     api_key: "YOUR_API_KEY"
+    mock_mode: true
+    cache_results: true
+    cache_ttl: 3600
+
+# Future tool integrations (examples)
+future_tools:
+  email_header_parser:
+    enabled: false
+    description: "Parse email headers for phishing analysis"
+  
+  sandbox_analysis:
+    enabled: false
+    description: "Submit files to sandbox for dynamic analysis"
+  
+  threat_intel_feed:
+    enabled: false
+    description: "Query threat intelligence feeds"
+  
+  osint_lookup:
+    enabled: false
+    description: "Perform OSINT lookups on indicators"
+  
+  certificate_analysis:
+    enabled: false
+    description: "Analyze SSL/TLS certificates"
+
+# Caching configuration
+cache:
+  enabled: true
+  backend: "memory"            # Options: memory, redis
+  # redis:
+  #   host: "localhost"
+  #   port: 6379
+  #   db: 0
+  max_entries: 10000
+  eviction_policy: "lru"       # Least Recently Used
+
+# Rate limiting per tool (overrides global)
+rate_limits:
+  ip_reputation: 30            # Calls per minute
+  domain_reputation: 30
+  hash_analysis: 15
+  whois_lookup: 20
+  geoip_lookup: 100
+  url_analysis: 15
+
+# Error handling
+error_handling:
+  continue_on_tool_failure: true
+  log_errors: true
+  return_partial_results: true
+  
+# Logging
+logging:
+  level: "INFO"                # DEBUG, INFO, WARNING, ERROR
+  log_tool_calls: true
+  log_responses: false         # Warning: May log sensitive data

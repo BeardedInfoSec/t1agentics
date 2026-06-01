@@ -1,0 +1,239 @@
+{
+  "name": "Spear Phishing Targeted Response",
+  "slug": "phishing-spear-phishing-response",
+  "description": "Specialized response workflow for targeted spear phishing attacks directed at high-value individuals (executives, finance, HR). AI analysis assesses personalization indicators, OSINT correlation, and social engineering sophistication. Confirmed spear phishing triggers immediate email quarantine, executive protection escalation, threat intelligence enrichment for attribution, and a Jira incident ticket with full investigation context. Includes an approval gate before containment actions.",
+  "category": "phishing",
+  "subcategory": "spear_phishing",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "advanced",
+  "estimated_time": "20 minutes",
+  "tags": ["phishing", "spear-phishing", "targeted-attack", "executive", "escalation", "threat-intel", "jira"],
+  "alert_types": ["phishing"],
+  "severity_filter": ["high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["phishing", "spear_phishing", "targeted_attack", "suspicious_email"],
+    "min_severity": "high"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create high-priority incident ticket for spear phishing investigation"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Escalate to executive protection and threat intel teams"
+    },
+    {
+      "connector_id": "virustotal",
+      "name": "VirusTotal",
+      "category": "threat_intel",
+      "reason": "Enrich IOCs extracted from the spear phishing email"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "title": "Spear Phishing Alert",
+          "summary": "Triggers on spear phishing or targeted attack alerts",
+          "config": {
+            "trigger_type": "alert",
+            "alert_types": ["phishing", "spear_phishing", "targeted_attack", "suspicious_email"]
+          }
+        }
+      },
+      {
+        "id": "analyze-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "title": "AI Spear Phishing Analysis",
+          "summary": "Assess personalization, OSINT indicators, social engineering sophistication, and targeting",
+          "config": {
+            "mode": "ai_analysis",
+            "template_id": "phishing_triage",
+            "custom_instructions": "Evaluate for spear phishing indicators: personalized content referencing the target by name or role, mention of internal projects, domain lookalikes, urgency and authority-based pressure, and OSINT-derived information about the target",
+            "alert_path": "$.trigger.alert",
+            "include_context": true
+          }
+        }
+      },
+      {
+        "id": "analyze-2",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "analyze",
+          "title": "Enrich Sender IOCs",
+          "summary": "Enrich sender domain and IP against threat intelligence feeds",
+          "config": {
+            "mode": "enrich",
+            "observable_type": "domain",
+            "observable_path": "$.trigger.alert.sender_domain",
+            "sources": ["virustotal"],
+            "aggregate_results": true
+          }
+        }
+      },
+      {
+        "id": "decision-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 540 },
+        "data": {
+          "kind": "decision",
+          "title": "Confirmed Spear Phishing?",
+          "summary": "Is the email confirmed as a targeted spear phishing attempt?",
+          "config": {
+            "conditions": {
+              "operator": "AND",
+              "conditions": [
+                {
+                  "left": { "type": "path", "value": "$.nodes.analyze-1.result.verdict" },
+                  "operator": "equals",
+                  "right": { "type": "value", "value": "malicious" }
+                }
+              ],
+              "groups": []
+            },
+            "expression": "$.nodes.analyze-1.result.verdict == \"malicious\"",
+            "default_branch": "no"
+          }
+        }
+      },
+      {
+        "id": "approval-1",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "approval",
+          "title": "Approve Containment",
+          "summary": "SOC lead must approve containment actions for spear phishing",
+          "config": {
+            "approvers": ["soc_lead", "incident_commander"],
+            "timeout_minutes": 30,
+            "auto_action_on_timeout": "approve",
+            "message": "Spear phishing targeting {{$.trigger.alert.recipient}} confirmed by AI analysis (confidence: {{$.nodes.analyze-1.result.confidence}}). Approve quarantine and escalation?"
+          }
+        }
+      },
+      {
+        "id": "respond-1",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "title": "Quarantine Email",
+          "summary": "Remove spear phishing email from target's mailbox",
+          "config": {
+            "response_type": "integration_action",
+            "action_type": "quarantine_email",
+            "target_path": "$.trigger.alert.message_id",
+            "requires_approval": false,
+            "priority": "critical",
+            "message": "Quarantining spear phishing email from {{$.trigger.alert.sender}} targeting {{$.trigger.alert.recipient}}"
+          }
+        }
+      },
+      {
+        "id": "respond-2",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "title": "Escalate to Exec Protection",
+          "summary": "Notify executive protection team and threat intel via Slack",
+          "config": {
+            "response_type": "notify",
+            "channel": "slack",
+            "slack_channel": "#exec-protection",
+            "message": "SPEAR PHISHING — TARGETED ATTACK\n\nTarget: {{$.trigger.alert.recipient}}\nSender: {{$.trigger.alert.sender}}\nSubject: {{$.trigger.alert.subject}}\n\nAI Assessment:\n{{$.nodes.analyze-1.result.summary}}\n\nThreat Intel:\n{{$.nodes.analyze-2.result.summary}}\n\nEmail has been quarantined. Full investigation ticket being created.",
+            "priority": "critical"
+          }
+        }
+      },
+      {
+        "id": "respond-3",
+        "type": "signal",
+        "position": { "x": 340, "y": 1180 },
+        "data": {
+          "kind": "respond",
+          "title": "Create Investigation Ticket",
+          "summary": "Create Jira ticket for full spear phishing investigation",
+          "config": {
+            "response_type": "create_ticket",
+            "system": "jira",
+            "project_key": "SEC",
+            "issue_type": "Incident",
+            "title": "Spear Phishing — {{$.trigger.alert.recipient}} targeted by {{$.trigger.alert.sender}}",
+            "description": "Targeted spear phishing attack detected.\n\nTarget: {{$.trigger.alert.recipient}}\nSender: {{$.trigger.alert.sender}}\nSubject: {{$.trigger.alert.subject}}\n\nAI Analysis:\n{{$.nodes.analyze-1.result.summary}}\n\nThreat Intel Enrichment:\n{{$.nodes.analyze-2.result.summary}}\n\nActions Taken:\n- Email quarantined\n- Executive protection team notified\n\nInvestigation Checklist:\n- Verify target did not interact with email content\n- Check for similar emails to other executives\n- Assess OSINT exposure of the target\n- Determine threat actor attribution if possible",
+            "priority": "critical"
+          }
+        }
+      },
+      {
+        "id": "utility-1",
+        "type": "signal",
+        "position": { "x": 700, "y": 700 },
+        "data": {
+          "kind": "utility",
+          "title": "Flag for Analyst Review",
+          "summary": "Not confirmed spear phishing but suspicious — flag for manual review",
+          "config": {
+            "operation": "add_note",
+            "note": "AI analysis did not confirm spear phishing but noted suspicious targeting patterns. Recommend manual review.\nSender: {{$.trigger.alert.sender}}\nTarget: {{$.trigger.alert.recipient}}\nThreat Intel: {{$.nodes.analyze-2.result.summary}}"
+          }
+        }
+      },
+      {
+        "id": "end-1",
+        "type": "signal",
+        "position": { "x": 340, "y": 1340 },
+        "data": {
+          "kind": "end",
+          "title": "End — Spear Phishing Contained",
+          "summary": "Attack contained, escalated, and investigation initiated",
+          "config": {
+            "disposition": "true_positive",
+            "summary": "Spear phishing attack confirmed and contained. Email quarantined, executive protection notified, investigation ticket created."
+          }
+        }
+      },
+      {
+        "id": "end-2",
+        "type": "signal",
+        "position": { "x": 700, "y": 860 },
+        "data": {
+          "kind": "end",
+          "title": "End — Flagged for Review",
+          "summary": "Not confirmed, flagged for analyst review",
+          "config": {
+            "disposition": "under_review",
+            "summary": "Email not confirmed as spear phishing. Flagged for manual analyst review due to suspicious indicators."
+          }
+        }
+      }
+    ],
+    "edges": [
+      { "id": "e1", "source": "trigger-1", "target": "analyze-1", "animated": true, "type": "smoothstep" },
+      { "id": "e2", "source": "analyze-1", "target": "analyze-2", "animated": true, "type": "smoothstep" },
+      { "id": "e3", "source": "analyze-2", "target": "decision-1", "animated": true, "type": "smoothstep" },
+      { "id": "e4", "source": "decision-1", "target": "approval-1", "sourceHandle": "yes", "label": "Yes", "animated": true, "type": "smoothstep" },
+      { "id": "e5", "source": "decision-1", "target": "utility-1", "sourceHandle": "no", "label": "No", "animated": true, "type": "smoothstep" },
+      { "id": "e6", "source": "approval-1", "target": "respond-1", "animated": true, "type": "smoothstep" },
+      { "id": "e7", "source": "respond-1", "target": "respond-2", "animated": true, "type": "smoothstep" },
+      { "id": "e8", "source": "respond-2", "target": "respond-3", "animated": true, "type": "smoothstep" },
+      { "id": "e9", "source": "respond-3", "target": "end-1", "animated": true, "type": "smoothstep" },
+      { "id": "e10", "source": "utility-1", "target": "end-2", "animated": true, "type": "smoothstep" }
+    ]
+  }
+}

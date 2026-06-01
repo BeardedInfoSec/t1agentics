@@ -1,0 +1,1455 @@
+{
+  "id": "reversinglabs_a1000_v2",
+  "name": "Reversinglabs A1000 v2",
+  "description": "App integrates with ReversingLabs A1000 Malware Analysis Appliance APIs",
+  "version": "1.1.2",
+  "category": "threat_intel",
+  "vendor": "ReversingLabs",
+  "auth_type": "bearer_token",
+  "auth_config": {
+    "type": "bearer_token",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "detonate_file",
+      "name": "Detonate File",
+      "description": "Upload file to A1000",
+      "http_method": "GET",
+      "endpoint": "/actions/detonate_file",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "vault_id",
+          "type": "string",
+          "description": "Vault ID of file to detonate",
+          "required": true,
+          "contains": [
+            "vault id"
+          ]
+        },
+        {
+          "name": "file_name",
+          "type": "string",
+          "description": "Filename to use",
+          "required": false
+        },
+        {
+          "name": "custom_file_name",
+          "type": "string",
+          "description": "Custom file name for upload",
+          "required": false,
+          "contains": [
+            "file name"
+          ]
+        },
+        {
+          "name": "archive_password",
+          "type": "password",
+          "description": "Password for the file if it is password protected",
+          "required": false
+        },
+        {
+          "name": "rl_cloud_sandbox_platform",
+          "type": "string",
+          "description": "Cloud Sandbox platform",
+          "required": false
+        },
+        {
+          "name": "tags",
+          "type": "string",
+          "description": "Comma separated list of tags to assign to sample",
+          "required": false
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "Comment to add to a sample",
+          "required": false
+        },
+        {
+          "name": "cloud_analysis",
+          "type": "boolean",
+          "description": "Use cloud analysis",
+          "required": false
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "detonate_file_from_url",
+      "name": "Submit Url",
+      "description": "Detonate file from url",
+      "http_method": "GET",
+      "endpoint": "/actions/detonate_file_from_url",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "file_url",
+          "type": "string",
+          "description": "URL from which the appliance should download the data",
+          "required": true,
+          "contains": [
+            "url"
+          ]
+        },
+        {
+          "name": "crawler",
+          "type": "string",
+          "description": "Crawler method (local or cloud)",
+          "required": false,
+          "default": "local"
+        },
+        {
+          "name": "archive_password",
+          "type": "password",
+          "description": "Password, if file is a password-protected archive",
+          "required": false
+        },
+        {
+          "name": "rl_cloud_sandbox_platform",
+          "type": "string",
+          "description": "Cloud Sandbox platform",
+          "required": false
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "check_submitted_url_status",
+      "name": "Check Submitted Url Status",
+      "description": "Check submitted url status",
+      "http_method": "GET",
+      "endpoint": "/actions/check_submitted_url_status",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "task_id",
+          "type": "string",
+          "description": "Id of the task",
+          "required": true,
+          "contains": [
+            "task id"
+          ]
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "create_pdf_report",
+      "name": "Create Pdf Report",
+      "description": "Create pdf report",
+      "http_method": "GET",
+      "endpoint": "/actions/create_pdf_report",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "hash",
+          "type": "string",
+          "description": "Hash",
+          "required": true,
+          "contains": [
+            "hash",
+            "sha1",
+            "sha256",
+            "md5"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "check_pdf_report_creation",
+      "name": "Check Pdf Report Creation",
+      "description": "Check pdf report creation",
+      "http_method": "GET",
+      "endpoint": "/actions/check_pdf_report_creation",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "hash",
+          "type": "string",
+          "description": "Hash",
+          "required": true,
+          "contains": [
+            "hash",
+            "sha1",
+            "sha256",
+            "md5"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "download_pdf_report",
+      "name": "Download Pdf Report",
+      "description": "Download pdf report",
+      "http_method": "GET",
+      "endpoint": "/actions/download_pdf_report",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "hash",
+          "type": "string",
+          "description": "Hash",
+          "required": true,
+          "contains": [
+            "hash",
+            "sha1",
+            "sha256",
+            "md5"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "get_titaniumcore_report",
+      "name": "Get Titaniumcore Report",
+      "description": "Get TitaniumCore report",
+      "http_method": "GET",
+      "endpoint": "/actions/get_titaniumcore_report",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "hash",
+          "type": "string",
+          "description": "Hash",
+          "required": true,
+          "contains": [
+            "hash",
+            "sha1",
+            "sha256",
+            "md5"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "url_reputation",
+      "name": "Url Reputation",
+      "description": "Queries URL info",
+      "http_method": "GET",
+      "endpoint": "/actions/url_reputation",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "URL to query",
+          "required": true,
+          "contains": [
+            "url"
+          ]
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "domain_reputation",
+      "name": "Domain Reputation",
+      "description": "Queries domain info",
+      "http_method": "GET",
+      "endpoint": "/actions/domain_reputation",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "domain",
+          "type": "string",
+          "description": "Domain to query",
+          "required": true,
+          "contains": [
+            "domain",
+            "url"
+          ]
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "ip_reputation",
+      "name": "Ip Reputation",
+      "description": "Queries IP info",
+      "http_method": "GET",
+      "endpoint": "/actions/ip_reputation",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "IP to query",
+          "required": true,
+          "contains": [
+            "ip"
+          ]
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "network_ip_to_domain",
+      "name": "Network Ip To Domain",
+      "description": "Get a list of IP-to-domain mappings",
+      "http_method": "GET",
+      "endpoint": "/actions/network_ip_to_domain",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "IP address",
+          "required": true,
+          "contains": [
+            "ip"
+          ]
+        },
+        {
+          "name": "page",
+          "type": "string",
+          "description": "SHA1 hash of page",
+          "required": false
+        },
+        {
+          "name": "page_size",
+          "type": "number",
+          "description": "Number of elements in the response",
+          "required": false,
+          "default": 500
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "network_urls_from_ip",
+      "name": "Network Urls From Ip",
+      "description": "Get a list of URLs hosted on the requested IP address",
+      "http_method": "GET",
+      "endpoint": "/actions/network_urls_from_ip",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "IP address",
+          "required": true,
+          "contains": [
+            "ip"
+          ]
+        },
+        {
+          "name": "page",
+          "type": "string",
+          "description": "SHA1 hash of page",
+          "required": false
+        },
+        {
+          "name": "page_size",
+          "type": "number",
+          "description": "Number of elements in the response",
+          "required": false,
+          "default": 500
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "network_files_from_ip",
+      "name": "Network Files From Ip",
+      "description": "Get a a list of hashes and classifications for files found on the requested IP address",
+      "http_method": "GET",
+      "endpoint": "/actions/network_files_from_ip",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "IP address",
+          "required": true,
+          "contains": [
+            "ip"
+          ]
+        },
+        {
+          "name": "page",
+          "type": "string",
+          "description": "SHA1 hash of page",
+          "required": false
+        },
+        {
+          "name": "page_size",
+          "type": "number",
+          "description": "Number of elements in the response",
+          "required": false,
+          "default": 500
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "advanced_search",
+      "name": "Advanced Search",
+      "description": "Search for samples using multi-part search criteria",
+      "http_method": "GET",
+      "endpoint": "/actions/advanced_search",
+      "action_type": "generic",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Advanced Search query",
+          "required": true,
+          "contains": [
+            "search query"
+          ]
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of results",
+          "required": false,
+          "default": 5000
+        },
+        {
+          "name": "only_cloud_results",
+          "type": "boolean",
+          "description": "Show only TitaniumCloud results, by default only local results are show",
+          "required": false,
+          "default": false
+        }
+      ]
+    },
+    {
+      "id": "advanced_search_ticloud",
+      "name": "Advanced Search Ticloud",
+      "description": "Search for samples available on the TitaniumCloud",
+      "http_method": "GET",
+      "endpoint": "/actions/advanced_search_ticloud",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Advanced Search query",
+          "required": true,
+          "contains": [
+            "search query"
+          ]
+        },
+        {
+          "name": "start_search_date",
+          "type": "string",
+          "description": "The starting date for the search (later date)",
+          "required": true
+        },
+        {
+          "name": "end_search_date",
+          "type": "string",
+          "description": "The ending date for the search (earlier date)",
+          "required": true,
+          "contains": [
+            "date"
+          ]
+        },
+        {
+          "name": "sorting_order",
+          "type": "string",
+          "description": "Ascending or descending",
+          "required": false,
+          "default": "desc"
+        },
+        {
+          "name": "sorting_criteria",
+          "type": "string",
+          "description": "Sort results on this column",
+          "required": false,
+          "default": "firstseen"
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Get at most <limit> search results, if page is set max value is 100",
+          "required": false,
+          "default": 5000
+        },
+        {
+          "name": "page",
+          "type": "number",
+          "description": "Use pagination instead of aggregated getter, off by default, index starts at 1",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "advanced_search_local",
+      "name": "Advanced Search Local",
+      "description": "Search for samples available on the A1000 appliance",
+      "http_method": "GET",
+      "endpoint": "/actions/advanced_search_local",
+      "action_type": "generic",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Advanced Search query",
+          "required": true,
+          "contains": [
+            "search query"
+          ]
+        },
+        {
+          "name": "sorting_order",
+          "type": "string",
+          "description": "Ascending or descending",
+          "required": false,
+          "default": "desc"
+        },
+        {
+          "name": "sorting_criteria",
+          "type": "string",
+          "description": "Sort results on this column",
+          "required": false,
+          "default": "firstseen"
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Get at most <limit> search results, if page is set max value is 100",
+          "required": false,
+          "default": 5000
+        },
+        {
+          "name": "page",
+          "type": "number",
+          "description": "Use pagination instead of aggregated getter, off by default, index starts at 1",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "create_dynamic_analysis_report",
+      "name": "Create Dynamic Analysis Report",
+      "description": "Initiate the creation of dynamic analysis PDF report",
+      "http_method": "GET",
+      "endpoint": "/actions/create_dynamic_analysis_report",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "hash",
+          "type": "string",
+          "description": "Hash",
+          "required": true,
+          "contains": [
+            "hash",
+            "sha1",
+            "sha256",
+            "md5"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "check_dynamic_analysis_report_status",
+      "name": "Check Dynamic Analysis Report Status",
+      "description": "Get status of the report previously requested",
+      "http_method": "GET",
+      "endpoint": "/actions/check_dynamic_analysis_report_status",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "hash",
+          "type": "string",
+          "description": "Hash",
+          "required": true,
+          "contains": [
+            "hash",
+            "sha1",
+            "sha256",
+            "md5"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "download_dynamic_analysis_report",
+      "name": "Download Dynamic Analysis Report",
+      "description": "Download previously requested dynamic analysis report in pdf",
+      "http_method": "GET",
+      "endpoint": "/actions/download_dynamic_analysis_report",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "hash",
+          "type": "string",
+          "description": "Hash",
+          "required": true,
+          "contains": [
+            "hash",
+            "sha1",
+            "sha256",
+            "md5"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "get_summary_report",
+      "name": "Get Summary Report",
+      "description": "Get a summary report for hash",
+      "http_method": "GET",
+      "endpoint": "/actions/get_summary_report",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "hash",
+          "type": "string",
+          "description": "Hash",
+          "required": true,
+          "contains": [
+            "hash",
+            "sha1",
+            "sha256",
+            "md5"
+          ]
+        },
+        {
+          "name": "retry",
+          "type": "boolean",
+          "description": "If set to False there will only be one try at obtaining the analysis report",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "fields",
+          "type": "string",
+          "description": "List of A1000 report 'fields' to query",
+          "required": false
+        },
+        {
+          "name": "include_network_threat_intelligence",
+          "type": "boolean",
+          "description": "Include network threat intelligence in the summary report",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "skip_reanalysis",
+          "type": "boolean",
+          "description": "Skip sample reanalysis when fetching the summary report",
+          "required": false,
+          "default": false
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "get_detailed_report",
+      "name": "Get Detailed Report",
+      "description": "Get detailed analysis report",
+      "http_method": "GET",
+      "endpoint": "/actions/get_detailed_report",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "hash",
+          "type": "string",
+          "description": "Hash",
+          "required": true,
+          "contains": [
+            "hash",
+            "sha1",
+            "sha256",
+            "md5"
+          ]
+        },
+        {
+          "name": "retry",
+          "type": "boolean",
+          "description": "If set to False there will only be one try at obtaining the analysis report",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "fields",
+          "type": "string",
+          "description": "List of A1000 report 'fields' to query",
+          "required": false
+        },
+        {
+          "name": "skip_reanalysis",
+          "type": "boolean",
+          "description": "Skip sample reanalysis when fetching the summary report",
+          "required": false,
+          "default": false
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "get_classification",
+      "name": "Get Classification",
+      "description": "Get classification for a sample",
+      "http_method": "GET",
+      "endpoint": "/actions/get_classification",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "hash",
+          "type": "string",
+          "description": "Hash",
+          "required": true,
+          "contains": [
+            "hash",
+            "sha1",
+            "sha256",
+            "md5"
+          ]
+        },
+        {
+          "name": "local_only",
+          "type": "boolean",
+          "description": "Return only local samples without querying TitaniumCloud",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "av_scanners",
+          "type": "boolean",
+          "description": "Return AV scanner results",
+          "required": false,
+          "default": false
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "get_user_tags",
+      "name": "Get User Tags",
+      "description": "List existing tags for the requested sample",
+      "http_method": "GET",
+      "endpoint": "/actions/get_user_tags",
+      "action_type": "generic",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "hash",
+          "type": "string",
+          "description": "Hash",
+          "required": true,
+          "contains": [
+            "hash",
+            "sha1",
+            "sha256",
+            "md5"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "create_user_tags",
+      "name": "Create User Tags",
+      "description": "Add one or more user tags",
+      "http_method": "GET",
+      "endpoint": "/actions/create_user_tags",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "hash",
+          "type": "string",
+          "description": "Hash",
+          "required": true,
+          "contains": [
+            "hash",
+            "sha1",
+            "sha256",
+            "md5"
+          ]
+        },
+        {
+          "name": "tags",
+          "type": "string",
+          "description": "List of comma separated tags",
+          "required": true
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "delete_user_tags",
+      "name": "Delete User Tags",
+      "description": "Remove one or more user tags",
+      "http_method": "GET",
+      "endpoint": "/actions/delete_user_tags",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "hash",
+          "type": "string",
+          "description": "Hash",
+          "required": true,
+          "contains": [
+            "hash",
+            "sha1",
+            "sha256",
+            "md5"
+          ]
+        },
+        {
+          "name": "tags",
+          "type": "string",
+          "description": "List of comma separated tags",
+          "required": true
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "set_sample_classification",
+      "name": "Set Sample Classification",
+      "description": "Set the classification of a sample",
+      "http_method": "GET",
+      "endpoint": "/actions/set_sample_classification",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "hash",
+          "type": "string",
+          "description": "Hash",
+          "required": true,
+          "contains": [
+            "hash",
+            "sha1",
+            "sha256",
+            "md5"
+          ]
+        },
+        {
+          "name": "system",
+          "type": "string",
+          "description": "Where to set the classification",
+          "required": true,
+          "default": "local"
+        },
+        {
+          "name": "classification",
+          "type": "string",
+          "description": "Classification to set",
+          "required": true,
+          "default": "malicious"
+        },
+        {
+          "name": "risk_score",
+          "type": "number",
+          "description": "Risk score to set for classification",
+          "required": false
+        },
+        {
+          "name": "threat_platform",
+          "type": "string",
+          "description": "Threat platform to set, must be on the supported list",
+          "required": false
+        },
+        {
+          "name": "threat_type",
+          "type": "string",
+          "description": "Threat type to set, must be on the supported list",
+          "required": false
+        },
+        {
+          "name": "threat_name",
+          "type": "string",
+          "description": "Threat name to set, must be on the supported list",
+          "required": false
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "delete_sample_classification",
+      "name": "Delete Sample Classification",
+      "description": "Delete the (user set) classification of a sample",
+      "http_method": "GET",
+      "endpoint": "/actions/delete_sample_classification",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "hash",
+          "type": "string",
+          "description": "Hash string of a sample",
+          "required": true,
+          "contains": [
+            "hash",
+            "sha1",
+            "sha256",
+            "md5"
+          ]
+        },
+        {
+          "name": "system",
+          "type": "string",
+          "description": "Where to delete the desired classification",
+          "required": true,
+          "default": "local"
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "yara_get_rulesets",
+      "name": "Yara Get Rulesets",
+      "description": "Get a list of YARA rulesets that are on the A1000",
+      "http_method": "GET",
+      "endpoint": "/actions/yara_get_rulesets",
+      "action_type": "generic",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Owner type",
+          "required": false
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Status",
+          "required": false
+        },
+        {
+          "name": "source",
+          "type": "string",
+          "description": "Source",
+          "required": false
+        },
+        {
+          "name": "page",
+          "type": "number",
+          "description": "Page",
+          "required": false
+        },
+        {
+          "name": "page_size",
+          "type": "number",
+          "description": "Page size",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "yara_get_ruleset_text",
+      "name": "Yara Get Ruleset Text",
+      "description": "Get the full contents of the requested ruleset",
+      "http_method": "GET",
+      "endpoint": "/actions/yara_get_ruleset_text",
+      "action_type": "generic",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "ruleset_name",
+          "type": "string",
+          "description": "Ruleset Name",
+          "required": true,
+          "contains": [
+            "ruleset name"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "yara_get_matches",
+      "name": "Yara Get Matches",
+      "description": "Retrieve the list of YARA matches",
+      "http_method": "GET",
+      "endpoint": "/actions/yara_get_matches",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "ruleset_name",
+          "type": "string",
+          "description": "Ruleset name",
+          "required": false,
+          "contains": [
+            "ruleset name"
+          ]
+        },
+        {
+          "name": "page",
+          "type": "number",
+          "description": "Page",
+          "required": false
+        },
+        {
+          "name": "page_size",
+          "type": "number",
+          "description": "Page size",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "yara_create_ruleset",
+      "name": "Yara Create Or Update Ruleset",
+      "description": "Creates a new YARA ruleset if it doesn't exist",
+      "http_method": "GET",
+      "endpoint": "/actions/yara_create_ruleset",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "ruleset_name",
+          "type": "string",
+          "description": "Ruleset name",
+          "required": true,
+          "contains": [
+            "ruleset name"
+          ]
+        },
+        {
+          "name": "ruleset_text",
+          "type": "string",
+          "description": "Text of the yara ruleset",
+          "required": true
+        },
+        {
+          "name": "publish",
+          "type": "boolean",
+          "description": "Publish to C1000 in the same cluster",
+          "required": false
+        },
+        {
+          "name": "ticloud",
+          "type": "boolean",
+          "description": "Sync with TiCloud",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "yara_delete_ruleset",
+      "name": "Yara Delete Ruleset",
+      "description": "Delete a specific YARA ruleset and its matches",
+      "http_method": "GET",
+      "endpoint": "/actions/yara_delete_ruleset",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "ruleset_name",
+          "type": "string",
+          "description": "Ruleset name",
+          "required": true,
+          "contains": [
+            "ruleset name"
+          ]
+        },
+        {
+          "name": "publish",
+          "type": "boolean",
+          "description": "Publish to C1000 in the same cluster",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "yara_toggle_ruleset",
+      "name": "Yara Enable Or Disable Ruleset",
+      "description": "Enable or disable a ruleset on the appliance",
+      "http_method": "GET",
+      "endpoint": "/actions/yara_toggle_ruleset",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "ruleset_name",
+          "type": "string",
+          "description": "Ruleset name",
+          "required": true,
+          "contains": [
+            "ruleset name"
+          ]
+        },
+        {
+          "name": "enabled",
+          "type": "boolean",
+          "description": "Enable or disable the ruleset",
+          "required": true
+        },
+        {
+          "name": "publish",
+          "type": "boolean",
+          "description": "Publish to C1000 in the same cluster",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "yara_get_sync_time",
+      "name": "Yara Get Synchronization Time",
+      "description": "Get the current synchronization time",
+      "http_method": "GET",
+      "endpoint": "/actions/yara_get_sync_time",
+      "action_type": "generic",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "yara_set_sync_time",
+      "name": "Yara Set Ruleset Synchronization Time",
+      "description": "Modify the TiCloud sync time for TiCloud enabled rulesets",
+      "http_method": "GET",
+      "endpoint": "/actions/yara_set_sync_time",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "time",
+          "type": "string",
+          "description": "Synchronization time",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "yara_toggle_retro_scan_local",
+      "name": "Yara Start Or Stop Local Retro Scan",
+      "description": "Allow users to start or stop the Local Retro scan on the appliance",
+      "http_method": "GET",
+      "endpoint": "/actions/yara_toggle_retro_scan_local",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "operation",
+          "type": "string",
+          "description": "START or STOP",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "yara_manage_retro_scan_cloud",
+      "name": "Yara Manage Cloud Retro Scan",
+      "description": "Allow users to start, stop or clear a Cloud Retro scan",
+      "http_method": "GET",
+      "endpoint": "/actions/yara_manage_retro_scan_cloud",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "ruleset_name",
+          "type": "string",
+          "description": "Ruleset name",
+          "required": true,
+          "contains": [
+            "ruleset name"
+          ]
+        },
+        {
+          "name": "operation",
+          "type": "string",
+          "description": "START, STOP or CLEAR",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "yara_status_retro_scan_local",
+      "name": "Yara Status Retro Scan Local",
+      "description": "Allow users to check the status of a Local Retro scan",
+      "http_method": "GET",
+      "endpoint": "/actions/yara_status_retro_scan_local",
+      "action_type": "generic",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "yara_status_retro_scan_cloud",
+      "name": "Yara Status Retro Scan Cloud",
+      "description": "Allow users to check the status of Cloud Retro scan for specified ruleset",
+      "http_method": "GET",
+      "endpoint": "/actions/yara_status_retro_scan_cloud",
+      "action_type": "generic",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "ruleset_name",
+          "type": "string",
+          "description": "Ruleset name",
+          "required": true,
+          "contains": [
+            "ruleset name"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_containers_for_hash",
+      "name": "List Containers For Hash",
+      "description": "Get a list of containers from which the requested samples has been extracted",
+      "http_method": "GET",
+      "endpoint": "/actions/list_containers_for_hash",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "hashes",
+          "type": "string",
+          "description": "Comma separated list of hashes",
+          "required": true,
+          "contains": [
+            "hash",
+            "sha1",
+            "sha256",
+            "md5"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "delete_sample",
+      "name": "Delete Sample",
+      "description": "Delete the sample with the requested hash value",
+      "http_method": "GET",
+      "endpoint": "/actions/delete_sample",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "hash",
+          "type": "string",
+          "description": "Hash of a sample to be deleted",
+          "required": true,
+          "contains": [
+            "hash",
+            "sha1",
+            "sha256",
+            "md5"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "download_extracted_files",
+      "name": "Download Extracted Files",
+      "description": "Download files extracted from local sample",
+      "http_method": "GET",
+      "endpoint": "/actions/download_extracted_files",
+      "action_type": "generic",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "hash",
+          "type": "string",
+          "description": "Hash of a sample to be deleted",
+          "required": true,
+          "contains": [
+            "hash",
+            "sha1",
+            "sha256",
+            "md5"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "reanalyze_samples",
+      "name": "Reanalyze Local Samples",
+      "description": "Submit a set of samples that already exist on the A1000",
+      "http_method": "GET",
+      "endpoint": "/actions/reanalyze_samples",
+      "action_type": "investigate",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "hashes",
+          "type": "string",
+          "description": "Comma separated list of hashes",
+          "required": true,
+          "contains": [
+            "hash",
+            "sha1",
+            "sha256",
+            "md5"
+          ]
+        },
+        {
+          "name": "titanium_cloud",
+          "type": "boolean",
+          "description": "Titanium Cloud analysis",
+          "required": false
+        },
+        {
+          "name": "titanium_core",
+          "type": "boolean",
+          "description": "Titanium Core analysis",
+          "required": false
+        },
+        {
+          "name": "rl_cloud_sandbox",
+          "type": "boolean",
+          "description": "RL cloud sandbox analysis",
+          "required": false
+        },
+        {
+          "name": "cuckoo_sandbox",
+          "type": "boolean",
+          "description": "Cuckoo sandbox analysis",
+          "required": false
+        },
+        {
+          "name": "fireeye",
+          "type": "boolean",
+          "description": "FireEye analysis",
+          "required": false
+        },
+        {
+          "name": "joe_sandbox",
+          "type": "boolean",
+          "description": "Joe sandbox analysis",
+          "required": false
+        },
+        {
+          "name": "cape",
+          "type": "boolean",
+          "description": "Cape analysis",
+          "required": false
+        },
+        {
+          "name": "rl_cloud_sandbox_platform",
+          "type": "string",
+          "description": "Platform on which the samples should be detonated",
+          "required": false
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Reversinglabs A1000 v2",
+    "original_type": "reputation",
+    "converted_at": "2025-12-18T16:25:29.076148",
+    "source_version": "1.1.2"
+  }
+}

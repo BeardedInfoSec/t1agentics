@@ -1,0 +1,237 @@
+{
+  "name": "Security Policy Violation Response",
+  "slug": "compliance-policy-violation",
+  "description": "Responds to detected security policy violations by documenting the violation, performing AI-powered risk assessment, and enforcing corrective actions. When a policy violation alert is received, Riggs analyzes the severity and intent (accidental vs. intentional), then routes through appropriate response tracks. High-risk violations require manager approval before enforcement; low-risk violations are documented with a warning notification to the user.",
+  "category": "compliance",
+  "subcategory": "policy_enforcement",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "10 minutes",
+  "tags": ["compliance", "policy_violation", "enforcement", "security_policy", "corrective_action"],
+  "alert_types": ["policy_violation"],
+  "severity_filter": ["low", "medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["policy_violation", "dlp_violation", "acceptable_use_violation"],
+    "min_severity": "low"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Document policy violations and track corrective actions"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Notify compliance team and user's manager of violations"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Policy Violation Alert",
+          "config": {
+            "alert_types": ["policy_violation", "dlp_violation", "acceptable_use_violation"],
+            "description": "Triggers when a security policy violation is detected by DLP, endpoint, or network controls"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI -- Violation Assessment",
+          "config": {
+            "template_id": "insider_threat",
+            "additional_instructions": "Assess the security policy violation: determine the violated policy, severity of the breach, whether the violation appears accidental or intentional, data exposure risk, and recommended corrective action.",
+            "description": "AI-powered assessment of the policy violation severity and intent"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "label": "High-Risk Violation?",
+          "config": {
+            "condition": "{{analyze_1.risk_level}} in ['high', 'critical']",
+            "description": "Routes based on whether the violation is assessed as high-risk requiring immediate enforcement"
+          }
+        }
+      },
+      {
+        "id": "approval_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "approval",
+          "label": "Manager Approval for Enforcement",
+          "config": {
+            "approvers": ["{{trigger_1.alert.user_manager}}", "compliance_officer"],
+            "approval_message": "HIGH-RISK POLICY VIOLATION\n\nUser: {{trigger_1.alert.user_email}}\nPolicy: {{trigger_1.alert.policy_name}}\nRisk Level: {{analyze_1.risk_level}}\n\n{{analyze_1.summary}}\n\nApprove enforcement action?",
+            "timeout_hours": 4,
+            "description": "Manager and compliance officer must approve enforcement action for high-risk violations"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "label": "Create Enforcement Ticket",
+          "config": {
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_issue",
+              "parameters": {
+                "project": "COMPLIANCE",
+                "issue_type": "Incident",
+                "priority": "P1",
+                "summary": "Policy Violation Enforcement: {{trigger_1.alert.user_email}} -- {{trigger_1.alert.policy_name}}",
+                "description": "HIGH-RISK POLICY VIOLATION -- ENFORCEMENT REQUIRED\n\nUser: {{trigger_1.alert.user_email}}\nPolicy Violated: {{trigger_1.alert.policy_name}}\nRisk Level: {{analyze_1.risk_level}}\nApproved by: {{approval_1.approver}}\n\nRiggs Assessment:\n{{analyze_1.summary}}\n\nCorrective Action: {{analyze_1.recommended_action}}",
+                "labels": ["policy-violation", "high-risk", "enforcement"]
+              }
+            },
+            "description": "Create a high-priority enforcement ticket with approved corrective action"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "label": "Notify Compliance Team on Slack",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#compliance-violations",
+              "message": "HIGH-RISK POLICY VIOLATION -- ENFORCEMENT APPROVED\n\nUser: {{trigger_1.alert.user_email}}\nPolicy: {{trigger_1.alert.policy_name}}\nApproved by: {{approval_1.approver}}\nJira: {{respond_1.ticket_url}}\n\n{{analyze_1.summary}}"
+            },
+            "description": "Alert compliance team about the approved enforcement action"
+          }
+        }
+      },
+      {
+        "id": "respond_3",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "respond",
+          "label": "Send Warning to User",
+          "config": {
+            "notify": {
+              "channel": "email",
+              "target": "{{trigger_1.alert.user_email}}",
+              "message": "SECURITY POLICY VIOLATION NOTICE\n\nDear {{trigger_1.alert.user_name}},\n\nA violation of the following security policy has been recorded:\nPolicy: {{trigger_1.alert.policy_name}}\nDate: {{trigger_1.alert.timestamp}}\n\nPlease review your organization's security policies and ensure future compliance.\n\nIf you believe this was recorded in error, please contact the compliance team.\n\nRegards,\nCompliance Team"
+            },
+            "description": "Send a warning email to the user about the low-risk policy violation"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 700, "y": 700 },
+        "data": {
+          "kind": "utility",
+          "label": "Log: Warning Issued",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "Low-risk policy violation recorded for {{trigger_1.alert.user_email}}. Warning notification sent. Policy: {{trigger_1.alert.policy_name}}"
+            },
+            "description": "Document the low-risk violation and warning in the audit trail"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1020 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "Policy violation response complete -- documented, assessed, and appropriate action taken"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_analyze",
+        "source": "trigger_1",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_analyze_decision",
+        "source": "analyze_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "approval_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "respond_3",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_approval_respond1",
+        "source": "approval_1",
+        "target": "respond_1",
+        "type": "default"
+      },
+      {
+        "id": "e_respond1_respond2",
+        "source": "respond_1",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_respond2_end",
+        "source": "respond_2",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_respond3_utility",
+        "source": "respond_3",
+        "target": "utility_1",
+        "type": "default"
+      },
+      {
+        "id": "e_utility_end",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

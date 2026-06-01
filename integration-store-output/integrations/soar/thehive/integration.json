@@ -1,0 +1,200 @@
+{
+  "id": "thehive",
+  "name": "TheHive",
+  "description": "Open-source security incident response platform for case management, alert handling, task coordination, and observable tracking with collaborative investigation capabilities.",
+  "version": "1.0.0",
+  "category": "soar",
+  "vendor": "TheHive Project",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header",
+    "token_prefix": "Bearer"
+  },
+  "base_url": "https://{host}:9000/api",
+  "actions": [
+    {
+      "id": "list_cases",
+      "name": "List Cases",
+      "description": "Retrieve a list of cases with optional sorting and filtering.",
+      "http_method": "POST",
+      "endpoint": "/v1/query",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "query", "type": "array", "description": "Query operations array with _name, _type filters.", "required": true},
+        {"name": "sort", "type": "array", "description": "Sort criteria (e.g., ['-createdAt']).", "required": false},
+        {"name": "page", "type": "integer", "description": "Page number.", "required": false},
+        {"name": "limit", "type": "integer", "description": "Results per page.", "required": false}
+      ]
+    },
+    {
+      "id": "get_case",
+      "name": "Get Case",
+      "description": "Retrieve details of a specific case.",
+      "http_method": "GET",
+      "endpoint": "/v1/case/{caseId}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "caseId", "type": "string", "description": "The case ID.", "required": true}
+      ]
+    },
+    {
+      "id": "create_case",
+      "name": "Create Case",
+      "description": "Create a new case for incident investigation.",
+      "http_method": "POST",
+      "endpoint": "/v1/case",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "title", "type": "string", "description": "Case title.", "required": true},
+        {"name": "description", "type": "string", "description": "Case description (supports markdown).", "required": true},
+        {"name": "severity", "type": "integer", "description": "Severity: 1 (Low), 2 (Medium), 3 (High), 4 (Critical).", "required": false},
+        {"name": "tlp", "type": "integer", "description": "TLP level: 0 (White), 1 (Green), 2 (Amber), 3 (Red).", "required": false},
+        {"name": "pap", "type": "integer", "description": "PAP level: 0 (White), 1 (Green), 2 (Amber), 3 (Red).", "required": false},
+        {"name": "flag", "type": "boolean", "description": "Flag the case for attention.", "required": false},
+        {"name": "tags", "type": "array", "description": "Array of tag strings.", "required": false},
+        {"name": "assignee", "type": "string", "description": "Username of the assigned analyst.", "required": false},
+        {"name": "template", "type": "string", "description": "Case template name to apply.", "required": false}
+      ]
+    },
+    {
+      "id": "update_case",
+      "name": "Update Case",
+      "description": "Update an existing case's properties.",
+      "http_method": "PATCH",
+      "endpoint": "/v1/case/{caseId}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "caseId", "type": "string", "description": "The case ID to update.", "required": true},
+        {"name": "title", "type": "string", "description": "Updated title.", "required": false},
+        {"name": "severity", "type": "integer", "description": "Updated severity.", "required": false},
+        {"name": "status", "type": "string", "description": "Updated status.", "required": false},
+        {"name": "assignee", "type": "string", "description": "Updated assignee.", "required": false},
+        {"name": "tags", "type": "array", "description": "Updated tags.", "required": false},
+        {"name": "impactStatus", "type": "string", "description": "Impact: 'NoImpact', 'WithImpact', 'NotApplicable'.", "required": false}
+      ]
+    },
+    {
+      "id": "close_case",
+      "name": "Close Case",
+      "description": "Close a case with a resolution status and summary.",
+      "http_method": "PATCH",
+      "endpoint": "/v1/case/{caseId}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "caseId", "type": "string", "description": "The case ID to close.", "required": true},
+        {"name": "status", "type": "string", "description": "Set to 'Resolved'.", "required": true},
+        {"name": "resolutionStatus", "type": "string", "description": "Resolution: 'TruePositive', 'FalsePositive', 'Indeterminate', 'Other', 'Duplicated'.", "required": true},
+        {"name": "summary", "type": "string", "description": "Closing summary.", "required": true},
+        {"name": "impactStatus", "type": "string", "description": "Impact assessment.", "required": false}
+      ]
+    },
+    {
+      "id": "list_tasks",
+      "name": "List Tasks",
+      "description": "Retrieve tasks for a specific case.",
+      "http_method": "GET",
+      "endpoint": "/v1/case/{caseId}/task",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "caseId", "type": "string", "description": "The case ID.", "required": true}
+      ]
+    },
+    {
+      "id": "create_task",
+      "name": "Create Task",
+      "description": "Create a new task within a case.",
+      "http_method": "POST",
+      "endpoint": "/v1/case/{caseId}/task",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "caseId", "type": "string", "description": "The case ID.", "required": true},
+        {"name": "title", "type": "string", "description": "Task title.", "required": true},
+        {"name": "description", "type": "string", "description": "Task description.", "required": false},
+        {"name": "group", "type": "string", "description": "Task group/phase.", "required": false},
+        {"name": "assignee", "type": "string", "description": "Assigned analyst username.", "required": false},
+        {"name": "flag", "type": "boolean", "description": "Flag the task.", "required": false},
+        {"name": "order", "type": "integer", "description": "Task order within the group.", "required": false}
+      ]
+    },
+    {
+      "id": "update_task",
+      "name": "Update Task",
+      "description": "Update a task's status or properties.",
+      "http_method": "PATCH",
+      "endpoint": "/v1/case/task/{taskId}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "taskId", "type": "string", "description": "The task ID.", "required": true},
+        {"name": "status", "type": "string", "description": "Task status: 'Waiting', 'InProgress', 'Completed', 'Cancel'.", "required": false},
+        {"name": "assignee", "type": "string", "description": "Updated assignee.", "required": false},
+        {"name": "title", "type": "string", "description": "Updated title.", "required": false}
+      ]
+    },
+    {
+      "id": "create_observable",
+      "name": "Create Observable",
+      "description": "Add an observable (IOC) to a case.",
+      "http_method": "POST",
+      "endpoint": "/v1/case/{caseId}/observable",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "caseId", "type": "string", "description": "The case ID.", "required": true},
+        {"name": "dataType", "type": "string", "description": "Observable type: 'ip', 'domain', 'hash', 'url', 'mail', 'filename', etc.", "required": true},
+        {"name": "data", "type": "string", "description": "Observable value.", "required": true},
+        {"name": "message", "type": "string", "description": "Description/context for the observable.", "required": false},
+        {"name": "tlp", "type": "integer", "description": "TLP level.", "required": false},
+        {"name": "ioc", "type": "boolean", "description": "Mark as IOC.", "required": false},
+        {"name": "sighted", "type": "boolean", "description": "Mark as sighted.", "required": false},
+        {"name": "tags", "type": "array", "description": "Tags for the observable.", "required": false}
+      ]
+    },
+    {
+      "id": "list_alerts",
+      "name": "List Alerts",
+      "description": "Retrieve a list of alerts that can be promoted to cases.",
+      "http_method": "POST",
+      "endpoint": "/v1/query",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "query", "type": "array", "description": "Query operations to filter alerts.", "required": true}
+      ]
+    },
+    {
+      "id": "promote_alert",
+      "name": "Promote Alert to Case",
+      "description": "Promote an alert to a new case for investigation.",
+      "http_method": "POST",
+      "endpoint": "/v1/alert/{alertId}/createCase",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "alertId", "type": "string", "description": "The alert ID to promote.", "required": true}
+      ]
+    },
+    {
+      "id": "add_task_log",
+      "name": "Add Task Log",
+      "description": "Add a log entry (comment) to a task.",
+      "http_method": "POST",
+      "endpoint": "/v1/case/task/{taskId}/log",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "taskId", "type": "string", "description": "The task ID.", "required": true},
+        {"name": "message", "type": "string", "description": "Log message content.", "required": true}
+      ]
+    }
+  ]
+}

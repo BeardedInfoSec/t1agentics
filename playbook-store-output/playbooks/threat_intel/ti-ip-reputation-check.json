@@ -1,0 +1,265 @@
+{
+  "name": "Bulk IP Reputation Check",
+  "slug": "ti-ip-reputation-check",
+  "description": "Performs bulk IP reputation assessment by extracting all IP addresses from an alert, iterating over each IP to enrich from VirusTotal, AbuseIPDB, and Shodan, then categorizing results. AI analysis identifies patterns across IPs such as shared ASNs, geolocation clustering, or known botnet membership. Malicious IPs are automatically blocked on the firewall and added to the threat intel blocklist. Clean IPs are annotated and the alert is closed with an enrichment summary.",
+  "category": "threat_intel",
+  "subcategory": "reputation",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "12 minutes",
+  "tags": ["ip", "reputation", "enrichment", "bulk", "threat_intel", "blocklist"],
+  "alert_types": ["threat_intel", "network"],
+  "severity_filter": ["low", "medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["threat_intel", "suspicious_ip", "network_alert", "ip_reputation"],
+    "min_severity": "low"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "virustotal",
+      "name": "VirusTotal",
+      "category": "threat_intel",
+      "reason": "Check IP reputation including detection ratios, associated malware, and communicating files"
+    },
+    {
+      "connector_id": "abuseipdb",
+      "name": "AbuseIPDB",
+      "category": "threat_intel",
+      "reason": "Retrieve abuse confidence scores and historical abuse reports for each IP"
+    },
+    {
+      "connector_id": "shodan",
+      "name": "Shodan",
+      "category": "threat_intel",
+      "reason": "Gather infrastructure intelligence including open ports, services, and hosting details"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "IP Reputation Alert Received",
+          "config": {
+            "alert_types": ["threat_intel", "suspicious_ip", "network_alert", "ip_reputation"],
+            "description": "Triggers when an alert containing suspicious IP addresses is ingested for reputation assessment"
+          }
+        }
+      },
+      {
+        "id": "code_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "code",
+          "label": "Extract IP Addresses",
+          "config": {
+            "code": "import re\n\nalert = inputs.get('alert', {})\nraw_text = str(alert)\n\nip_pattern = r'\\b(?:\\d{1,3}\\.){3}\\d{1,3}\\b'\nprivate_ranges = ['10.', '172.16.', '172.17.', '172.18.', '172.19.', '172.20.', '172.21.', '172.22.', '172.23.', '172.24.', '172.25.', '172.26.', '172.27.', '172.28.', '172.29.', '172.30.', '172.31.', '192.168.', '127.']\n\nall_ips = list(set(re.findall(ip_pattern, raw_text)))\npublic_ips = [ip for ip in all_ips if not any(ip.startswith(p) for p in private_ranges)]\n\nip_list = [{'type': 'ip', 'value': ip} for ip in public_ips]\n\nresult = {\n    'ip_list': ip_list,\n    'total_count': len(public_ips),\n    'filtered_private': len(all_ips) - len(public_ips)\n}",
+            "inputs": {
+              "alert": "{{trigger_1.alert}}"
+            },
+            "description": "Extracts all public IP addresses from the alert, filtering out RFC1918 private ranges"
+          }
+        }
+      },
+      {
+        "id": "loop_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "loop",
+          "label": "Iterate Over IPs",
+          "config": {
+            "items_path": "$.code_1.outputs.result.ip_list",
+            "loop_variable": "current_ip",
+            "max_iterations": 100,
+            "description": "Iterates over each extracted public IP address for individual enrichment"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 540 },
+        "data": {
+          "kind": "analyze",
+          "label": "Enrich IP — VT, AbuseIPDB, Shodan",
+          "config": {
+            "mode": "enrich",
+            "observable_type": "ip",
+            "data_path": "$.current_ip.value",
+            "sources": ["virustotal", "abuseipdb", "shodan"],
+            "description": "Enriches each IP address against VirusTotal, AbuseIPDB, and Shodan for comprehensive reputation and infrastructure data"
+          }
+        }
+      },
+      {
+        "id": "analyze_2",
+        "type": "signal",
+        "position": { "x": 520, "y": 700 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — Categorize IP Results",
+          "config": {
+            "template_id": "ioc_correlation",
+            "additional_instructions": "Categorize all enriched IPs by risk level. Identify patterns such as shared ASNs, geolocation clustering, known botnet membership, or C2 infrastructure. Separate IPs into malicious, suspicious, and clean categories.",
+            "description": "AI-powered categorization of enriched IPs identifying patterns, shared infrastructure, and risk levels"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 860 },
+        "data": {
+          "kind": "decision",
+          "label": "Any Malicious IPs Detected?",
+          "config": {
+            "condition": "{{analyze_2.malicious_count}} > 0 or {{analyze_2.severity}} in ['high', 'critical']",
+            "description": "Routes based on whether any IPs were categorized as malicious by the enrichment and AI analysis"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "label": "Block Malicious IPs on Firewall",
+          "config": {
+            "integration_action": {
+              "action": "block_indicators",
+              "parameters": {
+                "indicators": "{{analyze_2.malicious_ips}}",
+                "rule_name": "TI-bulk-ip-block",
+                "source": "ti-ip-reputation-check",
+                "expiry_days": 60
+              }
+            },
+            "description": "Blocks all malicious IPs on the firewall to prevent inbound and outbound communication"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 1180 },
+        "data": {
+          "kind": "respond",
+          "label": "Add to Threat Intel Blocklist",
+          "config": {
+            "integration_action": {
+              "action": "edl_add",
+              "parameters": {
+                "list_name": "threat_intel_blocklist",
+                "indicators": "{{analyze_2.malicious_ips}}",
+                "source": "ti-ip-reputation-check",
+                "expiry_days": 60
+              }
+            },
+            "description": "Adds malicious IPs to the External Dynamic List for automated propagation to all perimeter security controls"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 700, "y": 1020 },
+        "data": {
+          "kind": "utility",
+          "label": "Note: All IPs Clean",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "Bulk IP reputation check completed. All {{code_1.outputs.result.total_count}} public IPs assessed as clean.\n\nPrivate IPs filtered: {{code_1.outputs.result.filtered_private}}\n\nRiggs AI Summary:\n{{analyze_2.summary}}"
+            },
+            "description": "Documents that all IPs were assessed as clean with no blocking action required"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1340 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "Bulk IP reputation check complete"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_extract",
+        "source": "trigger_1",
+        "target": "code_1",
+        "type": "default"
+      },
+      {
+        "id": "e_extract_loop",
+        "source": "code_1",
+        "target": "loop_1",
+        "type": "default"
+      },
+      {
+        "id": "e_loop_enrich",
+        "source": "loop_1",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_enrich_categorize",
+        "source": "analyze_1",
+        "target": "analyze_2",
+        "type": "default"
+      },
+      {
+        "id": "e_categorize_decision",
+        "source": "analyze_2",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "respond_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "utility_1",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_block_edl",
+        "source": "respond_1",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_edl_end",
+        "source": "respond_2",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_clean_end",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

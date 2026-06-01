@@ -1,0 +1,98 @@
+{
+  "id": "secureframe",
+  "name": "Secureframe",
+  "description": "Integrates with Secureframe REST API for compliance automation including controls management, test monitoring, framework tracking, and vendor management",
+  "version": "1.0.0",
+  "category": "grc",
+  "vendor": "Secureframe",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "https://app.secureframe.com/api",
+  "actions": [
+    {
+      "id": "list_tests",
+      "name": "List Tests",
+      "description": "List all compliance tests and their pass/fail status",
+      "http_method": "GET",
+      "endpoint": "/tests",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "framework_id", "type": "string", "description": "Filter by framework ID", "required": false},
+        {"name": "status", "type": "string", "description": "Filter by test status (passing, failing, not_applicable)", "required": false},
+        {"name": "page", "type": "number", "description": "Page number", "required": false, "default": 1},
+        {"name": "per_page", "type": "number", "description": "Results per page", "required": false, "default": 25}
+      ]
+    },
+    {
+      "id": "get_test",
+      "name": "Get Test",
+      "description": "Retrieve details of a specific compliance test",
+      "http_method": "GET",
+      "endpoint": "/tests/{test_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "test_id", "type": "string", "description": "Test ID", "required": true}
+      ]
+    },
+    {
+      "id": "list_frameworks",
+      "name": "List Frameworks",
+      "description": "List compliance frameworks configured in Secureframe",
+      "http_method": "GET",
+      "endpoint": "/frameworks",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "page", "type": "number", "description": "Page number", "required": false, "default": 1},
+        {"name": "per_page", "type": "number", "description": "Results per page", "required": false, "default": 25}
+      ]
+    },
+    {
+      "id": "list_controls",
+      "name": "List Controls",
+      "description": "List compliance controls and their status",
+      "http_method": "GET",
+      "endpoint": "/controls",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "framework_id", "type": "string", "description": "Filter by framework ID", "required": false},
+        {"name": "page", "type": "number", "description": "Page number", "required": false, "default": 1},
+        {"name": "per_page", "type": "number", "description": "Results per page", "required": false, "default": 25}
+      ]
+    },
+    {
+      "id": "list_vendors",
+      "name": "List Vendors",
+      "description": "List third-party vendors and their security review status",
+      "http_method": "GET",
+      "endpoint": "/vendors",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "page", "type": "number", "description": "Page number", "required": false, "default": 1},
+        {"name": "per_page", "type": "number", "description": "Results per page", "required": false, "default": 25}
+      ]
+    },
+    {
+      "id": "list_personnel",
+      "name": "List Personnel",
+      "description": "List personnel and their onboarding/compliance status",
+      "http_method": "GET",
+      "endpoint": "/personnel",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "page", "type": "number", "description": "Page number", "required": false, "default": 1},
+        {"name": "per_page", "type": "number", "description": "Results per page", "required": false, "default": 25},
+        {"name": "status", "type": "string", "description": "Filter by personnel status", "required": false}
+      ]
+    }
+  ]
+}

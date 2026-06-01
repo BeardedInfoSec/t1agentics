@@ -1,0 +1,236 @@
+  // Render upload view
+  const renderUploadView = () => (
+    <div className="card" style={{ marginBottom: '1rem' }}>
+      <h3 style={{ fontSize: '1rem', fontWeight: '600', marginBottom: '1rem' }}>Upload IOC File</h3>
+
+      {/* File selection */}
+      <div style={{ marginBottom: '1rem' }}>
+        <input
+          type="file"
+          ref={fileInputRef}
+          onChange={handleFileSelect}
+          accept=".txt,.csv,.json,.stix"
+          style={{ display: 'none' }}
+        />
+        <div
+          onClick={() => fileInputRef.current?.click()}
+          style={{
+            border: '2px dashed var(--border-color)',
+            borderRadius: '8px',
+            padding: '2rem',
+            textAlign: 'center',
+            cursor: 'pointer',
+            background: 'var(--bg-secondary)',
+            transition: 'all 0.2s'
+          }}
+          onDragOver={(e) => { e.preventDefault(); e.currentTarget.style.borderColor = 'var(--primary)'; }}
+          onDragLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border-color)'; }}
+          onDrop={(e) => {
+            e.preventDefault();
+            e.currentTarget.style.borderColor = 'var(--border-color)';
+            const file = e.dataTransfer.files[0];
+            if (file) {
+              setUploadFile(file);
+              setUploadResult(null);
+              setUploadError(null);
+              previewFile(file);
+            }
+          }}
+        >
+          {uploadFile ? (
+            <div>
+              <span style={{ fontSize: '1.5rem' }}>📄</span>
+              <p style={{ margin: '0.5rem 0', fontWeight: '500' }}>{uploadFile.name}</p>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                {(uploadFile.size / 1024).toFixed(1)} KB
+              </p>
+            </div>
+          ) : (
+            <div>
+              <span style={{ fontSize: '2rem' }}>📁</span>
+              <p style={{ margin: '0.5rem 0', color: 'var(--text-muted)' }}>
+                Click or drag file to upload
+              </p>
+              <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                Supports: TXT, CSV, JSON, STIX
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Upload options */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '1rem' }}>
+        <div>
+          <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '0.25rem' }}>Format</label>
+          <select
+            value={uploadFormat}
+            onChange={(e) => { setUploadFormat(e.target.value); if (uploadFile) previewFile(uploadFile); }}
+            style={{
+              width: '100%',
+              padding: '0.5rem',
+              background: 'var(--bg-secondary)',
+              border: '1px solid var(--border-color)',
+              borderRadius: '6px',
+              color: 'var(--text-primary)',
+              fontSize: '0.8rem'
+            }}
+          >
+            <option value="txt_lines">Plain Text (one per line)</option>
+            <option value="csv">CSV</option>
+            <option value="json">JSON</option>
+            <option value="json_lines">JSON Lines</option>
+            <option value="stix">STIX 2.x</option>
+          </select>
+        </div>
+        <div>
+          <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '0.25rem' }}>Source Name</label>
+          <input
+            type="text"
+            value={uploadSourceName}
+            onChange={(e) => setUploadSourceName(e.target.value)}
+            placeholder="Manual Upload"
+            style={{
+              width: '100%',
+              padding: '0.5rem',
+              background: 'var(--bg-secondary)',
+              border: '1px solid var(--border-color)',
+              borderRadius: '6px',
+              color: 'var(--text-primary)',
+              fontSize: '0.8rem'
+            }}
+          />
+        </div>
+        <div>
+          <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '0.25rem' }}>Severity</label>
+          <select
+            value={uploadSeverity}
+            onChange={(e) => setUploadSeverity(e.target.value)}
+            style={{
+              width: '100%',
+              padding: '0.5rem',
+              background: 'var(--bg-secondary)',
+              border: '1px solid var(--border-color)',
+              borderRadius: '6px',
+              color: 'var(--text-primary)',
+              fontSize: '0.8rem'
+            }}
+          >
+            <option value="critical">Critical</option>
+            <option value="high">High</option>
+            <option value="medium">Medium</option>
+            <option value="low">Low</option>
+          </select>
+        </div>
+        <div>
+          <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '0.25rem' }}>Tags (comma-separated)</label>
+          <input
+            type="text"
+            value={uploadTags}
+            onChange={(e) => setUploadTags(e.target.value)}
+            placeholder="e.g., phishing, malware"
+            style={{
+              width: '100%',
+              padding: '0.5rem',
+              background: 'var(--bg-secondary)',
+              border: '1px solid var(--border-color)',
+              borderRadius: '6px',
+              color: 'var(--text-primary)',
+              fontSize: '0.8rem'
+            }}
+          />
+        </div>
+      </div>
+
+      {/* Preview */}
+      {uploadPreview && (
+        <div style={{ marginBottom: '1rem', padding: '1rem', background: 'var(--bg-tertiary)', borderRadius: '6px' }}>
+          <h4 style={{ fontSize: '0.85rem', fontWeight: '600', marginBottom: '0.5rem' }}>
+            Preview: {uploadPreview.total_iocs_found} IOCs detected
+          </h4>
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.5rem' }}>
+            {Object.entries(uploadPreview.by_type || {}).map(([type, iocs]) => (
+              <span key={type} style={{
+                padding: '0.25rem 0.5rem',
+                background: 'var(--bg-secondary)',
+                borderRadius: '4px',
+                fontSize: '0.75rem'
+              }}>
+                {type}: {iocs.length}
+              </span>
+            ))}
+          </div>
+          <div style={{ maxHeight: '150px', overflowY: 'auto', fontSize: '0.75rem', fontFamily: 'monospace' }}>
+            {uploadPreview.sample?.slice(0, 10).map((ioc, i) => (
+              <div key={i} style={{ padding: '0.25rem 0', borderBottom: '1px solid var(--border-color)' }}>
+                <span style={{ color: 'var(--text-muted)', marginRight: '0.5rem' }}>[{ioc.type}]</span>
+                {ioc.value}
+              </div>
+            ))}
+            {uploadPreview.total_iocs_found > 10 && (
+              <div style={{ color: 'var(--text-muted)', padding: '0.5rem 0' }}>
+                ... and {uploadPreview.total_iocs_found - 10} more
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Error */}
+      {uploadError && (
+        <div style={{ marginBottom: '1rem', padding: '0.75rem', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: '6px', color: '#ef4444' }}>
+          {uploadError}
+        </div>
+      )}
+
+      {/* Success result */}
+      {uploadResult && (
+        <div style={{ marginBottom: '1rem', padding: '1rem', background: 'rgba(34, 197, 94, 0.1)', border: '1px solid rgba(34, 197, 94, 0.3)', borderRadius: '6px' }}>
+          <h4 style={{ color: '#22c55e', marginBottom: '0.5rem' }}>Upload Complete!</h4>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem', fontSize: '0.85rem' }}>
+            <div><strong>{uploadResult.iocs_found}</strong> Found</div>
+            <div><strong>{uploadResult.iocs_new}</strong> New</div>
+            <div><strong>{uploadResult.iocs_updated}</strong> Updated</div>
+            <div><strong>{uploadResult.iocs_skipped}</strong> Skipped</div>
+          </div>
+        </div>
+      )}
+
+      {/* Actions */}
+      <div style={{ display: 'flex', gap: '0.5rem' }}>
+        <button
+          onClick={handleUpload}
+          disabled={!uploadFile || uploadLoading}
+          style={{
+            padding: '0.6rem 1.5rem',
+            background: uploadFile && !uploadLoading ? 'var(--primary)' : 'var(--bg-tertiary)',
+            color: uploadFile && !uploadLoading ? 'white' : 'var(--text-muted)',
+            border: 'none',
+            borderRadius: '6px',
+            cursor: uploadFile && !uploadLoading ? 'pointer' : 'not-allowed',
+            fontWeight: '500',
+            fontSize: '0.85rem'
+          }}
+        >
+          {uploadLoading ? 'Processing...' : 'Upload & Import'}
+        </button>
+        {uploadFile && (
+          <button
+            onClick={clearUpload}
+            style={{
+              padding: '0.6rem 1rem',
+              background: 'transparent',
+              color: 'var(--text-secondary)',
+              border: '1px solid var(--border-color)',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              fontSize: '0.85rem'
+            }}
+          >
+            Clear
+          </button>
+        )}
+      </div>
+    </div>
+  );
+

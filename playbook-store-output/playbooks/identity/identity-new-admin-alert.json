@@ -1,0 +1,193 @@
+{
+  "name": "New Admin Account Alert",
+  "slug": "identity-new-admin-alert",
+  "description": "Alerts on new admin account creation or admin role assignment. Requires SOC manager approval before the new admin privileges are confirmed. If not approved within the timeout window, privileges are automatically revoked. Creates a full audit trail of the approval decision and notifies relevant stakeholders.",
+  "category": "identity",
+  "subcategory": "admin_creation",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "15 minutes",
+  "tags": ["admin_creation", "role_assignment", "approval_gate", "audit_trail", "privileged_access"],
+  "alert_types": ["admin_creation", "role_assignment", "privilege_escalation"],
+  "severity_filter": ["high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["admin_creation", "role_assignment"],
+    "min_severity": "high"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "microsoft_graph",
+      "name": "Microsoft Graph",
+      "category": "identity",
+      "reason": "Revoke admin role assignment if not approved"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create audit trail ticket for admin account creation"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "na-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "title": "New Admin Alert",
+          "summary": "Fires when a new admin account is created or admin role is assigned",
+          "config": {
+            "trigger_type": "alert",
+            "alert_filter": "admin_creation OR role_assignment"
+          }
+        }
+      },
+      {
+        "id": "na-2",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "title": "AI Privilege Analysis",
+          "summary": "Analyze the admin creation context for risk indicators",
+          "config": {
+            "mode": "ai_analysis",
+            "template_id": "priv_escalation",
+            "custom_instructions": "",
+            "alert_path": "$.trigger.alert",
+            "include_context": true
+          }
+        }
+      },
+      {
+        "id": "na-3",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "approval",
+          "title": "SOC Manager Approval",
+          "summary": "Require SOC manager approval for the new admin privileges",
+          "config": {
+            "approvers": ["soc-manager", "it-director"],
+            "timeout_minutes": 60,
+            "escalation": "deny_on_timeout",
+            "message": "New admin privileges assigned to {{$.trigger.alert.target_user_email}} by {{$.trigger.alert.assigned_by}}. Role: {{$.trigger.alert.admin_role}}. Please approve or deny within 60 minutes. Auto-denied on timeout."
+          }
+        }
+      },
+      {
+        "id": "na-4",
+        "type": "signal",
+        "position": { "x": 520, "y": 540 },
+        "data": {
+          "kind": "decision",
+          "title": "Approved?",
+          "summary": "Branch based on approval decision",
+          "config": {
+            "conditions": {
+              "operator": "AND",
+              "conditions": [
+                {
+                  "field": "$.nodes.na-3.result.approved",
+                  "operator": "equals",
+                  "value": "true"
+                }
+              ],
+              "groups": []
+            },
+            "expression": "$.nodes.na-3.result.approved == true",
+            "default_branch": "no"
+          }
+        }
+      },
+      {
+        "id": "na-5",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "title": "Create Approval Audit Ticket",
+          "summary": "Create audit trail ticket documenting approved admin creation",
+          "config": {
+            "response_type": "create_ticket",
+            "system": "jira",
+            "project_key": "SEC",
+            "issue_type": "Task",
+            "title": "Admin Approved: {{$.trigger.alert.target_user_email}} — {{$.trigger.alert.admin_role}}",
+            "description": "New admin role ({{$.trigger.alert.admin_role}}) approved for {{$.trigger.alert.target_user_email}}. Approved by: {{$.nodes.na-3.result.approved_by}}. Assigned by: {{$.trigger.alert.assigned_by}}.",
+            "priority": "medium",
+            "requires_approval": false
+          }
+        }
+      },
+      {
+        "id": "na-6",
+        "type": "signal",
+        "position": { "x": 700, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "title": "Revoke Admin Privileges",
+          "summary": "Remove admin role that was not approved",
+          "config": {
+            "response_type": "integration_action",
+            "integration_instance_id": "microsoft_graph",
+            "action_type": "remove_role_assignment",
+            "params": {
+              "user_id": "$.trigger.alert.target_user_id",
+              "role_id": "$.trigger.alert.admin_role_id",
+              "reason": "Admin role assignment not approved — privileges revoked"
+            },
+            "requires_approval": false,
+            "priority": "high"
+          }
+        }
+      },
+      {
+        "id": "na-7",
+        "type": "signal",
+        "position": { "x": 700, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "title": "Notify Assignor",
+          "summary": "Notify the person who assigned the admin role that it was denied",
+          "config": {
+            "response_type": "notification",
+            "channel": "email",
+            "email_recipients": "$.trigger.alert.assigned_by_email",
+            "email_subject": "Admin Role Denied: {{$.trigger.alert.target_user_email}}",
+            "message": "Your admin role assignment ({{$.trigger.alert.admin_role}}) for {{$.trigger.alert.target_user_email}} was not approved and has been revoked. Please submit a formal access request if this role is required.",
+            "requires_approval": false,
+            "priority": "high"
+          }
+        }
+      },
+      {
+        "id": "na-8",
+        "type": "signal",
+        "position": { "x": 520, "y": 1020 },
+        "data": {
+          "kind": "end",
+          "title": "Playbook Complete",
+          "summary": "New admin alert response finished",
+          "config": {
+            "disposition": "completed",
+            "summary": "New admin account alert and approval process completed"
+          }
+        }
+      }
+    ],
+    "edges": [
+      { "id": "na-e1", "source": "na-1", "target": "na-2", "animated": true, "type": "smoothstep" },
+      { "id": "na-e2", "source": "na-2", "target": "na-3", "animated": true, "type": "smoothstep" },
+      { "id": "na-e3", "source": "na-3", "target": "na-4", "animated": true, "type": "smoothstep" },
+      { "id": "na-e4", "source": "na-4", "target": "na-5", "sourceHandle": "yes", "label": "Yes", "animated": true, "type": "smoothstep" },
+      { "id": "na-e5", "source": "na-4", "target": "na-6", "sourceHandle": "no", "label": "No", "animated": true, "type": "smoothstep" },
+      { "id": "na-e6", "source": "na-5", "target": "na-8", "animated": true, "type": "smoothstep" },
+      { "id": "na-e7", "source": "na-6", "target": "na-7", "animated": true, "type": "smoothstep" },
+      { "id": "na-e8", "source": "na-7", "target": "na-8", "animated": true, "type": "smoothstep" }
+    ]
+  }
+}

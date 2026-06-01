@@ -1,0 +1,127 @@
+{
+  "id": "insightvm",
+  "name": "InsightVM",
+  "description": "This app integrates with Rapid7 InsightVM (formerly Nexpose) to ingest scan data and perform investigative actions",
+  "version": "3.2.4",
+  "category": "threat_intel",
+  "vendor": "Rapid7",
+  "auth_type": "basic_auth",
+  "auth_config": {
+    "type": "basic_auth",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "https://{0}:{1}/api/3",
+  "actions": [
+    {
+      "id": "list_sites",
+      "name": "List Sites",
+      "description": "List all sites found on the InsightVM instance",
+      "http_method": "GET",
+      "endpoint": "/actions/list_sites",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "on_poll",
+      "name": "On Poll",
+      "description": "Ingest scan data from InsightVM",
+      "http_method": "GET",
+      "endpoint": "/actions/on_poll",
+      "action_type": "ingest",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "start_time",
+          "type": "number",
+          "description": "Parameter ignored in this app",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "number",
+          "description": "Parameter ignored in this app",
+          "required": false
+        },
+        {
+          "name": "container_id",
+          "type": "string",
+          "description": "Parameter ignored in this app",
+          "required": false
+        },
+        {
+          "name": "container_count",
+          "type": "number",
+          "description": "Maximum numer of reports to ingest during poll now",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "artifact_count",
+          "type": "number",
+          "description": "Parameter ignored in this app",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "find_assets",
+      "name": "Find Assets",
+      "description": "Find assets on the InsightVM instance",
+      "http_method": "GET",
+      "endpoint": "/actions/find_assets",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "filters",
+          "type": "string",
+          "description": "Filters used to match assets",
+          "required": true
+        },
+        {
+          "name": "match",
+          "type": "string",
+          "description": "Operator to determine how to match filters",
+          "required": true,
+          "default": "all"
+        }
+      ]
+    },
+    {
+      "id": "get_asset_vulnerabilities",
+      "name": "Get Asset Vulnerabilities",
+      "description": "Retrieve all vulnerability findings on an asset",
+      "http_method": "GET",
+      "endpoint": "/actions/get_asset_vulnerabilities",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "asset_id",
+          "type": "number",
+          "description": "The identifier of the asset",
+          "required": true,
+          "contains": [
+            "insightvm asset id"
+          ]
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "InsightVM",
+    "original_type": "information",
+    "converted_at": "2025-12-18T16:25:28.867672",
+    "source_version": "3.2.4"
+  }
+}

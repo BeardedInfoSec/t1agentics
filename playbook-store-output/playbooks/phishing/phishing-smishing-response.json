@@ -1,0 +1,231 @@
+{
+  "name": "SMS Phishing (Smishing) Response",
+  "slug": "phishing-smishing-response",
+  "description": "Responds to SMS phishing (smishing) attacks targeting employees. Extracts indicators from the reported SMS message including phone numbers, URLs, and keywords. URLs are enriched against threat intelligence. Confirmed smishing triggers blocking of the sender phone number, URL blocking on the web proxy, notification to affected users, and a SOC alert. Handles the growing attack vector of SMS-based social engineering.",
+  "category": "phishing",
+  "subcategory": "smishing",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "10 minutes",
+  "tags": ["phishing", "smishing", "sms", "mobile", "phone", "text-message", "social-engineering"],
+  "alert_types": ["phishing"],
+  "severity_filter": ["medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["phishing", "smishing", "sms_phishing", "suspicious_sms"],
+    "min_severity": "medium"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "virustotal",
+      "name": "VirusTotal",
+      "category": "threat_intel",
+      "reason": "Enrich URLs extracted from SMS messages"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "title": "Smishing Report Received",
+          "summary": "Triggers on SMS phishing or smishing reports",
+          "config": {
+            "trigger_type": "alert",
+            "alert_types": ["phishing", "smishing", "sms_phishing", "suspicious_sms"]
+          }
+        }
+      },
+      {
+        "id": "code-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "code",
+          "title": "Extract SMS Indicators",
+          "summary": "Parse phone numbers, URLs, and suspicious keywords from the SMS content",
+          "config": {
+            "mode": "script",
+            "script": {
+              "function_name": "main",
+              "inputs": [
+                { "name": "alert", "path": "$.trigger.alert" }
+              ],
+              "code": "import re\n\ndef main(alert):\n    body = alert.get('body', alert.get('sms_content', alert.get('message', '')))\n    url_pattern = r'https?://[^\\s<>\"]+'\n    urls = list(set(re.findall(url_pattern, body)))\n    phone_pattern = r'[\\+]?[1-9]\\d{6,14}'\n    phones = list(set(re.findall(phone_pattern, body)))\n    sender_phone = alert.get('sender_phone', alert.get('from_number', ''))\n    keywords = ['urgent', 'verify', 'suspend', 'click', 'confirm', 'expire', 'account', 'bank', 'password']\n    found_keywords = [kw for kw in keywords if kw.lower() in body.lower()]\n    return {\n        'urls': urls,\n        'url_count': len(urls),\n        'phone_numbers': phones,\n        'sender_phone': sender_phone,\n        'suspicious_keywords': found_keywords,\n        'keyword_count': len(found_keywords),\n        'sms_body': body[:500]\n    }"
+            }
+          }
+        }
+      },
+      {
+        "id": "analyze-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "analyze",
+          "title": "Enrich SMS URLs",
+          "summary": "Check extracted URLs from SMS against VirusTotal",
+          "config": {
+            "mode": "enrich",
+            "observable_type": "url",
+            "observable_path": "$.nodes.code-1.result.urls",
+            "sources": ["virustotal"],
+            "aggregate_results": true
+          }
+        }
+      },
+      {
+        "id": "analyze-2",
+        "type": "signal",
+        "position": { "x": 520, "y": 540 },
+        "data": {
+          "kind": "analyze",
+          "title": "AI Smishing Analysis",
+          "summary": "AI evaluates SMS content for social engineering patterns",
+          "config": {
+            "mode": "ai_analysis",
+            "template_id": "phishing_triage",
+            "custom_instructions": "Analyze SMS content for smishing indicators: urgency language, fake delivery notifications, bank/account impersonation, shortened URLs, and social engineering tactics specific to SMS phishing",
+            "alert_path": "$.trigger.alert",
+            "include_context": true
+          }
+        }
+      },
+      {
+        "id": "decision-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 700 },
+        "data": {
+          "kind": "decision",
+          "title": "Confirmed Smishing?",
+          "summary": "Is the SMS confirmed as a smishing attack?",
+          "config": {
+            "conditions": {
+              "operator": "AND",
+              "conditions": [
+                {
+                  "left": { "type": "path", "value": "$.nodes.analyze-2.result.verdict" },
+                  "operator": "equals",
+                  "right": { "type": "value", "value": "malicious" }
+                }
+              ],
+              "groups": []
+            },
+            "expression": "$.nodes.analyze-2.result.verdict == \"malicious\"",
+            "default_branch": "no"
+          }
+        }
+      },
+      {
+        "id": "respond-1",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "title": "Block Sender Number",
+          "summary": "Block the smishing sender phone number",
+          "config": {
+            "response_type": "integration_action",
+            "action_type": "block_phone",
+            "target_path": "$.nodes.code-1.result.sender_phone",
+            "requires_approval": true,
+            "priority": "high",
+            "message": "Blocking smishing sender number {{$.nodes.code-1.result.sender_phone}}"
+          }
+        }
+      },
+      {
+        "id": "respond-2",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "title": "Block SMS URLs",
+          "summary": "Block malicious URLs from the SMS on web proxy",
+          "config": {
+            "response_type": "integration_action",
+            "action_type": "block_url",
+            "target_path": "$.nodes.code-1.result.urls",
+            "requires_approval": true,
+            "priority": "high",
+            "message": "Blocking {{$.nodes.code-1.result.url_count}} URL(s) from smishing message on web proxy"
+          }
+        }
+      },
+      {
+        "id": "respond-3",
+        "type": "signal",
+        "position": { "x": 340, "y": 1180 },
+        "data": {
+          "kind": "respond",
+          "title": "Notify SOC & Affected Users",
+          "summary": "Alert SOC and notify affected employees about the smishing campaign",
+          "config": {
+            "response_type": "notify",
+            "channel": "slack",
+            "slack_channel": "#soc-alerts",
+            "message": "SMISHING ATTACK DETECTED\n\nSender Phone: {{$.nodes.code-1.result.sender_phone}}\nSMS Content: {{$.nodes.code-1.result.sms_body}}\nURLs Found: {{$.nodes.code-1.result.url_count}}\nSuspicious Keywords: {{$.nodes.code-1.result.suspicious_keywords}}\n\nAI Assessment: {{$.nodes.analyze-2.result.summary}}\n\nActions:\n- Sender phone number blocked\n- SMS URLs blocked on proxy\n- Recommend employee advisory about this smishing campaign",
+            "priority": "high"
+          }
+        }
+      },
+      {
+        "id": "utility-1",
+        "type": "signal",
+        "position": { "x": 700, "y": 860 },
+        "data": {
+          "kind": "utility",
+          "title": "Close — Not Smishing",
+          "summary": "SMS determined to be legitimate, close alert",
+          "config": {
+            "operation": "update_status",
+            "status": "closed",
+            "note": "SMS analyzed and determined to be legitimate. No smishing indicators confirmed by AI analysis."
+          }
+        }
+      },
+      {
+        "id": "end-1",
+        "type": "signal",
+        "position": { "x": 340, "y": 1340 },
+        "data": {
+          "kind": "end",
+          "title": "End — Smishing Contained",
+          "summary": "Sender blocked, URLs blocked, SOC notified",
+          "config": {
+            "disposition": "true_positive",
+            "summary": "Smishing attack confirmed. Sender phone blocked, malicious URLs blocked on proxy, SOC and affected users notified."
+          }
+        }
+      },
+      {
+        "id": "end-2",
+        "type": "signal",
+        "position": { "x": 700, "y": 1020 },
+        "data": {
+          "kind": "end",
+          "title": "End — Legitimate SMS",
+          "summary": "Not smishing, alert closed",
+          "config": {
+            "disposition": "false_positive",
+            "summary": "SMS analyzed and found to be legitimate. Alert closed."
+          }
+        }
+      }
+    ],
+    "edges": [
+      { "id": "e1", "source": "trigger-1", "target": "code-1", "animated": true, "type": "smoothstep" },
+      { "id": "e2", "source": "code-1", "target": "analyze-1", "animated": true, "type": "smoothstep" },
+      { "id": "e3", "source": "analyze-1", "target": "analyze-2", "animated": true, "type": "smoothstep" },
+      { "id": "e4", "source": "analyze-2", "target": "decision-1", "animated": true, "type": "smoothstep" },
+      { "id": "e5", "source": "decision-1", "target": "respond-1", "sourceHandle": "yes", "label": "Yes", "animated": true, "type": "smoothstep" },
+      { "id": "e6", "source": "decision-1", "target": "utility-1", "sourceHandle": "no", "label": "No", "animated": true, "type": "smoothstep" },
+      { "id": "e7", "source": "respond-1", "target": "respond-2", "animated": true, "type": "smoothstep" },
+      { "id": "e8", "source": "respond-2", "target": "respond-3", "animated": true, "type": "smoothstep" },
+      { "id": "e9", "source": "respond-3", "target": "end-1", "animated": true, "type": "smoothstep" },
+      { "id": "e10", "source": "utility-1", "target": "end-2", "animated": true, "type": "smoothstep" }
+    ]
+  }
+}

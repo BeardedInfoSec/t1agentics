@@ -1,0 +1,198 @@
+{
+  "name": "Business Email Compromise Detection",
+  "slug": "phishing-bec-detection",
+  "description": "Detects and responds to Business Email Compromise (BEC) attacks including CEO fraud, vendor impersonation, and display name spoofing. AI analysis focuses on sender impersonation patterns, domain lookalikes, and urgency-based social engineering. Confirmed BEC attempts trigger email quarantine, executive protection team notification via Slack, and automatic Jira incident ticket creation for tracking and compliance.",
+  "category": "phishing",
+  "subcategory": "bec_detection",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "advanced",
+  "estimated_time": "15 minutes",
+  "tags": ["phishing", "bec", "impersonation", "executive-protection", "jira", "slack", "social-engineering"],
+  "alert_types": ["phishing"],
+  "severity_filter": ["high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["phishing", "bec", "impersonation", "suspicious_email"],
+    "min_severity": "high"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create incident tracking ticket for BEC investigation"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Notify executive protection team of confirmed BEC attempt"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "title": "BEC / Phishing Alert",
+          "summary": "Triggers on BEC, impersonation, or phishing alerts",
+          "config": {
+            "trigger_type": "alert",
+            "alert_types": ["phishing", "bec", "impersonation", "suspicious_email"]
+          }
+        }
+      },
+      {
+        "id": "analyze-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "title": "AI BEC Analysis",
+          "summary": "Analyze for sender impersonation, display name spoofing, domain lookalikes",
+          "config": {
+            "mode": "ai_analysis",
+            "template_id": "phishing_triage",
+            "custom_instructions": "Focus on sender impersonation, display name spoofing, domain lookalikes, urgency language, wire transfer requests, and invoice fraud patterns",
+            "alert_path": "$.trigger.alert",
+            "include_context": true
+          }
+        }
+      },
+      {
+        "id": "decision-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "title": "BEC Confirmed?",
+          "summary": "Is this a confirmed Business Email Compromise attempt?",
+          "config": {
+            "conditions": {
+              "operator": "AND",
+              "conditions": [
+                {
+                  "left": { "type": "path", "value": "$.nodes.analyze-1.result.verdict" },
+                  "operator": "equals",
+                  "right": { "type": "value", "value": "malicious" }
+                }
+              ],
+              "groups": []
+            },
+            "expression": "$.nodes.analyze-1.result.verdict == \"malicious\"",
+            "default_branch": "no"
+          }
+        }
+      },
+      {
+        "id": "respond-1",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "respond",
+          "title": "Quarantine Email",
+          "summary": "Remove the BEC email from all recipient mailboxes",
+          "config": {
+            "response_type": "integration_action",
+            "action_type": "quarantine_email",
+            "target_path": "$.trigger.alert.message_id",
+            "requires_approval": true,
+            "priority": "critical",
+            "message": "Quarantining BEC email (Message-ID: {{$.trigger.alert.message_id}}) from {{$.trigger.alert.sender}}"
+          }
+        }
+      },
+      {
+        "id": "respond-2",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "title": "Notify Executive Protection",
+          "summary": "Alert the executive protection team via Slack",
+          "config": {
+            "response_type": "notify",
+            "channel": "slack",
+            "slack_channel": "#exec-protection",
+            "message": "BEC ATTACK CONFIRMED\nImpersonated: {{$.trigger.alert.impersonated_identity}}\nActual sender: {{$.trigger.alert.sender}}\nTarget: {{$.trigger.alert.recipient}}\nTechnique: {{$.nodes.analyze-1.result.technique}}\nAI Confidence: {{$.nodes.analyze-1.result.confidence}}\n\nEmail has been quarantined. Incident ticket being created.",
+            "priority": "critical"
+          }
+        }
+      },
+      {
+        "id": "respond-3",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "title": "Create Incident Ticket",
+          "summary": "Create Jira ticket to track the BEC investigation",
+          "config": {
+            "response_type": "create_ticket",
+            "system": "jira",
+            "project_key": "SEC",
+            "issue_type": "Incident",
+            "title": "BEC Attack — {{$.trigger.alert.impersonated_identity}} impersonation targeting {{$.trigger.alert.recipient}}",
+            "description": "Business Email Compromise detected.\n\nSender: {{$.trigger.alert.sender}}\nImpersonated: {{$.trigger.alert.impersonated_identity}}\nRecipient: {{$.trigger.alert.recipient}}\nSubject: {{$.trigger.alert.subject}}\n\nAI Analysis:\n{{$.nodes.analyze-1.result.summary}}\n\nActions Taken:\n- Email quarantined\n- Executive protection team notified\n\nNext Steps:\n- Verify no financial transactions were initiated\n- Check for additional emails from this sender\n- Review email gateway rules",
+            "priority": "high"
+          }
+        }
+      },
+      {
+        "id": "utility-1",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "utility",
+          "title": "Flag for Review",
+          "summary": "Add analyst note for manual review of suspicious email",
+          "config": {
+            "operation": "add_note",
+            "note": "AI analysis did not confirm BEC but flagged suspicious patterns. Manual review recommended.\nSender: {{$.trigger.alert.sender}}\nAnalysis: {{$.nodes.analyze-1.result.summary}}"
+          }
+        }
+      },
+      {
+        "id": "end-1",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "end",
+          "title": "End — BEC Contained",
+          "summary": "BEC quarantined, team notified, ticket created",
+          "config": {
+            "disposition": "true_positive",
+            "summary": "BEC attack confirmed and contained. Email quarantined, executive protection notified, incident ticket created."
+          }
+        }
+      },
+      {
+        "id": "end-2",
+        "type": "signal",
+        "position": { "x": 700, "y": 700 },
+        "data": {
+          "kind": "end",
+          "title": "End — Flagged for Review",
+          "summary": "Not confirmed BEC, flagged for analyst review",
+          "config": {
+            "disposition": "under_review",
+            "summary": "Email not confirmed as BEC by AI analysis. Flagged for manual analyst review."
+          }
+        }
+      }
+    ],
+    "edges": [
+      { "id": "e1", "source": "trigger-1", "target": "analyze-1", "animated": true, "type": "smoothstep" },
+      { "id": "e2", "source": "analyze-1", "target": "decision-1", "animated": true, "type": "smoothstep" },
+      { "id": "e3", "source": "decision-1", "target": "respond-1", "sourceHandle": "yes", "label": "Yes", "animated": true, "type": "smoothstep" },
+      { "id": "e4", "source": "decision-1", "target": "utility-1", "sourceHandle": "no", "label": "No", "animated": true, "type": "smoothstep" },
+      { "id": "e5", "source": "respond-1", "target": "respond-2", "animated": true, "type": "smoothstep" },
+      { "id": "e6", "source": "respond-2", "target": "respond-3", "animated": true, "type": "smoothstep" },
+      { "id": "e7", "source": "respond-3", "target": "end-1", "animated": true, "type": "smoothstep" },
+      { "id": "e8", "source": "utility-1", "target": "end-2", "animated": true, "type": "smoothstep" }
+    ]
+  }
+}

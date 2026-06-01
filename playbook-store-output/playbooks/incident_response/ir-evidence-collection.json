@@ -1,0 +1,228 @@
+{
+  "name": "Digital Evidence Collection Workflow",
+  "slug": "ir-evidence-collection",
+  "description": "Preserves digital evidence with chain of custody documentation during incident response. A code node captures volatile evidence (running processes, network connections, memory state) from the affected endpoint. Riggs AI performs a malware assessment on the collected artifacts. An approval gate ensures the IR lead authorizes evidence packaging before it is formally preserved. A Jira ticket tracks the evidence chain of custody, and the forensics team is notified via Slack. All evidence handling steps are logged for legal admissibility.",
+  "category": "incident_response",
+  "subcategory": "evidence",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "advanced",
+  "estimated_time": "25 minutes",
+  "tags": ["evidence", "chain_of_custody", "forensics", "collection", "volatile_data", "legal"],
+  "alert_types": ["any"],
+  "severity_filter": ["high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["any"],
+    "min_severity": "high"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "crowdstrike",
+      "name": "CrowdStrike Falcon",
+      "category": "edr",
+      "reason": "Collect volatile evidence from affected endpoints including process lists and network connections"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create chain of custody tracking ticket for collected evidence"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Notify forensics team about evidence collection completion"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Evidence Collection Initiated",
+          "config": {
+            "alert_types": ["any"],
+            "description": "Triggers when a high or critical severity incident requires digital evidence preservation"
+          }
+        }
+      },
+      {
+        "id": "code_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "code",
+          "label": "Capture Volatile Evidence",
+          "config": {
+            "mode": "integration_query",
+            "integration": "crowdstrike",
+            "queries": [
+              {
+                "type": "running_processes",
+                "device_id": "{{trigger_1.alert.endpoint_id}}",
+                "description": "Capture running process list"
+              },
+              {
+                "type": "network_connections",
+                "device_id": "{{trigger_1.alert.endpoint_id}}",
+                "description": "Capture active network connections"
+              },
+              {
+                "type": "loaded_modules",
+                "device_id": "{{trigger_1.alert.endpoint_id}}",
+                "description": "Capture loaded DLLs and kernel modules"
+              }
+            ],
+            "output_variable": "volatile_evidence",
+            "description": "Collect volatile evidence from the endpoint before it is lost — processes, network connections, loaded modules"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — Evidence Assessment",
+          "config": {
+            "template_id": "malware_assessment",
+            "additional_instructions": "Analyze the collected volatile evidence for indicators of compromise. Identify suspicious processes, unusual network connections, and potentially malicious loaded modules.",
+            "description": "AI-powered analysis of collected volatile evidence to identify suspicious artifacts and IOCs"
+          }
+        }
+      },
+      {
+        "id": "approval_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 540 },
+        "data": {
+          "kind": "approval",
+          "label": "IR Lead — Authorize Evidence Packaging",
+          "config": {
+            "approvers": ["ir_lead"],
+            "approval_message": "Digital evidence has been collected from endpoint {{trigger_1.alert.hostname}}. IR lead authorization is required before formally packaging and preserving the evidence.\n\nEndpoint: {{trigger_1.alert.hostname}}\nAlert: {{trigger_1.alert.title}}\n\nRiggs Evidence Assessment:\n{{analyze_1.summary}}",
+            "timeout_hours": 12,
+            "description": "IR lead must authorize evidence packaging to establish formal chain of custody"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "label": "Create Chain of Custody Ticket",
+          "config": {
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_issue",
+              "parameters": {
+                "project": "IR",
+                "issue_type": "Task",
+                "priority": "P1 - Critical",
+                "summary": "EVIDENCE COC: {{trigger_1.alert.hostname}} — {{trigger_1.alert.title}}",
+                "description": "Chain of Custody Record\n\nEndpoint: {{trigger_1.alert.hostname}}\nDevice ID: {{trigger_1.alert.endpoint_id}}\nCollection Time: {{trigger_1.timestamp}}\nAuthorized by: {{approval_1.approver}}\n\nEvidence Collected:\n1. Running process list\n2. Active network connections\n3. Loaded modules and DLLs\n\nRiggs Assessment:\n{{analyze_1.summary}}\n\nHandling Instructions:\n- Evidence must remain in secure storage\n- All access must be logged\n- Hash verification required before analysis"
+              }
+            },
+            "description": "Create a formal chain of custody ticket in Jira to track evidence handling and access"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 520, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "label": "Notify Forensics Team",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#forensics-team",
+              "message": "EVIDENCE COLLECTED — READY FOR ANALYSIS\n\nEndpoint: {{trigger_1.alert.hostname}}\nIncident: {{trigger_1.alert.title}}\nJira COC Ticket: {{respond_1.issue_key}}\nAuthorized by: {{approval_1.approver}}\n\nRiggs Assessment:\n{{analyze_1.summary}}\n\nEvidence has been formally packaged and chain of custody established. Please coordinate analysis via the Jira ticket."
+            },
+            "description": "Notify the forensics team that evidence is collected and ready for analysis"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1020 },
+        "data": {
+          "kind": "utility",
+          "label": "Log Evidence Collection Complete",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "Digital evidence collected from {{trigger_1.alert.hostname}} at {{trigger_1.timestamp}}. Chain of custody established. Authorized by {{approval_1.approver}}. Jira COC: {{respond_1.issue_key}}. Forensics team notified."
+            },
+            "description": "Record that evidence collection is complete with chain of custody details for the investigation audit trail"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1180 },
+        "data": {
+          "kind": "end",
+          "label": "End — Evidence Preserved",
+          "config": {
+            "description": "Digital evidence collection complete — volatile data captured, chain of custody established, forensics team notified"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_code",
+        "source": "trigger_1",
+        "target": "code_1",
+        "type": "default"
+      },
+      {
+        "id": "e_code_analyze",
+        "source": "code_1",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_analyze_approval",
+        "source": "analyze_1",
+        "target": "approval_1",
+        "type": "default"
+      },
+      {
+        "id": "e_approval_respond1",
+        "source": "approval_1",
+        "target": "respond_1",
+        "type": "default"
+      },
+      {
+        "id": "e_respond1_respond2",
+        "source": "respond_1",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_respond2_utility",
+        "source": "respond_2",
+        "target": "utility_1",
+        "type": "default"
+      },
+      {
+        "id": "e_utility_end",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

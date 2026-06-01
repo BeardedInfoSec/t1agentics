@@ -1,0 +1,489 @@
+{
+  "id": "digital_shadows",
+  "name": "Digital Shadows",
+  "description": "The Digital Shadows SearchLight App allows users to create flexible and dynamic playbooks that fully harness the capabilities provided by the Digital Shadows SearchLight API",
+  "version": "2.2.1",
+  "category": "threat_intel",
+  "vendor": "Digital Shadows",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "on_poll",
+      "name": "On Poll",
+      "description": "Callback action for the 'on_poll' ingest functionality",
+      "http_method": "GET",
+      "endpoint": "/actions/on_poll",
+      "action_type": "ingest",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "start_time",
+          "type": "number",
+          "description": "Start of the polling time range for which the app will fetch all the events after this time. It should be in epoch time (milliseconds). Example - 1611587778000",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "number",
+          "description": "End of the polling time range for which the app will fetch all the events before this time. It should be in epoch time (milliseconds). Example - 1611587778000",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "search_entities",
+      "name": "Search All Records",
+      "description": "Search across all Digital Shadow's entities including incidents, threat profiles, and our closed data stores",
+      "http_method": "GET",
+      "endpoint": "/actions/search_entities",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "date_range",
+          "type": "string",
+          "description": "Date Range. Example input: P30D(for Past 30 Days)",
+          "required": true,
+          "contains": [
+            "digital shadows date range"
+          ]
+        },
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Search string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_incident_by_id",
+      "name": "Get Incident",
+      "description": "Retrieve a single incident and its details, identified by its unique integer identifier",
+      "http_method": "GET",
+      "endpoint": "/actions/get_incident_by_id",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "incident_id",
+          "type": "number",
+          "description": "Digital Shadows Incident ID",
+          "required": true,
+          "contains": [
+            "digital shadows incident id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_incident_list",
+      "name": "Search Incidents",
+      "description": "Search incidents based on filters. The On Poll action also uses this endpoint to collect incidents for a given time range/interval",
+      "http_method": "GET",
+      "endpoint": "/actions/get_incident_list",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "date_range",
+          "type": "string",
+          "description": "Incident Date Range. Example input: P30D(for Past 30 Days)",
+          "required": true,
+          "contains": [
+            "digital shadows date range"
+          ]
+        },
+        {
+          "name": "incident_types",
+          "type": "string",
+          "description": "Incident Types",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_incident_review_by_id",
+      "name": "Get Incident Review",
+      "description": "Retrieve the history of all review submissions for a given incident, ordered by submission time with the most recent submission first",
+      "http_method": "GET",
+      "endpoint": "/actions/get_incident_review_by_id",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "incident_id",
+          "type": "number",
+          "description": "Digital Shadows Incident ID",
+          "required": true,
+          "contains": [
+            "digital shadows incident id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "post_incident_review",
+      "name": "Post Incident Review",
+      "description": "Post a status update to the incident along with a note",
+      "http_method": "GET",
+      "endpoint": "/actions/post_incident_review",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "incident_id",
+          "type": "number",
+          "description": "Incident ID",
+          "required": true,
+          "contains": [
+            "digital shadows incident id"
+          ]
+        },
+        {
+          "name": "review_note",
+          "type": "string",
+          "description": "Incident Review Note",
+          "required": true
+        },
+        {
+          "name": "review_status",
+          "type": "string",
+          "description": "Incident Review Status",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_intelligence_incident",
+      "name": "Search Intelligence Incidents",
+      "description": "Meant to be a simple way to search Intelligence Incidents based on time range and incident types if needed",
+      "http_method": "GET",
+      "endpoint": "/actions/get_intelligence_incident",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "date_range",
+          "type": "string",
+          "description": "Intelligence Incident Date Range. Example input: P30D(for Past 30 Days)",
+          "required": true,
+          "contains": [
+            "digital shadows date range"
+          ]
+        },
+        {
+          "name": "incident_types",
+          "type": "string",
+          "description": "Incident Types",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_intelligence_incident_by_id",
+      "name": "Get Intelligence Incident",
+      "description": "Retrieve a single intelligence incident and its details, identified by its unique integer identifier",
+      "http_method": "GET",
+      "endpoint": "/actions/get_intelligence_incident_by_id",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "intel_incident_id",
+          "type": "number",
+          "description": "Digital Shadows Intelligence Incident ID",
+          "required": true,
+          "contains": [
+            "digital shadows intelligence incident id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_intel_incident_ioc_by_id",
+      "name": "Get Intelligenceincident Ioc",
+      "description": "Retrieve the indicators of compromise associated with an intelligence incident",
+      "http_method": "GET",
+      "endpoint": "/actions/get_intel_incident_ioc_by_id",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "intel_incident_id",
+          "type": "number",
+          "description": "Digital Shadows Intelligence Incident IoCs ID",
+          "required": true,
+          "contains": [
+            "digital shadows intelligence incident id"
+          ]
+        },
+        {
+          "name": "types",
+          "type": "string",
+          "description": "Types",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_data_breach",
+      "name": "Search Data Breaches",
+      "description": "Search across all data breaches that are relevant to your organization",
+      "http_method": "GET",
+      "endpoint": "/actions/get_data_breach",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "date_range",
+          "type": "string",
+          "description": "Data Breach Date Range. Example input: P30D(for Past 30 Days)",
+          "required": true,
+          "contains": [
+            "digital shadows date range"
+          ]
+        },
+        {
+          "name": "reposted_credentials",
+          "type": "string",
+          "description": "Data Breach reposted Credentials",
+          "required": false
+        },
+        {
+          "name": "severities",
+          "type": "string",
+          "description": "Severities",
+          "required": false
+        },
+        {
+          "name": "statuses",
+          "type": "string",
+          "description": "Statuses",
+          "required": false
+        },
+        {
+          "name": "user_name",
+          "type": "string",
+          "description": "Username (use '*' for wildcard matching)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_data_breach_by_id",
+      "name": "Get Data Breach",
+      "description": "Retrieve a single data breach and its details, identified by its unique integer identifier. The records associated with the breach must be retrieved using a separate operation",
+      "http_method": "GET",
+      "endpoint": "/actions/get_data_breach_by_id",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "breach_id",
+          "type": "number",
+          "description": "Data Breach ID",
+          "required": true,
+          "contains": [
+            "digital shadows breach id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_data_breach_record",
+      "name": "Search Databreach Records",
+      "description": "Search data breach records across all data breaches. This operation also includes basic information about the data breach the record occurred within",
+      "http_method": "GET",
+      "endpoint": "/actions/get_data_breach_record",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "date_range",
+          "type": "string",
+          "description": "Data Breach record Date Range. Example input: P30D(for Past 30 Days)",
+          "required": true,
+          "contains": [
+            "digital shadows date range"
+          ]
+        },
+        {
+          "name": "domain_names",
+          "type": "string",
+          "description": "Data Breach record domain names (comma separated). Example input: 'xyz.com, abc.org' ",
+          "required": false
+        },
+        {
+          "name": "review_statuses",
+          "type": "string",
+          "description": "Review Statuses",
+          "required": false
+        },
+        {
+          "name": "distinction",
+          "type": "string",
+          "description": "Distinction",
+          "required": false
+        },
+        {
+          "name": "user_name",
+          "type": "string",
+          "description": "Username (use '*' for wildcard matching)",
+          "required": false
+        },
+        {
+          "name": "password",
+          "type": "string",
+          "description": "Password (use '*' for wildcard matching)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_data_breach_record_by_id",
+      "name": "Get Databreach Records",
+      "description": "Retrieve breach records (credentials) for a specific breach",
+      "http_method": "GET",
+      "endpoint": "/actions/get_data_breach_record_by_id",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "breach_id",
+          "type": "number",
+          "description": "Data Breach ID",
+          "required": true,
+          "contains": [
+            "digital shadows breach id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_data_breach_record_by_username",
+      "name": "Get Breachrecord Byuser",
+      "description": "This action allows you to search breach records based on the domain, review status, or full/partial strings from the username",
+      "http_method": "GET",
+      "endpoint": "/actions/get_data_breach_record_by_username",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "user_name",
+          "type": "string",
+          "description": "Username (use '*' for wildcard matching)",
+          "required": true
+        },
+        {
+          "name": "domain_names",
+          "type": "string",
+          "description": "Domain Names (comma separated)",
+          "required": false
+        },
+        {
+          "name": "published_date_range",
+          "type": "string",
+          "description": "Published Date Range. Example input: P30D(for Past 30 Days)",
+          "required": false
+        },
+        {
+          "name": "review_statuses",
+          "type": "string",
+          "description": "Review Statuses (comma separated). Example: open, read, closed",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_data_breach_record_reviews",
+      "name": "Get Breachrecord Review",
+      "description": "Retrieve the list of review status updates for a given data breach record",
+      "http_method": "GET",
+      "endpoint": "/actions/get_data_breach_record_reviews",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "breach_record_id",
+          "type": "number",
+          "description": "Digital Shadows Breach Record ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "post_breach_record_review",
+      "name": "Post Breachrecord Review",
+      "description": "Update an individual breach record's notes or status using this action",
+      "http_method": "GET",
+      "endpoint": "/actions/post_breach_record_review",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "breach_record_id",
+          "type": "number",
+          "description": "Data Breach Record ID",
+          "required": true
+        },
+        {
+          "name": "review_note",
+          "type": "string",
+          "description": "Update an individual breach record's notes using this action",
+          "required": true
+        },
+        {
+          "name": "review_status",
+          "type": "string",
+          "description": "Update an individual breach record's status using this action",
+          "required": true
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Digital Shadows",
+    "original_type": "information",
+    "converted_at": "2025-12-18T16:25:28.738618",
+    "source_version": "2.2.1"
+  }
+}

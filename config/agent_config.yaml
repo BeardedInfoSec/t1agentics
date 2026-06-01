@@ -1,0 +1,80 @@
+# AgentCore Agent Configuration
+# Configure behavior and parameters for autonomous agents
+
+agent_settings:
+  # General agent behavior
+  max_investigation_time: 300  # Maximum time in seconds for investigation
+  max_enrichment_calls: 20     # Maximum number of tool calls per investigation
+  parallel_enrichment: true     # Execute enrichment tools in parallel
+  
+  # Reasoning parameters
+  reasoning:
+    confidence_threshold: 0.7   # Minimum confidence for definitive verdict
+    correlation_minimum: 2      # Minimum indicators needed for correlation
+    timeline_enabled: true      # Build event timeline
+    
+  # Tier 1 Agent Settings
+  l1_agent:
+    enabled: true
+    triage_timeout: 30          # Seconds for triage
+    false_positive_threshold: 70 # Score threshold for FP detection
+    escalation_criteria:
+      high_priority: true        # Escalate high-priority alerts
+      indicator_count: 5         # Escalate if more than N indicators
+      complexity_threshold: 3    # Escalate if > N attack types detected
+  
+  # Tier 2 Agent Settings
+  l2_agent:
+    enabled: true
+    correlation_depth: 3        # Levels of correlation analysis
+    timeline_window_hours: 24   # Time window for timeline construction
+    threat_hunting_enabled: true
+    mitre_mapping_enabled: true
+    
+  # Verdict thresholds
+  verdict_thresholds:
+    malicious_score: 60         # Threat score for malicious verdict
+    suspicious_score: 30        # Threat score for suspicious verdict
+    
+  # Severity classification
+  severity_rules:
+    critical:
+      min_threat_score: 80
+      requires_c2: false
+      requires_malware: true
+    high:
+      min_threat_score: 50
+      requires_multiple_indicators: true
+    medium:
+      min_threat_score: 25
+    low:
+      min_threat_score: 0
+
+# Enrichment tool weights (for scoring)
+tool_weights:
+  ip_reputation: 1.5
+  domain_reputation: 1.5
+  hash_analysis: 2.0
+  whois_lookup: 1.0
+  geoip_lookup: 0.5
+  url_analysis: 1.5
+
+# Alert normalization rules
+normalization:
+  timestamp_formats:
+    - "%Y-%m-%dT%H:%M:%S.%fZ"
+    - "%Y-%m-%d %H:%M:%S"
+    - "%s"  # Unix timestamp
+  
+  severity_mapping:
+    critical: ["critical", "emergency", "5"]
+    high: ["high", "error", "4"]
+    medium: ["medium", "warning", "3"]
+    low: ["low", "info", "2", "1"]
+
+# Output configuration
+output:
+  include_raw_enrichment: false  # Include raw tool responses
+  include_reasoning_trace: true  # Include agent reasoning steps
+  max_timeline_events: 50        # Maximum events in timeline
+  summary_max_length: 500        # Max characters for executive summary

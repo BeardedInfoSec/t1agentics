@@ -1,0 +1,241 @@
+{
+  "name": "Phishing Attachment Sandbox Detonation",
+  "slug": "phishing-attachment-sandbox",
+  "description": "Automated sandbox detonation workflow for suspicious email attachments. Extracts attachment metadata from the phishing alert, submits the file to a sandbox environment for behavioral analysis, and evaluates the detonation verdict. Malicious attachments trigger quarantine of the original email, hash-based blocking across endpoints, and SOC notification. Clean attachments are logged and the alert is closed. Ideal for organizations with sandbox infrastructure for advanced malware detection.",
+  "category": "phishing",
+  "subcategory": "attachment_analysis",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "15 minutes",
+  "tags": ["phishing", "attachment", "sandbox", "detonation", "malware", "quarantine", "file-analysis"],
+  "alert_types": ["phishing"],
+  "severity_filter": ["medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["phishing", "suspicious_email", "suspicious_attachment"],
+    "min_severity": "medium"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "sandbox",
+      "name": "Malware Sandbox",
+      "category": "malware_analysis",
+      "reason": "Detonate attachment in isolated sandbox environment for behavioral analysis"
+    },
+    {
+      "connector_id": "edr",
+      "name": "EDR Platform",
+      "category": "endpoint_security",
+      "reason": "Block malicious file hash across all managed endpoints"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "title": "Phishing Attachment Alert",
+          "summary": "Triggers on phishing alerts containing file attachments",
+          "config": {
+            "trigger_type": "alert",
+            "alert_types": ["phishing", "suspicious_email", "suspicious_attachment"]
+          }
+        }
+      },
+      {
+        "id": "code-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "code",
+          "title": "Extract Attachment Metadata",
+          "summary": "Parse attachment details (filename, hash, size, MIME type) from the alert",
+          "config": {
+            "mode": "script",
+            "script": {
+              "function_name": "main",
+              "inputs": [
+                { "name": "alert", "path": "$.trigger.alert" }
+              ],
+              "code": "def main(alert):\n    attachments = alert.get('attachments', [])\n    if not attachments:\n        return {'has_attachments': False, 'attachments': [], 'count': 0}\n    parsed = []\n    for att in attachments:\n        parsed.append({\n            'filename': att.get('filename', 'unknown'),\n            'sha256': att.get('sha256', ''),\n            'md5': att.get('md5', ''),\n            'size': att.get('size', 0),\n            'mime_type': att.get('content_type', att.get('mime_type', 'application/octet-stream')),\n            'file_id': att.get('file_id', att.get('id', ''))\n        })\n    return {'has_attachments': True, 'attachments': parsed, 'count': len(parsed)}"
+            }
+          }
+        }
+      },
+      {
+        "id": "respond-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "respond",
+          "title": "Submit to Sandbox",
+          "summary": "Detonate attachment in sandbox environment for behavioral analysis",
+          "config": {
+            "response_type": "integration_action",
+            "action_type": "sandbox_submit",
+            "target_path": "$.nodes.code-1.result.attachments",
+            "requires_approval": false,
+            "priority": "high",
+            "message": "Submitting {{$.nodes.code-1.result.count}} attachment(s) to sandbox for detonation analysis",
+            "params": {
+              "file_id": "{{$.nodes.code-1.result.attachments[0].file_id}}",
+              "filename": "{{$.nodes.code-1.result.attachments[0].filename}}",
+              "timeout_seconds": 300
+            }
+          }
+        }
+      },
+      {
+        "id": "delay-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 540 },
+        "data": {
+          "kind": "delay",
+          "title": "Wait for Detonation",
+          "summary": "Wait for sandbox analysis to complete (up to 5 minutes)",
+          "config": {
+            "delay_seconds": 300,
+            "wait_for": "sandbox_complete",
+            "poll_interval_seconds": 30
+          }
+        }
+      },
+      {
+        "id": "decision-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 700 },
+        "data": {
+          "kind": "decision",
+          "title": "Malicious Verdict?",
+          "summary": "Check if sandbox detonation returned a malicious verdict",
+          "config": {
+            "conditions": {
+              "operator": "AND",
+              "conditions": [
+                {
+                  "left": { "type": "path", "value": "$.nodes.respond-1.result.verdict" },
+                  "operator": "equals",
+                  "right": { "type": "value", "value": "malicious" }
+                }
+              ],
+              "groups": []
+            },
+            "expression": "$.nodes.respond-1.result.verdict == \"malicious\"",
+            "default_branch": "no"
+          }
+        }
+      },
+      {
+        "id": "respond-2",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "title": "Quarantine Email",
+          "summary": "Remove the phishing email with malicious attachment from all mailboxes",
+          "config": {
+            "response_type": "integration_action",
+            "action_type": "quarantine_email",
+            "target_path": "$.trigger.alert.message_id",
+            "requires_approval": true,
+            "priority": "critical",
+            "message": "Quarantining email with malicious attachment {{$.nodes.code-1.result.attachments[0].filename}} (SHA256: {{$.nodes.code-1.result.attachments[0].sha256}})"
+          }
+        }
+      },
+      {
+        "id": "respond-3",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "title": "Block Hash on EDR",
+          "summary": "Add malicious file hash to EDR blocklist across all endpoints",
+          "config": {
+            "response_type": "integration_action",
+            "action_type": "block_hash",
+            "target_path": "$.nodes.code-1.result.attachments[0].sha256",
+            "requires_approval": true,
+            "priority": "high",
+            "message": "Blocking file hash {{$.nodes.code-1.result.attachments[0].sha256}} ({{$.nodes.code-1.result.attachments[0].filename}}) on EDR"
+          }
+        }
+      },
+      {
+        "id": "respond-4",
+        "type": "signal",
+        "position": { "x": 340, "y": 1180 },
+        "data": {
+          "kind": "respond",
+          "title": "Notify SOC",
+          "summary": "Alert the SOC with sandbox detonation results and actions taken",
+          "config": {
+            "response_type": "notify",
+            "channel": "slack",
+            "slack_channel": "#soc-alerts",
+            "message": "MALICIOUS ATTACHMENT DETECTED\n\nFile: {{$.nodes.code-1.result.attachments[0].filename}}\nSHA256: {{$.nodes.code-1.result.attachments[0].sha256}}\nSandbox Verdict: MALICIOUS\nSender: {{$.trigger.alert.sender}}\n\nActions Taken:\n- Email quarantined from all mailboxes\n- File hash blocked on EDR\n\nSandbox Report: {{$.nodes.respond-1.result.report_url}}",
+            "priority": "critical"
+          }
+        }
+      },
+      {
+        "id": "utility-1",
+        "type": "signal",
+        "position": { "x": 700, "y": 860 },
+        "data": {
+          "kind": "utility",
+          "title": "Close Alert — Clean",
+          "summary": "Sandbox found no malicious behavior, close the alert",
+          "config": {
+            "operation": "update_status",
+            "status": "closed",
+            "note": "Attachment {{$.nodes.code-1.result.attachments[0].filename}} detonated in sandbox with clean verdict. No malicious behavior detected."
+          }
+        }
+      },
+      {
+        "id": "end-1",
+        "type": "signal",
+        "position": { "x": 340, "y": 1340 },
+        "data": {
+          "kind": "end",
+          "title": "End — Malicious Contained",
+          "summary": "Malicious attachment quarantined, hash blocked, SOC notified",
+          "config": {
+            "disposition": "true_positive",
+            "summary": "Malicious attachment confirmed via sandbox. Email quarantined, file hash blocked on EDR, SOC notified."
+          }
+        }
+      },
+      {
+        "id": "end-2",
+        "type": "signal",
+        "position": { "x": 700, "y": 1020 },
+        "data": {
+          "kind": "end",
+          "title": "End — Clean Attachment",
+          "summary": "Attachment clean per sandbox, alert closed",
+          "config": {
+            "disposition": "false_positive",
+            "summary": "Attachment analyzed in sandbox and found clean. Alert closed."
+          }
+        }
+      }
+    ],
+    "edges": [
+      { "id": "e1", "source": "trigger-1", "target": "code-1", "animated": true, "type": "smoothstep" },
+      { "id": "e2", "source": "code-1", "target": "respond-1", "animated": true, "type": "smoothstep" },
+      { "id": "e3", "source": "respond-1", "target": "delay-1", "animated": true, "type": "smoothstep" },
+      { "id": "e4", "source": "delay-1", "target": "decision-1", "animated": true, "type": "smoothstep" },
+      { "id": "e5", "source": "decision-1", "target": "respond-2", "sourceHandle": "yes", "label": "Yes", "animated": true, "type": "smoothstep" },
+      { "id": "e6", "source": "decision-1", "target": "utility-1", "sourceHandle": "no", "label": "No", "animated": true, "type": "smoothstep" },
+      { "id": "e7", "source": "respond-2", "target": "respond-3", "animated": true, "type": "smoothstep" },
+      { "id": "e8", "source": "respond-3", "target": "respond-4", "animated": true, "type": "smoothstep" },
+      { "id": "e9", "source": "respond-4", "target": "end-1", "animated": true, "type": "smoothstep" },
+      { "id": "e10", "source": "utility-1", "target": "end-2", "animated": true, "type": "smoothstep" }
+    ]
+  }
+}

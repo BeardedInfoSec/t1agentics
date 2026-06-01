@@ -1,0 +1,214 @@
+{
+  "id": "bitwarden_secrets",
+  "name": "Bitwarden Secrets Manager",
+  "description": "Secrets management through Bitwarden Secrets Manager REST API for managing secrets, projects, and service accounts",
+  "version": "1.0.0",
+  "category": "secrets_management",
+  "vendor": "Bitwarden",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "token_url": "https://identity.bitwarden.com/connect/token",
+    "header_name": "Authorization",
+    "header_prefix": "Bearer",
+    "location": "header"
+  },
+  "base_url": "https://{host}/api",
+  "actions": [
+    {
+      "id": "list_secrets",
+      "name": "List Secrets",
+      "description": "List all secrets accessible by the service account",
+      "http_method": "GET",
+      "endpoint": "/secrets",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "organizationId",
+          "type": "string",
+          "description": "Organization ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_secret",
+      "name": "Get Secret",
+      "description": "Retrieve a specific secret including its value",
+      "http_method": "GET",
+      "endpoint": "/secrets/{secretId}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "secretId",
+          "type": "string",
+          "description": "Secret UUID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "create_secret",
+      "name": "Create Secret",
+      "description": "Create a new secret in the organization",
+      "http_method": "POST",
+      "endpoint": "/secrets",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "organizationId",
+          "type": "string",
+          "description": "Organization ID",
+          "required": true
+        },
+        {
+          "name": "key",
+          "type": "string",
+          "description": "Secret key/name",
+          "required": true
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "description": "Secret value",
+          "required": true
+        },
+        {
+          "name": "note",
+          "type": "string",
+          "description": "Optional note for the secret",
+          "required": false
+        },
+        {
+          "name": "projectIds",
+          "type": "array",
+          "description": "Array of project IDs to associate the secret with",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "update_secret",
+      "name": "Update Secret",
+      "description": "Update an existing secret",
+      "http_method": "PUT",
+      "endpoint": "/secrets/{secretId}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "secretId",
+          "type": "string",
+          "description": "Secret UUID",
+          "required": true
+        },
+        {
+          "name": "key",
+          "type": "string",
+          "description": "Updated secret key/name",
+          "required": false
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "description": "Updated secret value",
+          "required": false
+        },
+        {
+          "name": "note",
+          "type": "string",
+          "description": "Updated note",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "delete_secrets",
+      "name": "Delete Secrets",
+      "description": "Delete one or more secrets by ID",
+      "http_method": "POST",
+      "endpoint": "/secrets/delete",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "ids",
+          "type": "array",
+          "description": "Array of secret UUIDs to delete",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_projects",
+      "name": "List Projects",
+      "description": "List all projects in the organization",
+      "http_method": "GET",
+      "endpoint": "/projects",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "organizationId",
+          "type": "string",
+          "description": "Organization ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_project",
+      "name": "Get Project",
+      "description": "Retrieve details of a specific project",
+      "http_method": "GET",
+      "endpoint": "/projects/{projectId}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "projectId",
+          "type": "string",
+          "description": "Project UUID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_project_secrets",
+      "name": "List Project Secrets",
+      "description": "List all secrets in a specific project",
+      "http_method": "GET",
+      "endpoint": "/projects/{projectId}/secrets",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "projectId",
+          "type": "string",
+          "description": "Project UUID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_service_accounts",
+      "name": "List Service Accounts",
+      "description": "List all service accounts in the organization",
+      "http_method": "GET",
+      "endpoint": "/service-accounts",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "organizationId",
+          "type": "string",
+          "description": "Organization ID",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

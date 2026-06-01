@@ -1,0 +1,108 @@
+{
+  "id": "discord",
+  "name": "Discord",
+  "description": "Integrates with Discord REST API v10 for bot messaging, channel management, and server communication",
+  "version": "1.0.0",
+  "category": "communication",
+  "vendor": "Discord",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "header_name": "Authorization",
+    "location": "header",
+    "prefix": "Bot "
+  },
+  "base_url": "https://discord.com/api/v10",
+  "documentation_url": "https://discord.com/developers/docs/intro",
+  "setup_instructions": "## Get a Discord bot token\n\nDiscord uses a **bot token** (not a personal account password). You create the bot once in the Discord Developer Portal, then paste its token here.\n\n### 1. Create the Discord application + bot\n1. Open the **Discord Developer Portal**: https://discord.com/developers/applications\n2. Log in with your Discord account.\n3. Click **New Application** (top right). Name it something like `T1 Agentics Bot` and accept the developer terms.\n4. In the left sidebar of your new app, click **Bot**.\n5. Click **Reset Token** (or **Copy** if a token is already shown). Discord only shows the full token once — copy it immediately.\n\n### 2. Grant the bot the permissions it needs\nIn the **Bot** page, under **Privileged Gateway Intents**, you do NOT need any of these enabled for the actions T1 supports.\n\nIn the **OAuth2 → URL Generator** page (left sidebar):\n  - Scopes: check **`bot`**\n  - Bot Permissions: at minimum check **`Send Messages`**, **`Read Message History`**, **`View Channels`**. If you plan to use `create_channel`, also check **`Manage Channels`**.\n  - Copy the **Generated URL** at the bottom and open it in a browser. Pick the Discord server (\"guild\") to add the bot to and confirm.\n\n### 3. Get the channel IDs you'll send to\n1. In your Discord client: **User Settings → Advanced → Developer Mode → On**.\n2. Right-click any channel and choose **Copy Channel ID** — that's the value you'll pass to the `send_message` action's `channel_id` parameter.\n3. Right-click the server name → **Copy Server ID** for the `guild_id` parameter.\n\n### 4. Paste the bot token below\nPaste the **raw token** in the **Token** field. **Do not include the `Bot ` prefix** — T1 adds that automatically.\n\nThen click **Test Authentication** to confirm.\n\n### Troubleshooting\n- **`401 Unauthorized`**: Token is wrong or has been reset. Reset it in the Developer Portal and try again.\n- **`403 Missing Access`**: The bot isn't in the server. Re-run the OAuth2 invite URL.\n- **`403 Missing Permissions`** on `send_message`: The bot can see the channel but can't post. Edit the channel → Permissions → add the bot with **Send Messages**.",
+  "actions": [
+    {
+      "id": "send_message",
+      "name": "Send Message",
+      "description": "Send a message to a Discord channel",
+      "http_method": "POST",
+      "endpoint": "/channels/{channel_id}/messages",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "channel_id", "type": "string", "description": "Channel ID to send the message to", "required": true},
+        {"name": "content", "type": "string", "description": "Message content (max 2000 chars, supports markdown)", "required": true},
+        {"name": "tts", "type": "boolean", "description": "Enable text-to-speech", "required": false, "default": false},
+        {"name": "embeds", "type": "string", "description": "JSON array of embed objects for rich content", "required": false},
+        {"name": "message_reference", "type": "string", "description": "JSON object for replying to a message", "required": false}
+      ]
+    },
+    {
+      "id": "list_channels",
+      "name": "List Guild Channels",
+      "description": "List all channels in a Discord guild/server",
+      "http_method": "GET",
+      "endpoint": "/guilds/{guild_id}/channels",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "guild_id", "type": "string", "description": "Guild/server ID", "required": true}
+      ]
+    },
+    {
+      "id": "get_messages",
+      "name": "Get Messages",
+      "description": "Retrieve messages from a Discord channel",
+      "http_method": "GET",
+      "endpoint": "/channels/{channel_id}/messages",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "channel_id", "type": "string", "description": "Channel ID", "required": true},
+        {"name": "limit", "type": "number", "description": "Number of messages to retrieve (1-100)", "required": false, "default": 50},
+        {"name": "before", "type": "string", "description": "Get messages before this message ID", "required": false},
+        {"name": "after", "type": "string", "description": "Get messages after this message ID", "required": false},
+        {"name": "around", "type": "string", "description": "Get messages around this message ID", "required": false}
+      ]
+    },
+    {
+      "id": "create_channel",
+      "name": "Create Guild Channel",
+      "description": "Create a new channel in a Discord guild/server",
+      "http_method": "POST",
+      "endpoint": "/guilds/{guild_id}/channels",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "guild_id", "type": "string", "description": "Guild/server ID", "required": true},
+        {"name": "name", "type": "string", "description": "Channel name (2-100 chars)", "required": true},
+        {"name": "type", "type": "number", "description": "Channel type (0=Text, 2=Voice, 4=Category, 5=Announcement, 13=Stage, 15=Forum)", "required": false, "default": 0},
+        {"name": "topic", "type": "string", "description": "Channel topic (max 1024 chars for text, 4096 for forum)", "required": false},
+        {"name": "parent_id", "type": "string", "description": "Category ID for the channel", "required": false},
+        {"name": "nsfw", "type": "boolean", "description": "Mark as NSFW", "required": false, "default": false}
+      ]
+    },
+    {
+      "id": "edit_message",
+      "name": "Edit Message",
+      "description": "Edit a previously sent message",
+      "http_method": "PATCH",
+      "endpoint": "/channels/{channel_id}/messages/{message_id}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "channel_id", "type": "string", "description": "Channel ID", "required": true},
+        {"name": "message_id", "type": "string", "description": "Message ID to edit", "required": true},
+        {"name": "content", "type": "string", "description": "Updated message content", "required": false},
+        {"name": "embeds", "type": "string", "description": "Updated JSON array of embed objects", "required": false}
+      ]
+    },
+    {
+      "id": "get_channel",
+      "name": "Get Channel",
+      "description": "Get details of a specific Discord channel",
+      "http_method": "GET",
+      "endpoint": "/channels/{channel_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "channel_id", "type": "string", "description": "Channel ID", "required": true}
+      ]
+    }
+  ]
+}

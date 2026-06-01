@@ -1,0 +1,144 @@
+{
+  "id": "bigfix",
+  "name": "BigFix",
+  "description": "This app supports several investigative actions on IBM Big Fix",
+  "version": "2.0.16",
+  "category": "devops",
+  "vendor": "IBM",
+  "auth_type": "basic_auth",
+  "auth_config": {
+    "type": "basic_auth",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "list_device_groups",
+      "name": "List Device Groups",
+      "description": "List all sites on the system",
+      "http_method": "GET",
+      "endpoint": "/actions/list_device_groups",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "list_fixlets",
+      "name": "List Patches",
+      "description": "List patches from a site",
+      "http_method": "GET",
+      "endpoint": "/actions/list_fixlets",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "site_name",
+          "type": "string",
+          "description": "Site Name",
+          "required": true,
+          "contains": [
+            "bigfix site"
+          ]
+        },
+        {
+          "name": "site_type",
+          "type": "string",
+          "description": "Site Type",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_endpoints",
+      "name": "List Endpoints",
+      "description": "List all endpoints connected to the system",
+      "http_method": "GET",
+      "endpoint": "/actions/list_endpoints",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "run_action",
+      "name": "Deploy Patch",
+      "description": "Deploy a patch",
+      "http_method": "GET",
+      "endpoint": "/actions/run_action",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "fixlet_id",
+          "type": "number",
+          "description": "Fixlet ID",
+          "required": true,
+          "contains": [
+            "bigfix fixlet id"
+          ]
+        },
+        {
+          "name": "action_id",
+          "type": "string",
+          "description": "Action ID",
+          "required": true
+        },
+        {
+          "name": "site_name",
+          "type": "string",
+          "description": "Site Name",
+          "required": true,
+          "contains": [
+            "bigfix site"
+          ]
+        },
+        {
+          "name": "computer_ids",
+          "type": "string",
+          "description": "Target Computer IDs",
+          "required": false,
+          "contains": [
+            "bigfix computer id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_host",
+      "name": "Get Host",
+      "description": "Get Bigfix ID",
+      "http_method": "GET",
+      "endpoint": "/actions/get_host",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "hostname",
+          "type": "string",
+          "description": "Hostname",
+          "required": true,
+          "contains": [
+            "host name"
+          ]
+        }
+      ],
+      "observable_type": "domain"
+    }
+  ],
+  "source_metadata": {
+    "original_name": "BigFix",
+    "original_type": "devops",
+    "converted_at": "2025-12-18T16:25:28.606413",
+    "source_version": "2.0.16"
+  }
+}

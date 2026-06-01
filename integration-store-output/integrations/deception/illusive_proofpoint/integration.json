@@ -1,0 +1,133 @@
+{
+  "id": "illusive_proofpoint",
+  "name": "Proofpoint Shadow (Illusive)",
+  "description": "Agentless deception platform (formerly Illusive Networks) using 75+ deceptive techniques on endpoints to detect lateral movement and identity threats",
+  "version": "1.0.0",
+  "category": "deception",
+  "vendor": "Proofpoint",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "prefix": "Bearer ",
+    "location": "header",
+    "description": "API key generated in Illusive Console under Settings > General > API Keys"
+  },
+  "base_url": "https://{host}/api/v2",
+  "actions": [
+    {
+      "id": "list_incidents",
+      "name": "List Incidents",
+      "description": "List all detected deception incidents with forensics timelines",
+      "http_method": "GET",
+      "endpoint": "/incidents",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "limit",
+          "type": "integer",
+          "description": "Max number of incidents to return",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "offset",
+          "type": "integer",
+          "description": "Pagination offset",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "startDate",
+          "type": "string",
+          "description": "Filter incidents from this date (ISO 8601)",
+          "required": false,
+          "location": "query"
+        }
+      ]
+    },
+    {
+      "id": "get_incident",
+      "name": "Get Incident Details",
+      "description": "Retrieve detailed incident information including forensics timeline and attacker activity",
+      "http_method": "GET",
+      "endpoint": "/incidents/{incident_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "incident_id",
+          "type": "integer",
+          "description": "Incident ID",
+          "required": true,
+          "location": "path"
+        }
+      ]
+    },
+    {
+      "id": "get_forensics",
+      "name": "Get Incident Forensics",
+      "description": "Collect on-demand forensics data for an incident including process trees and network connections",
+      "http_method": "GET",
+      "endpoint": "/incidents/{incident_id}/forensics",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "incident_id",
+          "type": "integer",
+          "description": "Incident ID",
+          "required": true,
+          "location": "path"
+        }
+      ]
+    },
+    {
+      "id": "get_attack_surface",
+      "name": "Get Attack Surface Insights",
+      "description": "Retrieve attack surface analysis showing credential exposure, shadow admins, and lateral movement paths",
+      "http_method": "GET",
+      "endpoint": "/attacksurface/insights",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "hostName",
+          "type": "string",
+          "description": "Filter by hostname",
+          "required": false,
+          "location": "query"
+        }
+      ]
+    },
+    {
+      "id": "list_deceptive_entities",
+      "name": "List Deceptive Entities",
+      "description": "List all deployed deceptive entities (fake credentials, files, connections)",
+      "http_method": "GET",
+      "endpoint": "/deceptiveEntities",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Filter by entity type: credential, file, connection, share",
+          "required": false,
+          "location": "query"
+        }
+      ]
+    },
+    {
+      "id": "list_deception_policies",
+      "name": "List Deception Policies",
+      "description": "List all deception policies governing entity deployment and behavior",
+      "http_method": "GET",
+      "endpoint": "/deceptionPolicies",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    }
+  ]
+}

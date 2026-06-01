@@ -1,0 +1,89 @@
+{
+  "template_id": "suspicious-file-submission",
+  "name": "Suspicious File Submission",
+  "description": "Employee submits a file they want the security team to analyze before opening or sharing it.",
+  "title": "Submit a Suspicious File for Analysis",
+  "intro": "Thanks for flagging this. If something feels off about a file you downloaded, received, or found, send it to us here and we'll take a look. **Please do not open or run the file** while you're waiting to hear back.",
+  "submit_message": "Got it. Your submission is in our queue and we'll follow up by email. In the meantime, please don't open the file.",
+  "fields": [
+    {
+      "key": "reporter_email",
+      "label": "Your email",
+      "type": "email",
+      "required": true,
+      "help": "We'll follow up here with what we find.",
+      "placeholder": "you@company.com",
+      "sample_value": "david.kumar@northwindcloud.com"
+    },
+    {
+      "key": "file_upload",
+      "label": "The suspicious file",
+      "type": "file",
+      "required": false,
+      "help": "Upload the file itself if it's safe to do so. If the file is very large or you're not sure, skip this and describe it below.",
+      "sample_value": "invoice_2026Q1.exe.zip"
+    },
+    {
+      "key": "file_description",
+      "label": "What is the file called?",
+      "type": "text",
+      "required": true,
+      "help": "Original filename, including extension if you can see it.",
+      "placeholder": "e.g. invoice_2026Q1.exe.zip",
+      "sample_value": "invoice_2026Q1.exe.zip"
+    },
+    {
+      "key": "source",
+      "label": "Where did this file come from?",
+      "type": "select",
+      "required": true,
+      "help": "Pick the closest match.",
+      "options": [
+        "Email attachment",
+        "Link in an email",
+        "Downloaded from a website",
+        "Shared drive / SharePoint / OneDrive",
+        "Chat message (Teams, Slack, etc.)",
+        "USB or external drive",
+        "Not sure"
+      ],
+      "sample_value": "Link in an email"
+    },
+    {
+      "key": "context",
+      "label": "What made it seem suspicious?",
+      "type": "textarea",
+      "required": true,
+      "help": "A sentence or two is fine. Was it unexpected? Did the sender seem off? Did your browser warn you?",
+      "placeholder": "Tell us what caught your eye.",
+      "sample_value": "Downloaded from an email link that claimed to be from our vendor invoice portal, but the sender's address didn't match the real vendor and the file extension looked weird."
+    },
+    {
+      "key": "opened",
+      "label": "Did you already open or run the file?",
+      "type": "select",
+      "required": true,
+      "options": ["No", "Yes", "Not sure"],
+      "sample_value": "No"
+    },
+    {
+      "key": "device_name",
+      "label": "Which device is the file on?",
+      "type": "text",
+      "required": false,
+      "help": "Hostname or asset tag if you know it. Otherwise, a quick description (e.g. 'my work laptop').",
+      "placeholder": "e.g. LAPTOP-DKUMAR-01",
+      "sample_value": "LAPTOP-DKUMAR-01"
+    }
+  ],
+  "alert_template": {
+    "title": "Suspicious file submitted by {{reporter_email}}: {{file_description}}",
+    "description": "An employee submitted a suspicious file via the intake form.\n\nReporter: {{reporter_email}}\nFilename: {{file_description}}\nSource: {{source}}\nAlready opened: {{opened}}\nDevice: {{device_name}}\n\nContext from reporter:\n{{context}}",
+    "severity": "medium",
+    "source": "intake_form",
+    "category": "malware_analysis"
+  },
+  "icon": "Paperclip",
+  "category": "File / Malware",
+  "estimated_minutes": 3
+}

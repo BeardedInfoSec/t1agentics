@@ -1,0 +1,288 @@
+{
+  "name": "Cloud IAM Key Compromise Response",
+  "slug": "cloud-iam-key-compromise",
+  "description": "Responds to suspected IAM access key compromise. Riggs AI evaluates whether key usage is anomalous by examining unusual API calls, regions, and services. Confirmed compromises trigger immediate key disablement, rotation via secrets manager, security lead approval for scope expansion, forensic extraction of all resources accessed by the compromised key, incident ticket creation, and team notification. Legitimate usage is documented with an analyst note.",
+  "category": "cloud",
+  "subcategory": "iam_security",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "advanced",
+  "estimated_time": "20 minutes",
+  "tags": ["cloud", "iam", "credential_compromise", "aws", "key_rotation"],
+  "alert_types": ["cloud_security", "credential_access"],
+  "severity_filter": ["medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["cloud_security", "credential_access", "iam_anomaly"],
+    "min_severity": "medium"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "aws_security_hub",
+      "name": "AWS Security Hub",
+      "category": "cloud_security",
+      "reason": "Source of IAM anomaly findings and API for disabling/rotating access keys"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create forensic investigation tickets for confirmed IAM key compromises"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "IAM Key Anomaly Alert",
+          "config": {
+            "alert_types": ["cloud_security", "credential_access", "iam_anomaly"],
+            "description": "Triggers when anomalous IAM access key usage is detected by AWS GuardDuty or Security Hub"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — Credential Access Assessment",
+          "config": {
+            "template_id": "credential_access",
+            "additional_instructions": "Evaluate if IAM access key usage is anomalous - check for unusual API calls, regions, or services",
+            "description": "AI-powered credential access analysis to determine if the IAM key activity represents a genuine compromise or legitimate usage"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "label": "Key Compromised?",
+          "config": {
+            "condition": "{{analyze_1.verdict}} == 'compromised' || {{analyze_1.confidence}} >= 0.75",
+            "description": "Routes based on whether the AI assessment determined the IAM key is compromised"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "respond",
+          "label": "Disable IAM Access Key",
+          "config": {
+            "integration_action": {
+              "connector_id": "aws_security_hub",
+              "action": "disable_access_key",
+              "parameters": {
+                "access_key_id": "{{trigger_1.alert.access_key_id}}",
+                "user_name": "{{trigger_1.alert.iam_user}}",
+                "reason": "Key compromised — AI confidence: {{analyze_1.confidence}}"
+              }
+            },
+            "description": "Immediately disable the compromised IAM access key to prevent further unauthorized access"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "label": "Rotate Key & Update Secrets Manager",
+          "config": {
+            "integration_action": {
+              "connector_id": "aws_security_hub",
+              "action": "rotate_access_key",
+              "parameters": {
+                "user_name": "{{trigger_1.alert.iam_user}}",
+                "update_secrets_manager": true,
+                "notify_owner": true
+              }
+            },
+            "description": "Generate a new access key for the IAM user and update the corresponding secrets manager entries"
+          }
+        }
+      },
+      {
+        "id": "approval_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "approval",
+          "label": "Security Lead Approves Scope Expansion",
+          "config": {
+            "approvers": ["security_lead"],
+            "timeout_minutes": 30,
+            "prompt": "IAM key {{trigger_1.alert.access_key_id}} for user {{trigger_1.alert.iam_user}} has been disabled and rotated.\n\nAI Assessment: {{analyze_1.summary}}\n\nApprove expanding investigation scope to audit all resources accessed by this key?",
+            "description": "Requires security lead approval before expanding the investigation to extract all resources accessed by the compromised key"
+          }
+        }
+      },
+      {
+        "id": "code_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "code",
+          "label": "Extract Accessed Resources",
+          "config": {
+            "mode": "query",
+            "query": "CloudTrail events for access_key_id={{trigger_1.alert.access_key_id}} in the last 72 hours",
+            "output_variable": "accessed_resources",
+            "description": "Query CloudTrail to extract all resources and API calls made using the compromised access key over the past 72 hours"
+          }
+        }
+      },
+      {
+        "id": "respond_3",
+        "type": "signal",
+        "position": { "x": 340, "y": 1180 },
+        "data": {
+          "kind": "respond",
+          "label": "Create Forensic Investigation Ticket",
+          "config": {
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_ticket",
+              "parameters": {
+                "project": "SEC",
+                "issue_type": "Investigation",
+                "priority": "Critical",
+                "summary": "IAM Key Compromise: {{trigger_1.alert.iam_user}} — Forensic Investigation Required",
+                "description": "Compromised IAM access key investigation.\n\nUser: {{trigger_1.alert.iam_user}}\nKey: {{trigger_1.alert.access_key_id}}\nActions Taken: Key disabled, new key rotated\n\nRiggs AI Assessment:\n{{analyze_1.summary}}\n\nResources Accessed (last 72h):\n{{code_1.accessed_resources}}\n\nScope: Full forensic review of all accessed resources is required."
+              }
+            },
+            "description": "Create a forensic investigation ticket with full details of the compromised key and all resources it accessed"
+          }
+        }
+      },
+      {
+        "id": "respond_4",
+        "type": "signal",
+        "position": { "x": 340, "y": 1340 },
+        "data": {
+          "kind": "respond",
+          "label": "Notify Security Team",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#security-incidents",
+              "message": "IAM KEY COMPROMISE CONFIRMED\nUser: {{trigger_1.alert.iam_user}}\nKey: {{trigger_1.alert.access_key_id}}\nActions: Key disabled, rotated, secrets manager updated\nResources accessed: {{code_1.accessed_resources.count}} API calls in 72h\nForensic Ticket: {{respond_3.ticket_url}}\n\nRiggs Assessment:\n{{analyze_1.summary}}"
+            },
+            "description": "Notify the security team with a comprehensive summary of the compromise and all response actions taken"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "utility",
+          "label": "Add Note: Legitimate Usage Confirmed",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "Reviewed by Riggs AI (credential_access template). IAM key usage determined to be legitimate. Confidence: {{analyze_1.confidence}}. Assessment: {{analyze_1.summary}}"
+            },
+            "description": "Document that AI analysis confirmed the IAM key usage was legitimate and not indicative of compromise"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1500 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "Cloud IAM key compromise response complete"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_analyze",
+        "source": "trigger_1",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_analyze_decision",
+        "source": "analyze_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "respond_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "utility_1",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_disable_rotate",
+        "source": "respond_1",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_rotate_approval",
+        "source": "respond_2",
+        "target": "approval_1",
+        "type": "default"
+      },
+      {
+        "id": "e_approval_extract",
+        "source": "approval_1",
+        "target": "code_1",
+        "type": "default"
+      },
+      {
+        "id": "e_extract_ticket",
+        "source": "code_1",
+        "target": "respond_3",
+        "type": "default"
+      },
+      {
+        "id": "e_ticket_notify",
+        "source": "respond_3",
+        "target": "respond_4",
+        "type": "default"
+      },
+      {
+        "id": "e_notify_end",
+        "source": "respond_4",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_utility_end",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

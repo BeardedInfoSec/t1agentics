@@ -1,0 +1,287 @@
+{
+  "id": "forescout_counteract",
+  "name": "ForeScout CounterACT",
+  "description": "This app implements various network access control actions for ForeScout",
+  "version": "2.0.6",
+  "category": "utility",
+  "vendor": "ForeScout",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "https://",
+  "actions": [
+    {
+      "id": "list_hosts",
+      "name": "List Hosts",
+      "description": "List hosts in CounterACT",
+      "http_method": "GET",
+      "endpoint": "/fsapi/niCore/Lists",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "list_policies",
+      "name": "List Policies",
+      "description": "List policies in CounterACT",
+      "http_method": "GET",
+      "endpoint": "/fsapi/niCore/Lists",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "list_host_properties",
+      "name": "Get Device Info",
+      "description": "Get the properties of a host",
+      "http_method": "GET",
+      "endpoint": "/fsapi/niCore/Lists",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "host_id",
+          "type": "number",
+          "description": "Host ID of device (Used first, if provided)",
+          "required": false,
+          "contains": [
+            "forescout host id"
+          ]
+        },
+        {
+          "name": "host_ip",
+          "type": "string",
+          "description": "Current local IP address of device (Used second, if provided)",
+          "required": false,
+          "contains": [
+            "ip"
+          ]
+        },
+        {
+          "name": "host_mac",
+          "type": "string",
+          "description": "Host MAC address of device (Used last, if provided)",
+          "required": false,
+          "contains": [
+            "forescout mac address",
+            "mac address"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_active_sessions",
+      "name": "Get Sessions",
+      "description": "Get active sessions in CounterACT",
+      "http_method": "GET",
+      "endpoint": "/actions/get_active_sessions",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "rule_id",
+          "type": "string",
+          "description": "Comma separated list of policies or policy sub-rules",
+          "required": false,
+          "contains": [
+            "forescout rule id",
+            "forescout policy id"
+          ]
+        },
+        {
+          "name": "prop_val",
+          "type": "string",
+          "description": "Comma separated list of host property values (ie: Prop_String=Sales,Prop_Int=5)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "install_vfw",
+      "name": "Install Firewall",
+      "description": "Install a virtual firewall with a property",
+      "http_method": "GET",
+      "endpoint": "/actions/install_vfw",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "host_key_name",
+          "type": "string",
+          "description": "Type of identifier used to specify the endpoint",
+          "required": true,
+          "default": "ip"
+        },
+        {
+          "name": "host_key_value",
+          "type": "string",
+          "description": "IP or MAC address of the virtual firewall to install",
+          "required": true,
+          "contains": [
+            "forescout mac address",
+            "mac address",
+            "ip"
+          ]
+        },
+        {
+          "name": "property_name",
+          "type": "string",
+          "description": "The property that will be added",
+          "required": true,
+          "contains": [
+            "forescout property name"
+          ]
+        },
+        {
+          "name": "property_value",
+          "type": "string",
+          "description": "The value of the property",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "delete_property",
+      "name": "Delete Property",
+      "description": "Delete a property of a host",
+      "http_method": "POST",
+      "endpoint": "/actions/delete_property",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "host_key_name",
+          "type": "string",
+          "description": "Type of identifier used to specify the host",
+          "required": true,
+          "default": "ip"
+        },
+        {
+          "name": "host_key_value",
+          "type": "string",
+          "description": "Identifier value used to specify the host",
+          "required": true,
+          "contains": [
+            "forescout mac address",
+            "mac address",
+            "ip"
+          ]
+        },
+        {
+          "name": "property_name",
+          "type": "string",
+          "description": "The property that will be deleted",
+          "required": true,
+          "contains": [
+            "forescout property name"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "update_property",
+      "name": "Update Property",
+      "description": "Update a property of a host",
+      "http_method": "POST",
+      "endpoint": "/actions/update_property",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "host_key_name",
+          "type": "string",
+          "description": "Type of identifier used to specify the host",
+          "required": true,
+          "default": "ip"
+        },
+        {
+          "name": "host_key_value",
+          "type": "string",
+          "description": "Identifier value used to specify the host",
+          "required": true,
+          "contains": [
+            "forescout mac address",
+            "mac address",
+            "ip"
+          ]
+        },
+        {
+          "name": "property_name",
+          "type": "string",
+          "description": "The property that will be modified",
+          "required": true,
+          "contains": [
+            "forescout property name"
+          ]
+        },
+        {
+          "name": "property_value",
+          "type": "string",
+          "description": "The new value of the property",
+          "required": true
+        },
+        {
+          "name": "create_host",
+          "type": "boolean",
+          "description": "If set to true and the host is not known to CounterACT, create a new host",
+          "required": false,
+          "default": true
+        }
+      ]
+    },
+    {
+      "id": "update_list_property",
+      "name": "Update List",
+      "description": "Update a list by adding, deleting, or deleting all values from it",
+      "http_method": "POST",
+      "endpoint": "/fsapi/niCore/Lists",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "action",
+          "type": "string",
+          "description": "Type of update for list",
+          "required": true
+        },
+        {
+          "name": "list_name",
+          "type": "string",
+          "description": "Name of list to update",
+          "required": true
+        },
+        {
+          "name": "values",
+          "type": "string",
+          "description": "Comma separated list of values to update. This field is required for add_list_values and delete_list_values actions",
+          "required": false
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "ForeScout CounterACT",
+    "original_type": "network device",
+    "converted_at": "2025-12-18T16:25:28.790646",
+    "source_version": "2.0.6"
+  }
+}

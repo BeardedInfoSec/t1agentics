@@ -1,0 +1,206 @@
+{
+  "id": "pfsense",
+  "name": "pfSense Firewall",
+  "description": "pfSense REST API for managing firewall rules, aliases, NAT, and system configuration on pfSense CE and pfSense Plus",
+  "version": "1.0.0",
+  "category": "firewall",
+  "vendor": "Netgate",
+  "auth_type": "basic",
+  "auth_config": {
+    "type": "basic",
+    "header_name": "Authorization",
+    "location": "header",
+    "note": "Supports Basic auth, JWT bearer tokens, and API key authentication"
+  },
+  "base_url": "https://{host}/api/v1",
+  "actions": [
+    {
+      "id": "list_firewall_rules",
+      "name": "List Firewall Rules",
+      "description": "Retrieve all firewall rules configured on pfSense",
+      "http_method": "GET",
+      "endpoint": "/firewall/rule",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "create_firewall_rule",
+      "name": "Create Firewall Rule",
+      "description": "Create a new firewall rule to allow or block traffic",
+      "http_method": "POST",
+      "endpoint": "/firewall/rule",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Rule type: pass, block, or reject",
+          "required": true
+        },
+        {
+          "name": "interface",
+          "type": "string",
+          "description": "Interface to apply the rule (e.g., wan, lan)",
+          "required": true
+        },
+        {
+          "name": "ipprotocol",
+          "type": "string",
+          "description": "IP protocol: inet (IPv4), inet6 (IPv6), or inet46 (both)",
+          "required": true
+        },
+        {
+          "name": "protocol",
+          "type": "string",
+          "description": "Protocol: tcp, udp, icmp, or any",
+          "required": true
+        },
+        {
+          "name": "src",
+          "type": "string",
+          "description": "Source address (IP, CIDR, alias name, or any)",
+          "required": true
+        },
+        {
+          "name": "dst",
+          "type": "string",
+          "description": "Destination address (IP, CIDR, alias name, or any)",
+          "required": true
+        },
+        {
+          "name": "descr",
+          "type": "string",
+          "description": "Description of the rule",
+          "required": false
+        },
+        {
+          "name": "top",
+          "type": "boolean",
+          "description": "Place rule at the top of the ruleset",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "delete_firewall_rule",
+      "name": "Delete Firewall Rule",
+      "description": "Delete an existing firewall rule by tracker ID",
+      "http_method": "DELETE",
+      "endpoint": "/firewall/rule",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "tracker",
+          "type": "integer",
+          "description": "Tracker ID of the firewall rule to delete",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_aliases",
+      "name": "List Aliases",
+      "description": "Retrieve all firewall aliases (address groups for IPs, ports, URLs)",
+      "http_method": "GET",
+      "endpoint": "/firewall/alias",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "create_alias",
+      "name": "Create Alias",
+      "description": "Create a new firewall alias for grouping IPs, ports, or URLs",
+      "http_method": "POST",
+      "endpoint": "/firewall/alias",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Name of the alias",
+          "required": true
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Alias type: host, network, port, or url",
+          "required": true
+        },
+        {
+          "name": "address",
+          "type": "array",
+          "description": "List of addresses, networks, or ports to include",
+          "required": true
+        },
+        {
+          "name": "descr",
+          "type": "string",
+          "description": "Description of the alias",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "delete_alias",
+      "name": "Delete Alias",
+      "description": "Delete a firewall alias by name",
+      "http_method": "DELETE",
+      "endpoint": "/firewall/alias",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Name/ID of the alias to delete",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_nat_rules",
+      "name": "List NAT Rules",
+      "description": "Retrieve all outbound NAT rules",
+      "http_method": "GET",
+      "endpoint": "/firewall/nat/outbound/mapping",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "get_system_status",
+      "name": "Get System Status",
+      "description": "Retrieve pfSense system status including version, uptime, and resource usage",
+      "http_method": "GET",
+      "endpoint": "/status/system",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "list_interfaces",
+      "name": "List Interfaces",
+      "description": "Retrieve all network interfaces and their configuration",
+      "http_method": "GET",
+      "endpoint": "/interface",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "apply_changes",
+      "name": "Apply Firewall Changes",
+      "description": "Apply pending firewall rule changes to make them active",
+      "http_method": "POST",
+      "endpoint": "/firewall/apply",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": []
+    }
+  ]
+}

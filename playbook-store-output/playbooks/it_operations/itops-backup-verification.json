@@ -1,0 +1,242 @@
+{
+  "name": "Backup Verification",
+  "slug": "itops-backup-verification",
+  "description": "Scheduled backup verification that checks the latest backup status for all critical systems, performs a test restore on a random sample, and generates an AI-powered executive summary. Failed backups or failed test restores trigger an incident ticket and urgent notification. Successful verifications are logged for compliance audit trail.",
+  "category": "it_operations",
+  "subcategory": "backup",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "15 minutes",
+  "tags": ["backup", "verification", "restore_test", "scheduled", "compliance", "disaster_recovery"],
+  "alert_types": [],
+  "severity_filter": [],
+  "trigger_conditions": {
+    "alert_types": [],
+    "trigger_type": "schedule",
+    "schedule": "0 6 * * 1"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "veeam",
+      "name": "Veeam Backup & Replication",
+      "category": "backup",
+      "reason": "Query backup job status and perform test restore operations for verification"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create incident tickets for failed backups or failed test restores"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Notify the infrastructure team of backup verification results"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Weekly Backup Verification",
+          "config": {
+            "trigger_type": "schedule",
+            "schedule": "0 6 * * 1",
+            "description": "Runs every Monday at 6 AM to verify backup integrity across all critical systems"
+          }
+        }
+      },
+      {
+        "id": "code_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "code",
+          "label": "Fetch Backup Job Status",
+          "config": {
+            "mode": "script",
+            "script": "result = integration.execute('veeam', 'list_backup_jobs', { 'status_filter': 'all', 'since': '7d' })",
+            "output_variable": "backup_jobs",
+            "description": "Retrieve the status of all backup jobs from the past 7 days including success, failure, and warning states"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "label": "Any Failed Backups?",
+          "config": {
+            "condition": "{{code_1.backup_jobs}} | any(status == 'failed')",
+            "description": "Check if any backup jobs failed in the past 7 days"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "respond",
+          "label": "Create Failure Ticket",
+          "config": {
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_issue",
+              "parameters": {
+                "project": "OPS",
+                "issue_type": "Incident",
+                "priority": "High",
+                "summary": "Backup Failures Detected — Weekly Verification {{trigger_1.timestamp}}",
+                "description": "The following backup jobs failed in the past 7 days:\n\n{{code_1.backup_jobs | filter(status == 'failed') | map(job_name + ' — ' + target_system + ' — Failed at: ' + last_run)}}\n\nImmediate investigation and re-run required to ensure data protection compliance."
+              }
+            },
+            "description": "Create a high-priority incident ticket for failed backup jobs requiring immediate attention"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "label": "Notify — Backup Failures",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#infra-alerts",
+              "message": "BACKUP VERIFICATION — FAILURES DETECTED\n\nFailed Jobs:\n{{code_1.backup_jobs | filter(status == 'failed') | map(job_name + ' — ' + target_system)}}\n\nTicket: {{respond_1.issue_key}}\n\nPlease investigate and re-run failed backups immediately."
+            },
+            "description": "Send urgent Slack notification about failed backup jobs"
+          }
+        }
+      },
+      {
+        "id": "code_2",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "code",
+          "label": "Test Restore — Random Sample",
+          "config": {
+            "mode": "script",
+            "script": "sample = random.sample(code_1.backup_jobs.filter(status='success'), min(3, len(code_1.backup_jobs.filter(status='success'))))\nresult = integration.execute('veeam', 'test_restore', { 'backup_ids': [b.backup_id for b in sample], 'mode': 'verify_only' })",
+            "output_variable": "restore_test",
+            "description": "Perform a test restore on a random sample of up to 3 successful backups to verify data integrity"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 860 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI -- Backup Report",
+          "config": {
+            "template_id": "executive_summary",
+            "additional_instructions": "Generate a backup verification report: summarize job success/failure rates, test restore results, and any compliance concerns or recommendations.",
+            "description": "AI-powered executive summary of the weekly backup verification results including test restore outcomes"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1020 },
+        "data": {
+          "kind": "utility",
+          "label": "Log Verification Report",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "Weekly backup verification completed at {{trigger_1.timestamp}}.\n\nTotal Jobs: {{code_1.backup_jobs.length}}\nSuccessful: {{code_1.backup_jobs | filter(status == 'success') | length}}\nFailed: {{code_1.backup_jobs | filter(status == 'failed') | length}}\nTest Restores: {{restore_test.results_summary}}\n\n{{analyze_1.summary}}"
+            },
+            "description": "Log the full backup verification report for compliance audit trail"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1180 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "Backup verification workflow complete"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_code",
+        "source": "trigger_1",
+        "target": "code_1",
+        "type": "default"
+      },
+      {
+        "id": "e_code_decision",
+        "source": "code_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "respond_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "code_2",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_ticket_notify",
+        "source": "respond_1",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_notify_analyze",
+        "source": "respond_2",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_testrestore_analyze",
+        "source": "code_2",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_analyze_log",
+        "source": "analyze_1",
+        "target": "utility_1",
+        "type": "default"
+      },
+      {
+        "id": "e_log_end",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

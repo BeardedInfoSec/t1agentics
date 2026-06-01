@@ -1,0 +1,306 @@
+{
+  "id": "check_point_fw",
+  "name": "Check Point Firewall",
+  "description": "Check Point Security Management Server API for managing access rules, network objects, and security policies",
+  "version": "1.0.0",
+  "category": "firewall",
+  "vendor": "Check Point",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "X-chkp-sid",
+    "location": "header"
+  },
+  "base_url": "https://{host}/web_api",
+  "actions": [
+    {
+      "id": "login",
+      "name": "Login",
+      "description": "Authenticate to the Check Point Management Server and obtain a session ID",
+      "http_method": "POST",
+      "endpoint": "/login",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "user",
+          "type": "string",
+          "description": "Administrator username",
+          "required": true
+        },
+        {
+          "name": "password",
+          "type": "string",
+          "description": "Administrator password",
+          "required": true
+        },
+        {
+          "name": "domain",
+          "type": "string",
+          "description": "Domain name for multi-domain environments",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "show_access_rulebase",
+      "name": "Show Access Rulebase",
+      "description": "Retrieve all access rules from a specified access layer",
+      "http_method": "POST",
+      "endpoint": "/show-access-rulebase",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Name of the access layer to query",
+          "required": true
+        },
+        {
+          "name": "offset",
+          "type": "integer",
+          "description": "Number of rules to skip (for pagination)",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "description": "Maximum number of rules to return (default 50, max 500)",
+          "required": false
+        },
+        {
+          "name": "details-level",
+          "type": "string",
+          "description": "Detail level: standard, full, or uid",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "add_access_rule",
+      "name": "Add Access Rule",
+      "description": "Create a new access control rule in the specified layer",
+      "http_method": "POST",
+      "endpoint": "/add-access-rule",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "layer",
+          "type": "string",
+          "description": "Name or UID of the access layer",
+          "required": true
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Name of the rule",
+          "required": true
+        },
+        {
+          "name": "position",
+          "type": "string",
+          "description": "Position of the rule (top, bottom, or number)",
+          "required": true
+        },
+        {
+          "name": "source",
+          "type": "string",
+          "description": "Source network object name or Any",
+          "required": false
+        },
+        {
+          "name": "destination",
+          "type": "string",
+          "description": "Destination network object name or Any",
+          "required": false
+        },
+        {
+          "name": "service",
+          "type": "string",
+          "description": "Service or port object name",
+          "required": false
+        },
+        {
+          "name": "action",
+          "type": "string",
+          "description": "Rule action: Accept, Drop, Ask, Inform, Reject",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "delete_access_rule",
+      "name": "Delete Access Rule",
+      "description": "Delete an existing access control rule",
+      "http_method": "POST",
+      "endpoint": "/delete-access-rule",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "layer",
+          "type": "string",
+          "description": "Name or UID of the access layer",
+          "required": true
+        },
+        {
+          "name": "uid",
+          "type": "string",
+          "description": "UID of the rule to delete",
+          "required": false
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Name of the rule to delete",
+          "required": false
+        },
+        {
+          "name": "rule-number",
+          "type": "integer",
+          "description": "Rule number to delete",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "show_hosts",
+      "name": "Show Hosts",
+      "description": "Retrieve all host network objects",
+      "http_method": "POST",
+      "endpoint": "/show-hosts",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "limit",
+          "type": "integer",
+          "description": "Maximum number of hosts to return",
+          "required": false
+        },
+        {
+          "name": "offset",
+          "type": "integer",
+          "description": "Number of hosts to skip",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "add_host",
+      "name": "Add Host Object",
+      "description": "Create a new host network object (for IP blocking)",
+      "http_method": "POST",
+      "endpoint": "/add-host",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Name of the host object",
+          "required": true
+        },
+        {
+          "name": "ip-address",
+          "type": "string",
+          "description": "IPv4 or IPv6 address of the host",
+          "required": true
+        },
+        {
+          "name": "comments",
+          "type": "string",
+          "description": "Comments or description for the host object",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "show_networks",
+      "name": "Show Networks",
+      "description": "Retrieve all network objects",
+      "http_method": "POST",
+      "endpoint": "/show-networks",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "limit",
+          "type": "integer",
+          "description": "Maximum number of networks to return",
+          "required": false
+        },
+        {
+          "name": "offset",
+          "type": "integer",
+          "description": "Number of networks to skip",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "show_logs",
+      "name": "Show Logs",
+      "description": "Retrieve security logs from the management server",
+      "http_method": "POST",
+      "endpoint": "/show-logs",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "log-type",
+          "type": "string",
+          "description": "Type of log to query (audit, security)",
+          "required": false
+        },
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "Filter expression for log entries",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "description": "Maximum number of log entries to return",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "publish",
+      "name": "Publish Changes",
+      "description": "Publish pending changes to make them available for policy installation",
+      "http_method": "POST",
+      "endpoint": "/publish",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": []
+    },
+    {
+      "id": "install_policy",
+      "name": "Install Policy",
+      "description": "Install the security policy on target gateways",
+      "http_method": "POST",
+      "endpoint": "/install-policy",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "policy-package",
+          "type": "string",
+          "description": "Name of the policy package to install",
+          "required": true
+        },
+        {
+          "name": "targets",
+          "type": "array",
+          "description": "List of target gateway names or UIDs",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

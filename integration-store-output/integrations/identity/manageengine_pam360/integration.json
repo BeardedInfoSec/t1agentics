@@ -1,0 +1,209 @@
+{
+  "id": "manageengine_pam360",
+  "name": "ManageEngine PAM360",
+  "description": "Privileged access management through ManageEngine PAM360 REST API for managing resources, accounts, passwords, and privileged sessions",
+  "version": "1.0.0",
+  "category": "identity",
+  "vendor": "ManageEngine (Zoho)",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "query_param": "AUTHTOKEN",
+    "location": "query"
+  },
+  "base_url": "https://{host}:{port}/restapi/json/v1",
+  "actions": [
+    {
+      "id": "list_resources",
+      "name": "List Resources",
+      "description": "List all resources managed by PAM360",
+      "http_method": "GET",
+      "endpoint": "/resources",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "get_resource",
+      "name": "Get Resource",
+      "description": "Retrieve details of a specific resource",
+      "http_method": "GET",
+      "endpoint": "/resources/{resourceId}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "resourceId",
+          "type": "string",
+          "description": "Resource ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_accounts",
+      "name": "List Accounts",
+      "description": "List all accounts for a specific resource",
+      "http_method": "GET",
+      "endpoint": "/resources/{resourceId}/accounts",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "resourceId",
+          "type": "string",
+          "description": "Resource ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_account",
+      "name": "Get Account",
+      "description": "Retrieve details of a specific account",
+      "http_method": "GET",
+      "endpoint": "/resources/{resourceId}/accounts/{accountId}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "resourceId",
+          "type": "string",
+          "description": "Resource ID",
+          "required": true
+        },
+        {
+          "name": "accountId",
+          "type": "string",
+          "description": "Account ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_password",
+      "name": "Get Account Password",
+      "description": "Retrieve the password for a specific account",
+      "http_method": "GET",
+      "endpoint": "/resources/{resourceId}/accounts/{accountId}/password",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "resourceId",
+          "type": "string",
+          "description": "Resource ID",
+          "required": true
+        },
+        {
+          "name": "accountId",
+          "type": "string",
+          "description": "Account ID",
+          "required": true
+        },
+        {
+          "name": "reason",
+          "type": "string",
+          "description": "Reason for password retrieval",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "change_password",
+      "name": "Change Account Password",
+      "description": "Change the password for a specific account on the target resource",
+      "http_method": "PUT",
+      "endpoint": "/resources/{resourceId}/accounts/{accountId}/password",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "resourceId",
+          "type": "string",
+          "description": "Resource ID",
+          "required": true
+        },
+        {
+          "name": "accountId",
+          "type": "string",
+          "description": "Account ID",
+          "required": true
+        },
+        {
+          "name": "newPassword",
+          "type": "string",
+          "description": "New password (auto-generated if not provided)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "reset_password",
+      "name": "Reset Password Remotely",
+      "description": "Reset the password on the remote target system",
+      "http_method": "POST",
+      "endpoint": "/resources/{resourceId}/accounts/{accountId}/resetpassword",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "resourceId",
+          "type": "string",
+          "description": "Resource ID",
+          "required": true
+        },
+        {
+          "name": "accountId",
+          "type": "string",
+          "description": "Account ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_resource_groups",
+      "name": "List Resource Groups",
+      "description": "List all resource groups for organizational overview",
+      "http_method": "GET",
+      "endpoint": "/resourcegroups",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "list_password_requests",
+      "name": "List Password Requests",
+      "description": "List pending password access requests for approval",
+      "http_method": "GET",
+      "endpoint": "/requests",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Filter by request status (pending, approved, rejected)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "approve_request",
+      "name": "Approve Password Request",
+      "description": "Approve a pending password access request",
+      "http_method": "PUT",
+      "endpoint": "/requests/{requestId}/approve",
+      "action_type": "correct",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "requestId",
+          "type": "string",
+          "description": "Request ID to approve",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,290 @@
+{
+  "id": "xcitium_openedr",
+  "name": "Xcitium OpenEDR",
+  "description": "Integrates with Xcitium OpenEDR and Xcitium Advanced API for open-source endpoint detection and response with MITRE ATT&CK analytics, real-time telemetry, and containment actions",
+  "version": "1.0.0",
+  "category": "edr",
+  "vendor": "Xcitium",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "prefix": "Bearer"
+  },
+  "base_url": "https://edr-api.xcitium.com/api/v1",
+  "actions": [
+    {
+      "id": "list_alerts",
+      "name": "List Alerts",
+      "description": "Retrieve EDR alerts including MITRE ATT&CK technique mappings and threat progression data",
+      "http_method": "GET",
+      "endpoint": "/alerts",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of alerts to return",
+          "required": false,
+          "default": 50
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Starting offset for pagination",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Filter by severity (critical, high, medium, low)",
+          "required": false
+        },
+        {
+          "name": "start_time",
+          "type": "string",
+          "description": "Start time for alert query (ISO 8601)",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "string",
+          "description": "End time for alert query (ISO 8601)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_alert",
+      "name": "Get Alert Details",
+      "description": "Retrieve detailed information about a specific alert including root cause analysis",
+      "http_method": "GET",
+      "endpoint": "/alerts/{alert_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "alert_id",
+          "type": "string",
+          "description": "The unique identifier of the alert",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_endpoints",
+      "name": "List Endpoints",
+      "description": "Retrieve the list of endpoints monitored by Xcitium OpenEDR",
+      "http_method": "GET",
+      "endpoint": "/endpoints",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of endpoints to return",
+          "required": false,
+          "default": 50
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Starting offset for pagination",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "search",
+          "type": "string",
+          "description": "Search by hostname, IP, or OS",
+          "required": false
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Filter by endpoint status (online, offline, isolated)",
+          "required": false
+        }
+      ],
+      "observable_type": "hostname"
+    },
+    {
+      "id": "get_endpoint",
+      "name": "Get Endpoint Details",
+      "description": "Retrieve detailed information about a specific endpoint including telemetry status",
+      "http_method": "GET",
+      "endpoint": "/endpoints/{endpoint_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "endpoint_id",
+          "type": "string",
+          "description": "The unique identifier of the endpoint",
+          "required": true
+        }
+      ],
+      "observable_type": "hostname"
+    },
+    {
+      "id": "isolate_endpoint",
+      "name": "Isolate Endpoint",
+      "description": "Isolate an endpoint from the network to contain a detected threat",
+      "http_method": "POST",
+      "endpoint": "/endpoints/{endpoint_id}/isolate",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "endpoint_id",
+          "type": "string",
+          "description": "The unique identifier of the endpoint to isolate",
+          "required": true
+        },
+        {
+          "name": "reason",
+          "type": "string",
+          "description": "Reason for isolating the endpoint",
+          "required": false
+        }
+      ],
+      "observable_type": "hostname"
+    },
+    {
+      "id": "unisolate_endpoint",
+      "name": "Release Endpoint from Isolation",
+      "description": "Remove network isolation from a previously contained endpoint",
+      "http_method": "POST",
+      "endpoint": "/endpoints/{endpoint_id}/unisolate",
+      "action_type": "correct",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "endpoint_id",
+          "type": "string",
+          "description": "The unique identifier of the endpoint to release",
+          "required": true
+        }
+      ],
+      "observable_type": "hostname"
+    },
+    {
+      "id": "list_events",
+      "name": "List Telemetry Events",
+      "description": "Retrieve endpoint telemetry events (process, file, network, registry) for threat hunting",
+      "http_method": "GET",
+      "endpoint": "/events",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of events to return",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Starting offset for pagination",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "event_type",
+          "type": "string",
+          "description": "Filter by event type (process, file, network, registry)",
+          "required": false
+        },
+        {
+          "name": "endpoint_id",
+          "type": "string",
+          "description": "Filter events by endpoint ID",
+          "required": false
+        },
+        {
+          "name": "start_time",
+          "type": "string",
+          "description": "Start time for event query (ISO 8601)",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "string",
+          "description": "End time for event query (ISO 8601)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "search_ioc",
+      "name": "Search IOC",
+      "description": "Search for indicators of compromise across all monitored endpoints",
+      "http_method": "POST",
+      "endpoint": "/ioc/search",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "type",
+          "type": "string",
+          "description": "IOC type: sha256, sha1, md5, ip, domain",
+          "required": true
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "description": "The IOC value to search for",
+          "required": true
+        }
+      ],
+      "observable_type": "hash"
+    },
+    {
+      "id": "contain_file",
+      "name": "Contain File",
+      "description": "Contain (auto-sandbox) an unknown or suspicious file in Xcitium's containment environment",
+      "http_method": "POST",
+      "endpoint": "/containment/file",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "sha256",
+          "type": "string",
+          "description": "SHA256 hash of the file to contain",
+          "required": true
+        },
+        {
+          "name": "endpoint_id",
+          "type": "string",
+          "description": "The endpoint ID where the file was observed",
+          "required": false
+        }
+      ],
+      "observable_type": "hash"
+    },
+    {
+      "id": "get_verdict",
+      "name": "Get File Verdict",
+      "description": "Retrieve the verdict for a file from Xcitium's Valkyrie analysis engine",
+      "http_method": "GET",
+      "endpoint": "/verdicts/{sha256}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "sha256",
+          "type": "string",
+          "description": "SHA256 hash of the file to check",
+          "required": true
+        }
+      ],
+      "observable_type": "hash"
+    }
+  ]
+}

@@ -1,0 +1,401 @@
+{
+  "name": "Insider Threat Investigation",
+  "slug": "insider-threat-investigation",
+  "description": "Investigates potential insider threats with a multi-stage workflow that balances security urgency with legal and HR compliance. An initial AI analysis assesses risk level. High-risk activity requires HR and Legal approval before proceeding. Upon approval, a code node gathers comprehensive user activity data (login history, file access, email patterns), followed by a focused AI analysis for data exfiltration indicators. If exfiltration is detected, the user account is disabled, forensic evidence is preserved via a Jira task, and HR/Legal are notified. If no exfiltration is found, a monitoring ticket is created. Low-risk alerts are annotated and closed.",
+  "category": "incident_response",
+  "subcategory": "insider_threat",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "advanced",
+  "estimated_time": "30 minutes",
+  "tags": ["insider_threat", "investigation", "dlp", "hr", "forensics"],
+  "alert_types": ["insider_threat", "data_exfiltration"],
+  "severity_filter": ["medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["insider_threat", "data_exfiltration", "policy_violation"],
+    "min_severity": "medium"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "microsoft_graph",
+      "name": "Microsoft Graph",
+      "category": "identity",
+      "reason": "Gather user activity data and disable user accounts upon confirmed exfiltration"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create forensic preservation tasks and monitoring tickets for ongoing investigations"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Insider Threat Alert Received",
+          "config": {
+            "alert_types": ["insider_threat", "data_exfiltration", "policy_violation"],
+            "description": "Triggers when an insider threat, data exfiltration, or policy violation alert is ingested"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — Insider Threat Assessment",
+          "config": {
+            "template_id": "insider_threat",
+            "additional_instructions": "Assess the risk level of the reported insider activity. Determine if this warrants a full investigation or is standard user behavior.",
+            "description": "AI-powered insider threat assessment to determine risk level and investigation priority"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "label": "High-Risk Insider Activity?",
+          "config": {
+            "condition": "{{analyze_1.risk_level}} in ['high', 'critical']",
+            "description": "Route based on whether the AI assessment determined high-risk insider activity requiring full investigation"
+          }
+        }
+      },
+      {
+        "id": "approval_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "approval",
+          "label": "HR and Legal Approval",
+          "config": {
+            "approvers": ["hr_lead", "legal_counsel"],
+            "approval_message": "An insider threat investigation has been flagged as high-risk. HR and Legal approval is required before proceeding with user activity data collection.\n\nUser: {{trigger_1.alert.username}}\nAlert: {{trigger_1.alert.title}}\n\nRiggs Assessment:\n{{analyze_1.summary}}",
+            "timeout_hours": 24,
+            "require_all": true,
+            "description": "Both HR and Legal must approve the investigation scope before user activity data is collected"
+          }
+        }
+      },
+      {
+        "id": "code_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "code",
+          "label": "Gather User Activity Data",
+          "config": {
+            "mode": "integration_query",
+            "integration": "microsoft_graph",
+            "queries": [
+              {
+                "type": "sign_in_logs",
+                "user": "{{trigger_1.alert.username}}",
+                "days": 30
+              },
+              {
+                "type": "file_access_audit",
+                "user": "{{trigger_1.alert.username}}",
+                "days": 30
+              },
+              {
+                "type": "email_activity",
+                "user": "{{trigger_1.alert.username}}",
+                "days": 30
+              }
+            ],
+            "output_variable": "user_activity",
+            "description": "Collect 30 days of user login history, file access patterns, and email activity from Microsoft Graph"
+          }
+        }
+      },
+      {
+        "id": "analyze_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — Exfiltration Analysis",
+          "config": {
+            "template_id": "data_exfil",
+            "additional_instructions": "Analyze user activity for data exfiltration indicators, policy violations, and anomalous behavior patterns.",
+            "description": "AI-powered data exfiltration analysis examining user activity patterns for indicators of data theft or policy violations"
+          }
+        }
+      },
+      {
+        "id": "decision_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "decision",
+          "label": "Exfiltration Detected?",
+          "config": {
+            "condition": "{{analyze_2.exfiltration_detected}} == true",
+            "description": "Route based on whether the AI analysis found evidence of data exfiltration or confirmed policy violations"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 160, "y": 1180 },
+        "data": {
+          "kind": "respond",
+          "label": "Disable User Account",
+          "config": {
+            "integration_action": {
+              "connector_id": "microsoft_graph",
+              "action": "disable_user",
+              "parameters": {
+                "user_principal_name": "{{trigger_1.alert.username}}"
+              }
+            },
+            "description": "Immediately disable the user account in Azure AD to prevent further data exfiltration"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 160, "y": 1340 },
+        "data": {
+          "kind": "respond",
+          "label": "Preserve Forensic Evidence",
+          "config": {
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_issue",
+              "parameters": {
+                "project": "IR",
+                "issue_type": "Task",
+                "priority": "P1 - Critical",
+                "summary": "FORENSIC PRESERVATION: {{trigger_1.alert.username}} — Insider Threat",
+                "description": "Data exfiltration confirmed for user {{trigger_1.alert.username}}.\n\nAccount Status: Disabled\nApproved by: {{approval_1.approvers}}\n\nRiggs Exfiltration Analysis:\n{{analyze_2.summary}}\n\nRequired Actions:\n1. Preserve email mailbox (litigation hold)\n2. Capture endpoint forensic image\n3. Export file access audit logs\n4. Preserve cloud storage activity\n5. Document chain of custody"
+              }
+            },
+            "description": "Create a Jira task to formally track forensic evidence preservation for legal proceedings"
+          }
+        }
+      },
+      {
+        "id": "respond_3",
+        "type": "signal",
+        "position": { "x": 160, "y": 1500 },
+        "data": {
+          "kind": "respond",
+          "label": "Notify HR and Legal via Email",
+          "config": {
+            "notify": {
+              "channel": "email",
+              "target": "{{config.hr_legal_distribution_list}}",
+              "message": "INSIDER THREAT — EXFILTRATION CONFIRMED\n\nUser: {{trigger_1.alert.username}}\nAccount Status: DISABLED\nJira Ticket: {{respond_2.issue_key}}\n\nExfiltration Analysis:\n{{analyze_2.summary}}\n\nActions Taken:\n- User account disabled in Azure AD\n- Forensic preservation task created ({{respond_2.issue_key}})\n\nPlease coordinate with the incident response team for next steps."
+            },
+            "description": "Notify HR and Legal counsel that exfiltration was confirmed and containment actions have been taken"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 160, "y": 1660 },
+        "data": {
+          "kind": "end",
+          "label": "End — Exfiltration Confirmed",
+          "config": {
+            "description": "Insider threat investigation complete — exfiltration confirmed, account disabled, forensic preservation initiated"
+          }
+        }
+      },
+      {
+        "id": "respond_4",
+        "type": "signal",
+        "position": { "x": 520, "y": 1180 },
+        "data": {
+          "kind": "respond",
+          "label": "Create Monitoring Ticket",
+          "config": {
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_issue",
+              "parameters": {
+                "project": "IR",
+                "issue_type": "Task",
+                "priority": "P3 - Medium",
+                "summary": "MONITORING: {{trigger_1.alert.username}} — Insider Threat Investigation",
+                "description": "User investigated for insider threat activity. No exfiltration detected at this time.\n\nUser: {{trigger_1.alert.username}}\nOriginal Alert: {{trigger_1.alert.title}}\n\nRiggs Analysis:\n{{analyze_2.summary}}\n\nRecommendation: Continue monitoring for 30 days with enhanced logging."
+              }
+            },
+            "description": "Create a monitoring ticket to track continued observation of the user when no exfiltration is confirmed"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1340 },
+        "data": {
+          "kind": "utility",
+          "label": "Add Note: Under Observation",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "Insider threat investigation completed for {{trigger_1.alert.username}}. No exfiltration detected. User placed under enhanced monitoring for 30 days. Jira: {{respond_4.issue_key}}"
+            },
+            "description": "Record that the investigation found no exfiltration but the user is under continued observation"
+          }
+        }
+      },
+      {
+        "id": "end_2",
+        "type": "signal",
+        "position": { "x": 520, "y": 1500 },
+        "data": {
+          "kind": "end",
+          "label": "End — No Exfiltration",
+          "config": {
+            "description": "Insider threat investigation complete — no exfiltration detected, user placed under enhanced monitoring"
+          }
+        }
+      },
+      {
+        "id": "utility_2",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "utility",
+          "label": "Add Note: Low Risk",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "Insider threat alert assessed as low risk by Riggs AI. Activity appears to be standard user behavior. No further investigation warranted.\n\nRiggs Assessment: {{analyze_1.summary}}"
+            },
+            "description": "Annotate the alert as low risk with standard activity, closing the investigation without further action"
+          }
+        }
+      },
+      {
+        "id": "end_3",
+        "type": "signal",
+        "position": { "x": 700, "y": 700 },
+        "data": {
+          "kind": "end",
+          "label": "End — Low Risk",
+          "config": {
+            "description": "Insider threat alert closed — low risk, standard user activity confirmed"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_analyze1",
+        "source": "trigger_1",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_analyze1_decision1",
+        "source": "analyze_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision1_yes",
+        "source": "decision_1",
+        "target": "approval_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision1_no",
+        "source": "decision_1",
+        "target": "utility_2",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_approval_code",
+        "source": "approval_1",
+        "target": "code_1",
+        "type": "default"
+      },
+      {
+        "id": "e_code_analyze2",
+        "source": "code_1",
+        "target": "analyze_2",
+        "type": "default"
+      },
+      {
+        "id": "e_analyze2_decision2",
+        "source": "analyze_2",
+        "target": "decision_2",
+        "type": "default"
+      },
+      {
+        "id": "e_decision2_yes",
+        "source": "decision_2",
+        "target": "respond_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision2_no",
+        "source": "decision_2",
+        "target": "respond_4",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_disable_preserve",
+        "source": "respond_1",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_preserve_notify",
+        "source": "respond_2",
+        "target": "respond_3",
+        "type": "default"
+      },
+      {
+        "id": "e_notify_end1",
+        "source": "respond_3",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_monitoring_utility",
+        "source": "respond_4",
+        "target": "utility_1",
+        "type": "default"
+      },
+      {
+        "id": "e_utility1_end2",
+        "source": "utility_1",
+        "target": "end_2",
+        "type": "default"
+      },
+      {
+        "id": "e_utility2_end3",
+        "source": "utility_2",
+        "target": "end_3",
+        "type": "default"
+      }
+    ]
+  }
+}

@@ -1,0 +1,185 @@
+{
+  "name": "Cloud File Sharing Policy Violation",
+  "slug": "dlp-cloud-share-violation",
+  "description": "Responds to cloud file sharing policy violations detected by DLP or CASB systems. Riggs AI analyzes the shared resource to determine data sensitivity and whether the sharing target is authorized. Confirmed violations trigger immediate link revocation, user notification with policy guidance, and SOC documentation. Supports SharePoint, OneDrive, Google Drive, and Box sharing alerts.",
+  "category": "data_protection",
+  "subcategory": "cloud_sharing",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "beginner",
+  "estimated_time": "8 minutes",
+  "tags": ["dlp", "cloud", "file_sharing", "casb", "link_revocation"],
+  "alert_types": ["dlp", "cloud_sharing", "casb"],
+  "severity_filter": ["low", "medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["dlp", "cloud_sharing_violation", "public_link_detected", "external_share"],
+    "min_severity": "low"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "microsoft_graph",
+      "name": "Microsoft Graph",
+      "category": "cloud",
+      "reason": "Revoke sharing links and modify file permissions on OneDrive/SharePoint"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Notify user of policy violation and provide remediation guidance"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "csv-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "title": "Cloud Sharing Violation Alert",
+          "summary": "Triggers on cloud file sharing policy violations from DLP or CASB",
+          "config": {
+            "trigger_type": "alert",
+            "alert_types": ["dlp", "cloud_sharing_violation", "public_link_detected", "external_share"]
+          }
+        }
+      },
+      {
+        "id": "csv-2",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "title": "AI Data Sensitivity Assessment",
+          "summary": "Riggs AI assesses the shared file's data sensitivity and sharing risk",
+          "config": {
+            "mode": "ai_analysis",
+            "template_id": "data_exfil",
+            "custom_instructions": "Evaluate the shared file for sensitive content. Determine if the sharing target (external domain, public link) violates data handling policy. Assess intent — accidental oversharing vs deliberate.",
+            "alert_path": "$.trigger.alert",
+            "include_context": true
+          }
+        }
+      },
+      {
+        "id": "csv-3",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "title": "Policy Violation Confirmed?",
+          "summary": "Branch based on whether the sharing violates data protection policy",
+          "config": {
+            "conditions": {
+              "operator": "AND",
+              "conditions": [
+                {
+                  "field": "$.nodes.csv-2.result.verdict",
+                  "operator": "in",
+                  "value": ["MALICIOUS", "SUSPICIOUS"]
+                }
+              ],
+              "groups": []
+            },
+            "expression": "$.nodes.csv-2.result.verdict in ['MALICIOUS', 'SUSPICIOUS']",
+            "default_branch": "no"
+          }
+        }
+      },
+      {
+        "id": "csv-4",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "respond",
+          "title": "Revoke Sharing Link",
+          "summary": "Immediately revoke the public or external sharing link",
+          "config": {
+            "response_type": "integration_action",
+            "integration_instance_id": "microsoft_graph",
+            "action_type": "revoke_sharing_link",
+            "params": {
+              "resource_id": "$.trigger.alert.resource_id",
+              "sharing_link_id": "$.trigger.alert.sharing_link_id",
+              "reason": "Cloud sharing policy violation — sensitive data shared externally"
+            },
+            "requires_approval": false,
+            "priority": "high"
+          }
+        }
+      },
+      {
+        "id": "csv-5",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "title": "Notify User — Policy Guidance",
+          "summary": "Inform the user their sharing link was revoked with policy guidance",
+          "config": {
+            "response_type": "notification",
+            "channel": "slack",
+            "recipient": "$.trigger.alert.user_email",
+            "message": "Your shared file has been restricted due to a data protection policy violation.\n\nFile: {{$.trigger.alert.resource_name}}\nSharing Type: {{$.trigger.alert.sharing_type}}\nData Classification: {{$.nodes.csv-2.result.data_classification}}\n\nThe sharing link has been revoked. If you need to share this file externally, please submit a data sharing exception request through your manager.\n\nPolicy Reference: Data Protection Policy Section 4.2 — External File Sharing",
+            "priority": "medium"
+          }
+        }
+      },
+      {
+        "id": "csv-6",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "utility",
+          "title": "Update Status: Remediated",
+          "summary": "Mark the alert as remediated after link revocation and user notification",
+          "config": {
+            "operation": "update_status",
+            "status": "remediated",
+            "note": "Cloud sharing violation remediated. Sharing link revoked and user notified with policy guidance. File: {{$.trigger.alert.resource_name}}, Classification: {{$.nodes.csv-2.result.data_classification}}."
+          }
+        }
+      },
+      {
+        "id": "csv-7",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "utility",
+          "title": "Close Alert — Within Policy",
+          "summary": "Sharing is within policy guidelines, close alert",
+          "config": {
+            "operation": "add_note",
+            "note": "Cloud sharing alert reviewed by Riggs AI. The shared resource does not contain sensitive data or sharing is within approved policy boundaries. Closing alert.",
+            "close_alert": true
+          }
+        }
+      },
+      {
+        "id": "csv-8",
+        "type": "signal",
+        "position": { "x": 520, "y": 1020 },
+        "data": {
+          "kind": "end",
+          "title": "Playbook Complete",
+          "summary": "Cloud sharing violation response workflow finished",
+          "config": {
+            "disposition": "completed",
+            "summary": "Cloud file sharing policy violation response completed"
+          }
+        }
+      }
+    ],
+    "edges": [
+      { "id": "csv-e1", "source": "csv-1", "target": "csv-2", "animated": true, "type": "smoothstep" },
+      { "id": "csv-e2", "source": "csv-2", "target": "csv-3", "animated": true, "type": "smoothstep" },
+      { "id": "csv-e3", "source": "csv-3", "target": "csv-4", "sourceHandle": "yes", "label": "Yes", "animated": true, "type": "smoothstep" },
+      { "id": "csv-e4", "source": "csv-3", "target": "csv-7", "sourceHandle": "no", "label": "No", "animated": true, "type": "smoothstep" },
+      { "id": "csv-e5", "source": "csv-4", "target": "csv-5", "animated": true, "type": "smoothstep" },
+      { "id": "csv-e6", "source": "csv-5", "target": "csv-6", "animated": true, "type": "smoothstep" },
+      { "id": "csv-e7", "source": "csv-6", "target": "csv-8", "animated": true, "type": "smoothstep" },
+      { "id": "csv-e8", "source": "csv-7", "target": "csv-8", "animated": true, "type": "smoothstep" }
+    ]
+  }
+}

@@ -1,0 +1,1055 @@
+{
+  "id": "silent_push",
+  "name": "Silent Push",
+  "description": "This connector integrates with the Silent Push system to gain insights into domain/IP information, reputations, enrichment, and infratag related details. It also provides functionality to live-scan URLs and take screenshots of them. Additionally, it allows fetching future attack feeds from the Silent Push system",
+  "version": "1.1.0",
+  "category": "threat_intel",
+  "vendor": "Silent Push",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "https://api.silentpush.com",
+  "actions": [
+    {
+      "id": "list_domain_information",
+      "name": "List Domain Information",
+      "description": "Get domain information along with Silent Push risk score and live whois information for multiple domains",
+      "http_method": "GET",
+      "endpoint": "/api/v1/merge-api/explore/bulk/domaininfo",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "domains",
+          "type": "string",
+          "description": "Get information for these domains(comma-separated)",
+          "required": true,
+          "contains": [
+            "silent push domain",
+            "domain"
+          ]
+        },
+        {
+          "name": "fetch_risk_score",
+          "type": "boolean",
+          "description": "Fetch the Silent Push risk score for domains",
+          "required": false
+        },
+        {
+          "name": "fetch_whois_info",
+          "type": "boolean",
+          "description": "Fetch the live whois information for domains",
+          "required": false
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "get_domain_certificates",
+      "name": "Get Domain Certificates",
+      "description": "Get certificate data collected from domain scanning",
+      "http_method": "GET",
+      "endpoint": "/api/v1/merge-api/explore/domain/certificates/{{domain}}",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "domain",
+          "type": "string",
+          "description": "Domain name - wildcards (*) are supported",
+          "required": true,
+          "contains": [
+            "domain",
+            "silent push domain"
+          ]
+        },
+        {
+          "name": "domain_regex",
+          "type": "string",
+          "description": "A RE2 regular expression pattern to match domains. Overrides the domain parameter",
+          "required": false,
+          "contains": [
+            "silent push domain regex"
+          ]
+        },
+        {
+          "name": "certificate_issuer",
+          "type": "string",
+          "description": "The name of the certificate issuer. Wildcards (*) are supported",
+          "required": false,
+          "contains": [
+            "certificate issuer"
+          ]
+        },
+        {
+          "name": "date_min",
+          "type": "string",
+          "description": "Filters certificates issued on or after the specified date (yyyy-mm-dd format)",
+          "required": false
+        },
+        {
+          "name": "date_max",
+          "type": "string",
+          "description": "Filters certificates issued on or before the specified date (yyyy-mm-dd format)",
+          "required": false
+        },
+        {
+          "name": "prefer",
+          "type": "string",
+          "description": "Prefer to wait for results for longer running queries or to return job_id immediately (Defaults to Silent Push API's behaviour)",
+          "required": false
+        },
+        {
+          "name": "max_wait",
+          "type": "number",
+          "description": "Number of seconds to wait for results before returning a job_id, with a range from 0 to 25 seconds (Defaults to Silent Push API's behaviour)",
+          "required": false
+        },
+        {
+          "name": "with_metadata",
+          "type": "boolean",
+          "description": "Includes a metadata object in the response, containing returned results, total results, and job_id",
+          "required": false
+        },
+        {
+          "name": "skip",
+          "type": "number",
+          "description": "Number of results to skip",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Number of results to return (Defaults to Silent Push API's behaviour)",
+          "required": false
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "search_domains",
+      "name": "Search Domains",
+      "description": "Search for domains with optional filters",
+      "http_method": "GET",
+      "endpoint": "/actions/search_domains",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "domain",
+          "type": "string",
+          "description": "Name or wildcard pattern of domain names to search for",
+          "required": false,
+          "contains": [
+            "domain",
+            "silent push domain"
+          ]
+        },
+        {
+          "name": "domain_regex",
+          "type": "string",
+          "description": "A valid re2 regular expression to match domains to be searched. This parameter overrides the domain parameter",
+          "required": false,
+          "contains": [
+            "silent push domain regex"
+          ]
+        },
+        {
+          "name": "name_server",
+          "type": "string",
+          "description": "Name server name or wildcard pattern of name server used by domains",
+          "required": false,
+          "contains": [
+            "nameserver"
+          ]
+        },
+        {
+          "name": "asnum",
+          "type": "number",
+          "description": "AS number to filter domains",
+          "required": false,
+          "contains": [
+            "asnum"
+          ]
+        },
+        {
+          "name": "asname",
+          "type": "string",
+          "description": "Search all AS numbers where the AS Name begins with 'as name'",
+          "required": false,
+          "contains": [
+            "as name"
+          ]
+        },
+        {
+          "name": "min_ip_diversity",
+          "type": "number",
+          "description": "Filter records according to minimum ip diversity limit",
+          "required": false
+        },
+        {
+          "name": "registrar",
+          "type": "string",
+          "description": "Name or partial name of registrar used to register domains - no wildcards, the given string is used in partial match - this is a slow search option and should only be used in combination with the domain match option",
+          "required": false,
+          "contains": [
+            "silent push registrar"
+          ]
+        },
+        {
+          "name": "min_asn_diversity",
+          "type": "number",
+          "description": "Filter records according to minimum asn diversity limit",
+          "required": false
+        },
+        {
+          "name": "certificate_issuer",
+          "type": "string",
+          "description": "Filter applied to get domains that have had ssl certificates issued using the named certificate issuer - wildcards are supported",
+          "required": false,
+          "contains": [
+            "certificate issuer"
+          ]
+        },
+        {
+          "name": "whois_date_after",
+          "type": "string",
+          "description": "Filter domains that have a whois created date after this date (yyyy-mm-dd format)",
+          "required": false
+        },
+        {
+          "name": "skip",
+          "type": "number",
+          "description": "Number of results to skip",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Number of results to return (Defaults to Silent Push API's behaviour)",
+          "required": false
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "list_domain_infratags",
+      "name": "List Domain Infratags",
+      "description": "Get infratags for multiple domains with optional clustering",
+      "http_method": "GET",
+      "endpoint": "/api/v1/merge-api/explore/bulk/domain/infratags",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "domains",
+          "type": "string",
+          "description": "List of domains(comma-separated)",
+          "required": true,
+          "contains": [
+            "silent push domain",
+            "domain"
+          ]
+        },
+        {
+          "name": "match",
+          "type": "string",
+          "description": "To configure self-hosted infrastructure: Choose 'full' to tag them with the domain name or 'self' to label NS and MX records (Defaults to Silent Push API's behaviour)",
+          "required": false
+        },
+        {
+          "name": "mode",
+          "type": "string",
+          "description": "Whether to build infratag from live lookup data or from previously collected PADNS data (Defaults to Silent Push API's behaviour)",
+          "required": false
+        },
+        {
+          "name": "as_of",
+          "type": "string",
+          "description": "Specifies the timestamp for fetching infratags based on PADNS data. Please note: The value of the `mode` parameter will be ignored, defaulting to 'PADNS'",
+          "required": false
+        },
+        {
+          "name": "clusters",
+          "type": "boolean",
+          "description": "Whether to build clusters of domains based on tag similarity",
+          "required": false
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "get_enrichment_data",
+      "name": "Get Enrichment Data",
+      "description": "Retrieve comprehensive enrichment information for a given resource (domain, IPv4, or IPv6)",
+      "http_method": "GET",
+      "endpoint": "/api/v1/merge-api/explore/enrich/{{resource}}/{{value}}",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "resource",
+          "type": "string",
+          "description": "Type of resource for which information needs to be retrieved",
+          "required": true
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "description": "Value corresponding to the selected 'resource' for which information needs to be retrieved",
+          "required": true,
+          "contains": [
+            "domain",
+            "ip"
+          ]
+        },
+        {
+          "name": "explain",
+          "type": "boolean",
+          "description": "Show the information used to calculate the reputation score",
+          "required": false
+        },
+        {
+          "name": "scan_data",
+          "type": "boolean",
+          "description": "Whether to show details of data collected from host, ipv4 or ipv6 scanning based on the input of `resource` parameter",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_ip_information",
+      "name": "List Ip Information",
+      "description": "Get IP information for multiple IPv4s and IPv6s",
+      "http_method": "GET",
+      "endpoint": "/api/v1/merge-api/explore/bulk/ip2asn/{{resource}}",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "ips",
+          "type": "string",
+          "description": "IPv4 or IPv6 address to fetch information of IPs(comma-separated)",
+          "required": true,
+          "contains": [
+            "silent push ip",
+            "ip"
+          ]
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "get_asn_reputation",
+      "name": "Get Asn Reputation",
+      "description": "Retrieve the reputation information for an Autonomous System Number (ASN)",
+      "http_method": "GET",
+      "endpoint": "/api/v1/merge-api/explore/ipreputation/history/asn/{{asn}}",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "asn",
+          "type": "number",
+          "description": "ASN number for which information needs to be retrieve",
+          "required": true,
+          "contains": [
+            "asn"
+          ]
+        },
+        {
+          "name": "explain",
+          "type": "boolean",
+          "description": "Show the information used to calculate the reputation score",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "The maximum number of reputation history to retrieve (Defaults to Silent Push API's behaviour)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_asn_takedown_reputation",
+      "name": "Get Asn Takedown Reputation",
+      "description": "Retrieve the takedown reputation information for an Autonomous System Number (ASN)",
+      "http_method": "GET",
+      "endpoint": "/api/v1/merge-api/explore/takedownreputation/history/asn/{{asn}}",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "asn",
+          "type": "number",
+          "description": "ASN number for which information needs to be retrieve",
+          "required": true,
+          "contains": [
+            "asn"
+          ]
+        },
+        {
+          "name": "explain",
+          "type": "boolean",
+          "description": "Show the information used to calculate the reputation score",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "The maximum number of reputation history to retrieve (Defaults to Silent Push API's behaviour)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_ipv4_reputation",
+      "name": "Get Ipv4 Reputation",
+      "description": "Retrieve the reputation information for an IPv4",
+      "http_method": "GET",
+      "endpoint": "/api/v1/merge-api/explore/ipreputation/history/ipv4/{{ipv4}}",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "ipv4",
+          "type": "string",
+          "description": "IPv4 address for which information needs to be retrieve",
+          "required": true,
+          "contains": [
+            "ip"
+          ]
+        },
+        {
+          "name": "explain",
+          "type": "boolean",
+          "description": "Show the information used to calculate the reputation score",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "The maximum number of reputation history to retrieve (Defaults to Silent Push API's behaviour)",
+          "required": false
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "get_job_status",
+      "name": "Get Job Status",
+      "description": "Retrieve status of running job or results from completed job",
+      "http_method": "GET",
+      "endpoint": "/api/v1/merge-api/explore/job/{{job_id}}",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "job_id",
+          "type": "string",
+          "description": "ID of the job returned by Silent Push actions",
+          "required": true,
+          "contains": [
+            "silent push job id"
+          ]
+        },
+        {
+          "name": "max_wait",
+          "type": "number",
+          "description": "Number of seconds to wait for results before returning a job_id, with a range from 0 to 25 seconds (Defaults to Silent Push API's behaviour)",
+          "required": false
+        },
+        {
+          "name": "result_type",
+          "type": "string",
+          "description": "Type of result to include in the response",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_nameserver_reputation",
+      "name": "Get Nameserver Reputation",
+      "description": "Retrieve the reputation information for an nameserver",
+      "http_method": "GET",
+      "endpoint": "/api/v1/merge-api/explore/nsreputation/history/nameserver/{{nameserver}}",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "nameserver",
+          "type": "string",
+          "description": "Nameserver name for which information needs to be retrieve",
+          "required": true,
+          "contains": [
+            "nameserver"
+          ]
+        },
+        {
+          "name": "explain",
+          "type": "boolean",
+          "description": "Show the information used to calculate the reputation score",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "The maximum number of reputation history to retrieve (Defaults to Silent Push API's behaviour)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_subnet_reputation",
+      "name": "Get Subnet Reputation",
+      "description": "Retrieve the reputation information for subnet",
+      "http_method": "GET",
+      "endpoint": "/api/v1/merge-api/explore/ipreputation/history/subnet/{{subnet}}",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "subnet",
+          "type": "string",
+          "description": "IPv4 subnet for which information needs to be retrieved. For example, 192.1.0.0/24",
+          "required": true,
+          "contains": [
+            "subnet"
+          ]
+        },
+        {
+          "name": "explain",
+          "type": "boolean",
+          "description": "Show the information used to calculate the reputation score",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "string",
+          "description": "The maximum number of reputation history to retrieve (Defaults to Silent Push API's behaviour)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_asns_seen_for_domain",
+      "name": "Get Asns Seen For Domain",
+      "description": "Retrieve the takedown reputation information for an Autonomous System Number (ASN)",
+      "http_method": "GET",
+      "endpoint": "/api/v1/merge-api/explore/padns/lookup/domain/asns/{{domain}}",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "domain",
+          "type": "string",
+          "description": "Name of domain to search asns for",
+          "required": true,
+          "contains": [
+            "domain"
+          ]
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "forward_padns_lookup",
+      "name": "Forward Padns Lookup",
+      "description": "Forward PADNS lookup",
+      "http_method": "GET",
+      "endpoint": "/api/v1/merge-api/explore/padns/lookup/query/{{qtype}}/{{qname}}",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "qtype",
+          "type": "string",
+          "description": "Type of DNS record",
+          "required": true
+        },
+        {
+          "name": "qname",
+          "type": "string",
+          "description": "The DNS record name to lookup, wildcards are supported in name string",
+          "required": true,
+          "contains": [
+            "silent push query"
+          ]
+        },
+        {
+          "name": "netmask",
+          "type": "number",
+          "description": "The netmask may be given for DNS record types ptr4 and ptr6",
+          "required": false
+        },
+        {
+          "name": "subdomains",
+          "type": "boolean",
+          "description": "Whether to include or exclude subdomains from DNS record type a or aaaa",
+          "required": false
+        },
+        {
+          "name": "regex",
+          "type": "string",
+          "description": "Regular expression match for domain/host. It overrides DNS record name parameter and it must be valid re2 regular expression",
+          "required": false,
+          "contains": [
+            "silent push domain regex"
+          ]
+        },
+        {
+          "name": "match",
+          "type": "string",
+          "description": "Whether to limit results to self-hosted infrastructure for qtype MX or NS - strict or find all matching results - self; this only show results where MX or NS records are in the same domain as qname (Defaults to Silent Push API's behaviour)",
+          "required": false
+        },
+        {
+          "name": "first_seen_after",
+          "type": "string",
+          "description": "The first_seen timestamp must be on or after this time",
+          "required": false
+        },
+        {
+          "name": "first_seen_before",
+          "type": "string",
+          "description": "The first_seen timestamp must be on or before this time",
+          "required": false
+        },
+        {
+          "name": "last_seen_after",
+          "type": "string",
+          "description": "The last_seen timestamp must be on or after this time",
+          "required": false
+        },
+        {
+          "name": "last_seen_before",
+          "type": "string",
+          "description": "The last_seen timestamp must be on or before this time",
+          "required": false
+        },
+        {
+          "name": "as_of",
+          "type": "string",
+          "description": "Return results where the as_of timestamp equivalent is between the first_seen and the last_seen timestamp of record",
+          "required": false
+        },
+        {
+          "name": "sort",
+          "type": "string",
+          "description": "Return results in specified order(asc or desc) according to columns: column/order (comma-separated)",
+          "required": false
+        },
+        {
+          "name": "output_format",
+          "type": "string",
+          "description": "Whether to use Silent Push padns output format or cof (common output format) (Defaults to Silent Push API's behaviour)",
+          "required": false
+        },
+        {
+          "name": "prefer",
+          "type": "string",
+          "description": "Prefer to wait for results for longer running queries or to return job_id immediately (Defaults to Silent Push API's behaviour)",
+          "required": false
+        },
+        {
+          "name": "with_metadata",
+          "type": "boolean",
+          "description": "Includes a metadata object in the response, containing returned results, total results, and job_id",
+          "required": false
+        },
+        {
+          "name": "max_wait",
+          "type": "number",
+          "description": "Number of seconds to wait for results before returning a job_id, with a range from 0 to 25 seconds (Defaults to Silent Push API's behaviour)",
+          "required": false
+        },
+        {
+          "name": "skip",
+          "type": "number",
+          "description": "Number of results to skip",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Number of results to return (Defaults to Silent Push API's behaviour)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "reverse_padns_lookup",
+      "name": "Reverse Padns Lookup",
+      "description": "Reverse PADNS lookup",
+      "http_method": "GET",
+      "endpoint": "/api/v1/merge-api/explore/padns/lookup/answer/{{qtype}}/{{qname}}",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "qtype",
+          "type": "string",
+          "description": "Type of DNS record",
+          "required": true
+        },
+        {
+          "name": "qname",
+          "type": "string",
+          "description": "The DNS record name to lookup, wildcards are supported in name string",
+          "required": true,
+          "contains": [
+            "silent push query",
+            "silent push hash"
+          ]
+        },
+        {
+          "name": "netmask",
+          "type": "number",
+          "description": "The netmask may be given for DNS record types ptr4 and ptr6",
+          "required": false
+        },
+        {
+          "name": "subdomains",
+          "type": "boolean",
+          "description": "Whether to include or exclude subdomains from DNS record type a or aaaa",
+          "required": false
+        },
+        {
+          "name": "regex",
+          "type": "string",
+          "description": "Regular expression match for domain/host. It overrides DNS record name parameter and it must be valid re2 regular expression",
+          "required": false,
+          "contains": [
+            "silent push domain regex"
+          ]
+        },
+        {
+          "name": "first_seen_after",
+          "type": "string",
+          "description": "The first_seen timestamp must be on or after this time",
+          "required": false
+        },
+        {
+          "name": "first_seen_before",
+          "type": "string",
+          "description": "The first_seen timestamp must be on or before this time",
+          "required": false
+        },
+        {
+          "name": "last_seen_after",
+          "type": "string",
+          "description": "The last_seen timestamp must be on or after this time",
+          "required": false
+        },
+        {
+          "name": "last_seen_before",
+          "type": "string",
+          "description": "The last_seen timestamp must be on or before this time",
+          "required": false
+        },
+        {
+          "name": "as_of",
+          "type": "string",
+          "description": "Return results where the as_of timestamp equivalent is between the first_seen and the last_seen timestamp of record",
+          "required": false
+        },
+        {
+          "name": "sort",
+          "type": "string",
+          "description": "Return results in specified order(asc or desc) according to columns: column/order (comma-separated)",
+          "required": false
+        },
+        {
+          "name": "output_format",
+          "type": "string",
+          "description": "Whether to use Silent Push padns output format or cof (common output format) (Defaults to Silent Push API's behaviour)",
+          "required": false
+        },
+        {
+          "name": "prefer",
+          "type": "string",
+          "description": "Prefer to wait for results for longer running queries or to return job_id immediately (Defaults to Silent Push API's behaviour)",
+          "required": false
+        },
+        {
+          "name": "with_metadata",
+          "type": "boolean",
+          "description": "Includes a metadata object in the response, containing returned results, total results, and job_id",
+          "required": false
+        },
+        {
+          "name": "max_wait",
+          "type": "number",
+          "description": "Number of seconds to wait for results before returning a job_id, with a range from 0 to 25 seconds (Defaults to Silent Push API's behaviour)",
+          "required": false
+        },
+        {
+          "name": "skip",
+          "type": "number",
+          "description": "Number of results to skip",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Number of results to return (Defaults to Silent Push API's behaviour)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "density_lookup",
+      "name": "Density Lookup",
+      "description": "Get information based on numerous granular DNS/IP parameters",
+      "http_method": "GET",
+      "endpoint": "/api/v1/merge-api/explore/padns/lookup/density/{{qtype}}/{{query}}",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "qtype",
+          "type": "string",
+          "description": "Query type from one of nssrv, mxsrv, nshash, mxhash, ipv4, ipv6, asn and chv",
+          "required": true
+        },
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Specify a value to lookup, name of NS or MX server, hash of NS or MX server, IPv4 or IPv6 address, AS number",
+          "required": true,
+          "contains": [
+            "asnum",
+            "ip",
+            "silent push query",
+            "silent push chv",
+            "silent push hash"
+          ]
+        },
+        {
+          "name": "scope",
+          "type": "string",
+          "description": "Retrieve exact/near match results by query type: ipv4: ip-subnet/subnet_ips-asn/asn_subnets, ASN: asn-asn_subnets, nssrv or mxsrv: host-domain-subdomain, chv: chv/chv_analysis",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "search_scan_data",
+      "name": "Search Scan Data",
+      "description": "Search the Silent Push scan data repositories",
+      "http_method": "GET",
+      "endpoint": "/api/v1/merge-api/explore/scandata/search/raw",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "skip",
+          "type": "number",
+          "description": "Number of results to skip",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Number of results to return (Defaults to Silent Push API's behaviour)",
+          "required": false
+        },
+        {
+          "name": "with_metadata",
+          "type": "boolean",
+          "description": "Includes a metadata object in the response, containing returned results, total results, and job_id",
+          "required": false
+        },
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Query in SPQL syntax to scan data",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "type": "string",
+          "description": "Fields to return in the scanned data fetched using query (comma-separated)",
+          "required": false
+        },
+        {
+          "name": "sort",
+          "type": "string",
+          "description": "Sort according to fields from the Silent Push supported field names, followed by forward slash (/), and the sort order (asc or desc)(comma-separated)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "live_url_scan",
+      "name": "Live Url Scan",
+      "description": "Scan a URL to get metadata on what it is hosted",
+      "http_method": "GET",
+      "endpoint": "/actions/live_url_scan",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "An URL to scan",
+          "required": true,
+          "contains": [
+            "url",
+            "silent push url"
+          ]
+        },
+        {
+          "name": "platform",
+          "type": "string",
+          "description": "Device to perform scan with (Desktop, Mobile, Crawler)",
+          "required": false
+        },
+        {
+          "name": "os",
+          "type": "string",
+          "description": "OS to perform scan with (Windows, Linux, MacOS, iOS, Android)",
+          "required": false
+        },
+        {
+          "name": "browser",
+          "type": "string",
+          "description": "Browser to perform scan with (Firefox, Chrome, Edge, Safari)",
+          "required": false
+        },
+        {
+          "name": "region",
+          "type": "string",
+          "description": "Region from where scan should be perform (US, EU, AS, TOR)",
+          "required": false
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "get_indicators_of_future_attack_feed",
+      "name": "Get Indicators Of Future Attack Feed",
+      "description": "Get indicators of future attack feed from the Silent Push platform",
+      "http_method": "GET",
+      "endpoint": "/actions/get_indicators_of_future_attack_feed",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "feed_uuid",
+          "type": "string",
+          "description": "Feed unique id to fetch records for",
+          "required": true,
+          "contains": [
+            "silent push feed uuid"
+          ]
+        },
+        {
+          "name": "page_no",
+          "type": "number",
+          "description": "Indicates the specific page to fetch (default: 1)",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "page_size",
+          "type": "number",
+          "description": "Determines the number of records per page (default: 10,000)",
+          "required": false,
+          "default": 10000
+        }
+      ]
+    },
+    {
+      "id": "live_url_screenshot",
+      "name": "Live Url Screenshot",
+      "description": "This action generate a screenshot for a URL and store it inside the vault",
+      "http_method": "GET",
+      "endpoint": "/actions/live_url_screenshot",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "Url",
+          "required": true,
+          "contains": [
+            "url",
+            "silent push url"
+          ]
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "get_data_export",
+      "name": "Get Data Export",
+      "description": "Get data for Organisation feeds and download as csv file in vault",
+      "http_method": "GET",
+      "endpoint": "/actions/get_data_export",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "feed_url",
+          "type": "string",
+          "description": "Feed URL",
+          "required": true
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Silent Push",
+    "original_type": "reputation",
+    "converted_at": "2025-12-18T16:25:29.128028",
+    "source_version": "1.1.0"
+  }
+}

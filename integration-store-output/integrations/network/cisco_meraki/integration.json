@@ -1,0 +1,424 @@
+{
+  "id": "cisco_meraki",
+  "name": "Cisco Meraki",
+  "description": "This app integrates with Cisco Meraki to provide management and monitoring capabilities for Meraki networks and devices",
+  "version": "1.0.0",
+  "category": "network",
+  "vendor": "Cisco",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "X-Cisco-Meraki-API-Key",
+    "location": "header"
+  },
+  "base_url": "https://api.meraki.com/api/v1",
+  "documentation_url": "https://developer.cisco.com/meraki/api-v1/",
+  "setup_instructions": "## Get a Cisco Meraki Dashboard API key\n\nMeraki uses a **per-user API key** scoped to the organizations and networks that user can access. Best practice is to create a dedicated service account, not reuse your admin login.\n\n### 1. (Recommended) Create a service-account admin\n1. In **Meraki Dashboard**, go to **Organization → Configure → Administrators**.\n2. Click **Add admin**. Use an email you control (e.g. `meraki-svc@yourcompany.com`).\n3. Set **Organization access** to **Read-only** if T1 only needs visibility, or **Full** if you'll use it for response actions (blocking clients, isolating devices).\n4. Save. The admin will get an email to set their password — finish the signup.\n\n### 2. Enable the API for the organization\n1. **Organization → Settings**.\n2. Scroll to **Dashboard API access** and check **Enable access to the Cisco Meraki Dashboard API**.\n3. Save.\n\n### 3. Generate the API key\n1. Sign in to the Dashboard as the service-account admin.\n2. Click the profile avatar (top right) → **My profile**.\n3. Scroll to **API access** → click **Generate new API key**.\n4. Copy the key immediately — Meraki only shows it once. If lost, you must revoke and regenerate.\n\n### 4. Paste the key below\nPaste in the **API Key** field. T1 sends it as the `X-Cisco-Meraki-API-Key` request header automatically (and adds `Accept: application/json`).\n\nClick **Test Authentication** to confirm. The test calls `/organizations` and expects a 200 with at least one org.\n\n### Region matters\nMeraki has regional dashboards (`api.meraki.com`, `api.eu.meraki.com`, `api.cn.meraki.com`). T1 defaults to the global endpoint. If your org is hosted in EU/CN/IN, override the **Base URL** field to the matching regional host or all calls will 404.\n\n### Rate limits\n- **5 requests/second** per organization across all clients. T1 will retry with exponential backoff on 429 but bursty triage can still get throttled.\n\n### Troubleshooting\n- **`401 Invalid API key`**: Key wrong, revoked, or the admin was deleted.\n- **`403 Operation requires access`**: Your service admin doesn't have the right scope on the requested org/network. Promote in Dashboard Administrators.\n- **`404 Not Found`** on listing orgs: API access not enabled on the org. See step 2.\n- **All calls 404**: Wrong region — switch the Base URL.",
+  "actions": [
+    {
+      "id": "list_organizations",
+      "name": "List Organizations",
+      "description": "List the organizations that the user has privileges on",
+      "http_method": "GET",
+      "endpoint": "/actions/list_organizations",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "list_org_inventory_devices",
+      "name": "List Organization Inventory Devices",
+      "description": "List all devices in an organization's inventory",
+      "http_method": "GET",
+      "endpoint": "/actions/list_org_inventory_devices",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "organization_id",
+          "type": "string",
+          "description": "Organization ID",
+          "required": true,
+          "contains": [
+            "organization id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "search_devices",
+      "name": "Search Devices",
+      "description": "Search for devices across all networks",
+      "http_method": "GET",
+      "endpoint": "/actions/search_devices",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "organization_id",
+          "type": "string",
+          "description": "Organization ID",
+          "required": true,
+          "contains": [
+            "organization id"
+          ]
+        },
+        {
+          "name": "mac",
+          "type": "string",
+          "description": "MAC address of the device",
+          "required": false
+        },
+        {
+          "name": "serial",
+          "type": "string",
+          "description": "Serial number of the device",
+          "required": false
+        },
+        {
+          "name": "model",
+          "type": "string",
+          "description": "Model of the device",
+          "required": false
+        },
+        {
+          "name": "tags",
+          "type": "string",
+          "description": "Tags associated with the device",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_devices",
+      "name": "List Devices",
+      "description": "List all devices in the network",
+      "http_method": "GET",
+      "endpoint": "/actions/list_devices",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "network_id",
+          "type": "string",
+          "description": "Network ID",
+          "required": true,
+          "contains": [
+            "network id"
+          ]
+        },
+        {
+          "name": "per_page",
+          "type": "number",
+          "description": "The number of entries per page returned (3-1000)",
+          "required": false,
+          "default": 1000
+        }
+      ]
+    },
+    {
+      "id": "update_device",
+      "name": "Update Device",
+      "description": "Update a device in the network",
+      "http_method": "GET",
+      "endpoint": "/actions/update_device",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "network_id",
+          "type": "string",
+          "description": "Network ID",
+          "required": true,
+          "contains": [
+            "network id"
+          ]
+        },
+        {
+          "name": "serial",
+          "type": "string",
+          "description": "Device serial number",
+          "required": true
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Name to assign to the device",
+          "required": false
+        },
+        {
+          "name": "tags",
+          "type": "string",
+          "description": "Tags to assign to the device (comma-separated allowed)",
+          "required": false
+        },
+        {
+          "name": "mac",
+          "type": "string",
+          "description": "MAC address to assign to the device",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "remove_device",
+      "name": "Remove Device",
+      "description": "Remove a device from the network",
+      "http_method": "GET",
+      "endpoint": "/actions/remove_device",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "network_id",
+          "type": "string",
+          "description": "Network ID",
+          "required": true,
+          "contains": [
+            "network id"
+          ]
+        },
+        {
+          "name": "serial",
+          "type": "string",
+          "description": "Device serial number",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_device_clients",
+      "name": "List Device Clients",
+      "description": "List clients connected to a device",
+      "http_method": "GET",
+      "endpoint": "/actions/list_device_clients",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "serial",
+          "type": "string",
+          "description": "Serial number of the device",
+          "required": true,
+          "contains": [
+            "serial"
+          ]
+        },
+        {
+          "name": "timespan",
+          "type": "number",
+          "description": "Timespan in seconds (300-2592000)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_l3_firewall_rules",
+      "name": "List L3 Firewall Rules",
+      "description": "List Layer 3 firewall rules for a network",
+      "http_method": "GET",
+      "endpoint": "/actions/list_l3_firewall_rules",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "network_id",
+          "type": "string",
+          "description": "Network ID",
+          "required": true,
+          "contains": [
+            "network id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "update_l3_firewall_rules",
+      "name": "Update L3 Firewall Rules",
+      "description": "Update Layer 3 firewall rules for a network",
+      "http_method": "GET",
+      "endpoint": "/actions/update_l3_firewall_rules",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "network_id",
+          "type": "string",
+          "description": "Network ID",
+          "required": true,
+          "contains": [
+            "network id"
+          ]
+        },
+        {
+          "name": "rules",
+          "type": "string",
+          "description": "Firewall rules in JSON format",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_l7_firewall_rules",
+      "name": "List L7 Firewall Rules",
+      "description": "List Layer 7 firewall rules for a network",
+      "http_method": "GET",
+      "endpoint": "/actions/list_l7_firewall_rules",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "network_id",
+          "type": "string",
+          "description": "Network ID",
+          "required": true,
+          "contains": [
+            "network id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "update_l7_firewall_rules",
+      "name": "Update L7 Firewall Rules",
+      "description": "Update Layer 7 firewall rules for a network",
+      "http_method": "GET",
+      "endpoint": "/actions/update_l7_firewall_rules",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "network_id",
+          "type": "string",
+          "description": "Network ID",
+          "required": true,
+          "contains": [
+            "network id"
+          ]
+        },
+        {
+          "name": "rules",
+          "type": "string",
+          "description": "Firewall rules in JSON format",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_adaptive_policies",
+      "name": "List Adaptive Policies",
+      "description": "List adaptive policies",
+      "http_method": "GET",
+      "endpoint": "/actions/list_adaptive_policies",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "organization_id",
+          "type": "string",
+          "description": "Organization ID",
+          "required": true,
+          "contains": [
+            "organization id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_adaptive_policy_acls",
+      "name": "List Adaptive Policy Acls",
+      "description": "List adaptive policy acls",
+      "http_method": "GET",
+      "endpoint": "/actions/list_adaptive_policy_acls",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "organization_id",
+          "type": "string",
+          "description": "Organization ID",
+          "required": true,
+          "contains": [
+            "organization id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_adaptive_policy_groups",
+      "name": "List Adaptive Policy Groups",
+      "description": "List adaptive policy groups",
+      "http_method": "GET",
+      "endpoint": "/actions/list_adaptive_policy_groups",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "organization_id",
+          "type": "string",
+          "description": "Organization ID",
+          "required": true,
+          "contains": [
+            "organization id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_adaptive_policy_settings",
+      "name": "List Adaptive Policy Settings",
+      "description": "List adaptive policy settings",
+      "http_method": "GET",
+      "endpoint": "/actions/list_adaptive_policy_settings",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "organization_id",
+          "type": "string",
+          "description": "Organization ID",
+          "required": true,
+          "contains": [
+            "organization id"
+          ]
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Cisco Meraki",
+    "original_type": "network security",
+    "converted_at": "2025-12-18T16:25:28.656442",
+    "source_version": "1.0.0"
+  }
+}

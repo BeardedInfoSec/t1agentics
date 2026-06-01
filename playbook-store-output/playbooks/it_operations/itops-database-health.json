@@ -1,0 +1,221 @@
+{
+  "name": "Database Health Monitoring",
+  "slug": "itops-database-health",
+  "description": "Scheduled database health monitoring that checks connection pool utilization, replication lag, query performance, and storage capacity across all production databases. AI analysis identifies trending issues and provides optimization recommendations. Critical issues such as replication failures or connection pool exhaustion trigger immediate alerting and incident creation. Healthy checks are logged for compliance.",
+  "category": "it_operations",
+  "subcategory": "database",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "10 minutes",
+  "tags": ["database", "health_check", "replication", "connection_pool", "scheduled", "monitoring", "postgres"],
+  "alert_types": [],
+  "severity_filter": [],
+  "trigger_conditions": {
+    "alert_types": [],
+    "trigger_type": "schedule",
+    "schedule": "*/30 * * * *"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "datadog",
+      "name": "Datadog",
+      "category": "monitoring",
+      "reason": "Collect database performance metrics including connection pools, replication lag, and query times"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create incident tickets for critical database health issues"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Alert the DBA and infrastructure teams of database health issues"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Scheduled DB Health Check",
+          "config": {
+            "trigger_type": "schedule",
+            "schedule": "*/30 * * * *",
+            "description": "Runs every 30 minutes to check health metrics across all production databases"
+          }
+        }
+      },
+      {
+        "id": "code_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "code",
+          "label": "Collect DB Metrics",
+          "config": {
+            "mode": "script",
+            "script": "result = integration.execute('datadog', 'get_db_metrics', { 'db_instances': 'all_production', 'metrics': ['connection_pool_usage', 'replication_lag_seconds', 'avg_query_time_ms', 'storage_used_pct', 'active_connections', 'deadlocks_per_min', 'cache_hit_ratio'] })",
+            "output_variable": "db_metrics",
+            "description": "Collect comprehensive database health metrics including connection pools, replication, query performance, and storage"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI -- DB Health Assessment",
+          "config": {
+            "template_id": "executive_summary",
+            "additional_instructions": "Analyze database health metrics. Flag critical issues: replication lag above 30 seconds, connection pool above 80%, query times above 500ms, storage above 85%. Identify trends and provide optimization recommendations.",
+            "description": "AI-powered database health assessment identifying issues, trends, and optimization opportunities"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 540 },
+        "data": {
+          "kind": "decision",
+          "label": "Critical Issues Found?",
+          "config": {
+            "condition": "{{analyze_1.has_critical_issues}} == true",
+            "description": "Determine if the AI assessment identified any critical database health issues requiring immediate action"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "label": "Create DB Incident Ticket",
+          "config": {
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_issue",
+              "parameters": {
+                "project": "OPS",
+                "issue_type": "Incident",
+                "priority": "Critical",
+                "summary": "Database Health Critical — {{analyze_1.affected_instances}}",
+                "description": "Automated database health check detected critical issues.\n\nAffected Instances: {{analyze_1.affected_instances}}\n\nMetrics Summary:\n- Connection Pool: {{db_metrics.connection_pool_usage}}%\n- Replication Lag: {{db_metrics.replication_lag_seconds}}s\n- Avg Query Time: {{db_metrics.avg_query_time_ms}}ms\n- Storage Used: {{db_metrics.storage_used_pct}}%\n- Deadlocks/min: {{db_metrics.deadlocks_per_min}}\n- Cache Hit Ratio: {{db_metrics.cache_hit_ratio}}%\n\nRiggs Assessment:\n{{analyze_1.summary}}"
+              }
+            },
+            "description": "Create a critical incident ticket for the database health issues requiring immediate DBA attention"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "label": "Alert DBA Team on Slack",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#dba-alerts",
+              "message": "DATABASE HEALTH — CRITICAL ISSUES\nTime: {{trigger_1.timestamp}}\nAffected: {{analyze_1.affected_instances}}\n\n{{analyze_1.summary}}\n\nTicket: {{respond_1.issue_key}}\n\nImmediate investigation required."
+            },
+            "description": "Send urgent Slack notification to the DBA team about critical database health issues"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 700, "y": 700 },
+        "data": {
+          "kind": "utility",
+          "label": "Log: DB Health Normal",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "Database health check completed at {{trigger_1.timestamp}}. All production databases reporting healthy.\n\nSummary: {{analyze_1.summary}}"
+            },
+            "description": "Log that all databases passed the health check for compliance audit trail"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1020 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "Database health monitoring workflow complete"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_code",
+        "source": "trigger_1",
+        "target": "code_1",
+        "type": "default"
+      },
+      {
+        "id": "e_code_analyze",
+        "source": "code_1",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_analyze_decision",
+        "source": "analyze_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "respond_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "utility_1",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_ticket_notify",
+        "source": "respond_1",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_notify_end",
+        "source": "respond_2",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_healthy_end",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

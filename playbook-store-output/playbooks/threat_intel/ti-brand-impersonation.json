@@ -1,0 +1,260 @@
+{
+  "name": "Brand Impersonation Monitoring",
+  "slug": "ti-brand-impersonation",
+  "description": "Monitors for brand impersonation by detecting fake domains, lookalike websites, and phishing pages mimicking the organization. When a brand impersonation alert is received, the playbook analyzes the suspicious domain for similarity to legitimate brand assets, enriches with WHOIS and hosting data, uses AI to confirm impersonation and assess risk, then initiates takedown procedures for confirmed cases. The registrar is contacted, the domain is added to blocklists, and affected users are warned.",
+  "category": "threat_intel",
+  "subcategory": "brand_protection",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "12 minutes",
+  "tags": ["brand", "impersonation", "phishing", "takedown", "domain", "threat_intel", "typosquatting"],
+  "alert_types": ["threat_intel", "brand"],
+  "severity_filter": ["medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["brand_impersonation", "lookalike_domain", "typosquat_alert", "phishing_domain"],
+    "min_severity": "medium"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "virustotal",
+      "name": "VirusTotal",
+      "category": "threat_intel",
+      "reason": "Analyze the fake domain for known malicious indicators, page content, and hosting details"
+    },
+    {
+      "connector_id": "urlscan",
+      "name": "urlscan.io",
+      "category": "threat_intel",
+      "reason": "Capture live screenshots and DOM content of the impersonating page for evidence collection"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Brand Impersonation Alert",
+          "config": {
+            "alert_types": ["brand_impersonation", "lookalike_domain", "typosquat_alert", "phishing_domain"],
+            "description": "Triggers when a brand monitoring service detects a potential impersonation domain or lookalike website"
+          }
+        }
+      },
+      {
+        "id": "code_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "code",
+          "label": "Analyze Domain Similarity",
+          "config": {
+            "code": "alert = inputs.get('alert', {})\n\nsuspicious_domain = alert.get('domain', '')\nlegitimate_domains = alert.get('legitimate_domains', ['organization.com'])\n\ndef levenshtein_distance(s1, s2):\n    if len(s1) < len(s2):\n        return levenshtein_distance(s2, s1)\n    if len(s2) == 0:\n        return len(s1)\n    prev_row = range(len(s2) + 1)\n    for i, c1 in enumerate(s1):\n        curr_row = [i + 1]\n        for j, c2 in enumerate(s2):\n            insertions = prev_row[j + 1] + 1\n            deletions = curr_row[j] + 1\n            substitutions = prev_row[j] + (c1 != c2)\n            curr_row.append(min(insertions, deletions, substitutions))\n        prev_row = curr_row\n    return prev_row[-1]\n\nsimilarities = []\nfor legit in legitimate_domains:\n    legit_base = legit.split('.')[0]\n    suspicious_base = suspicious_domain.split('.')[0]\n    distance = levenshtein_distance(legit_base, suspicious_base)\n    similarity = max(0, 1 - distance / max(len(legit_base), len(suspicious_base))) * 100\n    similarities.append({'legitimate': legit, 'similarity': round(similarity, 1), 'distance': distance})\n\nbest_match = max(similarities, key=lambda x: x['similarity'])\n\nresult = {\n    'suspicious_domain': suspicious_domain,\n    'best_match': best_match,\n    'similarity_score': best_match['similarity'],\n    'is_likely_impersonation': best_match['similarity'] >= 60,\n    'all_comparisons': similarities\n}",
+            "inputs": {
+              "alert": "{{trigger_1.alert}}"
+            },
+            "description": "Calculates domain similarity using Levenshtein distance to quantify how closely the suspicious domain mimics legitimate brand domains"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "analyze",
+          "label": "Enrich Domain — VT, WHOIS, urlscan",
+          "config": {
+            "mode": "enrich",
+            "observable_type": "domain",
+            "data_path": "$.code_1.outputs.result.suspicious_domain",
+            "sources": ["virustotal", "urlscan", "whois"],
+            "description": "Enriches the suspicious domain with VT reputation, WHOIS registration details, and live page capture via urlscan"
+          }
+        }
+      },
+      {
+        "id": "analyze_2",
+        "type": "signal",
+        "position": { "x": 520, "y": 540 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — Impersonation Confirmation",
+          "config": {
+            "template_id": "ioc_correlation",
+            "additional_instructions": "Analyze the suspicious domain against the legitimate brand. Consider domain similarity score, page content analysis, WHOIS registrant details, hosting infrastructure, and visual similarity. Confirm whether this is active brand impersonation and assess the risk to customers and employees.",
+            "description": "AI-powered analysis confirming brand impersonation by correlating domain similarity, page content, and hosting data"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 700 },
+        "data": {
+          "kind": "decision",
+          "label": "Confirmed Brand Impersonation?",
+          "config": {
+            "condition": "{{analyze_2.is_impersonation}} == true or ({{code_1.outputs.result.similarity_score}} >= 70 and {{analyze_2.severity}} in ['high', 'critical'])",
+            "description": "Routes based on whether AI analysis and domain similarity confirm active brand impersonation"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "label": "Block Impersonation Domain",
+          "config": {
+            "integration_action": {
+              "action": "block_domain",
+              "parameters": {
+                "domain": "{{code_1.outputs.result.suspicious_domain}}",
+                "block_type": "dns_sinkhole",
+                "source": "ti-brand-impersonation",
+                "reason": "Confirmed brand impersonation — similarity {{code_1.outputs.result.similarity_score}}%"
+              }
+            },
+            "description": "Blocks the impersonation domain on DNS and web proxy to protect internal users"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "label": "Initiate Takedown Request",
+          "config": {
+            "create_ticket": {
+              "title": "TAKEDOWN: Brand Impersonation — {{code_1.outputs.result.suspicious_domain}}",
+              "priority": "high",
+              "description": "Confirmed brand impersonation detected.\n\nFake Domain: {{code_1.outputs.result.suspicious_domain}}\nSimilarity to Brand: {{code_1.outputs.result.similarity_score}}%\nMatched Legitimate Domain: {{code_1.outputs.result.best_match.legitimate}}\n\nRegistrar contact and abuse report required.\n\nEvidence:\n{{analyze_2.summary}}\n\nActions Taken:\n- Domain blocked on internal DNS/proxy\n- Added to blocked domains EDL",
+              "assignee": "legal-security",
+              "labels": ["brand-impersonation", "takedown", "urgent"]
+            },
+            "description": "Creates a takedown request ticket for the legal/security team to contact the registrar and file abuse reports"
+          }
+        }
+      },
+      {
+        "id": "respond_3",
+        "type": "signal",
+        "position": { "x": 340, "y": 1180 },
+        "data": {
+          "kind": "respond",
+          "label": "Notify Stakeholders",
+          "config": {
+            "notify": {
+              "channel": "email",
+              "target": "security-team@organization.com,brand-protection@organization.com",
+              "subject": "BRAND IMPERSONATION: {{code_1.outputs.result.suspicious_domain}} — Takedown Initiated",
+              "message": "A confirmed brand impersonation has been detected and response actions initiated.\n\nFake Domain: {{code_1.outputs.result.suspicious_domain}}\nSimilarity: {{code_1.outputs.result.similarity_score}}%\n\nActions Taken:\n- Domain blocked internally\n- Takedown request filed\n\nAI Assessment:\n{{analyze_2.summary}}"
+            },
+            "description": "Notifies security and brand protection teams about the confirmed impersonation and actions taken"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 700, "y": 860 },
+        "data": {
+          "kind": "utility",
+          "label": "Note: Not Confirmed Impersonation",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "Brand impersonation check completed. Domain not confirmed as impersonation.\n\nSuspicious Domain: {{code_1.outputs.result.suspicious_domain}}\nSimilarity Score: {{code_1.outputs.result.similarity_score}}%\n\nNo takedown action required. Placed in monitoring.\n\nRiggs AI Summary:\n{{analyze_2.summary}}"
+            },
+            "description": "Documents the negative impersonation result and places the domain in monitoring"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1340 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "Brand impersonation monitoring complete"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_analyze",
+        "source": "trigger_1",
+        "target": "code_1",
+        "type": "default"
+      },
+      {
+        "id": "e_analyze_enrich",
+        "source": "code_1",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_enrich_confirm",
+        "source": "analyze_1",
+        "target": "analyze_2",
+        "type": "default"
+      },
+      {
+        "id": "e_confirm_decision",
+        "source": "analyze_2",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "respond_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "utility_1",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_block_takedown",
+        "source": "respond_1",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_takedown_notify",
+        "source": "respond_2",
+        "target": "respond_3",
+        "type": "default"
+      },
+      {
+        "id": "e_notify_end",
+        "source": "respond_3",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_notconfirmed_end",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

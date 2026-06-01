@@ -1,0 +1,325 @@
+{
+  "id": "ironnet_edr",
+  "name": "IronNet",
+  "description": "This app provides generic actions for interacting with IronDefense",
+  "version": "2.1.1",
+  "category": "edr",
+  "vendor": "IronNet",
+  "auth_type": "basic_auth",
+  "auth_config": {
+    "type": "basic_auth",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "irondefense_rate_alert",
+      "name": "Rate Alert",
+      "description": "Provides a rating for an Alert within IronDefense",
+      "http_method": "GET",
+      "endpoint": "/actions/irondefense_rate_alert",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "alert_id",
+          "type": "string",
+          "description": "The ID of the IronDefense alert",
+          "required": true,
+          "contains": [
+            "irondefense alert id"
+          ]
+        },
+        {
+          "name": "analyst_severity",
+          "type": "string",
+          "description": "The severity of the alert",
+          "required": true,
+          "default": "undecided"
+        },
+        {
+          "name": "analyst_expectation",
+          "type": "string",
+          "description": "The analyst expectation for the alert",
+          "required": true,
+          "default": "unknown"
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "Text of comment",
+          "required": true
+        },
+        {
+          "name": "share_comment_with_irondome",
+          "type": "boolean",
+          "description": "Shares the provided comment with IronDome",
+          "required": false,
+          "default": true
+        }
+      ]
+    },
+    {
+      "id": "irondefense_set_alert_status",
+      "name": "Set Alert Status",
+      "description": "Sets the status of an Alert within IronDefense",
+      "http_method": "GET",
+      "endpoint": "/actions/irondefense_set_alert_status",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "alert_id",
+          "type": "string",
+          "description": "The ID of the IronDefense alert",
+          "required": true,
+          "contains": [
+            "irondefense alert id"
+          ]
+        },
+        {
+          "name": "alert_status",
+          "type": "string",
+          "description": "The status of the alert",
+          "required": true
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "Text of comment",
+          "required": true
+        },
+        {
+          "name": "share_comment_with_irondome",
+          "type": "boolean",
+          "description": "Shares the provided comment with IronDome",
+          "required": false,
+          "default": true
+        }
+      ]
+    },
+    {
+      "id": "irondefense_comment_on_alert",
+      "name": "Comment On Alert",
+      "description": "Adds a comment to an Alert within IronDefense",
+      "http_method": "GET",
+      "endpoint": "/actions/irondefense_comment_on_alert",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "alert_id",
+          "type": "string",
+          "description": "The ID of the IronDefense alert",
+          "required": true,
+          "contains": [
+            "irondefense alert id"
+          ]
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "Text of comment",
+          "required": true
+        },
+        {
+          "name": "share_comment_with_irondome",
+          "type": "boolean",
+          "description": "Shares the provided comment with IronDome",
+          "required": false,
+          "default": true
+        }
+      ]
+    },
+    {
+      "id": "irondefense_report_observed_bad_activity",
+      "name": "Report Bad Activity",
+      "description": "Reports observed bad activity to IronDefense",
+      "http_method": "GET",
+      "endpoint": "/actions/irondefense_report_observed_bad_activity",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Identifying name of the observed bad activity",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Description of the observed bad activity",
+          "required": false
+        },
+        {
+          "name": "domain",
+          "type": "string",
+          "description": "Domain associated with the observed bad activity",
+          "required": false,
+          "contains": [
+            "domain"
+          ]
+        },
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "IP associated with the observed bad activity",
+          "required": false,
+          "contains": [
+            "ip"
+          ]
+        },
+        {
+          "name": "activity_start_time",
+          "type": "string",
+          "description": "Start time of observed bad activity - in RFC3339 format (https://tools.ietf.org/html/rfc3339)",
+          "required": true
+        },
+        {
+          "name": "activity_end_time",
+          "type": "string",
+          "description": "End time of observed bad activity - in RFC3339 format (https://tools.ietf.org/html/rfc3339)",
+          "required": false
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "irondefense_get_alert_irondome_info",
+      "name": "Get Community Info",
+      "description": "Gets community information related to an IronDefense alert",
+      "http_method": "GET",
+      "endpoint": "/actions/irondefense_get_alert_irondome_info",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "alert_id",
+          "type": "string",
+          "description": "The ID of the IronDefense alert",
+          "required": true,
+          "contains": [
+            "irondefense alert id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "irondefense_get_events",
+      "name": "Get Events",
+      "description": "Retrieves IronDefense Events for a given Alert ID",
+      "http_method": "GET",
+      "endpoint": "/actions/irondefense_get_events",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "alert_id",
+          "type": "string",
+          "description": "The ID of the alert associated with the events to retrieve",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "on_poll",
+      "name": "On Poll",
+      "description": "Ingests Configured Notifications from IronDefense",
+      "http_method": "GET",
+      "endpoint": "/actions/on_poll",
+      "action_type": "ingest",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "irondefense_get_alerts",
+      "name": "Get Alerts",
+      "description": "Retrieves Alerts within IronDefense",
+      "http_method": "GET",
+      "endpoint": "/actions/irondefense_get_alerts",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "alert_id",
+          "type": "string",
+          "description": "The IDs of the IronDefense alerts to filter. Enter in CSV format",
+          "required": false
+        },
+        {
+          "name": "category",
+          "type": "string",
+          "description": "The categories of the IronDefense alerts to filter. Enter in CSV format",
+          "required": false
+        },
+        {
+          "name": "sub_category",
+          "type": "string",
+          "description": "The subcategories of the IronDefense alerts to filter. Enter in CSV format",
+          "required": false
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "The statuses of the IronDefense alerts to filter. Enter in CSV format",
+          "required": false
+        },
+        {
+          "name": "min_severity",
+          "type": "number",
+          "description": "The minimum severity of IronDefense alerts to filter",
+          "required": false
+        },
+        {
+          "name": "max_severity",
+          "type": "number",
+          "description": "The maximum severity of IronDefense alerts to filter",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "irondefense_get_event",
+      "name": "Get Event",
+      "description": "Retrieves IronDefense Event for a given Event ID",
+      "http_method": "GET",
+      "endpoint": "/actions/irondefense_get_event",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "event_id",
+          "type": "string",
+          "description": "The ID of the event to retrieve",
+          "required": true
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "IronNet",
+    "original_type": "endpoint",
+    "converted_at": "2025-12-18T16:25:28.877670",
+    "source_version": "2.1.1"
+  }
+}

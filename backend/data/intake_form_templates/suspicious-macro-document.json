@@ -1,0 +1,123 @@
+{
+  "template_id": "suspicious-macro-document",
+  "name": "Suspicious Macro-Enabled Document",
+  "description": "Employee received an Office or PDF document that prompted them to enable macros, enable editing, or disable security warnings.",
+  "title": "Report a Document That Asked You to Enable Macros",
+  "intro": "Documents that ask you to **Enable Content**, **Enable Editing**, or **Enable Macros** to view them are one of the most common ways attackers get in. You did the right thing pausing.\n\nUpload the file if you can and tell us where it came from. **Please do not click 'Enable Content' or run any macros** while we look at it.",
+  "submit_message": "Thanks for flagging this before clicking through. We'll analyze the document and email you back with what to do next.",
+  "fields": [
+    {
+      "key": "reporter_email",
+      "label": "Your email",
+      "type": "email",
+      "required": true,
+      "help": "We'll follow up here.",
+      "placeholder": "you@company.com",
+      "sample_value": "alex.tanaka@northwindcloud.com"
+    },
+    {
+      "key": "document_upload",
+      "label": "The document",
+      "type": "file",
+      "required": false,
+      "help": "Upload the file if you can. Don't open it again to grab it, just upload from where it was saved.",
+      "sample_value": "Purchase_Order_8821.docm"
+    },
+    {
+      "key": "document_name",
+      "label": "Document filename",
+      "type": "text",
+      "required": true,
+      "help": "Include the extension if you can see it (.docm, .xlsm, .pdf, etc.).",
+      "placeholder": "e.g. Purchase_Order_8821.docm",
+      "sample_value": "Purchase_Order_8821.docm"
+    },
+    {
+      "key": "document_type",
+      "label": "What type of document is it?",
+      "type": "select",
+      "required": true,
+      "options": [
+        "Word document (.doc, .docx, .docm)",
+        "Excel spreadsheet (.xls, .xlsx, .xlsm)",
+        "PowerPoint (.ppt, .pptx, .pptm)",
+        "PDF",
+        "OneNote",
+        "Not sure"
+      ],
+      "sample_value": "Word document (.doc, .docx, .docm)"
+    },
+    {
+      "key": "source",
+      "label": "Where did the document come from?",
+      "type": "select",
+      "required": true,
+      "options": [
+        "Email attachment from outside the company",
+        "Email attachment from someone inside the company",
+        "Downloaded from a website",
+        "Shared drive / SharePoint / OneDrive",
+        "Chat message (Teams, Slack)",
+        "USB or external drive",
+        "Not sure"
+      ],
+      "sample_value": "Email attachment from outside the company"
+    },
+    {
+      "key": "prompt_seen",
+      "label": "What did it ask you to do?",
+      "type": "multiselect",
+      "required": true,
+      "options": [
+        "Click 'Enable Editing'",
+        "Click 'Enable Content' / 'Enable Macros'",
+        "Disable Protected View",
+        "Click a link inside the document",
+        "Type a password or other info",
+        "Something else"
+      ],
+      "sample_value": ["Click 'Enable Editing'", "Click 'Enable Content' / 'Enable Macros'"]
+    },
+    {
+      "key": "enabled_macros",
+      "label": "Did you enable macros or editing?",
+      "type": "select",
+      "required": true,
+      "options": [
+        "No, I closed it",
+        "I enabled editing but not macros",
+        "Yes, I enabled macros / content",
+        "Not sure"
+      ],
+      "sample_value": "No, I closed it"
+    },
+    {
+      "key": "context",
+      "label": "Anything else that seemed off?",
+      "type": "textarea",
+      "required": false,
+      "help": "Was the sender unexpected? Did the document look blurry or like a fake preview? Did it claim to be from a specific service?",
+      "placeholder": "Optional, but useful.",
+      "sample_value": "Email said it was a purchase order from a vendor I've never worked with. The document showed a blurry image saying 'This document is protected. Enable content to view.'"
+    },
+    {
+      "key": "device_name",
+      "label": "Device the document is on",
+      "type": "text",
+      "required": false,
+      "help": "Hostname or asset tag if you know it.",
+      "placeholder": "e.g. LAPTOP-ATANAKA-07",
+      "sample_value": "LAPTOP-ATANAKA-07"
+    }
+  ],
+  "alert_template": {
+    "title": "Macro-enabled doc reported by {{reporter_email}}: {{document_name}}",
+    "description": "Employee submitted a document that prompted them to enable macros or disable security warnings.\n\nReporter: {{reporter_email}}\nDocument: {{document_name}} ({{document_type}})\nSource: {{source}}\nPrompts seen: {{prompt_seen}}\nMacros enabled: {{enabled_macros}}\nDevice: {{device_name}}\n\nReporter context:\n{{context}}\n\nIf enabled_macros indicates the user enabled content, treat host as potentially executed-on and investigate.",
+    "severity": "medium",
+    "source": "intake_form",
+    "category": "macro_document"
+  },
+  "icon": "FileWarning",
+  "category": "File / Malware",
+  "estimated_minutes": 3
+}

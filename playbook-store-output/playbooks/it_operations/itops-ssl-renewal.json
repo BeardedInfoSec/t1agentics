@@ -1,0 +1,357 @@
+{
+  "name": "SSL Certificate Renewal Automation",
+  "slug": "itops-ssl-renewal",
+  "description": "Automated SSL certificate renewal workflow that checks certificate expiry dates, requests renewal via the ACME protocol or certificate authority API, validates the new certificate, and deploys it to the target servers. Includes a verification step after deployment to confirm the new certificate is active. Failed renewals or deployments trigger an escalation ticket and urgent notification to the infrastructure team.",
+  "category": "it_operations",
+  "subcategory": "ssl",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "advanced",
+  "estimated_time": "15 minutes",
+  "tags": ["ssl", "certificate", "renewal", "tls", "automation", "deployment", "acme", "lets_encrypt"],
+  "alert_types": [],
+  "severity_filter": [],
+  "trigger_conditions": {
+    "alert_types": [],
+    "trigger_type": "schedule",
+    "schedule": "0 3 * * *"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "cert_manager",
+      "name": "Certificate Manager",
+      "category": "infrastructure",
+      "reason": "Check certificate expiry and issue renewal requests via ACME or CA API"
+    },
+    {
+      "connector_id": "ansible",
+      "name": "Ansible",
+      "category": "automation",
+      "reason": "Deploy renewed certificates to target servers and reload services"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create tickets for failed renewals or deployments requiring manual intervention"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Notify the infrastructure team of renewal status and any failures"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Daily SSL Expiry Scan",
+          "config": {
+            "trigger_type": "schedule",
+            "schedule": "0 3 * * *",
+            "description": "Runs daily at 3 AM to scan for SSL certificates expiring within 14 days and initiate renewal"
+          }
+        }
+      },
+      {
+        "id": "code_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "code",
+          "label": "Find Expiring SSL Certs",
+          "config": {
+            "mode": "query",
+            "query": "SELECT cert_id, domain, issuer, expiry_date, server_hosts, renewal_method, DATEDIFF(expiry_date, NOW()) AS days_remaining FROM ssl_certificates WHERE expiry_date <= DATE_ADD(NOW(), INTERVAL 14 DAY) AND status = 'active' AND auto_renew = true ORDER BY expiry_date ASC",
+            "output_variable": "expiring_ssl",
+            "description": "Find all active SSL certificates expiring within 14 days that are configured for auto-renewal"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "label": "Any Certs to Renew?",
+          "config": {
+            "condition": "{{code_1.expiring_ssl.length}} > 0",
+            "description": "Check if there are any SSL certificates due for renewal"
+          }
+        }
+      },
+      {
+        "id": "loop_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "loop",
+          "label": "Loop: Renew Each Cert",
+          "config": {
+            "collection": "{{code_1.expiring_ssl}}",
+            "item_variable": "cert",
+            "action": {
+              "connector_id": "cert_manager",
+              "action": "renew_certificate",
+              "parameters": {
+                "cert_id": "{{cert.cert_id}}",
+                "domain": "{{cert.domain}}",
+                "method": "{{cert.renewal_method}}"
+              }
+            },
+            "output_variable": "renewal_results",
+            "description": "Iterate over each expiring certificate and submit a renewal request via the configured method"
+          }
+        }
+      },
+      {
+        "id": "decision_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "decision",
+          "label": "All Renewals Succeeded?",
+          "config": {
+            "condition": "{{loop_1.renewal_results}} | all(status == 'success')",
+            "description": "Check if all certificate renewal requests completed successfully"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "label": "Deploy Renewed Certs",
+          "config": {
+            "integration_action": {
+              "connector_id": "ansible",
+              "action": "run_playbook",
+              "parameters": {
+                "playbook": "ssl_cert_deploy",
+                "targets": "{{loop_1.renewal_results | filter(status == 'success') | map(server_hosts)}}",
+                "certificates": "{{loop_1.renewal_results | filter(status == 'success') | map(cert_id + ':' + new_cert_path)}}",
+                "reload_services": true
+              }
+            },
+            "description": "Deploy the renewed certificates to all target servers and reload affected services"
+          }
+        }
+      },
+      {
+        "id": "delay_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "delay",
+          "label": "Wait 60 Seconds",
+          "config": {
+            "duration_seconds": 60,
+            "description": "Wait for services to reload with the new certificates before verification"
+          }
+        }
+      },
+      {
+        "id": "code_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 1180 },
+        "data": {
+          "kind": "code",
+          "label": "Verify New Certificates",
+          "config": {
+            "mode": "script",
+            "script": "results = []\nfor cert in loop_1.renewal_results:\n    if cert.status == 'success':\n        check = integration.execute('cert_manager', 'verify_ssl', { 'domain': cert.domain, 'expected_expiry_after': '13d' })\n        results.append({ 'domain': cert.domain, 'verified': check.valid })\nresult = results",
+            "output_variable": "verification",
+            "description": "Verify that the new certificates are active and properly served on each domain"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 1340 },
+        "data": {
+          "kind": "respond",
+          "label": "Notify — Renewals Complete",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#infra-ops",
+              "message": "SSL CERTIFICATE RENEWALS COMPLETE\nTime: {{trigger_1.timestamp}}\nRenewed: {{loop_1.renewal_results | filter(status == 'success') | length}} certificates\n\nDomains:\n{{loop_1.renewal_results | filter(status == 'success') | map(domain + ' — Verified: ' + verified)}}\n\nAll certificates deployed and services reloaded."
+            },
+            "description": "Notify the infrastructure team that SSL certificate renewals and deployments completed successfully"
+          }
+        }
+      },
+      {
+        "id": "respond_3",
+        "type": "signal",
+        "position": { "x": 700, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "label": "Create Failure Ticket",
+          "config": {
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_issue",
+              "parameters": {
+                "project": "OPS",
+                "issue_type": "Incident",
+                "priority": "Critical",
+                "summary": "SSL Renewal Failures — {{loop_1.renewal_results | filter(status != 'success') | length}} certificate(s)",
+                "description": "Automated SSL renewal failed for the following certificates:\n\n{{loop_1.renewal_results | filter(status != 'success') | map(domain + ' — Error: ' + error_message)}}\n\nManual renewal and deployment required before expiry."
+              }
+            },
+            "description": "Create a critical incident ticket for the failed SSL certificate renewals"
+          }
+        }
+      },
+      {
+        "id": "respond_4",
+        "type": "signal",
+        "position": { "x": 700, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "label": "Notify — Renewal Failures",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#infra-alerts",
+              "message": "SSL RENEWAL FAILURES — URGENT\nFailed Certificates:\n{{loop_1.renewal_results | filter(status != 'success') | map(domain + ' — ' + error_message)}}\n\nTicket: {{respond_3.issue_key}}\n\nManual intervention required before these certificates expire."
+            },
+            "description": "Send urgent notification about failed SSL certificate renewals"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 700, "y": 380 },
+        "data": {
+          "kind": "utility",
+          "label": "Log: No Renewals Needed",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "Daily SSL expiry scan completed at {{trigger_1.timestamp}}. No certificates expiring within 14 days. No renewals required."
+            },
+            "description": "Log that no certificates require renewal for audit trail"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1500 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "SSL certificate renewal automation workflow complete"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_code",
+        "source": "trigger_1",
+        "target": "code_1",
+        "type": "default"
+      },
+      {
+        "id": "e_code_decision1",
+        "source": "code_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision1_yes",
+        "source": "decision_1",
+        "target": "loop_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision1_no",
+        "source": "decision_1",
+        "target": "utility_1",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_loop_decision2",
+        "source": "loop_1",
+        "target": "decision_2",
+        "type": "default"
+      },
+      {
+        "id": "e_decision2_yes",
+        "source": "decision_2",
+        "target": "respond_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision2_no",
+        "source": "decision_2",
+        "target": "respond_3",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_deploy_delay",
+        "source": "respond_1",
+        "target": "delay_1",
+        "type": "default"
+      },
+      {
+        "id": "e_delay_verify",
+        "source": "delay_1",
+        "target": "code_2",
+        "type": "default"
+      },
+      {
+        "id": "e_verify_notify",
+        "source": "code_2",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_success_end",
+        "source": "respond_2",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_failure_ticket_notify",
+        "source": "respond_3",
+        "target": "respond_4",
+        "type": "default"
+      },
+      {
+        "id": "e_failure_end",
+        "source": "respond_4",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_norenewal_end",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

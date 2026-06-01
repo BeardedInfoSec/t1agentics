@@ -1,0 +1,231 @@
+{
+  "name": "Incident Containment Checklist",
+  "slug": "ir-containment-checklist",
+  "description": "Executes an incident containment checklist by looping through predefined containment steps. A code node builds the containment action list based on the alert type (network isolation, account disable, firewall block, etc.), then Riggs AI assesses the incident to prioritize containment order. A loop iterates over each containment step, executing the response action and logging completion. After all steps are executed, a summary is posted to the SOC channel and the incident status is updated to contained.",
+  "category": "incident_response",
+  "subcategory": "containment",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "15 minutes",
+  "tags": ["containment", "checklist", "loop", "incident", "isolation", "automated"],
+  "alert_types": ["any"],
+  "severity_filter": ["high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["any"],
+    "min_severity": "high"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "crowdstrike",
+      "name": "CrowdStrike Falcon",
+      "category": "edr",
+      "reason": "Isolate affected endpoints as part of containment actions"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Post containment progress and completion summary to SOC channel"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Incident Alert Received",
+          "config": {
+            "alert_types": ["any"],
+            "description": "Triggers on any high or critical severity alert requiring containment actions"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — Containment Assessment",
+          "config": {
+            "template_id": "executive_summary",
+            "additional_instructions": "Identify the threat type and recommend a prioritized list of containment actions. Consider network isolation, account lockout, firewall rules, and process termination.",
+            "description": "AI-powered assessment to determine the appropriate containment strategy and action priority"
+          }
+        }
+      },
+      {
+        "id": "code_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "code",
+          "label": "Build Containment Action List",
+          "config": {
+            "mode": "script",
+            "script": {
+              "function_name": "main",
+              "inputs": [
+                { "name": "alert", "path": "$.trigger.alert" },
+                { "name": "analysis", "path": "$.nodes.analyze_1.result" }
+              ],
+              "code": "def main(alert, analysis):\n    actions = []\n    actions.append({'step': 1, 'action': 'isolate_endpoint', 'target': alert.get('hostname', ''), 'description': 'Isolate affected endpoint from network'})\n    actions.append({'step': 2, 'action': 'disable_account', 'target': alert.get('username', ''), 'description': 'Disable compromised user account'})\n    actions.append({'step': 3, 'action': 'block_ioc', 'target': alert.get('ioc', ''), 'description': 'Block malicious IOC at firewall'})\n    actions.append({'step': 4, 'action': 'kill_process', 'target': alert.get('process_name', ''), 'description': 'Terminate malicious process on endpoint'})\n    actions.append({'step': 5, 'action': 'quarantine_file', 'target': alert.get('file_hash', ''), 'description': 'Quarantine suspicious file'})\n    return {'containment_steps': actions, 'total_steps': len(actions)}"
+            },
+            "output_variable": "containment_plan",
+            "description": "Generate the ordered containment action list based on alert context and AI recommendations"
+          }
+        }
+      },
+      {
+        "id": "loop_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 540 },
+        "data": {
+          "kind": "loop",
+          "label": "For Each Containment Step",
+          "config": {
+            "items_path": "$.nodes.code_1.result.containment_steps",
+            "loop_variable": "step",
+            "max_iterations": 20,
+            "description": "Iterate over each containment action in the prioritized checklist"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "label": "Execute Containment Action",
+          "config": {
+            "integration_action": {
+              "connector_id": "crowdstrike",
+              "action": "{{loop.step.action}}",
+              "parameters": {
+                "target": "{{loop.step.target}}",
+                "reason": "Incident containment — {{loop.step.description}}"
+              }
+            },
+            "description": "Execute the current containment action from the checklist against the target system"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 860 },
+        "data": {
+          "kind": "utility",
+          "label": "Log Containment Step",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "Containment step {{loop.step.step}} completed: {{loop.step.description}} — Target: {{loop.step.target}}"
+            },
+            "description": "Log the completion of each containment step for the audit trail"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 520, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "label": "Post Containment Summary to Slack",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#soc-incidents",
+              "message": "CONTAINMENT COMPLETE\n\nIncident: {{trigger_1.alert.title}}\nTotal Steps Executed: {{code_1.containment_plan.total_steps}}\n\nRiggs Assessment:\n{{analyze_1.summary}}\n\nAll containment actions have been executed and logged. Incident is now contained."
+            },
+            "description": "Notify the SOC team that all containment steps have been completed"
+          }
+        }
+      },
+      {
+        "id": "utility_2",
+        "type": "signal",
+        "position": { "x": 520, "y": 1180 },
+        "data": {
+          "kind": "utility",
+          "label": "Set Status: Contained",
+          "config": {
+            "action": "update_status",
+            "parameters": {
+              "status": "contained"
+            },
+            "description": "Update the incident status to contained after all checklist actions are completed"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1340 },
+        "data": {
+          "kind": "end",
+          "label": "End — Containment Complete",
+          "config": {
+            "description": "Incident containment checklist fully executed — all actions completed, status updated to contained"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_analyze",
+        "source": "trigger_1",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_analyze_code",
+        "source": "analyze_1",
+        "target": "code_1",
+        "type": "default"
+      },
+      {
+        "id": "e_code_loop",
+        "source": "code_1",
+        "target": "loop_1",
+        "type": "default"
+      },
+      {
+        "id": "e_loop_respond1",
+        "source": "loop_1",
+        "target": "respond_1",
+        "type": "default"
+      },
+      {
+        "id": "e_respond1_utility1",
+        "source": "respond_1",
+        "target": "utility_1",
+        "type": "default"
+      },
+      {
+        "id": "e_utility1_respond2",
+        "source": "utility_1",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_respond2_utility2",
+        "source": "respond_2",
+        "target": "utility_2",
+        "type": "default"
+      },
+      {
+        "id": "e_utility2_end",
+        "source": "utility_2",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

@@ -1,0 +1,187 @@
+{
+  "id": "vmware_nsx_ndr",
+  "name": "VMware NSX Network Detection and Response",
+  "description": "Network detection and response integrated into VMware NSX (now Broadcom vDefend) providing AI-powered threat detection for east-west and north-south traffic",
+  "version": "1.0.0",
+  "category": "ndr",
+  "vendor": "Broadcom",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header",
+    "prefix": "Bearer"
+  },
+  "base_url": "https://{nsx_manager}/api/v1",
+  "actions": [
+    {
+      "id": "get_ids_events",
+      "name": "Get IDS Events",
+      "description": "Retrieve intrusion detection system events from NSX NDR",
+      "http_method": "POST",
+      "endpoint": "/intrusion-services/ids-events",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "start_time",
+          "type": "number",
+          "description": "Start time as epoch milliseconds",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "number",
+          "description": "End time as epoch milliseconds",
+          "required": false
+        },
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Filter by severity (critical, high, medium, low)",
+          "required": false
+        },
+        {
+          "name": "page_size",
+          "type": "number",
+          "description": "Number of results per page",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "get_detections",
+      "name": "Get NDR Detections",
+      "description": "Retrieve network detection and response detections with impact scores",
+      "http_method": "GET",
+      "endpoint": "/ndr/detections",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "start_time",
+          "type": "number",
+          "description": "Start time as epoch milliseconds",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "number",
+          "description": "End time as epoch milliseconds",
+          "required": false
+        },
+        {
+          "name": "min_impact_score",
+          "type": "number",
+          "description": "Minimum impact score (0-100)",
+          "required": false
+        },
+        {
+          "name": "page_size",
+          "type": "number",
+          "description": "Number of results per page",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "get_detection_details",
+      "name": "Get Detection Details",
+      "description": "Retrieve detailed information about a specific NDR detection",
+      "http_method": "GET",
+      "endpoint": "/ndr/detections/{detection_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "detection_id",
+          "type": "string",
+          "description": "The detection ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_campaigns",
+      "name": "Get Campaigns",
+      "description": "Retrieve correlated threat campaigns identified by NSX NDR",
+      "http_method": "GET",
+      "endpoint": "/ndr/campaigns",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "start_time",
+          "type": "number",
+          "description": "Start time as epoch milliseconds",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "number",
+          "description": "End time as epoch milliseconds",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_ids_profiles",
+      "name": "Get IDS Profiles",
+      "description": "Retrieve IDS/IPS profiles and signature configurations",
+      "http_method": "GET",
+      "endpoint": "/intrusion-services/profiles",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "get_suspicious_traffic",
+      "name": "Get Suspicious Traffic",
+      "description": "Retrieve suspicious network traffic flows detected by NDR",
+      "http_method": "GET",
+      "endpoint": "/ndr/suspicious-traffic",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "start_time",
+          "type": "number",
+          "description": "Start time as epoch milliseconds",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "number",
+          "description": "End time as epoch milliseconds",
+          "required": false
+        },
+        {
+          "name": "page_size",
+          "type": "number",
+          "description": "Number of results per page",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "get_affected_vms",
+      "name": "Get Affected VMs",
+      "description": "Retrieve virtual machines affected by a specific detection",
+      "http_method": "GET",
+      "endpoint": "/ndr/detections/{detection_id}/affected-vms",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "detection_id",
+          "type": "string",
+          "description": "The detection ID",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

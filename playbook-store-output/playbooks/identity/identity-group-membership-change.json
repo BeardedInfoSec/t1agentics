@@ -1,0 +1,193 @@
+{
+  "name": "Critical AD Group Membership Change",
+  "slug": "identity-group-membership-change",
+  "description": "Alerts on changes to critical Active Directory security groups such as Domain Admins, Enterprise Admins, and Schema Admins. Requires approval from the security team before the change is allowed to persist. If denied, the membership change is automatically reverted, and a full audit trail is created for compliance.",
+  "category": "identity",
+  "subcategory": "group_management",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "12 minutes",
+  "tags": ["group_membership", "active_directory", "approval_gate", "domain_admins", "audit"],
+  "alert_types": ["group_membership_change", "privilege_escalation"],
+  "severity_filter": ["high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["group_membership_change"],
+    "min_severity": "high"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "microsoft_graph",
+      "name": "Microsoft Graph",
+      "category": "identity",
+      "reason": "Revert group membership changes if not approved"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create audit trail ticket for group membership changes"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "gm-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "title": "Group Membership Change Alert",
+          "summary": "Fires when a critical AD security group membership is modified",
+          "config": {
+            "trigger_type": "alert",
+            "alert_filter": "group_membership_change"
+          }
+        }
+      },
+      {
+        "id": "gm-2",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "title": "AI Group Change Analysis",
+          "summary": "Analyze the group membership change for risk and authorization context",
+          "config": {
+            "mode": "ai_analysis",
+            "template_id": "priv_escalation",
+            "custom_instructions": "",
+            "alert_path": "$.trigger.alert",
+            "include_context": true
+          }
+        }
+      },
+      {
+        "id": "gm-3",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "approval",
+          "title": "Security Team Approval",
+          "summary": "Require security team approval for the critical group membership change",
+          "config": {
+            "approvers": ["soc-manager", "ad-admin"],
+            "timeout_minutes": 30,
+            "escalation": "deny_on_timeout",
+            "message": "Critical AD group change detected. User {{$.trigger.alert.target_user_email}} was added to {{$.trigger.alert.group_name}} by {{$.trigger.alert.changed_by}}. Approve to keep, deny to revert. Auto-denied on timeout."
+          }
+        }
+      },
+      {
+        "id": "gm-4",
+        "type": "signal",
+        "position": { "x": 520, "y": 540 },
+        "data": {
+          "kind": "decision",
+          "title": "Change Approved?",
+          "summary": "Branch based on security team approval decision",
+          "config": {
+            "conditions": {
+              "operator": "AND",
+              "conditions": [
+                {
+                  "field": "$.nodes.gm-3.result.approved",
+                  "operator": "equals",
+                  "value": "true"
+                }
+              ],
+              "groups": []
+            },
+            "expression": "$.nodes.gm-3.result.approved == true",
+            "default_branch": "no"
+          }
+        }
+      },
+      {
+        "id": "gm-5",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "title": "Create Approval Audit Ticket",
+          "summary": "Create audit ticket documenting the approved group change",
+          "config": {
+            "response_type": "create_ticket",
+            "system": "jira",
+            "project_key": "SEC",
+            "issue_type": "Task",
+            "title": "Approved: {{$.trigger.alert.target_user_email}} added to {{$.trigger.alert.group_name}}",
+            "description": "Critical group membership change approved. User {{$.trigger.alert.target_user_email}} added to {{$.trigger.alert.group_name}} by {{$.trigger.alert.changed_by}}. Approved by: {{$.nodes.gm-3.result.approved_by}}.",
+            "priority": "medium",
+            "requires_approval": false
+          }
+        }
+      },
+      {
+        "id": "gm-6",
+        "type": "signal",
+        "position": { "x": 700, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "title": "Revert Group Change",
+          "summary": "Remove the user from the critical group to revert the unauthorized change",
+          "config": {
+            "response_type": "integration_action",
+            "integration_instance_id": "microsoft_graph",
+            "action_type": "remove_group_membership",
+            "params": {
+              "user_id": "$.trigger.alert.target_user_id",
+              "group_id": "$.trigger.alert.group_id",
+              "reason": "Critical group membership change not approved — reverted"
+            },
+            "requires_approval": false,
+            "priority": "high"
+          }
+        }
+      },
+      {
+        "id": "gm-7",
+        "type": "signal",
+        "position": { "x": 700, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "title": "Notify Changed-By User",
+          "summary": "Notify the person who made the change that it was reverted",
+          "config": {
+            "response_type": "notification",
+            "channel": "email",
+            "email_recipients": "$.trigger.alert.changed_by_email",
+            "email_subject": "Group Change Denied: {{$.trigger.alert.group_name}}",
+            "message": "Your change to add {{$.trigger.alert.target_user_email}} to {{$.trigger.alert.group_name}} was not approved and has been reverted. Please submit a formal change request through the appropriate approval channel.",
+            "requires_approval": false,
+            "priority": "high"
+          }
+        }
+      },
+      {
+        "id": "gm-8",
+        "type": "signal",
+        "position": { "x": 520, "y": 1020 },
+        "data": {
+          "kind": "end",
+          "title": "Playbook Complete",
+          "summary": "Critical AD group membership change response finished",
+          "config": {
+            "disposition": "completed",
+            "summary": "Critical AD group membership change alert and approval process completed"
+          }
+        }
+      }
+    ],
+    "edges": [
+      { "id": "gm-e1", "source": "gm-1", "target": "gm-2", "animated": true, "type": "smoothstep" },
+      { "id": "gm-e2", "source": "gm-2", "target": "gm-3", "animated": true, "type": "smoothstep" },
+      { "id": "gm-e3", "source": "gm-3", "target": "gm-4", "animated": true, "type": "smoothstep" },
+      { "id": "gm-e4", "source": "gm-4", "target": "gm-5", "sourceHandle": "yes", "label": "Yes", "animated": true, "type": "smoothstep" },
+      { "id": "gm-e5", "source": "gm-4", "target": "gm-6", "sourceHandle": "no", "label": "No", "animated": true, "type": "smoothstep" },
+      { "id": "gm-e6", "source": "gm-5", "target": "gm-8", "animated": true, "type": "smoothstep" },
+      { "id": "gm-e7", "source": "gm-6", "target": "gm-7", "animated": true, "type": "smoothstep" },
+      { "id": "gm-e8", "source": "gm-7", "target": "gm-8", "animated": true, "type": "smoothstep" }
+    ]
+  }
+}

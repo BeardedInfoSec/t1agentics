@@ -1,0 +1,252 @@
+{
+  "name": "Encryption Compliance Audit",
+  "slug": "compliance-encryption-audit",
+  "description": "Audits encryption compliance across the organization by verifying encryption at rest and in transit for all systems handling sensitive data. Scans database configurations, storage volumes, API endpoints, and certificate chains. Riggs AI evaluates findings against encryption policy requirements, flags non-compliant systems, and generates a compliance report. Systems using weak or deprecated ciphers are prioritized for immediate remediation.",
+  "category": "compliance",
+  "subcategory": "encryption",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "20 minutes",
+  "tags": ["compliance", "encryption", "tls", "data_at_rest", "data_in_transit", "cipher", "certificate"],
+  "alert_types": ["compliance"],
+  "severity_filter": ["low", "medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["compliance", "encryption_scan"],
+    "trigger_type": "scheduled",
+    "schedule": "0 4 1 * *"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "qualys",
+      "name": "Qualys",
+      "category": "vulnerability",
+      "reason": "Scan systems for encryption configuration and certificate compliance"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create remediation tickets for encryption compliance failures"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Notify security and infrastructure teams of encryption findings"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Monthly Encryption Audit",
+          "config": {
+            "trigger_type": "scheduled",
+            "schedule": "0 4 1 * *",
+            "description": "Triggers monthly encryption compliance audit across all sensitive data systems"
+          }
+        }
+      },
+      {
+        "id": "code_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "code",
+          "label": "Scan Encryption at Rest",
+          "config": {
+            "mode": "query",
+            "query": "SELECT system_name, storage_type, encryption_enabled, encryption_algorithm, key_length, key_rotation_date, data_classification FROM system_inventory WHERE data_classification IN ('confidential', 'restricted') ORDER BY system_name",
+            "output_variable": "encryption_at_rest",
+            "description": "Query all systems with sensitive data for encryption-at-rest configuration status"
+          }
+        }
+      },
+      {
+        "id": "code_2",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "code",
+          "label": "Scan Encryption in Transit",
+          "config": {
+            "mode": "integration",
+            "integration_action": {
+              "connector_id": "qualys",
+              "action": "ssl_scan",
+              "parameters": {
+                "scan_scope": "all_endpoints",
+                "check_ciphers": true,
+                "check_protocols": true,
+                "check_certificates": true
+              }
+            },
+            "output_variable": "encryption_in_transit",
+            "description": "Scan all external and internal endpoints for TLS/SSL configuration, cipher strength, and certificate validity"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 540 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI -- Encryption Assessment",
+          "config": {
+            "template_id": "cloud_security",
+            "additional_instructions": "Evaluate encryption compliance across all systems. Flag: unencrypted sensitive data at rest, weak cipher suites (RC4, DES, 3DES), deprecated TLS versions (1.0, 1.1), expired or soon-to-expire certificates, missing key rotation. Score overall encryption posture.",
+            "description": "AI-powered encryption compliance assessment against organizational policy"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 700 },
+        "data": {
+          "kind": "decision",
+          "label": "Critical Encryption Failures?",
+          "config": {
+            "condition": "{{analyze_1.critical_failures}} > 0",
+            "description": "Routes based on whether critical encryption failures were found (unencrypted sensitive data or weak ciphers)"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "label": "Create Critical Remediation Ticket",
+          "config": {
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_issue",
+              "parameters": {
+                "project": "COMPLIANCE",
+                "issue_type": "Bug",
+                "priority": "P1",
+                "summary": "Encryption Compliance Failure: {{analyze_1.critical_failures}} critical findings",
+                "description": "ENCRYPTION COMPLIANCE AUDIT -- CRITICAL FAILURES\n\nCritical Failures: {{analyze_1.critical_failures}}\nWeak Ciphers: {{analyze_1.weak_cipher_count}}\nExpired Certificates: {{analyze_1.expired_cert_count}}\nUnencrypted Sensitive Data: {{analyze_1.unencrypted_count}}\n\nFindings:\n{{analyze_1.summary}}\n\nImmediate remediation required. Unencrypted sensitive data and weak encryption pose regulatory and breach risk.",
+                "labels": ["encryption", "critical", "compliance-failure"]
+              }
+            },
+            "description": "Create a P1 ticket for critical encryption compliance failures"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "label": "Alert Security Team on Slack",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#security-compliance",
+              "message": "ENCRYPTION COMPLIANCE AUDIT -- CRITICAL FAILURES\n\nCritical Failures: {{analyze_1.critical_failures}}\nJira: {{respond_1.ticket_url}}\n\n{{analyze_1.summary}}\n\nImmediate action required by infrastructure and security teams."
+            },
+            "description": "Alert security and infrastructure teams of critical encryption failures"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 700, "y": 860 },
+        "data": {
+          "kind": "utility",
+          "label": "Log: Encryption Compliant",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "Monthly encryption audit complete. All systems meet encryption policy requirements. No critical findings. Overall score: {{analyze_1.encryption_score}}"
+            },
+            "description": "Document clean encryption audit result for compliance records"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1180 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "Encryption compliance audit complete -- all systems evaluated and findings documented"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_code1",
+        "source": "trigger_1",
+        "target": "code_1",
+        "type": "default"
+      },
+      {
+        "id": "e_code1_code2",
+        "source": "code_1",
+        "target": "code_2",
+        "type": "default"
+      },
+      {
+        "id": "e_code2_analyze",
+        "source": "code_2",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_analyze_decision",
+        "source": "analyze_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "respond_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "utility_1",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_respond1_respond2",
+        "source": "respond_1",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_respond2_end",
+        "source": "respond_2",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_utility1_end",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

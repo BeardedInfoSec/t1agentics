@@ -1,0 +1,185 @@
+{
+  "id": "prisma_access",
+  "name": "Prisma Access (SASE)",
+  "description": "Palo Alto Networks Prisma SASE API for managing security policies, remote networks, service connections, and zero trust network access",
+  "version": "1.0.0",
+  "category": "network",
+  "vendor": "Palo Alto Networks",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "header_name": "Authorization",
+    "location": "header",
+    "token_prefix": "Bearer",
+    "note": "OAuth 2.0 client credentials flow via auth.apps.paloaltonetworks.com"
+  },
+  "base_url": "https://api.sase.paloaltonetworks.com",
+  "actions": [
+    {
+      "id": "list_security_rules",
+      "name": "List Security Rules",
+      "description": "Retrieve all security policy rules configured in Prisma Access",
+      "http_method": "GET",
+      "endpoint": "/sse/config/v1/security-rules",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "folder",
+          "type": "string",
+          "description": "Configuration folder: Shared, Mobile Users, Remote Networks, Service Connections",
+          "required": true
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "description": "Maximum number of rules to return",
+          "required": false
+        },
+        {
+          "name": "offset",
+          "type": "integer",
+          "description": "Offset for pagination",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "create_security_rule",
+      "name": "Create Security Rule",
+      "description": "Create a new security policy rule for traffic control",
+      "http_method": "POST",
+      "endpoint": "/sse/config/v1/security-rules",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "folder",
+          "type": "string",
+          "description": "Configuration folder to create the rule in",
+          "required": true
+        },
+        {
+          "name": "body",
+          "type": "object",
+          "description": "Security rule definition including name, from/to zones, source/destination, application, service, action (allow/deny/drop/reset-client)",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_address_objects",
+      "name": "List Address Objects",
+      "description": "Retrieve all address objects for use in security policies",
+      "http_method": "GET",
+      "endpoint": "/sse/config/v1/addresses",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "folder",
+          "type": "string",
+          "description": "Configuration folder: Shared, Mobile Users, Remote Networks, Service Connections",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "create_address_object",
+      "name": "Create Address Object",
+      "description": "Create a new address object (IP, FQDN, or range) for blocking or policy use",
+      "http_method": "POST",
+      "endpoint": "/sse/config/v1/addresses",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "folder",
+          "type": "string",
+          "description": "Configuration folder to create the object in",
+          "required": true
+        },
+        {
+          "name": "body",
+          "type": "object",
+          "description": "Address object including name, ip_netmask/fqdn/ip_range, description, and tag",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_remote_networks",
+      "name": "List Remote Networks",
+      "description": "Retrieve all remote network (branch) connections in Prisma Access",
+      "http_method": "GET",
+      "endpoint": "/sse/config/v1/remote-networks",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "folder",
+          "type": "string",
+          "description": "Configuration folder",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_service_connections",
+      "name": "List Service Connections",
+      "description": "Retrieve all service connections (datacenter/HQ links) to Prisma Access",
+      "http_method": "GET",
+      "endpoint": "/sse/config/v1/service-connections",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "folder",
+          "type": "string",
+          "description": "Configuration folder",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_ike_gateways",
+      "name": "List IKE Gateways",
+      "description": "Retrieve all IKE gateway configurations for IPSec VPN tunnels",
+      "http_method": "GET",
+      "endpoint": "/sse/config/v1/ike-gateways",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "folder",
+          "type": "string",
+          "description": "Configuration folder",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "push_configuration",
+      "name": "Push Configuration",
+      "description": "Push pending configuration changes to Prisma Access cloud",
+      "http_method": "POST",
+      "endpoint": "/sse/config/v1/config-versions/candidate:push",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "folders",
+          "type": "array",
+          "description": "List of configuration folders to push",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Description of the configuration change",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

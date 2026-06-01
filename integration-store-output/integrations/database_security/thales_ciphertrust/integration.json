@@ -1,0 +1,164 @@
+{
+  "id": "thales_ciphertrust",
+  "name": "Thales CipherTrust Manager",
+  "description": "Integrates with Thales CipherTrust Data Security Platform REST API for centralized key management, encryption policy enforcement, tokenization, and security audit logging",
+  "version": "1.0.0",
+  "category": "database_security",
+  "vendor": "Thales",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "https://{host}/api/v1",
+  "actions": [
+    {
+      "id": "list_keys",
+      "name": "List Keys",
+      "description": "Retrieve all encryption keys managed by CipherTrust Manager with optional filtering by state and algorithm",
+      "http_method": "GET",
+      "endpoint": "/vault/keys2",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "state",
+          "type": "string",
+          "description": "Filter by key state (Active, Pre-Active, Deactivated, Compromised, Destroyed)",
+          "required": false
+        },
+        {
+          "name": "algorithm",
+          "type": "string",
+          "description": "Filter by algorithm (AES, RSA, EC)",
+          "required": false
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Filter by key name pattern",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of keys to return",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "skip",
+          "type": "number",
+          "description": "Number of records to skip for pagination",
+          "required": false,
+          "default": 0
+        }
+      ]
+    },
+    {
+      "id": "get_key_details",
+      "name": "Get Key Details",
+      "description": "Retrieve detailed metadata for a specific encryption key including its lifecycle state and usage attributes",
+      "http_method": "GET",
+      "endpoint": "/vault/keys2/{keyId}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "keyId",
+          "type": "string",
+          "description": "Unique identifier of the encryption key",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_policies",
+      "name": "List Security Policies",
+      "description": "Retrieve all configured data security policies including access control, key rotation, and encryption policies",
+      "http_method": "GET",
+      "endpoint": "/data-protection/policies",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "get_audit_events",
+      "name": "Get Audit Events",
+      "description": "Retrieve audit log events for key operations, policy changes, and administrator access",
+      "http_method": "GET",
+      "endpoint": "/system/audit/records",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "startDate",
+          "type": "string",
+          "description": "Start date for audit event query (ISO 8601 format)",
+          "required": false
+        },
+        {
+          "name": "endDate",
+          "type": "string",
+          "description": "End date for audit event query (ISO 8601 format)",
+          "required": false
+        },
+        {
+          "name": "action",
+          "type": "string",
+          "description": "Filter by action type (create, read, update, delete, encrypt, decrypt)",
+          "required": false
+        },
+        {
+          "name": "user",
+          "type": "string",
+          "description": "Filter by user who performed the action",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of events to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "list_connections",
+      "name": "List Connections",
+      "description": "Retrieve all database and cloud service connections configured for transparent data encryption",
+      "http_method": "GET",
+      "endpoint": "/connectionmgmt/connections",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Filter by connection type (database, cloud, hsm)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_users",
+      "name": "List Users",
+      "description": "Retrieve all users and service accounts with access to the CipherTrust Manager",
+      "http_method": "GET",
+      "endpoint": "/usermgmt/users",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of users to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    }
+  ]
+}

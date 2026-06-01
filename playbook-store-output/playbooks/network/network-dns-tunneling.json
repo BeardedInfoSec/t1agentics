@@ -1,0 +1,253 @@
+{
+  "name": "DNS Tunneling Detection & Response",
+  "slug": "network-dns-tunneling",
+  "description": "Detects and responds to DNS tunneling activity where attackers encode data within DNS queries to exfiltrate information or establish covert communication channels. Riggs AI analyzes DNS query patterns for entropy anomalies, unusual TXT/NULL record volumes, and known tunneling tool signatures. Confirmed tunneling triggers domain blocking on the DNS resolver, source host isolation via EDR, and SOC notification. Inconclusive alerts are flagged for manual review.",
+  "category": "network",
+  "subcategory": "dns_security",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "advanced",
+  "estimated_time": "15 minutes",
+  "tags": ["dns", "tunneling", "exfiltration", "covert_channel", "network"],
+  "alert_types": ["network", "dns", "exfiltration"],
+  "severity_filter": ["medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["network", "dns_tunneling", "dns_anomaly", "high_entropy_dns", "excessive_dns"],
+    "min_severity": "medium"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "infoblox",
+      "name": "Infoblox",
+      "category": "dns",
+      "reason": "Block malicious domains on the DNS resolver and query DNS logs for tunneling indicators"
+    },
+    {
+      "connector_id": "crowdstrike",
+      "name": "CrowdStrike Falcon",
+      "category": "edr",
+      "reason": "Isolate the source host generating DNS tunneling traffic"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Notify the SOC team of confirmed DNS tunneling activity"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "DNS Anomaly / Tunneling Alert",
+          "config": {
+            "alert_types": ["network", "dns_tunneling", "dns_anomaly", "high_entropy_dns", "excessive_dns"],
+            "description": "Triggers when DNS monitoring detects high-entropy queries, excessive TXT/NULL record lookups, or patterns matching known DNS tunneling tools"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — DNS Tunneling Analysis",
+          "config": {
+            "template_id": "c2_detection",
+            "additional_instructions": "Focus on DNS query entropy, subdomain length patterns, TXT/NULL record frequency, query volume per domain, and known tunneling tool signatures (iodine, dnscat2, dns2tcp). Determine if this is data exfiltration or C2 over DNS.",
+            "description": "AI-powered analysis of DNS query patterns to identify tunneling characteristics including entropy scoring, record type abuse, and tool fingerprinting"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "label": "DNS Tunneling Confirmed?",
+          "config": {
+            "condition": "{{analyze_1.verdict}} in ['MALICIOUS', 'SUSPICIOUS']",
+            "description": "Routes based on whether Riggs AI confirmed DNS tunneling activity versus legitimate high-volume DNS usage"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "respond",
+          "label": "Block Tunneling Domain on DNS",
+          "config": {
+            "integration_action": {
+              "connector_id": "infoblox",
+              "action": "block_domain",
+              "parameters": {
+                "domain": "{{trigger_1.alert.destination_domain}}",
+                "policy": "blacklist",
+                "comment": "DNS tunneling domain blocked — Tool: {{analyze_1.tunneling_tool}}, Alert: {{trigger_1.alert.alert_id}}"
+              }
+            },
+            "description": "Adds the tunneling domain to the DNS resolver blacklist to immediately stop data exfiltration or covert communication"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "label": "Isolate Source Host via EDR",
+          "config": {
+            "integration_action": {
+              "connector_id": "crowdstrike",
+              "action": "contain_host",
+              "parameters": {
+                "device_id": "{{trigger_1.alert.endpoint_id}}",
+                "comment": "Isolated due to confirmed DNS tunneling — Domain: {{trigger_1.alert.destination_domain}}, Alert: {{trigger_1.alert.alert_id}}"
+              }
+            },
+            "description": "Network-isolates the source host via CrowdStrike to prevent further data exfiltration through the DNS tunnel"
+          }
+        }
+      },
+      {
+        "id": "respond_3",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "label": "Add Domain to EDL Blocklist",
+          "config": {
+            "utility_action": {
+              "action": "add_to_edl",
+              "parameters": {
+                "indicator": "{{trigger_1.alert.destination_domain}}",
+                "list_name": "dns-tunneling-blocklist",
+                "indicator_type": "domain",
+                "expiry_days": 180,
+                "comment": "DNS tunneling domain — {{analyze_1.tunneling_tool}} detected from {{trigger_1.alert.hostname}}"
+              }
+            },
+            "description": "Adds the confirmed tunneling domain to the EDL blocklist for organization-wide DNS and firewall blocking"
+          }
+        }
+      },
+      {
+        "id": "respond_4",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "label": "Notify SOC on Slack",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#soc-alerts",
+              "message": "DNS TUNNELING DETECTED\n\nSource Host: {{trigger_1.alert.hostname}} ({{trigger_1.alert.source_ip}})\nTunneling Domain: {{trigger_1.alert.destination_domain}}\nTool Signature: {{analyze_1.tunneling_tool}}\nData Volume: {{trigger_1.alert.bytes_transferred}}\n\nActions Taken:\n- Domain blocked on DNS resolver\n- Source host isolated via EDR\n- Domain added to EDL blocklist\n\nRiggs AI Assessment:\n{{analyze_1.summary}}",
+              "priority": "critical"
+            },
+            "description": "Sends critical notification to the SOC Slack channel with DNS tunneling details and containment actions"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "utility",
+          "label": "Flag for Manual Review",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "DNS anomaly analyzed by Riggs AI — Verdict: {{analyze_1.verdict}}. Tunneling not confirmed but patterns warrant manual review. Query entropy and volume metrics attached.",
+              "escalate": true,
+              "assign_to": "soc_analyst"
+            },
+            "description": "Flags the alert for manual SOC analyst review when DNS tunneling is not definitively confirmed but anomalous patterns exist"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1180 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "DNS tunneling detection and response workflow complete"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_analyze",
+        "source": "trigger_1",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_analyze_decision",
+        "source": "analyze_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "respond_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "utility_1",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_block_isolate",
+        "source": "respond_1",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_isolate_edl",
+        "source": "respond_2",
+        "target": "respond_3",
+        "type": "default"
+      },
+      {
+        "id": "e_edl_notify",
+        "source": "respond_3",
+        "target": "respond_4",
+        "type": "default"
+      },
+      {
+        "id": "e_notify_end",
+        "source": "respond_4",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_utility_end",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

@@ -1,0 +1,219 @@
+{
+  "name": "Unauthorized Software Installation Detection",
+  "slug": "endpoint-software-install",
+  "description": "Detects and responds to unauthorized software installations on managed endpoints. When a new software installation event is detected, the playbook checks the application against the approved software catalog. Unauthorized installations trigger AI analysis to assess risk, followed by automated removal via the endpoint agent, user notification, and a compliance ticket. Approved software is logged and closed.",
+  "category": "endpoint",
+  "subcategory": "software_compliance",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "8 minutes",
+  "tags": ["software", "compliance", "unauthorized_install", "endpoint", "policy_enforcement"],
+  "alert_types": ["software_install", "application_control"],
+  "severity_filter": ["low", "medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["software_install", "application_control", "new_application"],
+    "min_severity": "low"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "crowdstrike",
+      "name": "CrowdStrike Falcon",
+      "category": "edr",
+      "reason": "Remove unauthorized software from the endpoint"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create compliance violation ticket for tracking"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Software Install Detected",
+          "config": {
+            "alert_types": ["software_install", "application_control", "new_application"],
+            "description": "Triggers when a new software installation is detected on a managed endpoint"
+          }
+        }
+      },
+      {
+        "id": "code_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "code",
+          "label": "Check Software Catalog",
+          "config": {
+            "runtime": "python3",
+            "code": "app_name = alert.get('application_name', '').lower()\napproved_apps = [a.lower() for a in context.get('approved_software', [])]\napproved = any(app_name.startswith(a) for a in approved_apps)\nresult = {'approved': approved, 'app_name': alert.get('application_name'), 'app_version': alert.get('application_version')}",
+            "description": "Checks the installed application against the organization's approved software catalog"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "label": "Software Approved?",
+          "config": {
+            "condition": "{{code_1.approved}} == true",
+            "description": "Routes based on whether the installed software is in the approved catalog"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "utility",
+          "label": "Log Approved Install",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "Software installation of {{code_1.app_name}} v{{code_1.app_version}} is approved. No action required.",
+              "close_alert": true
+            },
+            "description": "Log the approved software installation and close the alert"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — Risk Assessment",
+          "config": {
+            "template_id": "malware_assessment",
+            "additional_instructions": "Assess whether this unauthorized software installation poses a security risk. Check for known malware signatures, PUP classification, or dual-use tool indicators.",
+            "description": "AI-powered risk assessment of the unauthorized software to determine threat level"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 700, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "label": "Remove Software via EDR",
+          "config": {
+            "integration_action": {
+              "connector_id": "crowdstrike",
+              "action": "run_script",
+              "parameters": {
+                "device_id": "{{trigger_1.alert.endpoint_id}}",
+                "script": "uninstall_application",
+                "args": {
+                  "application_name": "{{code_1.app_name}}"
+                }
+              }
+            },
+            "description": "Remove the unauthorized software from the endpoint using the EDR agent's remote script execution"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 700, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "label": "Notify User & Create Ticket",
+          "config": {
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_issue",
+              "parameters": {
+                "project_key": "SEC",
+                "issue_type": "Policy Violation",
+                "title": "Unauthorized Software: {{code_1.app_name}} — {{trigger_1.alert.hostname}}",
+                "description": "Unauthorized software installation detected and removed.\nHost: {{trigger_1.alert.hostname}}\nUser: {{trigger_1.alert.username}}\nApplication: {{code_1.app_name}} v{{code_1.app_version}}\nRisk: {{analyze_1.severity}}\n\nAI Assessment:\n{{analyze_1.summary}}",
+                "priority": "medium"
+              }
+            },
+            "description": "Create a compliance violation ticket and notify the user about the unauthorized software removal"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1020 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "Unauthorized software detection workflow complete"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_code",
+        "source": "trigger_1",
+        "target": "code_1",
+        "type": "default"
+      },
+      {
+        "id": "e_code_decision",
+        "source": "code_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "utility_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "analyze_1",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_analyze_remove",
+        "source": "analyze_1",
+        "target": "respond_1",
+        "type": "default"
+      },
+      {
+        "id": "e_remove_ticket",
+        "source": "respond_1",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_ticket_end",
+        "source": "respond_2",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_utility_end",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

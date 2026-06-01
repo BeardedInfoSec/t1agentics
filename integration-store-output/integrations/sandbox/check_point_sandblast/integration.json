@@ -1,0 +1,189 @@
+{
+  "id": "check_point_sandblast",
+  "name": "Check Point SandBlast",
+  "description": "Check Point SandBlast Threat Emulation and Threat Extraction API provides cloud-based or appliance-based file analysis with CPU-level exploit detection, OS-level sandbox analysis, and clean file delivery",
+  "version": "1.0.0",
+  "category": "sandbox",
+  "vendor": "Check Point",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "https://te.checkpoint.com/tecloud/api/v1",
+  "actions": [
+    {
+      "id": "query_file",
+      "name": "Query File",
+      "description": "Query the Threat Prevention database for existing analysis results of a file by its hash digest, without uploading the file",
+      "http_method": "POST",
+      "endpoint": "/file/query",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "md5",
+          "type": "string",
+          "description": "MD5 hash of the file to query",
+          "required": false
+        },
+        {
+          "name": "sha1",
+          "type": "string",
+          "description": "SHA1 hash of the file to query",
+          "required": false
+        },
+        {
+          "name": "sha256",
+          "type": "string",
+          "description": "SHA256 hash of the file to query",
+          "required": false
+        },
+        {
+          "name": "file_type",
+          "type": "string",
+          "description": "File extension type (e.g., pdf, exe, doc)",
+          "required": false
+        },
+        {
+          "name": "features",
+          "type": "string",
+          "description": "Comma-separated list of features to query: te (Threat Emulation), av (Anti-Virus), extraction (Threat Extraction)",
+          "required": false,
+          "default": "te,av,extraction"
+        },
+        {
+          "name": "te_reports",
+          "type": "string",
+          "description": "Comma-separated list of report formats to include: xml, pdf, tar, summary",
+          "required": false
+        },
+        {
+          "name": "images",
+          "type": "string",
+          "description": "JSON array of OS image objects specifying id and revision for Threat Emulation",
+          "required": false
+        }
+      ],
+      "observable_type": "hash"
+    },
+    {
+      "id": "upload_file",
+      "name": "Upload File",
+      "description": "Upload a file to SandBlast for Threat Emulation (sandbox), Threat Extraction (CDR), and Anti-Virus scanning",
+      "http_method": "POST",
+      "endpoint": "/file/upload",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "file",
+          "type": "file",
+          "description": "The file to upload for analysis (multipart form data with request JSON in 'request' part)",
+          "required": true
+        },
+        {
+          "name": "file_name",
+          "type": "string",
+          "description": "Original filename of the uploaded file",
+          "required": true
+        },
+        {
+          "name": "file_type",
+          "type": "string",
+          "description": "File extension type (e.g., pdf, exe, doc, xls)",
+          "required": false
+        },
+        {
+          "name": "features",
+          "type": "string",
+          "description": "Comma-separated features: te (Threat Emulation), av (Anti-Virus), extraction (Threat Extraction)",
+          "required": false,
+          "default": "te,av,extraction"
+        },
+        {
+          "name": "te_reports",
+          "type": "string",
+          "description": "Comma-separated report formats: xml, pdf, tar, summary",
+          "required": false
+        },
+        {
+          "name": "images",
+          "type": "string",
+          "description": "JSON array of OS image objects for Threat Emulation (e.g., [{\"id\":\"...\",\"revision\":1}])",
+          "required": false
+        },
+        {
+          "name": "extraction_method",
+          "type": "string",
+          "description": "Threat Extraction method: clean (remove active content) or pdf (convert to PDF)",
+          "required": false,
+          "default": "clean"
+        }
+      ],
+      "observable_type": "hash"
+    },
+    {
+      "id": "download_report",
+      "name": "Download Report",
+      "description": "Download a Threat Emulation analysis report in the specified format (XML, PDF, or tar archive)",
+      "http_method": "POST",
+      "endpoint": "/file/download",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "File ID returned from the query or upload response",
+          "required": true
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Download type: xml_report, pdf_report, tar_report, clean_file",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "query_url",
+      "name": "Query URL",
+      "description": "Query SandBlast for the reputation and analysis of a specific URL",
+      "http_method": "POST",
+      "endpoint": "/url/query",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "URL to query for reputation and threat analysis",
+          "required": true
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "get_quota",
+      "name": "Get Quota",
+      "description": "Retrieve the current API usage quota including remaining queries and uploads for the billing period",
+      "http_method": "POST",
+      "endpoint": "/file/quota",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "get_supported_images",
+      "name": "Get Supported Images",
+      "description": "List all supported OS images (sandbox environments) available for Threat Emulation analysis",
+      "http_method": "GET",
+      "endpoint": "/file/images",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    }
+  ]
+}

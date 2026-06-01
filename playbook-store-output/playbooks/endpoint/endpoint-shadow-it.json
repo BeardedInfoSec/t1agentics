@@ -1,0 +1,221 @@
+{
+  "name": "Shadow IT Application Detection",
+  "slug": "endpoint-shadow-it",
+  "description": "Identifies unauthorized shadow IT applications running on managed endpoints. When an unknown application is detected, the playbook classifies it against the approved software catalog and risk database. High-risk shadow IT (file sharing, VPN tunneling, remote access) triggers an approval gate before enforcement. If blocked, the application is removed and the user is notified. Low-risk applications are flagged for IT governance review.",
+  "category": "endpoint",
+  "subcategory": "shadow_it",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "8 minutes",
+  "tags": ["shadow_it", "unauthorized_apps", "governance", "endpoint", "policy_enforcement", "dlp"],
+  "alert_types": ["shadow_it", "unauthorized_application"],
+  "severity_filter": ["low", "medium", "high"],
+  "trigger_conditions": {
+    "alert_types": ["shadow_it", "unauthorized_application", "unknown_software", "application_discovery"],
+    "min_severity": "low"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "crowdstrike",
+      "name": "CrowdStrike Falcon",
+      "category": "edr",
+      "reason": "Discover running applications and enforce removal of unauthorized software"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create governance review tickets and policy violation records"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Unknown Application Detected",
+          "config": {
+            "alert_types": ["shadow_it", "unauthorized_application", "unknown_software", "application_discovery"],
+            "description": "Triggers when an unknown or unauthorized application is discovered running on a managed endpoint"
+          }
+        }
+      },
+      {
+        "id": "code_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "code",
+          "label": "Classify Application Risk",
+          "config": {
+            "runtime": "python3",
+            "code": "app_name = alert.get('application_name', '').lower()\napp_category = alert.get('application_category', 'unknown')\nhigh_risk_categories = ['file_sharing', 'vpn_tunnel', 'remote_access', 'crypto_mining', 'anonymizer', 'p2p']\nhigh_risk_apps = ['dropbox', 'wetransfer', 'mega', 'tunnelbear', 'windscribe', 'anydesk', 'teamviewer', 'ultraviewer', 'rustdesk', 'parsec']\nis_high_risk = app_category in high_risk_categories or any(a in app_name for a in high_risk_apps)\nresult = {'app_name': alert.get('application_name'), 'category': app_category, 'is_high_risk': is_high_risk, 'risk_level': 'high' if is_high_risk else 'low', 'user': alert.get('username', 'unknown')}",
+            "description": "Classify the shadow IT application against high-risk categories (file sharing, VPN, remote access, crypto mining)"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "label": "High-Risk Application?",
+          "config": {
+            "condition": "{{code_1.is_high_risk}} == true",
+            "description": "Routes based on whether the shadow IT application falls into a high-risk category"
+          }
+        }
+      },
+      {
+        "id": "approval_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "approval",
+          "label": "Approve Enforcement?",
+          "config": {
+            "approver_role": "soc_analyst",
+            "timeout_minutes": 30,
+            "message": "High-risk shadow IT detected on {{trigger_1.alert.hostname}}.\n\nApplication: {{code_1.app_name}}\nCategory: {{code_1.category}}\nUser: {{code_1.user}}\n\nApprove removal and user notification?",
+            "description": "Require analyst approval before enforcing removal of high-risk shadow IT applications"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "label": "Remove Application",
+          "config": {
+            "integration_action": {
+              "connector_id": "crowdstrike",
+              "action": "run_script",
+              "parameters": {
+                "device_id": "{{trigger_1.alert.endpoint_id}}",
+                "script": "uninstall_application",
+                "args": {
+                  "application_name": "{{code_1.app_name}}"
+                }
+              }
+            },
+            "description": "Remove the unauthorized shadow IT application from the endpoint"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "label": "Notify User & Create Ticket",
+          "config": {
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_issue",
+              "parameters": {
+                "project_key": "SEC",
+                "issue_type": "Policy Violation",
+                "title": "Shadow IT Removed: {{code_1.app_name}} — {{trigger_1.alert.hostname}}",
+                "description": "High-risk shadow IT application removed from endpoint.\nHost: {{trigger_1.alert.hostname}}\nUser: {{code_1.user}}\nApplication: {{code_1.app_name}}\nCategory: {{code_1.category}}\n\nUser should be directed to approved alternatives.",
+                "priority": "medium"
+              }
+            },
+            "description": "Create a policy violation ticket and notify the user about the removal"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "utility",
+          "label": "Flag for IT Governance",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "Low-risk shadow IT detected on {{trigger_1.alert.hostname}}: {{code_1.app_name}} (Category: {{code_1.category}}). User: {{code_1.user}}. Flagged for IT governance review.",
+              "tags": ["shadow-it", "governance-review", "low-risk"],
+              "close_alert": true
+            },
+            "description": "Flag the low-risk shadow IT application for IT governance review without enforcement"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1020 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "Shadow IT application detection workflow complete"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_code",
+        "source": "trigger_1",
+        "target": "code_1",
+        "type": "default"
+      },
+      {
+        "id": "e_code_decision",
+        "source": "code_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "approval_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "utility_1",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_approval_remove",
+        "source": "approval_1",
+        "target": "respond_1",
+        "type": "default"
+      },
+      {
+        "id": "e_remove_notify",
+        "source": "respond_1",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_notify_end",
+        "source": "respond_2",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_utility_end",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

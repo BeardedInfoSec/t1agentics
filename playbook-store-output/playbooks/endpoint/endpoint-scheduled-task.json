@@ -1,0 +1,232 @@
+{
+  "name": "Suspicious Scheduled Task Detection",
+  "slug": "endpoint-scheduled-task",
+  "description": "Detects and responds to suspicious scheduled task creation on managed endpoints. When a new scheduled task is created, the playbook analyzes the task properties for persistence indicators (hidden tasks, encoded payloads, system-level execution). Riggs AI performs a lateral movement assessment to determine if the task is part of a broader attack. Confirmed malicious tasks are removed, the host is isolated, and the SOC is notified. Legitimate tasks are documented.",
+  "category": "endpoint",
+  "subcategory": "persistence_detection",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "advanced",
+  "estimated_time": "10 minutes",
+  "tags": ["scheduled_task", "persistence", "t1053", "endpoint", "mitre_attack"],
+  "alert_types": ["scheduled_task_creation", "persistence"],
+  "severity_filter": ["medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["scheduled_task_creation", "persistence", "schtasks", "task_scheduler"],
+    "min_severity": "medium"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "crowdstrike",
+      "name": "CrowdStrike Falcon",
+      "category": "edr",
+      "reason": "Query scheduled task details, remove malicious tasks, and isolate endpoint"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Scheduled Task Created",
+          "config": {
+            "alert_types": ["scheduled_task_creation", "persistence", "schtasks", "task_scheduler"],
+            "description": "Triggers when a suspicious scheduled task creation event is detected on a managed endpoint"
+          }
+        }
+      },
+      {
+        "id": "code_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "code",
+          "label": "Analyze Task Properties",
+          "config": {
+            "runtime": "python3",
+            "code": "task_name = alert.get('task_name', '')\ntask_action = alert.get('task_action', '')\ncreator = alert.get('creator', '')\nrun_level = alert.get('run_level', 'user')\nflags = []\nif run_level.lower() in ['system', 'highest']:\n    flags.append('system_level')\nif '-enc' in task_action.lower() or 'encodedcommand' in task_action.lower():\n    flags.append('encoded_payload')\nif 'hidden' in alert.get('task_settings', '').lower():\n    flags.append('hidden_task')\nif any(x in task_action.lower() for x in ['powershell', 'cmd.exe', 'mshta', 'wscript', 'cscript', 'rundll32']):\n    flags.append('suspicious_binary')\nresult = {'task_name': task_name, 'flags': flags, 'flag_count': len(flags), 'suspicious': len(flags) >= 1, 'run_level': run_level, 'creator': creator}",
+            "description": "Analyze the scheduled task for persistence indicators including run level, payload encoding, and binary usage"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — Persistence Analysis",
+          "config": {
+            "template_id": "lateral_movement",
+            "additional_instructions": "Analyze this scheduled task creation for persistence indicators. Determine if this is attacker-created persistence (MITRE T1053) or legitimate system administration. Consider the task creator, run level, and action binary.",
+            "description": "AI-powered analysis of the scheduled task to determine if it represents attacker persistence"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 540 },
+        "data": {
+          "kind": "decision",
+          "label": "Malicious Persistence?",
+          "config": {
+            "condition": "{{analyze_1.verdict}} in ['MALICIOUS', 'SUSPICIOUS']",
+            "description": "Routes based on whether the AI analysis determined the scheduled task is malicious persistence"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "label": "Remove Scheduled Task",
+          "config": {
+            "integration_action": {
+              "connector_id": "crowdstrike",
+              "action": "run_script",
+              "parameters": {
+                "device_id": "{{trigger_1.alert.endpoint_id}}",
+                "script": "remove_scheduled_task",
+                "args": {
+                  "task_name": "{{code_1.task_name}}"
+                }
+              }
+            },
+            "description": "Remove the malicious scheduled task from the endpoint via the EDR agent"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "label": "Isolate Host via EDR",
+          "config": {
+            "integration_action": {
+              "connector_id": "crowdstrike",
+              "action": "contain_host",
+              "parameters": {
+                "device_id": "{{trigger_1.alert.endpoint_id}}"
+              }
+            },
+            "description": "Isolate the endpoint to prevent further attacker activity pending full investigation"
+          }
+        }
+      },
+      {
+        "id": "respond_3",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "label": "Notify SOC on Slack",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#soc-alerts",
+              "message": "MALICIOUS SCHEDULED TASK DETECTED\nHost: {{trigger_1.alert.hostname}}\nTask: {{code_1.task_name}}\nCreator: {{code_1.creator}}\nRun Level: {{code_1.run_level}}\nFlags: {{code_1.flags}}\nActions Taken: Task removed, host isolated\n\nRiggs Assessment:\n{{analyze_1.summary}}"
+            },
+            "description": "Alert the SOC team with scheduled task details and containment actions taken"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 700, "y": 700 },
+        "data": {
+          "kind": "utility",
+          "label": "Log: Legitimate Task",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "Scheduled task '{{code_1.task_name}}' on {{trigger_1.alert.hostname}} reviewed. Determined to be legitimate by {{code_1.creator}}. Flags: {{code_1.flags}}.",
+              "close_alert": true
+            },
+            "description": "Document that the scheduled task is legitimate and close the alert"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1180 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "Suspicious scheduled task detection workflow complete"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_code",
+        "source": "trigger_1",
+        "target": "code_1",
+        "type": "default"
+      },
+      {
+        "id": "e_code_analyze",
+        "source": "code_1",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_analyze_decision",
+        "source": "analyze_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "respond_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "utility_1",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_remove_isolate",
+        "source": "respond_1",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_isolate_notify",
+        "source": "respond_2",
+        "target": "respond_3",
+        "type": "default"
+      },
+      {
+        "id": "e_notify_end",
+        "source": "respond_3",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_utility_end",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

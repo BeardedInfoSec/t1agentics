@@ -1,0 +1,96 @@
+{
+  "id": "logicgate",
+  "name": "LogicGate Risk Cloud",
+  "description": "Integrates with LogicGate Risk Cloud REST API v2 for GRC operations including application management, workflow tracking, and compliance record management",
+  "version": "1.0.0",
+  "category": "grc",
+  "vendor": "LogicGate",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "https://{env}.logicgate.com/api/v2",
+  "actions": [
+    {
+      "id": "list_applications",
+      "name": "List Applications",
+      "description": "List all Risk Cloud applications",
+      "http_method": "GET",
+      "endpoint": "/applications",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "page", "type": "number", "description": "Page number", "required": false, "default": 0},
+        {"name": "size", "type": "number", "description": "Results per page", "required": false, "default": 25}
+      ]
+    },
+    {
+      "id": "get_application",
+      "name": "Get Application",
+      "description": "Retrieve details of a specific Risk Cloud application",
+      "http_method": "GET",
+      "endpoint": "/applications/{application_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "application_id", "type": "string", "description": "Application ID", "required": true}
+      ]
+    },
+    {
+      "id": "list_records",
+      "name": "List Records",
+      "description": "List records within a workflow step",
+      "http_method": "GET",
+      "endpoint": "/records",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "step_id", "type": "string", "description": "Step ID to list records for", "required": true},
+        {"name": "page", "type": "number", "description": "Page number", "required": false, "default": 0},
+        {"name": "size", "type": "number", "description": "Results per page", "required": false, "default": 25}
+      ]
+    },
+    {
+      "id": "get_record",
+      "name": "Get Record",
+      "description": "Retrieve a specific record with its field values",
+      "http_method": "GET",
+      "endpoint": "/records/{record_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "record_id", "type": "string", "description": "Record ID", "required": true}
+      ]
+    },
+    {
+      "id": "list_workflows",
+      "name": "List Workflows",
+      "description": "List workflows within an application",
+      "http_method": "GET",
+      "endpoint": "/workflows",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "application_id", "type": "string", "description": "Application ID to list workflows for", "required": true},
+        {"name": "page", "type": "number", "description": "Page number", "required": false, "default": 0},
+        {"name": "size", "type": "number", "description": "Results per page", "required": false, "default": 25}
+      ]
+    },
+    {
+      "id": "list_steps",
+      "name": "List Steps",
+      "description": "List steps within a workflow",
+      "http_method": "GET",
+      "endpoint": "/steps",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "workflow_id", "type": "string", "description": "Workflow ID to list steps for", "required": true},
+        {"name": "page", "type": "number", "description": "Page number", "required": false, "default": 0},
+        {"name": "size", "type": "number", "description": "Results per page", "required": false, "default": 25}
+      ]
+    }
+  ]
+}

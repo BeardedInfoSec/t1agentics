@@ -1,0 +1,246 @@
+{
+  "id": "watchguard_edr",
+  "name": "WatchGuard EDR",
+  "description": "Integrates with WatchGuard Endpoint Security Management API v1 for device management, threat detection, endpoint isolation, and on-demand scanning",
+  "version": "1.0.0",
+  "category": "edr",
+  "vendor": "WatchGuard",
+  "auth_type": "oauth2_client",
+  "auth_config": {
+    "type": "oauth2_client",
+    "token_url": "https://auth.watchguard.com/oauth/token"
+  },
+  "base_url": "https://api.usa.cloud.watchguard.com/rest/aether-endpoint-security/aether-mgmt/api/v1",
+  "actions": [
+    {
+      "id": "list_devices",
+      "name": "List Devices",
+      "description": "Retrieve the list of managed endpoint devices in the account",
+      "http_method": "GET",
+      "endpoint": "/accounts/{account_id}/devices",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "account_id",
+          "type": "string",
+          "description": "The WatchGuard Cloud account ID",
+          "required": true
+        },
+        {
+          "name": "$top",
+          "type": "number",
+          "description": "Maximum number of devices to return",
+          "required": false,
+          "default": 50
+        },
+        {
+          "name": "$skip",
+          "type": "number",
+          "description": "Number of records to skip for pagination",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "platform_id",
+          "type": "string",
+          "description": "Filter by platform (windows, macos, linux, android)",
+          "required": false
+        }
+      ],
+      "observable_type": "hostname"
+    },
+    {
+      "id": "get_device",
+      "name": "Get Device Details",
+      "description": "Retrieve detailed information about a specific managed device",
+      "http_method": "GET",
+      "endpoint": "/accounts/{account_id}/devices/{device_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "account_id",
+          "type": "string",
+          "description": "The WatchGuard Cloud account ID",
+          "required": true
+        },
+        {
+          "name": "device_id",
+          "type": "string",
+          "description": "The unique identifier of the device",
+          "required": true
+        }
+      ],
+      "observable_type": "hostname"
+    },
+    {
+      "id": "isolate_device",
+      "name": "Isolate Device",
+      "description": "Isolate a device from the network to prevent spread of threats and data exfiltration",
+      "http_method": "POST",
+      "endpoint": "/accounts/{account_id}/devices/{device_id}/isolation",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "account_id",
+          "type": "string",
+          "description": "The WatchGuard Cloud account ID",
+          "required": true
+        },
+        {
+          "name": "device_id",
+          "type": "string",
+          "description": "The unique identifier of the device to isolate",
+          "required": true
+        }
+      ],
+      "observable_type": "hostname"
+    },
+    {
+      "id": "unisolate_device",
+      "name": "Release Device from Isolation",
+      "description": "Remove network isolation from a previously isolated device",
+      "http_method": "DELETE",
+      "endpoint": "/accounts/{account_id}/devices/{device_id}/isolation",
+      "action_type": "correct",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "account_id",
+          "type": "string",
+          "description": "The WatchGuard Cloud account ID",
+          "required": true
+        },
+        {
+          "name": "device_id",
+          "type": "string",
+          "description": "The unique identifier of the device to release",
+          "required": true
+        }
+      ],
+      "observable_type": "hostname"
+    },
+    {
+      "id": "scan_device",
+      "name": "Scan Device",
+      "description": "Initiate an on-demand endpoint scan on a specific device",
+      "http_method": "POST",
+      "endpoint": "/accounts/{account_id}/devices/{device_id}/scans",
+      "action_type": "correct",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "account_id",
+          "type": "string",
+          "description": "The WatchGuard Cloud account ID",
+          "required": true
+        },
+        {
+          "name": "device_id",
+          "type": "string",
+          "description": "The unique identifier of the device to scan",
+          "required": true
+        }
+      ],
+      "observable_type": "hostname"
+    },
+    {
+      "id": "list_threats",
+      "name": "List Threats",
+      "description": "Retrieve the list of detected threats across managed devices",
+      "http_method": "GET",
+      "endpoint": "/accounts/{account_id}/threats",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "account_id",
+          "type": "string",
+          "description": "The WatchGuard Cloud account ID",
+          "required": true
+        },
+        {
+          "name": "$top",
+          "type": "number",
+          "description": "Maximum number of threats to return",
+          "required": false,
+          "default": 50
+        },
+        {
+          "name": "$skip",
+          "type": "number",
+          "description": "Number of records to skip",
+          "required": false,
+          "default": 0
+        }
+      ]
+    },
+    {
+      "id": "get_task_details",
+      "name": "Get Task Details",
+      "description": "Retrieve the status and details of a background task (scan, isolation, etc.)",
+      "http_method": "GET",
+      "endpoint": "/accounts/{account_id}/taskdetails/{type}/{task_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "account_id",
+          "type": "string",
+          "description": "The WatchGuard Cloud account ID",
+          "required": true
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "The type of task to retrieve",
+          "required": true
+        },
+        {
+          "name": "task_id",
+          "type": "string",
+          "description": "The unique identifier of the task",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_security_events",
+      "name": "List Security Events",
+      "description": "Retrieve security events and detections from managed endpoints",
+      "http_method": "GET",
+      "endpoint": "/accounts/{account_id}/securityevents",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "account_id",
+          "type": "string",
+          "description": "The WatchGuard Cloud account ID",
+          "required": true
+        },
+        {
+          "name": "$top",
+          "type": "number",
+          "description": "Maximum number of events to return",
+          "required": false,
+          "default": 50
+        },
+        {
+          "name": "from",
+          "type": "string",
+          "description": "Start date for event query (ISO 8601)",
+          "required": false
+        },
+        {
+          "name": "to",
+          "type": "string",
+          "description": "End date for event query (ISO 8601)",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

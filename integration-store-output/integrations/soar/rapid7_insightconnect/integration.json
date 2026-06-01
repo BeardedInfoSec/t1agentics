@@ -1,0 +1,143 @@
+{
+  "id": "rapid7_insightconnect",
+  "name": "Rapid7 InsightConnect",
+  "description": "Rapid7 security automation and orchestration platform for managing workflows, triggers, jobs, and coordinating automated security response actions.",
+  "version": "1.0.0",
+  "category": "soar",
+  "vendor": "Rapid7",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "X-Api-Key",
+    "location": "header"
+  },
+  "base_url": "https://{region}.api.insight.rapid7.com/connect/v1",
+  "actions": [
+    {
+      "id": "list_workflows",
+      "name": "List Workflows",
+      "description": "Retrieve a list of all workflows in InsightConnect.",
+      "http_method": "GET",
+      "endpoint": "/workflows",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "page", "type": "integer", "description": "Page number.", "required": false},
+        {"name": "size", "type": "integer", "description": "Results per page.", "required": false}
+      ]
+    },
+    {
+      "id": "get_workflow",
+      "name": "Get Workflow",
+      "description": "Retrieve details of a specific workflow.",
+      "http_method": "GET",
+      "endpoint": "/workflows/{workflow_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "workflow_id", "type": "string", "description": "The workflow ID.", "required": true}
+      ]
+    },
+    {
+      "id": "trigger_workflow",
+      "name": "Trigger Workflow",
+      "description": "Trigger a workflow execution via its API trigger endpoint.",
+      "http_method": "POST",
+      "endpoint": "/workflows/{workflow_id}/triggers/{trigger_id}/events",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "workflow_id", "type": "string", "description": "The workflow ID.", "required": true},
+        {"name": "trigger_id", "type": "string", "description": "The API trigger ID.", "required": true},
+        {"name": "body", "type": "object", "description": "JSON payload with input data for the trigger.", "required": false}
+      ]
+    },
+    {
+      "id": "list_jobs",
+      "name": "List Jobs",
+      "description": "Retrieve a list of workflow execution jobs.",
+      "http_method": "GET",
+      "endpoint": "/jobs",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "page", "type": "integer", "description": "Page number.", "required": false},
+        {"name": "size", "type": "integer", "description": "Results per page.", "required": false},
+        {"name": "status", "type": "string", "description": "Filter by status: 'running', 'succeeded', 'failed'.", "required": false}
+      ]
+    },
+    {
+      "id": "get_job",
+      "name": "Get Job",
+      "description": "Retrieve details and results of a specific job.",
+      "http_method": "GET",
+      "endpoint": "/jobs/{job_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "job_id", "type": "string", "description": "The job ID.", "required": true}
+      ]
+    },
+    {
+      "id": "get_job_logs",
+      "name": "Get Job Logs",
+      "description": "Retrieve execution logs for a specific job.",
+      "http_method": "GET",
+      "endpoint": "/jobs/{job_id}/logs",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "job_id", "type": "string", "description": "The job ID.", "required": true}
+      ]
+    },
+    {
+      "id": "list_triggers",
+      "name": "List Triggers",
+      "description": "Retrieve all triggers for a specific workflow.",
+      "http_method": "GET",
+      "endpoint": "/workflows/{workflow_id}/triggers",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "workflow_id", "type": "string", "description": "The workflow ID.", "required": true}
+      ]
+    },
+    {
+      "id": "list_connections",
+      "name": "List Connections",
+      "description": "Retrieve a list of configured connections (integrations).",
+      "http_method": "GET",
+      "endpoint": "/connections",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "page", "type": "integer", "description": "Page number.", "required": false},
+        {"name": "size", "type": "integer", "description": "Results per page.", "required": false}
+      ]
+    },
+    {
+      "id": "activate_workflow",
+      "name": "Activate Workflow",
+      "description": "Activate a workflow so it starts listening for triggers.",
+      "http_method": "PUT",
+      "endpoint": "/workflows/{workflow_id}/activate",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "workflow_id", "type": "string", "description": "The workflow ID to activate.", "required": true}
+      ]
+    },
+    {
+      "id": "deactivate_workflow",
+      "name": "Deactivate Workflow",
+      "description": "Deactivate a workflow to stop it from processing triggers.",
+      "http_method": "PUT",
+      "endpoint": "/workflows/{workflow_id}/deactivate",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "workflow_id", "type": "string", "description": "The workflow ID to deactivate.", "required": true}
+      ]
+    }
+  ]
+}

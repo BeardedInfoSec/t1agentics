@@ -1,0 +1,132 @@
+{
+  "template_id": "suspicious-attachment-received",
+  "name": "Suspicious Attachment Received",
+  "description": "Internal form for employees who received an unexpected attachment by email — Office docs prompting macros, password-protected archives, executables, ISO/IMG files, or anything they weren't expecting. Captures whether the file was opened so the SOC can prioritize containment vs. analysis.",
+  "title": "Report a Suspicious Email Attachment",
+  "intro": "Get an attachment you weren't expecting? Things like an Office document that asks you to 'enable content' or 'enable macros,' a password-protected zip, an .iso or .img file, or anything else that doesn't feel right? Report it here. **If you haven't opened it yet, please don't** — let us look at it first. If you did open it, that's okay; just tell us so we can help.",
+  "submit_message": "Thanks — we've got the report. If you opened the file, an analyst will reach out shortly to walk through next steps with you. If you haven't opened it, leave it alone and we'll take it from here.",
+  "fields": [
+    {
+      "key": "reporter_email",
+      "label": "Your email",
+      "type": "email",
+      "required": true,
+      "help": "So we can follow up.",
+      "placeholder": "you@company.com",
+      "sample_value": "miguel.santos@northwindcloud.com"
+    },
+    {
+      "key": "sender_email",
+      "label": "Who sent it?",
+      "type": "email",
+      "required": true,
+      "help": "The 'From' address on the email that had the attachment.",
+      "placeholder": "sender@example.com",
+      "sample_value": "invoices@accounting-northwind-billing.com"
+    },
+    {
+      "key": "email_subject",
+      "label": "Email subject line",
+      "type": "text",
+      "required": true,
+      "help": "What was the subject?",
+      "placeholder": "Subject of the email",
+      "sample_value": "Invoice #INV-2026-0488 - Payment Overdue"
+    },
+    {
+      "key": "filename",
+      "label": "Attachment filename",
+      "type": "text",
+      "required": true,
+      "help": "Include the extension if you can see it (e.g., .docx, .zip, .iso, .html).",
+      "placeholder": "e.g., invoice.docx",
+      "sample_value": "Invoice_2026_0488.zip"
+    },
+    {
+      "key": "file_type",
+      "label": "What type of file is it?",
+      "type": "select",
+      "required": true,
+      "help": "Pick the closest match.",
+      "options": [
+        "Office document (Word, Excel, PowerPoint)",
+        "PDF",
+        "Password-protected archive (zip, rar, 7z)",
+        "Regular archive (zip, rar, 7z)",
+        "HTML or HTM file",
+        "Disk image (iso, img, vhd)",
+        "Executable or installer (exe, msi, bat, ps1)",
+        "Script file (js, vbs, hta, lnk)",
+        "OneNote / other Office format",
+        "Don't know / file has no extension"
+      ],
+      "sample_value": "Password-protected archive (zip, rar, 7z)"
+    },
+    {
+      "key": "expected",
+      "label": "Were you expecting this attachment?",
+      "type": "select",
+      "required": true,
+      "help": "Honest answer is best.",
+      "options": [
+        "No, completely unexpected",
+        "I know the sender but wasn't expecting an attachment",
+        "I don't know the sender",
+        "Sort of — I deal with files like this but this one feels off"
+      ],
+      "sample_value": "I don't know the sender"
+    },
+    {
+      "key": "opened",
+      "label": "Did you open the attachment?",
+      "type": "select",
+      "required": true,
+      "help": "If you did, that's okay — tell us so we can help.",
+      "options": [
+        "No, I have not opened it",
+        "I opened it but didn't enable macros / content",
+        "I opened it and enabled macros or 'enable content'",
+        "I opened it and ran or installed something",
+        "I extracted the archive but didn't open the contents",
+        "I entered the password and opened the contents"
+      ],
+      "sample_value": "No, I have not opened it"
+    },
+    {
+      "key": "archive_password",
+      "label": "Archive password (if applicable)",
+      "type": "text",
+      "required": false,
+      "help": "If the email included a password for a zip/rar/7z, paste it here so we can analyze the file.",
+      "placeholder": "e.g., 2026Invoice",
+      "sample_value": "Invoice2026!"
+    },
+    {
+      "key": "attachment_upload",
+      "label": "Attach the suspicious file (or the original email)",
+      "type": "file",
+      "required": false,
+      "help": "Upload the .eml of the email if you can — that's safer than uploading the file directly. If you upload the file itself, we'll handle it in a sandbox.",
+      "sample_value": "suspicious-invoice-email.eml"
+    },
+    {
+      "key": "additional_notes",
+      "label": "Anything else we should know?",
+      "type": "textarea",
+      "required": false,
+      "help": "Optional. What did the email say? Did anyone else on your team get it?",
+      "placeholder": "Optional notes",
+      "sample_value": "The email body said the password for the zip is in the subject line. Two other people on AP got the same one this morning."
+    }
+  ],
+  "alert_template": {
+    "title": "Suspicious attachment reported by {{reporter_email}}: {{filename}}",
+    "description": "User {{reporter_email}} reported an unexpected attachment.\n\nSender: {{sender_email}}\nSubject: {{email_subject}}\nFilename: {{filename}}\nFile type: {{file_type}}\nExpected? {{expected}}\nOpened? {{opened}}\nArchive password (if any): {{archive_password}}\n\nNotes: {{additional_notes}}\n\nUploaded: {{attachment_upload}}",
+    "severity": "high",
+    "source": "intake_form",
+    "category": "suspicious_attachment"
+  },
+  "icon": "Paperclip",
+  "category": "Email Threats",
+  "estimated_minutes": 4
+}

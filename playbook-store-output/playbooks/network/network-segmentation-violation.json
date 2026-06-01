@@ -1,0 +1,252 @@
+{
+  "name": "Network Segmentation Violation Response",
+  "slug": "network-segmentation-violation",
+  "description": "Detects and responds to network segmentation violations where traffic crosses zone boundaries in violation of security policy (e.g., production-to-development, DMZ-to-internal, or OT-to-IT). Riggs AI analyzes the traffic flow against the segmentation policy matrix to confirm the violation and assess risk. Confirmed violations trigger immediate firewall blocking, compliance ticket creation, affected segment audit, and SOC notification. Legitimate cross-zone traffic is documented with a policy exception request.",
+  "category": "network",
+  "subcategory": "segmentation",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "12 minutes",
+  "tags": ["segmentation", "zone_violation", "compliance", "network", "microsegmentation"],
+  "alert_types": ["network", "segmentation", "compliance"],
+  "severity_filter": ["medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["network", "segmentation_violation", "zone_crossing", "vlan_hop", "policy_violation"],
+    "min_severity": "medium"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "palo_alto_ngfw",
+      "name": "Palo Alto NGFW",
+      "category": "network",
+      "reason": "Block unauthorized cross-zone traffic and enforce segmentation policy"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create compliance ticket documenting the segmentation violation and remediation"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Notify SOC and network operations of the segmentation violation"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Segmentation Violation Alert",
+          "config": {
+            "alert_types": ["network", "segmentation_violation", "zone_crossing", "vlan_hop", "policy_violation"],
+            "description": "Triggers when network monitoring detects traffic crossing zone boundaries in violation of the segmentation policy matrix"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — Segmentation Analysis",
+          "config": {
+            "template_id": "lateral_movement",
+            "additional_instructions": "Analyze the traffic flow against the network segmentation policy. Identify source/destination zones, services accessed, user/application context, and whether this represents a policy violation, misconfiguration, or potential lateral movement by a threat actor.",
+            "description": "AI-powered analysis of cross-zone traffic against the segmentation policy matrix to classify the violation and assess lateral movement risk"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "label": "Policy Violation Confirmed?",
+          "config": {
+            "condition": "{{analyze_1.verdict}} in ['MALICIOUS', 'SUSPICIOUS'] or {{analyze_1.policy_violation}} == true",
+            "description": "Routes based on whether the cross-zone traffic is a confirmed policy violation versus legitimate traffic requiring a policy exception"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "respond",
+          "label": "Block Cross-Zone Traffic",
+          "config": {
+            "integration_action": {
+              "connector_id": "palo_alto_ngfw",
+              "action": "block_traffic",
+              "parameters": {
+                "source_ip": "{{trigger_1.alert.source_ip}}",
+                "destination_ip": "{{trigger_1.alert.destination_ip}}",
+                "source_zone": "{{trigger_1.alert.source_zone}}",
+                "destination_zone": "{{trigger_1.alert.destination_zone}}",
+                "rule_name": "T1-SegViolation-{{trigger_1.alert.alert_id}}",
+                "comment": "Segmentation violation blocked — {{trigger_1.alert.source_zone}} -> {{trigger_1.alert.destination_zone}}"
+              }
+            },
+            "description": "Blocks the unauthorized cross-zone traffic flow on the firewall to enforce segmentation policy"
+          }
+        }
+      },
+      {
+        "id": "analyze_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — Segment Audit",
+          "config": {
+            "template_id": "lateral_movement",
+            "additional_instructions": "Audit the affected network segments for other policy violations or misconfigurations. Check for additional unauthorized traffic flows between {{trigger_1.alert.source_zone}} and {{trigger_1.alert.destination_zone}}. Identify if firewall rules need tightening.",
+            "description": "AI-powered audit of the affected segments to identify additional violations and firewall rule gaps"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "label": "Create Compliance Ticket",
+          "config": {
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_issue",
+              "parameters": {
+                "project": "COMPLIANCE",
+                "issue_type": "Violation",
+                "priority": "P2",
+                "summary": "Segmentation Violation — {{trigger_1.alert.source_zone}} to {{trigger_1.alert.destination_zone}}",
+                "description": "NETWORK SEGMENTATION VIOLATION\n\nSource: {{trigger_1.alert.source_ip}} (Zone: {{trigger_1.alert.source_zone}})\nDestination: {{trigger_1.alert.destination_ip}} (Zone: {{trigger_1.alert.destination_zone}})\nProtocol/Port: {{trigger_1.alert.protocol}}:{{trigger_1.alert.destination_port}}\nApplication: {{trigger_1.alert.application}}\n\nViolation Type: {{analyze_1.violation_type}}\nRisk Assessment: {{analyze_1.risk_level}}\n\nSegment Audit:\n{{analyze_2.summary}}\n\nActions Taken:\n- Cross-zone traffic blocked\n- Segment audit completed\n\nRemediation: Review and tighten firewall rules for affected zones."
+              }
+            },
+            "description": "Creates a compliance ticket documenting the segmentation violation, audit results, and required remediation"
+          }
+        }
+      },
+      {
+        "id": "respond_3",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "label": "Notify SOC & Network Ops",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#soc-alerts",
+              "message": "SEGMENTATION VIOLATION\n\nFlow: {{trigger_1.alert.source_zone}} -> {{trigger_1.alert.destination_zone}}\nSource: {{trigger_1.alert.source_ip}}\nDest: {{trigger_1.alert.destination_ip}}:{{trigger_1.alert.destination_port}}\nRisk: {{analyze_1.risk_level}}\n\nActions: Traffic blocked. Segment audit completed.\nCompliance Ticket: {{respond_2.ticket_key}}\n\nAdditional findings:\n{{analyze_2.summary}}",
+              "priority": "high"
+            },
+            "description": "Notifies SOC and network operations teams of the segmentation violation and audit results"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "utility",
+          "label": "Create Policy Exception Request",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "Cross-zone traffic from {{trigger_1.alert.source_zone}} to {{trigger_1.alert.destination_zone}} reviewed by Riggs AI. Traffic appears legitimate ({{analyze_1.justification}}). Policy exception request created for network team review.",
+              "assign_to": "network_team",
+              "close_alert": false,
+              "create_exception_request": true
+            },
+            "description": "Creates a policy exception request when the cross-zone traffic is determined to be legitimate business traffic requiring a firewall rule update"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1180 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "Network segmentation violation response workflow complete"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_analyze",
+        "source": "trigger_1",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_analyze_decision",
+        "source": "analyze_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "respond_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "utility_1",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_block_audit",
+        "source": "respond_1",
+        "target": "analyze_2",
+        "type": "default"
+      },
+      {
+        "id": "e_audit_ticket",
+        "source": "analyze_2",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_ticket_notify",
+        "source": "respond_2",
+        "target": "respond_3",
+        "type": "default"
+      },
+      {
+        "id": "e_notify_end",
+        "source": "respond_3",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_utility_end",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

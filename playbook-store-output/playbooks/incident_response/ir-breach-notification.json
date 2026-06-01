@@ -1,0 +1,277 @@
+{
+  "name": "Breach Notification Compliance Workflow",
+  "slug": "ir-breach-notification",
+  "description": "Manages the regulatory breach notification compliance workflow from initial assessment through regulator filing. Riggs AI performs a data exfiltration analysis to determine if a notifiable breach occurred and identifies applicable regulations (GDPR, HIPAA, state breach laws, etc.). If a notifiable breach is confirmed, legal counsel approval is required before proceeding. A code node generates the notification timeline based on applicable regulations (e.g., 72 hours for GDPR). The workflow creates a Jira epic to track all notification obligations, drafts regulator and affected individual notifications, and posts compliance milestones to the legal team. Non-notifiable events are logged and closed.",
+  "category": "incident_response",
+  "subcategory": "compliance",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "advanced",
+  "estimated_time": "30 minutes",
+  "tags": ["breach", "notification", "compliance", "gdpr", "hipaa", "legal", "regulator", "privacy"],
+  "alert_types": ["data_breach", "data_exfiltration"],
+  "severity_filter": ["high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["data_breach", "data_exfiltration", "pii_exposure"],
+    "min_severity": "high"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create breach notification tracking epic and sub-tasks for each regulatory obligation"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Coordinate with legal team and post compliance milestone updates"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Potential Data Breach Detected",
+          "config": {
+            "alert_types": ["data_breach", "data_exfiltration", "pii_exposure"],
+            "description": "Triggers when a potential data breach or PII exposure is detected requiring notification assessment"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — Breach Notification Assessment",
+          "config": {
+            "template_id": "data_exfil",
+            "additional_instructions": "Assess whether this incident constitutes a notifiable data breach. Determine: 1) Type of data exposed (PII, PHI, financial), 2) Number of affected individuals, 3) Applicable regulations (GDPR, HIPAA, state breach laws), 4) Whether notification is legally required, 5) Recommended notification timeline.",
+            "description": "AI-powered breach assessment to determine notification obligations and applicable regulatory frameworks"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "label": "Notifiable Breach?",
+          "config": {
+            "condition": "{{analyze_1.notifiable_breach}} == true",
+            "description": "Route based on whether the AI assessment determined this is a legally notifiable breach"
+          }
+        }
+      },
+      {
+        "id": "approval_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "approval",
+          "label": "Legal Counsel — Approve Notification",
+          "config": {
+            "approvers": ["legal_counsel", "privacy_officer"],
+            "approval_message": "A data breach has been assessed as requiring regulatory notification. Legal counsel and Privacy Officer approval is required before initiating the notification process.\n\nIncident: {{trigger_1.alert.title}}\nData Types Affected: {{analyze_1.data_types}}\nEstimated Affected Individuals: {{analyze_1.affected_count}}\nApplicable Regulations: {{analyze_1.regulations}}\n\nRiggs Assessment:\n{{analyze_1.summary}}",
+            "timeout_hours": 24,
+            "require_all": true,
+            "description": "Legal counsel and Privacy Officer must approve the breach notification before regulatory filings proceed"
+          }
+        }
+      },
+      {
+        "id": "code_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "code",
+          "label": "Calculate Notification Deadlines",
+          "config": {
+            "mode": "script",
+            "script": {
+              "function_name": "main",
+              "inputs": [
+                { "name": "analysis", "path": "$.nodes.analyze_1.result" },
+                { "name": "trigger", "path": "$.trigger" }
+              ],
+              "code": "def main(analysis, trigger):\n    from datetime import datetime, timedelta\n    now = datetime.utcnow()\n    deadlines = []\n    regulations = analysis.get('regulations', [])\n    if 'GDPR' in regulations:\n        deadlines.append({'regulation': 'GDPR', 'authority': 'Supervisory Authority', 'deadline_hours': 72, 'due': (now + timedelta(hours=72)).isoformat()})\n    if 'HIPAA' in regulations:\n        deadlines.append({'regulation': 'HIPAA', 'authority': 'HHS OCR', 'deadline_hours': 1440, 'due': (now + timedelta(hours=1440)).isoformat()})\n    if 'CCPA' in regulations:\n        deadlines.append({'regulation': 'CCPA', 'authority': 'California AG', 'deadline_hours': 720, 'due': (now + timedelta(hours=720)).isoformat()})\n    deadlines.append({'regulation': 'Individual Notice', 'authority': 'Affected Individuals', 'deadline_hours': 720, 'due': (now + timedelta(hours=720)).isoformat()})\n    return {'deadlines': deadlines, 'earliest_deadline': min(d['deadline_hours'] for d in deadlines) if deadlines else 720}"
+            },
+            "output_variable": "notification_schedule",
+            "description": "Calculate regulatory notification deadlines based on applicable regulations and breach discovery time"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "label": "Create Breach Notification Epic",
+          "config": {
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_issue",
+              "parameters": {
+                "project": "IR",
+                "issue_type": "Epic",
+                "priority": "P1 - Critical",
+                "summary": "BREACH NOTIFICATION: {{trigger_1.alert.title}}",
+                "description": "Breach Notification Tracking\n\nIncident: {{trigger_1.alert.title}}\nBreach Discovery: {{trigger_1.timestamp}}\nApproved by: {{approval_1.approvers}}\n\nData Types: {{analyze_1.data_types}}\nAffected Individuals: {{analyze_1.affected_count}}\nApplicable Regulations: {{analyze_1.regulations}}\n\nNotification Deadlines:\n{{code_1.notification_schedule.deadlines}}\n\nRiggs Assessment:\n{{analyze_1.summary}}\n\nRequired Actions:\n- [ ] File regulator notification(s) per deadline schedule\n- [ ] Draft affected individual notification letter\n- [ ] Prepare public disclosure statement (if required)\n- [ ] Coordinate with external counsel\n- [ ] Document all notification activities for compliance"
+              }
+            },
+            "description": "Create a Jira epic to track all breach notification obligations and deadlines"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "label": "Notify Legal Team on Slack",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#legal-privacy",
+              "message": "BREACH NOTIFICATION WORKFLOW ACTIVATED\n\nIncident: {{trigger_1.alert.title}}\nJira Epic: {{respond_1.issue_key}}\nApproved by: {{approval_1.approvers}}\n\nEarliest Deadline: {{code_1.notification_schedule.earliest_deadline}} hours from discovery\n\nData Types: {{analyze_1.data_types}}\nAffected Individuals: {{analyze_1.affected_count}}\nRegulations: {{analyze_1.regulations}}\n\nAll notification activities must be tracked in the Jira epic. Time-sensitive actions require immediate coordination."
+            },
+            "description": "Post breach notification details to the legal/privacy Slack channel for coordination"
+          }
+        }
+      },
+      {
+        "id": "respond_3",
+        "type": "signal",
+        "position": { "x": 340, "y": 1180 },
+        "data": {
+          "kind": "respond",
+          "label": "Notify CISO",
+          "config": {
+            "notify": {
+              "channel": "email",
+              "target": "{{config.ciso_email}}",
+              "message": "BREACH NOTIFICATION — EXECUTIVE BRIEFING\n\nIncident: {{trigger_1.alert.title}}\nClassification: Notifiable Data Breach\nJira Epic: {{respond_1.issue_key}}\n\nData Types: {{analyze_1.data_types}}\nAffected Individuals: {{analyze_1.affected_count}}\nRegulations: {{analyze_1.regulations}}\nEarliest Filing Deadline: {{code_1.notification_schedule.earliest_deadline}} hours\n\nLegal counsel has approved the notification process. The legal/privacy team has been notified and is coordinating filings.\n\n{{analyze_1.summary}}"
+            },
+            "description": "Send an executive briefing to the CISO about the notifiable breach and notification timeline"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 1340 },
+        "data": {
+          "kind": "end",
+          "label": "End — Notification Workflow Active",
+          "config": {
+            "description": "Breach notification compliance workflow activated — deadlines calculated, Jira epic created, legal and CISO notified"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "utility",
+          "label": "Log: Not a Notifiable Breach",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "Breach notification assessment complete. This incident does not constitute a notifiable data breach under applicable regulations. No notification required.\n\nRiggs Assessment: {{analyze_1.summary}}"
+            },
+            "description": "Record that the incident was assessed and determined not to be a notifiable breach"
+          }
+        }
+      },
+      {
+        "id": "end_2",
+        "type": "signal",
+        "position": { "x": 700, "y": 700 },
+        "data": {
+          "kind": "end",
+          "label": "End — No Notification Required",
+          "config": {
+            "description": "Breach assessment complete — incident is not a notifiable breach, no regulatory notification required"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_analyze",
+        "source": "trigger_1",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_analyze_decision",
+        "source": "analyze_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "approval_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "utility_1",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_approval_code",
+        "source": "approval_1",
+        "target": "code_1",
+        "type": "default"
+      },
+      {
+        "id": "e_code_respond1",
+        "source": "code_1",
+        "target": "respond_1",
+        "type": "default"
+      },
+      {
+        "id": "e_respond1_respond2",
+        "source": "respond_1",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_respond2_respond3",
+        "source": "respond_2",
+        "target": "respond_3",
+        "type": "default"
+      },
+      {
+        "id": "e_respond3_end1",
+        "source": "respond_3",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_utility1_end2",
+        "source": "utility_1",
+        "target": "end_2",
+        "type": "default"
+      }
+    ]
+  }
+}

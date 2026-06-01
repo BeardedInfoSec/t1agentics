@@ -1,0 +1,267 @@
+{
+  "name": "Cloud Audit Log Tampering Detection",
+  "slug": "cloud-trail-tampering",
+  "description": "Detects tampering with cloud audit logs such as CloudTrail being stopped, log deletion, or S3 log bucket policy changes. Riggs AI assesses the tampering severity and blast radius. Confirmed tampering triggers immediate forensic preservation of remaining logs, re-enablement of logging, security lead approval for incident escalation, incident ticket creation, and emergency team notification.",
+  "category": "cloud",
+  "subcategory": "audit_security",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "advanced",
+  "estimated_time": "15 minutes",
+  "tags": ["cloud", "cloudtrail", "audit_log", "tampering", "forensics"],
+  "alert_types": ["cloud_security", "audit_tampering"],
+  "severity_filter": ["high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["cloud_security", "audit_tampering", "cloudtrail_stopped"],
+    "min_severity": "high"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "aws_security_hub",
+      "name": "AWS Security Hub",
+      "category": "cloud_security",
+      "reason": "Source of CloudTrail tampering findings and API to re-enable audit logging"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create critical incident tickets for audit log tampering events"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Emergency notification to security team of audit log tampering"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Audit Log Tampering Alert",
+          "config": {
+            "alert_types": ["cloud_security", "audit_tampering", "cloudtrail_stopped"],
+            "description": "Triggers when CloudTrail or equivalent audit logging is stopped, deleted, or when log bucket policies are modified"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — Cloud Security Assessment",
+          "config": {
+            "template_id": "cloud_security",
+            "additional_instructions": "Assess audit log tampering: determine who stopped logging, what time window of logs may be missing, and whether this correlates with other suspicious activity",
+            "description": "AI-powered assessment of audit log tampering to determine severity, blast radius, and whether it correlates with an active attack"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "label": "Tampering Confirmed?",
+          "config": {
+            "condition": "{{analyze_1.verdict}} == 'tampering_confirmed' || {{analyze_1.severity}} == 'critical'",
+            "description": "Routes based on whether the AI assessment confirmed malicious audit log tampering versus an operational change"
+          }
+        }
+      },
+      {
+        "id": "code_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "code",
+          "label": "Forensic Preserve Remaining Logs",
+          "config": {
+            "mode": "query",
+            "query": "Copy remaining CloudTrail logs from trail={{trigger_1.alert.trail_name}} to forensic-preservation bucket, lock with S3 Object Lock, record last available log timestamp",
+            "output_variable": "preservation_result",
+            "description": "Immediately preserve all remaining audit logs before any further tampering can occur by copying to a forensic bucket with immutable object lock"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "label": "Re-enable Audit Logging",
+          "config": {
+            "integration_action": {
+              "connector_id": "aws_security_hub",
+              "action": "enable_cloudtrail",
+              "parameters": {
+                "trail_name": "{{trigger_1.alert.trail_name}}",
+                "enable_log_file_validation": true,
+                "reason": "Re-enabling CloudTrail after confirmed tampering — AI assessment: {{analyze_1.severity}}"
+              }
+            },
+            "description": "Re-enable the audit trail to restore visibility into cloud API activity"
+          }
+        }
+      },
+      {
+        "id": "approval_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "approval",
+          "label": "Security Lead Approves Escalation",
+          "config": {
+            "approvers": ["security_lead"],
+            "timeout_minutes": 15,
+            "prompt": "CloudTrail tampering confirmed on trail {{trigger_1.alert.trail_name}}.\n\nActor: {{trigger_1.alert.actor}}\nAction: {{trigger_1.alert.tampering_action}}\nLog Gap: {{trigger_1.alert.gap_duration}}\n\nLogs preserved, trail re-enabled.\n\nAI Assessment: {{analyze_1.summary}}\n\nApprove escalation to full incident response?",
+            "description": "Requires security lead approval to escalate to full incident response given the severity of audit log tampering"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "label": "Create Critical Incident Ticket",
+          "config": {
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_ticket",
+              "parameters": {
+                "project": "SEC",
+                "issue_type": "Incident",
+                "priority": "Critical",
+                "summary": "AUDIT LOG TAMPERING: {{trigger_1.alert.trail_name}} — Immediate Investigation Required",
+                "description": "Confirmed audit log tampering detected.\n\nTrail: {{trigger_1.alert.trail_name}}\nActor: {{trigger_1.alert.actor}}\nAction: {{trigger_1.alert.tampering_action}}\nLog Gap Duration: {{trigger_1.alert.gap_duration}}\n\nActions Taken:\n- Remaining logs forensically preserved\n- CloudTrail re-enabled with validation\n- Security lead approved escalation\n\nPreservation Details:\n{{code_1.preservation_result}}\n\nRiggs AI Assessment:\n{{analyze_1.summary}}\n\nIMPORTANT: The log gap period must be investigated through alternative sources (VPC Flow Logs, DNS logs, S3 access logs) to determine what activity occurred while logging was disabled."
+              }
+            },
+            "description": "Create a critical incident ticket documenting the audit log tampering and all preservation actions"
+          }
+        }
+      },
+      {
+        "id": "respond_3",
+        "type": "signal",
+        "position": { "x": 340, "y": 1180 },
+        "data": {
+          "kind": "respond",
+          "label": "Emergency Team Notification",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#security-incidents",
+              "message": "CRITICAL: AUDIT LOG TAMPERING DETECTED\nTrail: {{trigger_1.alert.trail_name}}\nActor: {{trigger_1.alert.actor}}\nAction: {{trigger_1.alert.tampering_action}}\nLog Gap: {{trigger_1.alert.gap_duration}}\nActions: Logs preserved, trail re-enabled, escalated\nTicket: {{respond_2.ticket_url}}\n\nRiggs Assessment:\n{{analyze_1.summary}}"
+            },
+            "description": "Send emergency notification to the security team about the audit log tampering"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "utility",
+          "label": "Add Note: Operational Change",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "Reviewed by Riggs AI (cloud_security template). CloudTrail change determined to be an authorized operational modification, not malicious tampering. Assessment: {{analyze_1.summary}}"
+            },
+            "description": "Document that the audit log change was determined to be an authorized operational action"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1340 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "Cloud audit log tampering detection and response complete"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_analyze",
+        "source": "trigger_1",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_analyze_decision",
+        "source": "analyze_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "code_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "utility_1",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_preserve_reenable",
+        "source": "code_1",
+        "target": "respond_1",
+        "type": "default"
+      },
+      {
+        "id": "e_reenable_approval",
+        "source": "respond_1",
+        "target": "approval_1",
+        "type": "default"
+      },
+      {
+        "id": "e_approval_ticket",
+        "source": "approval_1",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_ticket_notify",
+        "source": "respond_2",
+        "target": "respond_3",
+        "type": "default"
+      },
+      {
+        "id": "e_notify_end",
+        "source": "respond_3",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_utility_end",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

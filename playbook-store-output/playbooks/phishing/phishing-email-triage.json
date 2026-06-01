@@ -1,0 +1,166 @@
+{
+  "name": "Phishing Email Triage",
+  "slug": "phishing-email-triage",
+  "description": "Automated triage workflow for phishing email alerts. Uses AI-powered analysis to classify the reported email as malicious or benign, then routes accordingly — blocking the sender and notifying the SOC for confirmed threats, or closing the alert for clean verdicts. Designed for Tier 1 SOC analysts to quickly disposition phishing alerts with minimal manual effort.",
+  "category": "phishing",
+  "subcategory": "email_triage",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "beginner",
+  "estimated_time": "5 minutes",
+  "tags": ["phishing", "email", "triage", "ai-analysis", "tier1", "soc"],
+  "alert_types": ["phishing"],
+  "severity_filter": ["medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["phishing", "suspicious_email"],
+    "min_severity": "medium"
+  },
+  "required_integrations": [],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "title": "Phishing Alert Received",
+          "summary": "Triggers on incoming phishing or suspicious email alerts",
+          "config": {
+            "trigger_type": "alert",
+            "alert_types": ["phishing", "suspicious_email"]
+          }
+        }
+      },
+      {
+        "id": "analyze-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "title": "AI Phishing Analysis",
+          "summary": "Riggs AI analyzes email headers, body, and indicators",
+          "config": {
+            "mode": "ai_analysis",
+            "template_id": "phishing_triage",
+            "custom_instructions": "",
+            "alert_path": "$.trigger.alert",
+            "include_context": true
+          }
+        }
+      },
+      {
+        "id": "decision-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "title": "Is Malicious?",
+          "summary": "Branch based on AI phishing verdict",
+          "config": {
+            "conditions": {
+              "operator": "AND",
+              "conditions": [
+                {
+                  "left": { "type": "path", "value": "$.nodes.analyze-1.result.verdict" },
+                  "operator": "equals",
+                  "right": { "type": "value", "value": "malicious" }
+                }
+              ],
+              "groups": []
+            },
+            "expression": "$.nodes.analyze-1.result.verdict == \"malicious\"",
+            "default_branch": "no"
+          }
+        }
+      },
+      {
+        "id": "respond-1",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "respond",
+          "title": "Block Sender",
+          "summary": "Block the malicious sender domain/address",
+          "config": {
+            "response_type": "integration_action",
+            "action_type": "block_sender",
+            "target_path": "$.trigger.alert.sender",
+            "requires_approval": true,
+            "priority": "high",
+            "message": "Blocking sender {{$.trigger.alert.sender}} — confirmed phishing by AI analysis"
+          }
+        }
+      },
+      {
+        "id": "respond-2",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "title": "Notify SOC",
+          "summary": "Send confirmed phishing notification to SOC channel",
+          "config": {
+            "response_type": "notify",
+            "channel": "slack",
+            "slack_channel": "#soc-alerts",
+            "message": "Confirmed phishing alert triaged and sender blocked.\nAlert: {{$.trigger.alert.name}}\nSender: {{$.trigger.alert.sender}}\nVerdict: {{$.nodes.analyze-1.result.verdict}}\nConfidence: {{$.nodes.analyze-1.result.confidence}}",
+            "priority": "high"
+          }
+        }
+      },
+      {
+        "id": "utility-1",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "utility",
+          "title": "Close Alert — Benign",
+          "summary": "Update alert status to closed (false positive)",
+          "config": {
+            "operation": "update_status",
+            "status": "closed",
+            "note": "AI analysis determined email is benign. No malicious indicators found."
+          }
+        }
+      },
+      {
+        "id": "end-1",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "end",
+          "title": "End — Malicious Handled",
+          "summary": "Phishing confirmed, sender blocked, SOC notified",
+          "config": {
+            "disposition": "true_positive",
+            "summary": "Phishing email confirmed malicious. Sender blocked and SOC team notified."
+          }
+        }
+      },
+      {
+        "id": "end-2",
+        "type": "signal",
+        "position": { "x": 700, "y": 700 },
+        "data": {
+          "kind": "end",
+          "title": "End — Benign Closed",
+          "summary": "Email determined benign, alert closed",
+          "config": {
+            "disposition": "false_positive",
+            "summary": "Email analyzed by AI and determined benign. Alert closed."
+          }
+        }
+      }
+    ],
+    "edges": [
+      { "id": "e1", "source": "trigger-1", "target": "analyze-1", "animated": true, "type": "smoothstep" },
+      { "id": "e2", "source": "analyze-1", "target": "decision-1", "animated": true, "type": "smoothstep" },
+      { "id": "e3", "source": "decision-1", "target": "respond-1", "sourceHandle": "yes", "label": "Yes", "animated": true, "type": "smoothstep" },
+      { "id": "e4", "source": "decision-1", "target": "utility-1", "sourceHandle": "no", "label": "No", "animated": true, "type": "smoothstep" },
+      { "id": "e5", "source": "respond-1", "target": "respond-2", "animated": true, "type": "smoothstep" },
+      { "id": "e6", "source": "respond-2", "target": "end-1", "animated": true, "type": "smoothstep" },
+      { "id": "e7", "source": "utility-1", "target": "end-2", "animated": true, "type": "smoothstep" }
+    ]
+  }
+}

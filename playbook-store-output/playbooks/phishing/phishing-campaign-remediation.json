@@ -1,0 +1,174 @@
+{
+  "name": "Phishing Campaign Mass Remediation",
+  "slug": "phishing-campaign-remediation",
+  "description": "Mass remediation workflow for phishing campaigns that target multiple users. AI analysis confirms the phishing threat, then a code node extracts all recipient email addresses from the alert. A loop iterates over each recipient to remove the phishing email from their mailbox via Microsoft Graph. After remediation, the security team is notified via Slack and the alert status is updated. Designed for large-scale phishing incidents affecting multiple mailboxes.",
+  "category": "phishing",
+  "subcategory": "campaign_remediation",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "advanced",
+  "estimated_time": "20 minutes",
+  "tags": ["phishing", "campaign", "mass-remediation", "loop", "microsoft-graph", "email-purge", "bulk"],
+  "alert_types": ["phishing"],
+  "severity_filter": ["high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["phishing", "phishing_campaign", "mass_phishing"],
+    "min_severity": "high"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "microsoft_graph",
+      "name": "Microsoft Graph",
+      "category": "email_security",
+      "reason": "Remove phishing emails from recipient mailboxes via purge action"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "title": "Phishing Campaign Alert",
+          "summary": "Triggers on phishing campaign or mass phishing alerts",
+          "config": {
+            "trigger_type": "alert",
+            "alert_types": ["phishing", "phishing_campaign", "mass_phishing"]
+          }
+        }
+      },
+      {
+        "id": "analyze-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "title": "AI Phishing Analysis",
+          "summary": "Confirm the phishing campaign threat level",
+          "config": {
+            "mode": "ai_analysis",
+            "template_id": "phishing_triage",
+            "custom_instructions": "This is a potential phishing campaign affecting multiple users. Assess the threat level, identify the attack technique, and confirm whether mass remediation is warranted.",
+            "alert_path": "$.trigger.alert",
+            "include_context": true
+          }
+        }
+      },
+      {
+        "id": "code-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "code",
+          "title": "Extract Recipient List",
+          "summary": "Extract all recipient email addresses from the alert",
+          "config": {
+            "mode": "script",
+            "script": {
+              "function_name": "main",
+              "inputs": [
+                { "name": "alert", "path": "$.trigger.alert" }
+              ],
+              "code": "def main(alert):\n    recipients = alert.get('recipients', [])\n    if isinstance(recipients, str):\n        recipients = [r.strip() for r in recipients.split(',') if r.strip()]\n    to_field = alert.get('to', [])\n    if isinstance(to_field, str):\n        to_field = [r.strip() for r in to_field.split(',') if r.strip()]\n    cc_field = alert.get('cc', [])\n    if isinstance(cc_field, str):\n        cc_field = [r.strip() for r in cc_field.split(',') if r.strip()]\n    all_recipients = list(set(recipients + to_field + cc_field))\n    return {\n        'recipients': all_recipients,\n        'count': len(all_recipients),\n        'message_id': alert.get('message_id', '')\n    }"
+            }
+          }
+        }
+      },
+      {
+        "id": "loop-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 540 },
+        "data": {
+          "kind": "loop",
+          "title": "For Each Recipient",
+          "summary": "Iterate over each affected recipient mailbox",
+          "config": {
+            "items_path": "$.nodes.code-1.result.recipients",
+            "loop_variable": "recipient",
+            "max_iterations": 500
+          }
+        }
+      },
+      {
+        "id": "respond-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "title": "Remove Phishing Email",
+          "summary": "Purge the phishing email from current recipient's mailbox",
+          "config": {
+            "response_type": "integration_action",
+            "action_type": "purge_email",
+            "target_path": "$.loop.recipient",
+            "requires_approval": false,
+            "priority": "critical",
+            "message": "Removing phishing email (Message-ID: {{$.nodes.code-1.result.message_id}}) from mailbox {{$.loop.recipient}}",
+            "params": {
+              "message_id": "{{$.nodes.code-1.result.message_id}}",
+              "mailbox": "{{$.loop.recipient}}",
+              "purge_type": "soft_delete"
+            }
+          }
+        }
+      },
+      {
+        "id": "respond-2",
+        "type": "signal",
+        "position": { "x": 520, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "title": "Notify Security Team",
+          "summary": "Send campaign remediation summary to Slack",
+          "config": {
+            "response_type": "notify",
+            "channel": "slack",
+            "slack_channel": "#soc-incidents",
+            "message": "PHISHING CAMPAIGN REMEDIATION COMPLETE\n\nCampaign: {{$.trigger.alert.name}}\nSender: {{$.trigger.alert.sender}}\nSubject: {{$.trigger.alert.subject}}\nAffected mailboxes: {{$.nodes.code-1.result.count}}\nMessage-ID: {{$.nodes.code-1.result.message_id}}\n\nAI Assessment: {{$.nodes.analyze-1.result.summary}}\n\nAll phishing emails have been purged from recipient mailboxes.",
+            "priority": "high"
+          }
+        }
+      },
+      {
+        "id": "utility-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1020 },
+        "data": {
+          "kind": "utility",
+          "title": "Update Status — Remediated",
+          "summary": "Mark the alert as remediated",
+          "config": {
+            "operation": "update_status",
+            "status": "remediated",
+            "note": "Phishing campaign remediated. Removed phishing email from {{$.nodes.code-1.result.count}} mailboxes."
+          }
+        }
+      },
+      {
+        "id": "end-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1180 },
+        "data": {
+          "kind": "end",
+          "title": "End — Campaign Remediated",
+          "summary": "All phishing emails purged, team notified, status updated",
+          "config": {
+            "disposition": "true_positive",
+            "summary": "Phishing campaign fully remediated. Emails purged from all affected mailboxes, security team notified."
+          }
+        }
+      }
+    ],
+    "edges": [
+      { "id": "e1", "source": "trigger-1", "target": "analyze-1", "animated": true, "type": "smoothstep" },
+      { "id": "e2", "source": "analyze-1", "target": "code-1", "animated": true, "type": "smoothstep" },
+      { "id": "e3", "source": "code-1", "target": "loop-1", "animated": true, "type": "smoothstep" },
+      { "id": "e4", "source": "loop-1", "target": "respond-1", "animated": true, "type": "smoothstep" },
+      { "id": "e5", "source": "respond-1", "target": "respond-2", "animated": true, "type": "smoothstep" },
+      { "id": "e6", "source": "respond-2", "target": "utility-1", "animated": true, "type": "smoothstep" },
+      { "id": "e7", "source": "utility-1", "target": "end-1", "animated": true, "type": "smoothstep" }
+    ]
+  }
+}

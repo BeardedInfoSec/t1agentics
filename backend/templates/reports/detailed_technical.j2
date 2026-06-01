@@ -1,0 +1,184 @@
+# Detailed Technical Report: {{ investigation.get('title', 'Investigation Report') }}
+
+**Report Generated:** {{ generated_at }}
+**Investigation ID:** {{ investigation.get('investigation_id', 'N/A') }}
+**Status:** {{ investigation.get('status', 'Unknown') }}
+**Severity:** {{ investigation.get('severity', 'N/A') | severity_label }}
+**Created:** {{ investigation.get('created_at', '') | format_datetime }}
+**Last Updated:** {{ investigation.get('updated_at', '') | format_datetime }}
+
+---
+
+## 1. Analysis Summary
+
+{% if analysis.get('verdict') %}
+**Verdict:** {{ analysis.get('verdict') }}
+**Confidence:** {{ analysis.get('confidence', 'N/A') }}
+
+{% if analysis.get('summary') %}
+{{ analysis.get('summary') }}
+{% endif %}
+
+{% if analysis.get('detailed_analysis') %}
+### Detailed Analysis
+{{ analysis.get('detailed_analysis') }}
+{% endif %}
+
+{% if analysis.get('risk_assessment') %}
+### Risk Assessment
+{{ analysis.get('risk_assessment') }}
+{% endif %}
+{% else %}
+No automated analysis has been completed for this investigation.
+{% endif %}
+
+{% if deep_dive and deep_dive.get('analysis') %}
+### Deep Analysis (Riggs)
+{{ deep_dive.get('analysis') }}
+
+{% if deep_dive.get('recommendations') %}
+### Deep Analysis Recommendations
+{% for rec in deep_dive.get('recommendations', []) %}
+- {{ rec }}
+{% endfor %}
+{% endif %}
+{% endif %}
+
+---
+
+## 2. MITRE ATT&CK Mapping
+
+{% if mitre_techniques %}
+| Technique | Description |
+|-----------|-------------|
+{% for technique in mitre_techniques %}
+{% if technique is mapping %}
+| {{ technique.get('id', 'N/A') }} | {{ technique.get('name', technique.get('description', 'N/A')) }} |
+{% else %}
+| {{ technique }} | - |
+{% endif %}
+{% endfor %}
+{% else %}
+No MITRE ATT&CK techniques have been mapped to this investigation.
+{% endif %}
+
+---
+
+## 3. Indicators of Compromise ({{ ioc_counts.total }} total)
+
+**Breakdown:** {{ ioc_counts.malicious }} malicious | {{ ioc_counts.suspicious }} suspicious | {{ ioc_counts.clean }} clean | {{ ioc_counts.unknown }} unknown
+
+{% if iocs %}
+| Type | Value | Verdict | Source | First Seen |
+|------|-------|---------|--------|------------|
+{% for ioc in iocs %}
+| {{ ioc.get('ioc_type', 'N/A') }} | {{ ioc.get('ioc_value', 'N/A') | truncate_str(60) }} | {{ ioc.get('verdict', 'Unknown') }} | {{ ioc.get('source', 'N/A') }} | {{ ioc.get('created_at', '') | format_datetime }} |
+{% endfor %}
+
+{% for ioc in iocs %}
+{% if ioc.get('enrichment_data') or ioc.get('context') %}
+### IOC Detail: {{ ioc.get('ioc_value', 'N/A') | truncate_str(40) }}
+{% if ioc.get('enrichment_data') %}
+{% if ioc.enrichment_data is mapping %}
+{% for key, value in ioc.enrichment_data.items() %}
+- **{{ key }}:** {{ value }}
+{% endfor %}
+{% else %}
+{{ ioc.get('enrichment_data') }}
+{% endif %}
+{% endif %}
+{% if ioc.get('context') %}
+**Context:** {{ ioc.get('context') }}
+{% endif %}
+
+{% endif %}
+{% endfor %}
+{% else %}
+No indicators of compromise have been identified.
+{% endif %}
+
+---
+
+## 4. Linked Alerts ({{ alerts | length }})
+
+{% if alerts %}
+| Title | Severity | Status | Created |
+|-------|----------|--------|---------|
+{% for alert in alerts %}
+| {{ alert.get('title', 'N/A') | truncate_str(50) }} | {{ alert.get('severity', 'N/A') | severity_label }} | {{ alert.get('status', 'N/A') }} | {{ alert.get('created_at', '') | format_datetime }} |
+{% endfor %}
+{% else %}
+No alerts are linked to this investigation.
+{% endif %}
+
+---
+
+## 5. Recommended Actions ({{ action_counts.total }} total)
+
+**Status:** {{ action_counts.approved }} approved | {{ action_counts.dismissed }} dismissed | {{ action_counts.pending }} pending
+
+{% if actions %}
+{% for action in actions %}
+### {{ loop.index }}. {{ action.get('action_type', 'Action') }} ({{ action.get('status', 'pending') }})
+- **Priority:** {{ action.get('priority', 'N/A') }}
+- **Description:** {{ action.get('description', 'No description') }}
+{% if action.get('connector_type') %}
+- **Connector:** {{ action.get('connector_type') }}
+{% endif %}
+{% if action.get('target') %}
+- **Target:** {{ action.get('target') }}
+{% endif %}
+{% if action.get('rationale') %}
+- **Rationale:** {{ action.get('rationale') }}
+{% endif %}
+{% if action.get('approved_by') %}
+- **Approved By:** {{ action.get('approved_by') }} at {{ action.get('approved_at', '') | format_datetime }}
+{% endif %}
+
+{% endfor %}
+{% else %}
+No recommended actions have been generated.
+{% endif %}
+
+---
+
+## 6. Investigation Notes ({{ notes | length }})
+
+{% if notes %}
+{% for note in notes %}
+### Note {{ loop.index }} - {{ note.get('created_at', '') | format_datetime }}
+**Author:** {{ note.get('author_name', note.get('created_by', 'Unknown')) }}
+
+{{ note.get('content', 'No content') }}
+
+{% endfor %}
+{% else %}
+No notes have been recorded for this investigation.
+{% endif %}
+
+---
+
+## 7. Raw Investigation Data
+
+{% if investigation_data.get('entities') %}
+### Entities
+{% for entity_type, entities in investigation_data.get('entities', {}).items() %}
+**{{ entity_type }}:**
+{% if entities is iterable and entities is not string %}
+{% for entity in entities %}
+- {{ entity }}
+{% endfor %}
+{% else %}
+- {{ entities }}
+{% endif %}
+{% endfor %}
+{% endif %}
+
+{% if investigation_data.get('kill_chain_phase') %}
+### Kill Chain Phase
+{{ investigation_data.get('kill_chain_phase') }}
+{% endif %}
+
+---
+
+_This report was automatically generated by T1 Agentics. Review all findings before taking action._

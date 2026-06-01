@@ -1,0 +1,266 @@
+{
+  "id": "jumpcloud",
+  "name": "JumpCloud",
+  "description": "Cloud directory and identity management through JumpCloud REST API for managing users, groups, systems, and directory associations",
+  "version": "1.0.0",
+  "category": "identity",
+  "vendor": "JumpCloud",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "x-api-key",
+    "location": "header"
+  },
+  "base_url": "https://console.jumpcloud.com/api",
+  "actions": [
+    {
+      "id": "list_users",
+      "name": "List Users",
+      "description": "List all system users in the JumpCloud directory",
+      "http_method": "GET",
+      "endpoint": "/systemusers",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "Filter expression (e.g. email eq \"user@example.com\")",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of results (max 100)",
+          "required": false
+        },
+        {
+          "name": "skip",
+          "type": "number",
+          "description": "Number of records to skip for pagination",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "type": "string",
+          "description": "Space-separated list of fields to include",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_user",
+      "name": "Get User",
+      "description": "Retrieve details of a specific system user",
+      "http_method": "GET",
+      "endpoint": "/systemusers/{id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "System user ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "lock_user",
+      "name": "Lock User",
+      "description": "Lock a user account to prevent access",
+      "http_method": "PUT",
+      "endpoint": "/systemusers/{id}",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "System user ID to lock",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "unlock_user",
+      "name": "Unlock User",
+      "description": "Unlock a previously locked user account",
+      "http_method": "PUT",
+      "endpoint": "/systemusers/{id}",
+      "action_type": "correct",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "System user ID to unlock",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "reset_password",
+      "name": "Reset Password",
+      "description": "Trigger a password reset for a user by sending reset email",
+      "http_method": "POST",
+      "endpoint": "/systemusers/{id}/resetpassword",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "System user ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_user_groups",
+      "name": "List User Groups",
+      "description": "List all user groups",
+      "http_method": "GET",
+      "endpoint": "/v2/usergroups",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "Filter expression for groups",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of results",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_user_group",
+      "name": "Get User Group",
+      "description": "Retrieve details of a specific user group",
+      "http_method": "GET",
+      "endpoint": "/v2/usergroups/{id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "User group ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_group_members",
+      "name": "List Group Members",
+      "description": "List all members of a user group",
+      "http_method": "GET",
+      "endpoint": "/v2/usergroups/{id}/members",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "User group ID",
+          "required": true
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of results",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_systems",
+      "name": "List Systems",
+      "description": "List all systems registered in JumpCloud",
+      "http_method": "GET",
+      "endpoint": "/systems",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "Filter expression for systems",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of results",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_user_system_associations",
+      "name": "List User System Associations",
+      "description": "List systems associated with a specific user",
+      "http_method": "GET",
+      "endpoint": "/v2/users/{id}/associations",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "System user ID",
+          "required": true
+        },
+        {
+          "name": "targets",
+          "type": "string",
+          "description": "Association target type (system, system_group)",
+          "required": true,
+          "default": "system"
+        }
+      ]
+    },
+    {
+      "id": "get_events",
+      "name": "Get Directory Events",
+      "description": "Retrieve directory audit events for investigation",
+      "http_method": "POST",
+      "endpoint": "/v2/events",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "service",
+          "type": "string",
+          "description": "Service to filter events (directory, sso, systems, all)",
+          "required": true,
+          "default": "all"
+        },
+        {
+          "name": "start_time",
+          "type": "string",
+          "description": "Start time (ISO 8601)",
+          "required": true
+        },
+        {
+          "name": "end_time",
+          "type": "string",
+          "description": "End time (ISO 8601)",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of results",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

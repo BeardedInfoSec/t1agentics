@@ -1,0 +1,217 @@
+{
+  "id": "microsoft_defender_easm",
+  "name": "Microsoft Defender EASM",
+  "description": "Azure-based external attack surface management providing continuous discovery and mapping of internet-facing resources, risk assessment, and exposure monitoring",
+  "version": "1.0.0",
+  "category": "asm",
+  "vendor": "Microsoft",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "oauth2_client_credentials",
+    "token_url": "https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/token",
+    "scope": "https://easm.defender.microsoft.com/.default",
+    "location": "header"
+  },
+  "base_url": "https://{region}.easm.defender.microsoft.com",
+  "actions": [
+    {
+      "id": "list_assets",
+      "name": "List Assets",
+      "description": "Retrieve discovered external assets across the attack surface",
+      "http_method": "GET",
+      "endpoint": "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/workspaces/{workspaceName}/assets",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "subscriptionId",
+          "type": "string",
+          "description": "Azure subscription ID",
+          "required": true
+        },
+        {
+          "name": "resourceGroupName",
+          "type": "string",
+          "description": "Azure resource group name",
+          "required": true
+        },
+        {
+          "name": "workspaceName",
+          "type": "string",
+          "description": "EASM workspace name",
+          "required": true
+        },
+        {
+          "name": "$filter",
+          "type": "string",
+          "description": "OData filter expression",
+          "required": false
+        },
+        {
+          "name": "$top",
+          "type": "integer",
+          "description": "Number of results to return",
+          "required": false
+        },
+        {
+          "name": "api-version",
+          "type": "string",
+          "description": "API version (e.g., 2024-03-01-preview)",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_asset",
+      "name": "Get Asset Details",
+      "description": "Retrieve detailed information about a specific asset including risk factors and services",
+      "http_method": "GET",
+      "endpoint": "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/workspaces/{workspaceName}/assets/{assetId}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "subscriptionId",
+          "type": "string",
+          "description": "Azure subscription ID",
+          "required": true
+        },
+        {
+          "name": "resourceGroupName",
+          "type": "string",
+          "description": "Azure resource group name",
+          "required": true
+        },
+        {
+          "name": "workspaceName",
+          "type": "string",
+          "description": "EASM workspace name",
+          "required": true
+        },
+        {
+          "name": "assetId",
+          "type": "string",
+          "description": "The unique identifier of the asset",
+          "required": true
+        },
+        {
+          "name": "api-version",
+          "type": "string",
+          "description": "API version",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_discovery_groups",
+      "name": "List Discovery Groups",
+      "description": "Retrieve configured discovery groups that define the seeds for attack surface mapping",
+      "http_method": "GET",
+      "endpoint": "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/workspaces/{workspaceName}/discoveryGroups",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "subscriptionId",
+          "type": "string",
+          "description": "Azure subscription ID",
+          "required": true
+        },
+        {
+          "name": "resourceGroupName",
+          "type": "string",
+          "description": "Azure resource group name",
+          "required": true
+        },
+        {
+          "name": "workspaceName",
+          "type": "string",
+          "description": "EASM workspace name",
+          "required": true
+        },
+        {
+          "name": "api-version",
+          "type": "string",
+          "description": "API version",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "run_discovery",
+      "name": "Run Discovery",
+      "description": "Trigger a new discovery run for a specific discovery group",
+      "http_method": "POST",
+      "endpoint": "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/workspaces/{workspaceName}/discoveryGroups/{groupName}/run",
+      "action_type": "action",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "subscriptionId",
+          "type": "string",
+          "description": "Azure subscription ID",
+          "required": true
+        },
+        {
+          "name": "resourceGroupName",
+          "type": "string",
+          "description": "Azure resource group name",
+          "required": true
+        },
+        {
+          "name": "workspaceName",
+          "type": "string",
+          "description": "EASM workspace name",
+          "required": true
+        },
+        {
+          "name": "groupName",
+          "type": "string",
+          "description": "Discovery group name to run",
+          "required": true
+        },
+        {
+          "name": "api-version",
+          "type": "string",
+          "description": "API version",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_asset_summary",
+      "name": "Get Asset Summary",
+      "description": "Retrieve a summary report of the attack surface including asset counts and risk distribution",
+      "http_method": "GET",
+      "endpoint": "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/workspaces/{workspaceName}/reports/assets:summarize",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "subscriptionId",
+          "type": "string",
+          "description": "Azure subscription ID",
+          "required": true
+        },
+        {
+          "name": "resourceGroupName",
+          "type": "string",
+          "description": "Azure resource group name",
+          "required": true
+        },
+        {
+          "name": "workspaceName",
+          "type": "string",
+          "description": "EASM workspace name",
+          "required": true
+        },
+        {
+          "name": "api-version",
+          "type": "string",
+          "description": "API version",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

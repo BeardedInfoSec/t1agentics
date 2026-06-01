@@ -1,0 +1,210 @@
+{
+  "name": "Suspicious Driver Loading Detection",
+  "slug": "endpoint-driver-load",
+  "description": "Detects and responds to suspicious kernel driver loading events, including Bring Your Own Vulnerable Driver (BYOVD) attacks. When a driver load event triggers, the playbook checks the driver signature and compares the hash against known vulnerable driver databases. Riggs AI assesses whether the driver is being used for privilege escalation or security tool evasion. Confirmed threats trigger driver blocking, host isolation, and SOC notification.",
+  "category": "endpoint",
+  "subcategory": "driver_security",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "advanced",
+  "estimated_time": "12 minutes",
+  "tags": ["byovd", "driver", "kernel", "privilege_escalation", "endpoint", "t1068"],
+  "alert_types": ["driver_load", "kernel_driver"],
+  "severity_filter": ["high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["driver_load", "kernel_driver", "byovd", "unsigned_driver"],
+    "min_severity": "high"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "crowdstrike",
+      "name": "CrowdStrike Falcon",
+      "category": "edr",
+      "reason": "Block driver, retrieve driver details, and isolate endpoint"
+    },
+    {
+      "connector_id": "virustotal",
+      "name": "VirusTotal",
+      "category": "threat_intel",
+      "reason": "Check driver hash against known vulnerable and malicious driver databases"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Suspicious Driver Load",
+          "config": {
+            "alert_types": ["driver_load", "kernel_driver", "byovd", "unsigned_driver"],
+            "description": "Triggers when a suspicious or unsigned kernel driver is loaded on a managed endpoint"
+          }
+        }
+      },
+      {
+        "id": "code_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "code",
+          "label": "Check Driver Signature",
+          "config": {
+            "runtime": "python3",
+            "code": "driver_name = alert.get('driver_name', '')\ndriver_hash = alert.get('driver_hash', '')\nis_signed = alert.get('is_signed', False)\nsigner = alert.get('signer', 'Unknown')\nknown_vuln_hashes = context.get('vulnerable_driver_hashes', [])\nis_known_vuln = driver_hash.lower() in [h.lower() for h in known_vuln_hashes]\nresult = {'driver_name': driver_name, 'driver_hash': driver_hash, 'is_signed': is_signed, 'signer': signer, 'is_known_vulnerable': is_known_vuln, 'suspicious': not is_signed or is_known_vuln}",
+            "description": "Check driver signature status and compare hash against the known vulnerable driver database"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — Driver Assessment",
+          "config": {
+            "template_id": "priv_escalation",
+            "additional_instructions": "Analyze this driver loading event for BYOVD attack indicators. Check if the driver is being used for privilege escalation, security tool evasion (EDR/AV tampering), or rootkit installation. Consider driver origin, signature, and loading context.",
+            "description": "AI-powered analysis of the driver load event to identify BYOVD attacks or rootkit installation"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 540 },
+        "data": {
+          "kind": "decision",
+          "label": "Malicious Driver?",
+          "config": {
+            "condition": "{{analyze_1.verdict}} in ['MALICIOUS', 'SUSPICIOUS'] || {{code_1.is_known_vulnerable}} == true",
+            "description": "Routes based on AI verdict or presence in the known vulnerable driver database"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "label": "Block Driver & Isolate Host",
+          "config": {
+            "integration_action": {
+              "connector_id": "crowdstrike",
+              "action": "contain_host",
+              "parameters": {
+                "device_id": "{{trigger_1.alert.endpoint_id}}",
+                "block_hash": "{{code_1.driver_hash}}"
+              }
+            },
+            "description": "Block the malicious driver hash and isolate the endpoint to prevent kernel-level compromise"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "label": "Notify SOC on Slack",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#soc-alerts",
+              "message": "SUSPICIOUS DRIVER LOAD — POSSIBLE BYOVD\nHost: {{trigger_1.alert.hostname}}\nDriver: {{code_1.driver_name}}\nHash: {{code_1.driver_hash}}\nSigned: {{code_1.is_signed}} (Signer: {{code_1.signer}})\nKnown Vulnerable: {{code_1.is_known_vulnerable}}\nAction Taken: Driver blocked, host isolated\n\nRiggs Assessment:\n{{analyze_1.summary}}"
+            },
+            "description": "Alert the SOC with driver details and containment actions for investigation"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 700, "y": 700 },
+        "data": {
+          "kind": "utility",
+          "label": "Log: Legitimate Driver",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "Driver '{{code_1.driver_name}}' on {{trigger_1.alert.hostname}} reviewed. Signed by {{code_1.signer}}, not in vulnerable driver database. Determined legitimate.",
+              "close_alert": true
+            },
+            "description": "Document that the driver load was legitimate and close the alert"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1020 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "Suspicious driver loading detection workflow complete"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_code",
+        "source": "trigger_1",
+        "target": "code_1",
+        "type": "default"
+      },
+      {
+        "id": "e_code_analyze",
+        "source": "code_1",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_analyze_decision",
+        "source": "analyze_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "respond_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "utility_1",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_block_notify",
+        "source": "respond_1",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_notify_end",
+        "source": "respond_2",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_utility_end",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

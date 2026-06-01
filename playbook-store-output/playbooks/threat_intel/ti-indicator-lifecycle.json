@@ -1,0 +1,224 @@
+{
+  "name": "IOC Lifecycle Management",
+  "slug": "ti-indicator-lifecycle",
+  "description": "Manages the full lifecycle of Indicators of Compromise by periodically reviewing active indicators, expiring stale ones, and refreshing those still relevant. The playbook queries all active IOCs, checks their age and last-seen dates, re-enriches aging indicators to validate continued relevance, then expires truly stale indicators and refreshes active ones with updated threat data. An audit report summarizing lifecycle actions is generated and distributed for compliance tracking.",
+  "category": "threat_intel",
+  "subcategory": "lifecycle",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "15 minutes",
+  "tags": ["ioc", "lifecycle", "expiry", "refresh", "threat_intel", "compliance", "hygiene"],
+  "alert_types": ["threat_intel"],
+  "severity_filter": ["low", "medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["scheduled", "manual", "ioc_lifecycle_review"],
+    "min_severity": "low"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "virustotal",
+      "name": "VirusTotal",
+      "category": "threat_intel",
+      "reason": "Re-enrich aging indicators to validate their continued relevance and threat status"
+    },
+    {
+      "connector_id": "misp",
+      "name": "MISP",
+      "category": "threat_intel",
+      "reason": "Check indicator freshness against MISP events and update sighting data"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "IOC Lifecycle Review Trigger",
+          "config": {
+            "alert_types": ["scheduled", "manual", "ioc_lifecycle_review"],
+            "schedule": "daily",
+            "description": "Triggers on a daily schedule or on-demand to review and manage the lifecycle of active indicators"
+          }
+        }
+      },
+      {
+        "id": "code_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "code",
+          "label": "Query Active IOCs and Classify by Age",
+          "config": {
+            "code": "from datetime import datetime, timedelta\n\nnow = datetime.utcnow()\nactive_iocs = inputs.get('active_indicators', [])\n\nstale_threshold_days = 90\nrefresh_threshold_days = 30\n\nstale = []\nrefresh_needed = []\ncurrent = []\n\nfor ioc in active_iocs:\n    created = datetime.fromisoformat(ioc.get('created_at', now.isoformat()))\n    last_seen = datetime.fromisoformat(ioc.get('last_seen', ioc.get('created_at', now.isoformat())))\n    age_days = (now - created).days\n    days_since_seen = (now - last_seen).days\n    \n    ioc['age_days'] = age_days\n    ioc['days_since_seen'] = days_since_seen\n    \n    if days_since_seen > stale_threshold_days:\n        stale.append(ioc)\n    elif days_since_seen > refresh_threshold_days:\n        refresh_needed.append(ioc)\n    else:\n        current.append(ioc)\n\nresult = {\n    'total_active': len(active_iocs),\n    'stale_count': len(stale),\n    'refresh_count': len(refresh_needed),\n    'current_count': len(current),\n    'stale': stale,\n    'refresh_needed': refresh_needed,\n    'current': current,\n    'review_date': now.isoformat()\n}",
+            "inputs": {
+              "active_indicators": "{{trigger_1.active_indicators}}"
+            },
+            "description": "Queries all active IOCs and classifies them into stale (>90 days unseen), refresh-needed (>30 days), and current categories"
+          }
+        }
+      },
+      {
+        "id": "loop_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "loop",
+          "label": "Re-Enrich Aging Indicators",
+          "config": {
+            "items_path": "$.code_1.outputs.result.refresh_needed",
+            "loop_variable": "aging_ioc",
+            "max_iterations": 200,
+            "description": "Iterates over aging indicators to re-enrich and validate continued relevance"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 540 },
+        "data": {
+          "kind": "analyze",
+          "label": "Re-Enrich Aging IOC",
+          "config": {
+            "mode": "enrich",
+            "observable_type": "{{aging_ioc.type}}",
+            "data_path": "$.aging_ioc.value",
+            "sources": ["virustotal", "misp"],
+            "description": "Re-enriches each aging indicator against VT and MISP to validate whether it remains a relevant threat"
+          }
+        }
+      },
+      {
+        "id": "analyze_2",
+        "type": "signal",
+        "position": { "x": 520, "y": 700 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — Lifecycle Assessment",
+          "config": {
+            "template_id": "ioc_correlation",
+            "additional_instructions": "Assess the lifecycle status of all reviewed indicators. For stale indicators, confirm they should be expired. For refreshed indicators, determine if they remain relevant threats or should be downgraded. Provide a summary of lifecycle actions recommended.",
+            "description": "AI-powered assessment determining which indicators to expire, refresh, or retain based on enrichment results"
+          }
+        }
+      },
+      {
+        "id": "code_2",
+        "type": "signal",
+        "position": { "x": 520, "y": 860 },
+        "data": {
+          "kind": "code",
+          "label": "Apply Lifecycle Actions",
+          "config": {
+            "code": "stale = inputs.get('stale', [])\nassessment = inputs.get('assessment', {})\n\nexpired_ids = [ioc.get('id') for ioc in stale]\nrefreshed_ids = assessment.get('refresh_ids', [])\ndowngraded_ids = assessment.get('downgrade_ids', [])\n\nresult = {\n    'expired': expired_ids,\n    'expired_count': len(expired_ids),\n    'refreshed': refreshed_ids,\n    'refreshed_count': len(refreshed_ids),\n    'downgraded': downgraded_ids,\n    'downgraded_count': len(downgraded_ids),\n    'actions_summary': f'Expired: {len(expired_ids)}, Refreshed: {len(refreshed_ids)}, Downgraded: {len(downgraded_ids)}'\n}",
+            "inputs": {
+              "stale": "{{code_1.outputs.result.stale}}",
+              "assessment": "{{analyze_2.outputs}}"
+            },
+            "description": "Applies lifecycle actions: expires stale indicators, refreshes validated ones, and downgrades no-longer-relevant indicators"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "label": "Distribute Lifecycle Audit Report",
+          "config": {
+            "notify": {
+              "channel": "email",
+              "target": "threat-intel-team@organization.com",
+              "subject": "IOC Lifecycle Audit — {{code_1.outputs.result.review_date}}",
+              "message": "IOC Lifecycle Review Complete\n\nTotal Active IOCs: {{code_1.outputs.result.total_active}}\nStale (Expired): {{code_2.outputs.result.expired_count}}\nRefreshed: {{code_2.outputs.result.refreshed_count}}\nDowngraded: {{code_2.outputs.result.downgraded_count}}\nCurrent (No Action): {{code_1.outputs.result.current_count}}\n\nRiggs AI Assessment:\n{{analyze_2.summary}}"
+            },
+            "description": "Distributes the IOC lifecycle audit report to the threat intel team for compliance tracking"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1180 },
+        "data": {
+          "kind": "utility",
+          "label": "Archive Audit Record",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "IOC Lifecycle Audit Record\n\nDate: {{code_1.outputs.result.review_date}}\nActions: {{code_2.outputs.result.actions_summary}}\n\nExpired: {{code_2.outputs.result.expired_count}} indicators removed from active monitoring\nRefreshed: {{code_2.outputs.result.refreshed_count}} indicators updated with fresh enrichment\nDowngraded: {{code_2.outputs.result.downgraded_count}} indicators reduced in severity\nCurrent: {{code_1.outputs.result.current_count}} indicators unchanged\n\nFull Assessment:\n{{analyze_2.summary}}"
+            },
+            "description": "Archives the lifecycle audit record as a note for compliance and historical reference"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1340 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "IOC lifecycle management complete"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_query",
+        "source": "trigger_1",
+        "target": "code_1",
+        "type": "default"
+      },
+      {
+        "id": "e_query_loop",
+        "source": "code_1",
+        "target": "loop_1",
+        "type": "default"
+      },
+      {
+        "id": "e_loop_enrich",
+        "source": "loop_1",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_enrich_assess",
+        "source": "analyze_1",
+        "target": "analyze_2",
+        "type": "default"
+      },
+      {
+        "id": "e_assess_apply",
+        "source": "analyze_2",
+        "target": "code_2",
+        "type": "default"
+      },
+      {
+        "id": "e_apply_distribute",
+        "source": "code_2",
+        "target": "respond_1",
+        "type": "default"
+      },
+      {
+        "id": "e_distribute_archive",
+        "source": "respond_1",
+        "target": "utility_1",
+        "type": "default"
+      },
+      {
+        "id": "e_archive_end",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

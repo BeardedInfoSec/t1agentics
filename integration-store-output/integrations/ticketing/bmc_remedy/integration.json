@@ -1,0 +1,342 @@
+{
+  "id": "bmc_remedy",
+  "name": "BMC Remedy",
+  "description": "This app supports ticket management functions on incidents in BMC Remedy",
+  "version": "2.1.4",
+  "category": "ticketing",
+  "vendor": "BMC Software",
+  "auth_type": "basic_auth",
+  "auth_config": {
+    "type": "basic_auth",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "create_ticket",
+      "name": "Create Ticket",
+      "description": "Create incident",
+      "http_method": "GET",
+      "endpoint": "/actions/create_ticket",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "first_name",
+          "type": "string",
+          "description": "Customer First Name",
+          "required": false,
+          "contains": [
+            "bmcremedy first name"
+          ]
+        },
+        {
+          "name": "last_name",
+          "type": "string",
+          "description": "Customer Last Name",
+          "required": false,
+          "contains": [
+            "bmcremedy last name"
+          ]
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Summary",
+          "required": false
+        },
+        {
+          "name": "impact",
+          "type": "string",
+          "description": "Impact",
+          "required": false
+        },
+        {
+          "name": "urgency",
+          "type": "string",
+          "description": "Urgency",
+          "required": false
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Status",
+          "required": false
+        },
+        {
+          "name": "reported_source",
+          "type": "string",
+          "description": "Reported Source",
+          "required": false
+        },
+        {
+          "name": "service_type",
+          "type": "string",
+          "description": "Incident Type",
+          "required": false
+        },
+        {
+          "name": "work_info_type",
+          "type": "string",
+          "description": "Work Info Type",
+          "required": false
+        },
+        {
+          "name": "status_reason",
+          "type": "string",
+          "description": "Status Reason",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "type": "string",
+          "description": "Fields (JSON format)",
+          "required": false
+        },
+        {
+          "name": "vault_id",
+          "type": "string",
+          "description": "Comma (,) separated vault ID (maximum 3)",
+          "required": false,
+          "contains": [
+            "vault id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "update_ticket",
+      "name": "Update Ticket",
+      "description": "Update an existing incident",
+      "http_method": "GET",
+      "endpoint": "/actions/update_ticket",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Incident ID",
+          "required": true,
+          "contains": [
+            "bmcremedy incident id"
+          ]
+        },
+        {
+          "name": "work_info_type",
+          "type": "string",
+          "description": "Work Info Type",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "type": "string",
+          "description": "Fields (JSON format)",
+          "required": false
+        },
+        {
+          "name": "vault_id",
+          "type": "string",
+          "description": "Comma (',') separated vault ID (maximum 3)",
+          "required": false,
+          "contains": [
+            "vault id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_ticket",
+      "name": "Get Ticket",
+      "description": "Get incident information",
+      "http_method": "GET",
+      "endpoint": "/actions/get_ticket",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Incident ID",
+          "required": true,
+          "contains": [
+            "bmcremedy incident id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_tickets",
+      "name": "List Tickets",
+      "description": "Get list of incidents",
+      "http_method": "GET",
+      "endpoint": "/actions/list_tickets",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Additional parameters to query",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of incidents to return",
+          "required": false
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Set the starting point or offset for the response. The default value is 0",
+          "required": false,
+          "default": 0
+        }
+      ]
+    },
+    {
+      "id": "set_status",
+      "name": "Set Status",
+      "description": "Set incident status",
+      "http_method": "GET",
+      "endpoint": "/actions/set_status",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Incident ID",
+          "required": true,
+          "contains": [
+            "bmcremedy incident id"
+          ]
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Status",
+          "required": true
+        },
+        {
+          "name": "assignee_login_id",
+          "type": "string",
+          "description": "Login ID of assignee",
+          "required": false
+        },
+        {
+          "name": "assignee",
+          "type": "string",
+          "description": "Assignee",
+          "required": false
+        },
+        {
+          "name": "assigned_support_company",
+          "type": "string",
+          "description": "Assigned Support Company",
+          "required": false
+        },
+        {
+          "name": "assigned_support_organization",
+          "type": "string",
+          "description": "Assigned Support Organization",
+          "required": false
+        },
+        {
+          "name": "assigned_group",
+          "type": "string",
+          "description": "Assigned Group",
+          "required": false
+        },
+        {
+          "name": "status_reason",
+          "type": "string",
+          "description": "Status Reason",
+          "required": false
+        },
+        {
+          "name": "resolution",
+          "type": "string",
+          "description": "Resolution",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "add_comment",
+      "name": "Add Comment",
+      "description": "Add work log information to the incident",
+      "http_method": "GET",
+      "endpoint": "/actions/add_comment",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Incident ID",
+          "required": true,
+          "contains": [
+            "bmcremedy incident id"
+          ]
+        },
+        {
+          "name": "work_info_type",
+          "type": "string",
+          "description": "Work Info Type",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Worklog Description",
+          "required": false
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "Notes",
+          "required": false
+        },
+        {
+          "name": "secure_work_log",
+          "type": "string",
+          "description": "Locked",
+          "required": false
+        },
+        {
+          "name": "view_access",
+          "type": "string",
+          "description": "View Access",
+          "required": false
+        },
+        {
+          "name": "worklog_submitter",
+          "type": "string",
+          "description": "Submit a worklog with a different username or email address",
+          "required": false
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "BMC Remedy",
+    "original_type": "ticketing",
+    "converted_at": "2025-12-18T16:25:28.616413",
+    "source_version": "2.1.4"
+  }
+}

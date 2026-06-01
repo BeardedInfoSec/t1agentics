@@ -1,0 +1,164 @@
+{
+  "id": "gcp_cloud_armor",
+  "name": "Google Cloud Armor",
+  "description": "Google Cloud network security service providing DDoS protection, WAF rules, and adaptive protection for applications and services behind load balancers",
+  "version": "1.0.0",
+  "category": "gcp_security",
+  "vendor": "Google Cloud",
+  "auth_type": "oauth2_client",
+  "auth_config": {
+    "type": "oauth2_client",
+    "token_url": "https://oauth2.googleapis.com/token",
+    "scope": "https://www.googleapis.com/auth/compute",
+    "grant_type": "urn:ietf:params:oauth:grant-type:jwt-bearer"
+  },
+  "base_url": "https://compute.googleapis.com/compute/v1",
+  "actions": [
+    {
+      "id": "list_security_policies",
+      "name": "List Security Policies",
+      "description": "List all Cloud Armor security policies in a project",
+      "http_method": "GET",
+      "endpoint": "/projects/{project}/global/securityPolicies",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "project",
+          "type": "string",
+          "description": "GCP project ID",
+          "required": true
+        },
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "Filter expression for listing policies",
+          "required": false
+        },
+        {
+          "name": "maxResults",
+          "type": "number",
+          "description": "Maximum results to return",
+          "required": false,
+          "default": 500
+        }
+      ]
+    },
+    {
+      "id": "get_security_policy",
+      "name": "Get Security Policy",
+      "description": "Retrieve details of a specific Cloud Armor security policy including all rules",
+      "http_method": "GET",
+      "endpoint": "/projects/{project}/global/securityPolicies/{securityPolicy}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "project",
+          "type": "string",
+          "description": "GCP project ID",
+          "required": true
+        },
+        {
+          "name": "securityPolicy",
+          "type": "string",
+          "description": "Security policy name",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_rule",
+      "name": "Get Security Policy Rule",
+      "description": "Retrieve a specific rule from a Cloud Armor security policy",
+      "http_method": "GET",
+      "endpoint": "/projects/{project}/global/securityPolicies/{securityPolicy}/getRule",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "project",
+          "type": "string",
+          "description": "GCP project ID",
+          "required": true
+        },
+        {
+          "name": "securityPolicy",
+          "type": "string",
+          "description": "Security policy name",
+          "required": true
+        },
+        {
+          "name": "priority",
+          "type": "number",
+          "description": "Rule priority number",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_preconfigured_expression_sets",
+      "name": "List Preconfigured Expression Sets",
+      "description": "List available preconfigured WAF expression sets (OWASP rules, etc.)",
+      "http_method": "GET",
+      "endpoint": "/projects/{project}/global/securityPolicies/listPreconfiguredExpressionSets",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "project",
+          "type": "string",
+          "description": "GCP project ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "add_rule",
+      "name": "Add Security Policy Rule",
+      "description": "Add a new rule to an existing Cloud Armor security policy",
+      "http_method": "POST",
+      "endpoint": "/projects/{project}/global/securityPolicies/{securityPolicy}/addRule",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "project",
+          "type": "string",
+          "description": "GCP project ID",
+          "required": true
+        },
+        {
+          "name": "securityPolicy",
+          "type": "string",
+          "description": "Security policy name",
+          "required": true
+        },
+        {
+          "name": "action",
+          "type": "string",
+          "description": "Rule action (allow, deny(403), deny(404), deny(502), redirect, throttle, rate_based_ban)",
+          "required": true
+        },
+        {
+          "name": "priority",
+          "type": "number",
+          "description": "Rule priority (lower number = higher priority)",
+          "required": true
+        },
+        {
+          "name": "match",
+          "type": "object",
+          "description": "Match condition (e.g., {\"config\": {\"srcIpRanges\": [\"1.2.3.0/24\"]}, \"versionedExpr\": \"SRC_IPS_V1\"})",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Rule description",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

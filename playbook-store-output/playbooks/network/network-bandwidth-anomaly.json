@@ -1,0 +1,221 @@
+{
+  "name": "Bandwidth Anomaly Investigation",
+  "slug": "network-bandwidth-anomaly",
+  "description": "Investigates anomalous bandwidth consumption that may indicate data exfiltration, cryptomining, unauthorized media streaming, or compromised hosts participating in botnets. Riggs AI analyzes traffic flow data to classify the bandwidth spike by type and risk. Potential exfiltration triggers traffic throttling, host investigation, and SOC escalation. Non-malicious bandwidth abuse is documented and routed to the appropriate team for policy enforcement.",
+  "category": "network",
+  "subcategory": "traffic_analysis",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "12 minutes",
+  "tags": ["bandwidth", "anomaly", "exfiltration", "traffic_analysis", "network"],
+  "alert_types": ["network", "bandwidth", "traffic_anomaly"],
+  "severity_filter": ["medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["network", "bandwidth_anomaly", "traffic_spike", "unusual_upload", "high_egress"],
+    "min_severity": "medium"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "palo_alto_ngfw",
+      "name": "Palo Alto NGFW",
+      "category": "network",
+      "reason": "Apply QoS throttling and traffic shaping to contain bandwidth abuse"
+    },
+    {
+      "connector_id": "crowdstrike",
+      "name": "CrowdStrike Falcon",
+      "category": "edr",
+      "reason": "Investigate endpoint processes responsible for abnormal traffic"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Notify SOC of potential exfiltration or bandwidth abuse"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Bandwidth Anomaly Alert",
+          "config": {
+            "alert_types": ["network", "bandwidth_anomaly", "traffic_spike", "unusual_upload", "high_egress"],
+            "description": "Triggers when network monitoring detects abnormal bandwidth consumption significantly exceeding the baseline for a host, user, or segment"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — Traffic Flow Analysis",
+          "config": {
+            "template_id": "data_exfil",
+            "additional_instructions": "Analyze traffic flow data: top destinations by volume, protocol distribution, time pattern, source process/application, and comparison to historical baseline. Classify as potential exfiltration, cryptomining, media streaming, backup traffic, or other. Assess exfiltration risk.",
+            "description": "AI-powered analysis of traffic flow data to classify the bandwidth anomaly type and assess data exfiltration risk"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "label": "Potential Exfiltration?",
+          "config": {
+            "condition": "{{analyze_1.verdict}} in ['MALICIOUS', 'SUSPICIOUS'] and {{analyze_1.classification}} == 'exfiltration'",
+            "description": "Routes based on whether the bandwidth anomaly indicates potential data exfiltration versus non-malicious bandwidth abuse"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "respond",
+          "label": "Throttle Egress Traffic",
+          "config": {
+            "integration_action": {
+              "connector_id": "palo_alto_ngfw",
+              "action": "apply_qos",
+              "parameters": {
+                "source_ip": "{{trigger_1.alert.source_ip}}",
+                "destination_ip": "{{trigger_1.alert.top_destination}}",
+                "bandwidth_limit": "1mbps",
+                "rule_name": "T1-Throttle-{{trigger_1.alert.alert_id}}",
+                "comment": "Egress throttled — Potential exfiltration. Volume: {{trigger_1.alert.bytes_transferred}}"
+              }
+            },
+            "description": "Applies QoS throttling to the suspicious egress traffic to slow potential data exfiltration while investigation continues"
+          }
+        }
+      },
+      {
+        "id": "analyze_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — Endpoint Investigation",
+          "config": {
+            "template_id": "data_exfil",
+            "additional_instructions": "Investigate the source endpoint: identify the process generating the traffic, check for data staging behavior, recently accessed sensitive files, running services, and any malware indicators. Determine what data may have been exfiltrated.",
+            "description": "AI-powered endpoint investigation to identify the process responsible for abnormal traffic and assess data exposure"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "label": "Notify SOC — Exfil Suspected",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#soc-alerts",
+              "message": "POTENTIAL DATA EXFILTRATION\n\nSource: {{trigger_1.alert.hostname}} ({{trigger_1.alert.source_ip}})\nTop Destination: {{trigger_1.alert.top_destination}}\nData Volume: {{trigger_1.alert.bytes_transferred}}\nProtocol: {{trigger_1.alert.protocol}}\nDuration: {{trigger_1.alert.duration}}\n\nProcess: {{analyze_2.responsible_process}}\nSensitive Files Accessed: {{analyze_2.sensitive_files}}\n\nActions: Egress traffic throttled to 1mbps\nAlert ID: {{trigger_1.alert.alert_id}}\n\nEndpoint investigation:\n{{analyze_2.summary}}",
+              "priority": "critical"
+            },
+            "description": "Sends critical exfiltration alert to the SOC with traffic details, endpoint investigation results, and throttling status"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "utility",
+          "label": "Document & Route to IT/HR",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "Bandwidth anomaly on {{trigger_1.alert.hostname}} — Classification: {{analyze_1.classification}}.\nVolume: {{trigger_1.alert.bytes_transferred}}\nCause: {{analyze_1.cause_description}}\n\nNot exfiltration. Routed to {{analyze_1.responsible_team}} for policy enforcement.",
+              "assign_to": "{{analyze_1.responsible_team}}",
+              "close_alert": false
+            },
+            "description": "Documents non-malicious bandwidth abuse and routes to the appropriate team (IT for streaming, infra for backups, etc.)"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1020 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "Bandwidth anomaly investigation workflow complete"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_analyze",
+        "source": "trigger_1",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_analyze_decision",
+        "source": "analyze_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "respond_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "utility_1",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_throttle_investigate",
+        "source": "respond_1",
+        "target": "analyze_2",
+        "type": "default"
+      },
+      {
+        "id": "e_investigate_notify",
+        "source": "analyze_2",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_notify_end",
+        "source": "respond_2",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_utility_end",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

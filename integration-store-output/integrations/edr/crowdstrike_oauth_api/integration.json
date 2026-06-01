@@ -1,0 +1,2669 @@
+{
+  "id": "crowdstrike_oauth_api",
+  "name": "CrowdStrike OAuth API",
+  "description": "This app integrates with CrowdStrike OAuth2 authentication standard to implement querying of endpoint security data",
+  "version": "5.1.0",
+  "category": "edr",
+  "vendor": "CrowdStrike",
+  "auth_type": "oauth2",
+  "auth_config": {
+    "type": "oauth2",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "/sensors/entities/datafeed/v2",
+  "actions": [
+    {
+      "id": "run_query",
+      "name": "Run Query",
+      "description": "Run a query against CrowdStrike API",
+      "http_method": "GET",
+      "endpoint": "/actions/run_query",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "endpoint",
+          "type": "string",
+          "description": "API endpoint path in the format: /<service>/queries/<resource>/<version> (ex: /devices/queries/devices/v1)",
+          "required": true
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of results to return",
+          "required": false,
+          "default": 50
+        },
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "Filter expression (FQL Syntax) (ex: last_seen: >'2020-01-01')",
+          "required": false
+        },
+        {
+          "name": "sort",
+          "type": "string",
+          "description": "Property to sort by",
+          "required": false
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Starting index for results",
+          "required": false,
+          "default": 0
+        }
+      ]
+    },
+    {
+      "id": "query_device",
+      "name": "Query Device",
+      "description": "Fetch the device details based on the provided query",
+      "http_method": "GET",
+      "endpoint": "/actions/query_device",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum devices to be fetched",
+          "required": false,
+          "default": 50
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Starting index of overall result set from which to return ids. (Defaults to 0)",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "Filter expression used to limit the fetched devices (FQL Syntax)",
+          "required": false
+        },
+        {
+          "name": "sort",
+          "type": "string",
+          "description": "Property to sort by",
+          "required": false
+        },
+        {
+          "name": "cid",
+          "type": "string",
+          "description": "A single, specific tenant id to search. By default, will search asset main tenant and all listed subtenants; to search only main tenant (even if you have subtenants) use 'main'",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_groups",
+      "name": "List Groups",
+      "description": "Fetch the details of the host groups",
+      "http_method": "GET",
+      "endpoint": "/alerts/queries/alerts/v2",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum host groups to be fetched",
+          "required": false,
+          "default": 50
+        },
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "Filter expression used to limit the fetched host groups (FQL Syntax)",
+          "required": false
+        },
+        {
+          "name": "sort",
+          "type": "string",
+          "description": "Property to sort by",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "quarantine_device",
+      "name": "Quarantine Device",
+      "description": "Block the device",
+      "http_method": "POST",
+      "endpoint": "/actions/quarantine_device",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "device_id",
+          "type": "string",
+          "description": "Comma-separated list of device IDs",
+          "required": false,
+          "contains": [
+            "crowdstrike device id"
+          ]
+        },
+        {
+          "name": "hostname",
+          "type": "string",
+          "description": "Comma-separated list of hostnames",
+          "required": false,
+          "contains": [
+            "host name"
+          ]
+        },
+        {
+          "name": "cid",
+          "type": "string",
+          "description": "A single, specific tenant id to search. By default, will search asset main tenant and all listed subtenants; to search only main tenant (even if you have subtenants) use 'main'",
+          "required": false
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "unquarantine_device",
+      "name": "Unquarantine Device",
+      "description": "Unblock the device",
+      "http_method": "POST",
+      "endpoint": "/actions/unquarantine_device",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "device_id",
+          "type": "string",
+          "description": "Comma-separated list of device IDs",
+          "required": false,
+          "contains": [
+            "crowdstrike device id"
+          ]
+        },
+        {
+          "name": "hostname",
+          "type": "string",
+          "description": "Comma-separated list of hostnames",
+          "required": false,
+          "contains": [
+            "host name"
+          ]
+        },
+        {
+          "name": "cid",
+          "type": "string",
+          "description": "A single, specific tenant id to search. By default, will search asset main tenant and all listed subtenants; to search only main tenant (even if you have subtenants) use 'main'",
+          "required": false
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "assign_hosts",
+      "name": "Assign Hosts",
+      "description": "Assign one or more hosts to the static host group",
+      "http_method": "POST",
+      "endpoint": "/actions/assign_hosts",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "device_id",
+          "type": "string",
+          "description": "Comma-separated list of device IDs",
+          "required": false,
+          "contains": [
+            "crowdstrike device id"
+          ]
+        },
+        {
+          "name": "hostname",
+          "type": "string",
+          "description": "Comma separated list of hostnames",
+          "required": false,
+          "contains": [
+            "host name"
+          ]
+        },
+        {
+          "name": "host_group_id",
+          "type": "string",
+          "description": "Static host group ID",
+          "required": true,
+          "contains": [
+            "crowdstrike host group id"
+          ]
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "remove_hosts",
+      "name": "Remove Hosts",
+      "description": "Remove one or more hosts from the static host group",
+      "http_method": "POST",
+      "endpoint": "/actions/remove_hosts",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "device_id",
+          "type": "string",
+          "description": "Comma-separated list of device IDs",
+          "required": false,
+          "contains": [
+            "crowdstrike device id"
+          ]
+        },
+        {
+          "name": "hostname",
+          "type": "string",
+          "description": "Comma-separated list of hostnames",
+          "required": false,
+          "contains": [
+            "host name"
+          ]
+        },
+        {
+          "name": "host_group_id",
+          "type": "string",
+          "description": "Static host group ID",
+          "required": true,
+          "contains": [
+            "crowdstrike host group id"
+          ]
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "create_session",
+      "name": "Create Session",
+      "description": "Initialize a new session with the Real Time Response cloud",
+      "http_method": "GET",
+      "endpoint": "/actions/create_session",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "device_id",
+          "type": "string",
+          "description": "Device ID for session to be created",
+          "required": true,
+          "contains": [
+            "crowdstrike device id"
+          ]
+        },
+        {
+          "name": "queue_offline",
+          "type": "boolean",
+          "description": "Queue commands for offline devices, will execute when system comes back online",
+          "required": false,
+          "default": false
+        }
+      ]
+    },
+    {
+      "id": "delete_session",
+      "name": "Delete Session",
+      "description": "Deletes a Real Time Response session",
+      "http_method": "GET",
+      "endpoint": "/actions/delete_session",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "session_id",
+          "type": "string",
+          "description": "RTR Session ID",
+          "required": true,
+          "contains": [
+            "crowdstrike rtr session id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_detections",
+      "name": "List Detections",
+      "description": "Get a list of detections *The action uses legacy Detects API being deprecated. Please use the 'list epp alerts' action instead*",
+      "http_method": "GET",
+      "endpoint": "/detects/queries/detects/v1",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum detections to be fetched",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "Filter expression used to limit the fetched detections (FQL Syntax)",
+          "required": false
+        },
+        {
+          "name": "sort",
+          "type": "string",
+          "description": "Property to sort by",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_epp_alerts",
+      "name": "List Epp Alerts",
+      "description": "Get a list of epp alerts, replaces legacy Detects API",
+      "http_method": "GET",
+      "endpoint": "/alerts/queries/alerts/v2",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum alerts to be fetched",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "Filter expression used to limit the fetched alerts (FQL Syntax)",
+          "required": false
+        },
+        {
+          "name": "sort",
+          "type": "string",
+          "description": "Property to sort by",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_detections_details",
+      "name": "Get Detections Details",
+      "description": "Get a list of detections details by providing detection IDs *The action uses legacy Detects API being deprecated. Please use the 'get epp details' action instead*",
+      "http_method": "GET",
+      "endpoint": "/actions/get_detections_details",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "detection_ids",
+          "type": "string",
+          "description": "List of detection IDs. Comma-separated list allowed",
+          "required": true,
+          "contains": [
+            "crowdstrike detection id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_epp_alerts_details",
+      "name": "Get Epp Details",
+      "description": "Get list of alert details for EPP alerts by providing composite IDs, replaces legacy Detects API",
+      "http_method": "GET",
+      "endpoint": "/actions/get_epp_alerts_details",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "alert_ids",
+          "type": "string",
+          "description": "List of alert composite_ids. Comma-separated list allowed",
+          "required": true,
+          "contains": [
+            "crowdstrike alert id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "update_detections",
+      "name": "Update Detections",
+      "description": "Update detections in crowdstrike host *The action uses legacy Detects API being deprecated. Please use the 'update epp alerts' action instead*",
+      "http_method": "GET",
+      "endpoint": "/actions/update_detections",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "detection_ids",
+          "type": "string",
+          "description": "List of Detection IDs to update, Comma-separated list allowed",
+          "required": true,
+          "contains": [
+            "crowdstrike detection id"
+          ]
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "Comment to add to the detection (Maximum 2048 bytes)",
+          "required": false
+        },
+        {
+          "name": "assigned_to_user",
+          "type": "string",
+          "description": "User ID to assign",
+          "required": false,
+          "contains": [
+            "crowdstrike unique user id"
+          ]
+        },
+        {
+          "name": "show_in_ui",
+          "type": "boolean",
+          "description": "This detection is displayed or not in falcon UI",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Status to set",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "update_epp_alerts",
+      "name": "Update Epp Alerts",
+      "description": "Update EPP alerts in CrowdStrike, replaces legacy Detects API",
+      "http_method": "GET",
+      "endpoint": "/actions/update_epp_alerts",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "alert_ids",
+          "type": "string",
+          "description": "List of alert composite_ids to update, Comma-separated list allowed",
+          "required": true,
+          "contains": [
+            "crowdstrike alert id"
+          ]
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "Comment to add to the alert (Maximum 2048 bytes)",
+          "required": false
+        },
+        {
+          "name": "assigned_to_user",
+          "type": "string",
+          "description": "User to assign (can be email, UUID, or username)",
+          "required": false,
+          "contains": [
+            "crowdstrike user id",
+            "email"
+          ]
+        },
+        {
+          "name": "unassign",
+          "type": "string",
+          "description": "If there are any users currently assigned to specified alerts, unassign them",
+          "required": false
+        },
+        {
+          "name": "show_in_ui",
+          "type": "boolean",
+          "description": "Control whether this alert is displayed in Falcon UI",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Status to set",
+          "required": false
+        },
+        {
+          "name": "add_tags",
+          "type": "string",
+          "description": "Tags to add to the alert, Comma-separated list allowed",
+          "required": false
+        },
+        {
+          "name": "remove_tags",
+          "type": "string",
+          "description": "Tags to remove from the alert, Comma-separated list allowed",
+          "required": false
+        },
+        {
+          "name": "remove_tags_by_prefix",
+          "type": "string",
+          "description": "Remove all tags with this prefix",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_alerts",
+      "name": "List Alerts",
+      "description": "Get a list of alerts",
+      "http_method": "GET",
+      "endpoint": "/alerts/queries/alerts/v2",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum alerts to be fetched",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "Filter expression used to limit the fetched alerts (FQL Syntax)",
+          "required": false
+        },
+        {
+          "name": "sort",
+          "type": "string",
+          "description": "Property to sort by",
+          "required": false
+        },
+        {
+          "name": "include_hidden",
+          "type": "boolean",
+          "description": "Include hidden alerts",
+          "required": false,
+          "default": false
+        }
+      ]
+    },
+    {
+      "id": "list_sessions",
+      "name": "List Sessions",
+      "description": "Lists Real Time Response sessions",
+      "http_method": "GET",
+      "endpoint": "/alerts/queries/alerts/v2",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum RTR sessions to be fetched",
+          "required": false,
+          "default": 50
+        },
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "Filter expression used to limit the fetched RTR sessions (FQL Syntax)",
+          "required": false
+        },
+        {
+          "name": "sort",
+          "type": "string",
+          "description": "Property to sort by",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "run_command",
+      "name": "Run Command",
+      "description": "Execute an active responder command on a single host",
+      "http_method": "GET",
+      "endpoint": "/real-time-response/entities/command/v1",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "device_id",
+          "type": "string",
+          "description": "Device ID",
+          "required": true,
+          "contains": [
+            "md5",
+            "crowdstrike device id"
+          ]
+        },
+        {
+          "name": "session_id",
+          "type": "string",
+          "description": "RTR Session ID",
+          "required": true,
+          "contains": [
+            "crowdstrike rtr session id"
+          ]
+        },
+        {
+          "name": "command",
+          "type": "string",
+          "description": "RTR command to execute on host",
+          "required": true
+        },
+        {
+          "name": "data",
+          "type": "string",
+          "description": "Data/Arguments for the command",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "run_admin_command",
+      "name": "Run Admin Command",
+      "description": "Execute an RTR Admin command on a single host",
+      "http_method": "GET",
+      "endpoint": "/actions/run_admin_command",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "device_id",
+          "type": "string",
+          "description": "Device ID",
+          "required": true,
+          "contains": [
+            "crowdstrike device id"
+          ]
+        },
+        {
+          "name": "session_id",
+          "type": "string",
+          "description": "RTR Session ID",
+          "required": true,
+          "contains": [
+            "crowdstrike rtr session id"
+          ]
+        },
+        {
+          "name": "command",
+          "type": "string",
+          "description": "RTR Admin command to execute on host",
+          "required": true
+        },
+        {
+          "name": "data",
+          "type": "string",
+          "description": "Data/Arguments for the command",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_command_details",
+      "name": "Get Command Details",
+      "description": "Retrieve results of an active responder command executed on a single host",
+      "http_method": "GET",
+      "endpoint": "/actions/get_command_details",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "cloud_request_id",
+          "type": "string",
+          "description": "Cloud Request ID for Command",
+          "required": true,
+          "contains": [
+            "crowdstrike cloud request id"
+          ]
+        },
+        {
+          "name": "timeout_seconds",
+          "type": "number",
+          "description": "Time (in seconds; default is 60) to wait before timing out poll for results",
+          "required": false,
+          "default": 60
+        }
+      ]
+    },
+    {
+      "id": "list_session_files",
+      "name": "List Session Files",
+      "description": "Get a list of files for the specified RTR session",
+      "http_method": "GET",
+      "endpoint": "/alerts/queries/alerts/v2",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "session_id",
+          "type": "string",
+          "description": "RTR Session ID",
+          "required": true,
+          "contains": [
+            "crowdstrike rtr session id"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "get_incident_behaviors",
+      "name": "Get Incident Behaviors",
+      "description": "Get details on behaviors by providing behavior IDs",
+      "http_method": "GET",
+      "endpoint": "/incidents/entities/behaviors/GET/v1",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "ids",
+          "type": "string",
+          "description": "List of behavior IDs. Comma separated list allowed",
+          "required": true,
+          "contains": [
+            "crowdstrike incidentbehavior id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "update_incident",
+      "name": "Update Incident",
+      "description": "Perform a set of actions on one or more incidents, such as adding tags or comments or updating the incident name or description",
+      "http_method": "GET",
+      "endpoint": "/incidents/entities/incident-actions/v1",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "ids",
+          "type": "string",
+          "description": "List of incident IDs. Comma separated list allowed",
+          "required": true,
+          "contains": [
+            "crowdstrike incident id"
+          ]
+        },
+        {
+          "name": "add_tag",
+          "type": "string",
+          "description": "Adds the associated tag to all the incident(s) of the ids list. See example values for the defined list",
+          "required": false
+        },
+        {
+          "name": "delete_tag",
+          "type": "string",
+          "description": "Deletes the matching tag from all the incident(s) in the ids list. See example values for the defined list",
+          "required": false
+        },
+        {
+          "name": "update_name",
+          "type": "string",
+          "description": "Updates the name of all the incident(s) in the ids list",
+          "required": false
+        },
+        {
+          "name": "update_description",
+          "type": "string",
+          "description": "Updates the description of all the incident(s) listed in the ids",
+          "required": false
+        },
+        {
+          "name": "update_status",
+          "type": "string",
+          "description": "Updates the status of all the incident(s) in the ids list",
+          "required": false
+        },
+        {
+          "name": "add_comment",
+          "type": "string",
+          "description": "Adds a comment for all the incident(s) in the ids list",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_users",
+      "name": "List Users",
+      "description": "Get information about all users in your Customer ID",
+      "http_method": "GET",
+      "endpoint": "/user-management/queries/users/v1",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "get_user_roles",
+      "name": "Get User Roles",
+      "description": "Gets the roles that are assigned to the user",
+      "http_method": "GET",
+      "endpoint": "/user-management/combined/user-roles/v1",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "user_uuid",
+          "type": "string",
+          "description": "Users Unqiue ID to get the roles for",
+          "required": true,
+          "contains": [
+            "crowdstrike unique user id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_roles",
+      "name": "List Roles",
+      "description": "Get information about all user roles from your Customer ID",
+      "http_method": "GET",
+      "endpoint": "/alerts/queries/alerts/v2",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "get_role",
+      "name": "Get Role",
+      "description": "Get information about all user roles from your Customer ID",
+      "http_method": "GET",
+      "endpoint": "/user-management/entities/roles/v1",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "role_id",
+          "type": "string",
+          "description": "Role ID to get information about. Comma separated list allowed",
+          "required": true,
+          "contains": [
+            "crowdstrike user role id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_crowdscores",
+      "name": "List Crowdscores",
+      "description": "Query environment wide CrowdScore and return the entity data",
+      "http_method": "GET",
+      "endpoint": "/incidents/combined/crowdscores/v1",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "Optional filter and sort criteria in the form of an FQL query",
+          "required": false
+        },
+        {
+          "name": "sort",
+          "type": "string",
+          "description": "Sort the results by a specific field and direction. (Example: assigned_to.asc)",
+          "required": false
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Starting index of overall result set from which to return ids. (Defaults to 0)",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Limit the number of results to return. (Defaults to 50, Max 500)",
+          "required": false,
+          "default": 50
+        }
+      ]
+    },
+    {
+      "id": "get_incident_details",
+      "name": "Get Incident Details",
+      "description": "Get details on incidents by providing incident IDs",
+      "http_method": "GET",
+      "endpoint": "/incidents/entities/incidents/GET/v1",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "ids",
+          "type": "string",
+          "description": "List of incident IDs. Comma separated list allowed",
+          "required": true,
+          "contains": [
+            "crowdstrike incident id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_incident_behaviors",
+      "name": "List Incident Behaviors",
+      "description": "Search for behaviors by providing an FQL filter, sorting, and paging details",
+      "http_method": "GET",
+      "endpoint": "/alerts/queries/alerts/v2",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "Optional filter and sort criteria in the form of an FQL query",
+          "required": false
+        },
+        {
+          "name": "sort",
+          "type": "string",
+          "description": "Sort the results by a specific field and direction. (Example: assigned_to.asc)",
+          "required": false
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Starting index of overall result set from which to return ids. (Defaults to 0)",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Limit the number of results to return. (Defaults to 50, Max 500)",
+          "required": false,
+          "default": 50
+        }
+      ]
+    },
+    {
+      "id": "list_incidents",
+      "name": "List Incidents",
+      "description": "Search for incidents by providing an FQL filter, sorting, and paging details",
+      "http_method": "GET",
+      "endpoint": "/incidents/queries/incidents/v1",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "Optional filter and sort criteria in the form of an FQL query",
+          "required": false
+        },
+        {
+          "name": "sort",
+          "type": "string",
+          "description": "Sort the results by a specific field and direction. (Example: assigned_to.asc)",
+          "required": false
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Starting index of overall result set from which to return ids. (Defaults to 0)",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Limit the number of results to return. (Defaults to 50, Max 500)",
+          "required": false,
+          "default": 50
+        }
+      ]
+    },
+    {
+      "id": "get_session_file",
+      "name": "Get Session File",
+      "description": "Get RTR extracted file contents for the specified session and sha256 and add it to the vault",
+      "http_method": "GET",
+      "endpoint": "/actions/get_session_file",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "session_id",
+          "type": "string",
+          "description": "RTR Session ID",
+          "required": true,
+          "contains": [
+            "crowdstrike rtr session id"
+          ]
+        },
+        {
+          "name": "file_hash",
+          "type": "string",
+          "description": "SHA256 hash to retrieve",
+          "required": true,
+          "contains": [
+            "sha256"
+          ]
+        },
+        {
+          "name": "file_name",
+          "type": "string",
+          "description": "Filename to use for the archive name and the file within the archive",
+          "required": false,
+          "contains": [
+            "filename"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "resolve_detection",
+      "name": "Set Status",
+      "description": "Set the state of a detection in Crowdstrike Host *The action uses legacy Detects API being deprecated. Please use the 'resolve epp alerts' action instead*",
+      "http_method": "GET",
+      "endpoint": "/detects/entities/detects/v2",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Detection ID to set the state of",
+          "required": true,
+          "contains": [
+            "crowdstrike detection id"
+          ]
+        },
+        {
+          "name": "state",
+          "type": "string",
+          "description": "State to set",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "resolve_epp_alerts",
+      "name": "Resolve Epp Alerts",
+      "description": "Update the status of an EPP alert in CrowdStrike, replaces legacy Detects API",
+      "http_method": "GET",
+      "endpoint": "/actions/resolve_epp_alerts",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "alert_ids",
+          "type": "string",
+          "description": "List of alert composite_ids to update, Comma-separated list allowed",
+          "required": true,
+          "contains": [
+            "crowdstrike alert id"
+          ]
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Status to set",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_device_detail",
+      "name": "Get System Info",
+      "description": "Get details of a device, given the device ID",
+      "http_method": "GET",
+      "endpoint": "/devices/entities/devices/v2",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Device ID from previous Crowdstrike IOC search",
+          "required": true,
+          "contains": [
+            "crowdstrike device id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_process_detail",
+      "name": "Get Process Detail",
+      "description": "Retrieve the details of a process that is running or that previously ran, given a process ID",
+      "http_method": "GET",
+      "endpoint": "/processes/entities/processes/v1",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "falcon_process_id",
+          "type": "string",
+          "description": "Process ID from previous Falcon IOC search",
+          "required": true,
+          "contains": [
+            "falcon process id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "hunt_file",
+      "name": "Hunt File",
+      "description": "Hunt for a file on the network by querying for the hash",
+      "http_method": "GET",
+      "endpoint": "/actions/hunt_file",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "hash",
+          "type": "string",
+          "description": "File hash to search",
+          "required": true,
+          "contains": [
+            "hash",
+            "sha256",
+            "sha1",
+            "md5"
+          ]
+        },
+        {
+          "name": "count_only",
+          "type": "boolean",
+          "description": "Get endpoint count only",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum device IDs to be fetched (defaults to 100)",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "cid",
+          "type": "string",
+          "description": "A single, specific tenant id to search. By default, will search asset main tenant and all listed subtenants; to search only main tenant (even if you have subtenants) use 'main'",
+          "required": false
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "hunt_domain",
+      "name": "Hunt Domain",
+      "description": "Get a list of device IDs on which the domain was matched",
+      "http_method": "GET",
+      "endpoint": "/actions/hunt_domain",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "domain",
+          "type": "string",
+          "description": "Domain to search",
+          "required": true,
+          "contains": [
+            "domain"
+          ]
+        },
+        {
+          "name": "count_only",
+          "type": "boolean",
+          "description": "Get endpoint count only",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum device IDs to be fetched (defaults to 100)",
+          "required": false,
+          "default": 100
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "hunt_ip",
+      "name": "Hunt Ip",
+      "description": "Get a list of device IDs on which the ip was matched",
+      "http_method": "GET",
+      "endpoint": "/actions/hunt_ip",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "IP address to search",
+          "required": true,
+          "contains": [
+            "ip",
+            "ipv6"
+          ]
+        },
+        {
+          "name": "count_only",
+          "type": "boolean",
+          "description": "Get endpoint count only",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum device IDs to be fetched (defaults to 100)",
+          "required": false,
+          "default": 100
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "upload_put_file",
+      "name": "Upload Put File",
+      "description": "Upload a new put-file to use for the RTR `put` command",
+      "http_method": "GET",
+      "endpoint": "/actions/upload_put_file",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "vault_id",
+          "type": "string",
+          "description": "Vault ID of file to upload",
+          "required": true,
+          "contains": [
+            "vault id"
+          ]
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "File description",
+          "required": true
+        },
+        {
+          "name": "file_name",
+          "type": "string",
+          "description": "Filename to use (if different than actual file name)",
+          "required": false,
+          "contains": [
+            "filename"
+          ]
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "Comment for the audit log",
+          "required": false
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "get_indicator",
+      "name": "Get Indicator",
+      "description": "Get the full definition of one or more indicators that are being watched",
+      "http_method": "GET",
+      "endpoint": "/iocs/entities/indicators/v1",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "indicator_value",
+          "type": "string",
+          "description": "String representation of the indicator",
+          "required": false,
+          "contains": [
+            "domain",
+            "md5",
+            "sha256",
+            "ip",
+            "ipv6"
+          ]
+        },
+        {
+          "name": "indicator_type",
+          "type": "string",
+          "description": "The type of the indicator",
+          "required": false,
+          "contains": [
+            "crowdstrike indicator type"
+          ]
+        },
+        {
+          "name": "resource_id",
+          "type": "string",
+          "description": "The resource id of the indicator",
+          "required": false,
+          "contains": [
+            "crowdstrike indicator id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_custom_indicators",
+      "name": "List Custom Indicators",
+      "description": "Queries for custom indicators in your customer account",
+      "http_method": "GET",
+      "endpoint": "/alerts/queries/alerts/v2",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "indicator_value",
+          "type": "string",
+          "description": "String representation of the indicator",
+          "required": false,
+          "contains": [
+            "ip",
+            "ipv6",
+            "md5",
+            "sha256",
+            "domain"
+          ]
+        },
+        {
+          "name": "indicator_type",
+          "type": "string",
+          "description": "The type of the indicator",
+          "required": false,
+          "contains": [
+            "crowdstrike indicator type"
+          ]
+        },
+        {
+          "name": "action",
+          "type": "string",
+          "description": "Enforcement policy",
+          "required": false,
+          "contains": [
+            "crowdstrike indicator action"
+          ]
+        },
+        {
+          "name": "source",
+          "type": "string",
+          "description": "The source of indicators",
+          "required": false
+        },
+        {
+          "name": "ph",
+          "type": "string",
+          "description": "",
+          "required": false
+        },
+        {
+          "name": "from_expiration",
+          "type": "string",
+          "description": "The earliest indicator expiration date (RFC3339)",
+          "required": false,
+          "contains": [
+            "date"
+          ]
+        },
+        {
+          "name": "to_expiration",
+          "type": "string",
+          "description": "The latest indicator expiration date (RFC3339)",
+          "required": false,
+          "contains": [
+            "date"
+          ]
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "The limit of indicator to be fetched (defaults to 100)",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "sort",
+          "type": "string",
+          "description": "Property to sort by",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_put_files",
+      "name": "List Put Files",
+      "description": "Queries for files uploaded to Crowdstrike for use with the RTR `put` command",
+      "http_method": "GET",
+      "endpoint": "/alerts/queries/alerts/v2",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "FQL query to filter results",
+          "required": false
+        },
+        {
+          "name": "offset",
+          "type": "string",
+          "description": "Starting index of overall result set",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Number of files to return",
+          "required": false,
+          "default": 50
+        },
+        {
+          "name": "sort",
+          "type": "string",
+          "description": "Sort results",
+          "required": false
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "on_poll",
+      "name": "On Poll",
+      "description": "Callback action for the on_poll ingest functionality",
+      "http_method": "GET",
+      "endpoint": "/actions/on_poll",
+      "action_type": "ingest",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "start_time",
+          "type": "number",
+          "description": "Parameter ignored in this app",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "number",
+          "description": "Parameter ignored in this app",
+          "required": false
+        },
+        {
+          "name": "container_count",
+          "type": "number",
+          "description": "Parameter ignored in this app",
+          "required": false
+        },
+        {
+          "name": "artifact_count",
+          "type": "number",
+          "description": "Parameter ignored in this app",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_processes",
+      "name": "List Processes",
+      "description": "List processes that have recently used the IOC on a particular device",
+      "http_method": "GET",
+      "endpoint": "/alerts/queries/alerts/v2",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "ioc",
+          "type": "string",
+          "description": "File Hash or Domain to use for searching",
+          "required": true,
+          "contains": [
+            "hash",
+            "sha256",
+            "sha1",
+            "md5",
+            "domain"
+          ]
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Crowdstrike Device ID to search on",
+          "required": true,
+          "contains": [
+            "crowdstrike device id"
+          ]
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum processes to be fetched (defaults to 100)",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "upload_iocs",
+      "name": "Upload Indicator",
+      "description": "Upload indicator that you want CrowdStrike to watch",
+      "http_method": "POST",
+      "endpoint": "/actions/upload_iocs",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "ioc",
+          "type": "string",
+          "description": "Input domain, ip, or hash ioc",
+          "required": true,
+          "contains": [
+            "sha256",
+            "md5",
+            "domain",
+            "ip",
+            "ipv6"
+          ]
+        },
+        {
+          "name": "action",
+          "type": "string",
+          "description": "Action to take when a host observes the custom IOC",
+          "required": true,
+          "contains": [
+            "crowdstrike indicator action"
+          ]
+        },
+        {
+          "name": "platforms",
+          "type": "string",
+          "description": "Comma separated list of platforms",
+          "required": true,
+          "contains": [
+            "crowdstrike indicator platforms"
+          ]
+        },
+        {
+          "name": "expiration",
+          "type": "number",
+          "description": "Alert lifetime in days",
+          "required": false
+        },
+        {
+          "name": "source",
+          "type": "string",
+          "description": "Indicator originating source",
+          "required": false,
+          "default": "IOC uploaded via Splunk SOAR"
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Indicator description",
+          "required": false
+        },
+        {
+          "name": "tags",
+          "type": "string",
+          "description": "Comma separated list of tags",
+          "required": false
+        },
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Severity level",
+          "required": false,
+          "contains": [
+            "severity"
+          ]
+        },
+        {
+          "name": "host_groups",
+          "type": "string",
+          "description": "Comma separated list of host group IDs",
+          "required": false,
+          "contains": [
+            "crowdstrike host group id"
+          ]
+        },
+        {
+          "name": "filename",
+          "type": "string",
+          "description": "Metadata filename",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "delete_iocs",
+      "name": "Delete Indicator",
+      "description": "Delete an indicator that is being watched",
+      "http_method": "POST",
+      "endpoint": "/actions/delete_iocs",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "ioc",
+          "type": "string",
+          "description": "Hash, ip or domain IOC from previous upload",
+          "required": false,
+          "contains": [
+            "ip",
+            "ipv6",
+            "md5",
+            "sha256",
+            "domain"
+          ]
+        },
+        {
+          "name": "resource_id",
+          "type": "string",
+          "description": "The resource id of the indicator",
+          "required": false,
+          "contains": [
+            "crowdstrike indicator id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "update_iocs",
+      "name": "Update Indicator",
+      "description": "Update an indicator that has been uploaded",
+      "http_method": "GET",
+      "endpoint": "/actions/update_iocs",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "ioc",
+          "type": "string",
+          "description": "Hash, ip or domain IOC to update",
+          "required": true,
+          "contains": [
+            "ip",
+            "md5",
+            "sha256",
+            "domain"
+          ]
+        },
+        {
+          "name": "action",
+          "type": "string",
+          "description": "Action to take when a host observes the custom IOC",
+          "required": false,
+          "contains": [
+            "crowdstrike indicator action"
+          ]
+        },
+        {
+          "name": "platforms",
+          "type": "string",
+          "description": "Comma separated list of platforms",
+          "required": false,
+          "contains": [
+            "crowdstrike indicator platforms"
+          ]
+        },
+        {
+          "name": "expiration",
+          "type": "number",
+          "description": "Alert lifetime in days",
+          "required": false
+        },
+        {
+          "name": "source",
+          "type": "string",
+          "description": "Indicator originating source",
+          "required": false,
+          "default": "IOC updated via Splunk SOAR"
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Indicator description",
+          "required": false
+        },
+        {
+          "name": "tags",
+          "type": "string",
+          "description": "Comma separated list of tags",
+          "required": false
+        },
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Severity level",
+          "required": false,
+          "contains": [
+            "severity"
+          ]
+        },
+        {
+          "name": "host_groups",
+          "type": "string",
+          "description": "Comma separated list of host group IDs",
+          "required": false,
+          "contains": [
+            "crowdstrike host group id"
+          ]
+        },
+        {
+          "name": "filename",
+          "type": "string",
+          "description": "Metadata filename",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "file_reputation",
+      "name": "File Reputation",
+      "description": "Queries CrowdStrike for the file info given a vault ID or a SHA256 hash, vault ID has higher priority than SHA256 hash if both are provided",
+      "http_method": "GET",
+      "endpoint": "/actions/file_reputation",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "vault_id",
+          "type": "string",
+          "description": "Vault ID of file",
+          "required": false,
+          "contains": [
+            "vault id"
+          ]
+        },
+        {
+          "name": "sha256",
+          "type": "string",
+          "description": "SHA256 hash of the file",
+          "required": false,
+          "contains": [
+            "sha256"
+          ]
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum reports to be fetched",
+          "required": false,
+          "default": 50
+        },
+        {
+          "name": "sort",
+          "type": "string",
+          "description": "Property to sort by",
+          "required": false
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Starting index of overall result set from which to return ids (defaults to 0)",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "detail_report",
+          "type": "boolean",
+          "description": "Get the detailed report",
+          "required": false,
+          "default": false
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "url_reputation",
+      "name": "Url Reputation",
+      "description": "Queries CrowdStrike for the url info",
+      "http_method": "GET",
+      "endpoint": "/actions/url_reputation",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "URL to query",
+          "required": true,
+          "contains": [
+            "url"
+          ]
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum reports to be fetched",
+          "required": false,
+          "default": 50
+        },
+        {
+          "name": "sort",
+          "type": "string",
+          "description": "Property to sort by",
+          "required": false
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Starting index of overall result set from which to return ids (defaults to 0)",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "detail_report",
+          "type": "boolean",
+          "description": "Get the detailed report",
+          "required": false,
+          "default": false
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "download_report",
+      "name": "Download Report",
+      "description": "To download the report of the provided artifact id",
+      "http_method": "GET",
+      "endpoint": "/falconx/entities/artifacts/v1",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "artifact_id",
+          "type": "string",
+          "description": "Artifact id to be downloaded",
+          "required": true,
+          "contains": [
+            "crowdstrike artifact id"
+          ]
+        },
+        {
+          "name": "file_name",
+          "type": "string",
+          "description": "Filename to use for the file added to vault",
+          "required": false,
+          "contains": [
+            "filename"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "detonate_file",
+      "name": "Detonate File",
+      "description": "Upload a file to CrowdStrike and retrieve the analysis results",
+      "http_method": "GET",
+      "endpoint": "/actions/detonate_file",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "vault_id",
+          "type": "string",
+          "description": "Vault ID of file",
+          "required": true,
+          "contains": [
+            "vault id"
+          ]
+        },
+        {
+          "name": "environment",
+          "type": "string",
+          "description": "Sandbox environment to be used for analysis",
+          "required": true,
+          "contains": [
+            "crowdstrike environment"
+          ]
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "A descriptive comment to identify the file",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum reports to be fetched",
+          "required": false,
+          "default": 50
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Starting index of overall result set from which to return ids (Defaults to 0)",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "command_line",
+          "type": "string",
+          "description": "Command line script passed to the submitted file at runtime (Max length: 2048 characters)",
+          "required": false
+        },
+        {
+          "name": "document_password",
+          "type": "string",
+          "description": "Password of the document if password protected (Max length: 32 characters)",
+          "required": false
+        },
+        {
+          "name": "submit_name",
+          "type": "string",
+          "description": "Name of the malware sample that's used for file type detection and analysis",
+          "required": false
+        },
+        {
+          "name": "user_tags",
+          "type": "string",
+          "description": "Comma seperated list of user tags (Max length: 100 characters per tag)",
+          "required": false
+        },
+        {
+          "name": "sort",
+          "type": "string",
+          "description": "Property to sort by",
+          "required": false
+        },
+        {
+          "name": "action_script",
+          "type": "string",
+          "description": "Runtime script for sandbox analysis",
+          "required": false
+        },
+        {
+          "name": "detail_report",
+          "type": "boolean",
+          "description": "Get the detailed report",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "enable_tor",
+          "type": "boolean",
+          "description": "To route the sandbox network traffic via TOR",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "is_confidential",
+          "type": "boolean",
+          "description": "Defines visibility of the file in Falcon MalQuery (defaults to True)",
+          "required": false,
+          "default": true
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "detonate_url",
+      "name": "Detonate Url",
+      "description": "Upload an url to CrowdStrike and retrieve the analysis results",
+      "http_method": "GET",
+      "endpoint": "/actions/detonate_url",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "URL to query",
+          "required": true,
+          "contains": [
+            "url"
+          ]
+        },
+        {
+          "name": "environment",
+          "type": "string",
+          "description": "Sandbox environment to be used for analysis",
+          "required": true,
+          "contains": [
+            "crowdstrike environment"
+          ]
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum reports to be fetched",
+          "required": false,
+          "default": 50
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Starting index of overall result set from which to return ids (Defaults to 0)",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "document_password",
+          "type": "string",
+          "description": "Password of the document if password protected (Max length: 32 characters)",
+          "required": false
+        },
+        {
+          "name": "command_line",
+          "type": "string",
+          "description": "Command line script passed to the submitted file at runtime (Max length: 2048 characters)",
+          "required": false
+        },
+        {
+          "name": "user_tags",
+          "type": "string",
+          "description": "Comma seperated list of user tags (Max length: 100 characters per tag)",
+          "required": false
+        },
+        {
+          "name": "sort",
+          "type": "string",
+          "description": "Property to sort by",
+          "required": false
+        },
+        {
+          "name": "action_script",
+          "type": "string",
+          "description": "Runtime script for sandbox analysis",
+          "required": false
+        },
+        {
+          "name": "detail_report",
+          "type": "boolean",
+          "description": "Get the detailed report",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "enable_tor",
+          "type": "boolean",
+          "description": "To route the sandbox network traffic via TOR",
+          "required": false,
+          "default": false
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "check_detonate_status",
+      "name": "Check Status",
+      "description": "To check detonation status of the provided resource id",
+      "http_method": "GET",
+      "endpoint": "/actions/check_detonate_status",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "resource_id",
+          "type": "string",
+          "description": "Id of the resource",
+          "required": true,
+          "contains": [
+            "crowdstrike resource id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_device_scroll",
+      "name": "Get Device Scroll",
+      "description": "Search for hosts in your environment by platform, hostname, IP, and other criteria with continuous pagination capability (based on offset pointer which expires after 2 minutes with no maximum limit)",
+      "http_method": "GET",
+      "endpoint": "/devices/queries/devices-scroll/v1",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "offset",
+          "type": "string",
+          "description": "The offset to page from, for the next result set",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "The maximum records to return. [1-5000]",
+          "required": false
+        },
+        {
+          "name": "sort",
+          "type": "string",
+          "description": "The property to sort by (e.g. status.desc or hostname.asc)",
+          "required": false
+        },
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "The offset to page from, for the next result set",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_zta_data",
+      "name": "Get Zta Data",
+      "description": "Get Zero Trust Assessment data for one or more hosts by providing agent IDs (AID)",
+      "http_method": "GET",
+      "endpoint": "/actions/get_zta_data",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "agent_id",
+          "type": "string",
+          "description": "Agent ID to get zero trust assessment data about. Comma-separated list allowed",
+          "required": true,
+          "contains": [
+            "crowdstrike device id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "create_ioa_rule_group",
+      "name": "Create Ioa Rule Group",
+      "description": "Create an empty IOA Rule Group",
+      "http_method": "POST",
+      "endpoint": "/actions/create_ioa_rule_group",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Name of the new Rule Group",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Longer description for the new Rule Group",
+          "required": true
+        },
+        {
+          "name": "platform",
+          "type": "string",
+          "description": "Platform that this Rule Group applies to",
+          "required": true
+        },
+        {
+          "name": "enabled",
+          "type": "boolean",
+          "description": "Enable the new Rule Group immediately upon creation",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "policy_id",
+          "type": "string",
+          "description": "Prevention Policy ID to assign the new Rule Group to",
+          "required": false,
+          "contains": [
+            "crowdstrike prevention policy id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "update_ioa_rule_group",
+      "name": "Update Ioa Rule Group",
+      "description": "Modify an existing IOA Rule Group",
+      "http_method": "POST",
+      "endpoint": "/actions/update_ioa_rule_group",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Rule Group ID",
+          "required": true,
+          "contains": [
+            "crowdstrike ioa rule group id"
+          ]
+        },
+        {
+          "name": "version",
+          "type": "number",
+          "description": "Latest version of this Rule Group",
+          "required": true
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Name of the Rule Group",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Longer description for the Rule Group",
+          "required": true
+        },
+        {
+          "name": "enabled",
+          "type": "boolean",
+          "description": "Enable or disable the Rule Group",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "Comment for the audit log",
+          "required": true
+        },
+        {
+          "name": "assign_policy_id",
+          "type": "string",
+          "description": "Prevention Policy ID to assign the Rule Group to",
+          "required": false,
+          "contains": [
+            "crowdstrike prevention policy id"
+          ]
+        },
+        {
+          "name": "remove_policy_id",
+          "type": "string",
+          "description": "Prevention Policy ID to remove the Rule Group from",
+          "required": false,
+          "contains": [
+            "crowdstrike prevention policy id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "delete_ioa_rule_group",
+      "name": "Delete Ioa Rule Group",
+      "description": "Delete an existing IOA Rule Group",
+      "http_method": "POST",
+      "endpoint": "/actions/delete_ioa_rule_group",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Rule Group ID",
+          "required": true,
+          "contains": [
+            "crowdstrike ioa rule group id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_ioa_platforms",
+      "name": "List Ioa Platforms",
+      "description": "List valid platforms for IOA Rule Groups",
+      "http_method": "GET",
+      "endpoint": "/alerts/queries/alerts/v2",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "list_ioa_rule_groups",
+      "name": "List Ioa Rule Groups",
+      "description": "List IOA Rule Groups",
+      "http_method": "GET",
+      "endpoint": "/alerts/queries/alerts/v2",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "fql_query",
+          "type": "string",
+          "description": "FQL query to filter rule groups",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_ioa_severities",
+      "name": "List Ioa Severities",
+      "description": "List valid severity values for IOA rules",
+      "http_method": "GET",
+      "endpoint": "/alerts/queries/alerts/v2",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "list_ioa_types",
+      "name": "List Ioa Types",
+      "description": "List valid types of IOA rules",
+      "http_method": "GET",
+      "endpoint": "/alerts/queries/alerts/v2",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "platform",
+          "type": "string",
+          "description": "Show only IOA types supported by the given platform",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "create_ioa_rule",
+      "name": "Create Ioa Rule",
+      "description": "Create a new IOA Rule",
+      "http_method": "POST",
+      "endpoint": "/actions/create_ioa_rule",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "rule_group_id",
+          "type": "string",
+          "description": "Rule Group ID in which to create this rule",
+          "required": true,
+          "contains": [
+            "crowdstrike ioa rule group id"
+          ]
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Rule name",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Rule description",
+          "required": true
+        },
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Rule severity (run the \"list ioa severities\" action to find valid severities)",
+          "required": true
+        },
+        {
+          "name": "rule_type_id",
+          "type": "number",
+          "description": "Rule type to create (run the \"list ioa types\" action to find valid types of rules and their IDs and parameters)",
+          "required": true
+        },
+        {
+          "name": "disposition_id",
+          "type": "number",
+          "description": "The action that the rule should take when triggered (valid dispositions can be found in the \"list ioa types\" output)",
+          "required": true
+        },
+        {
+          "name": "field_values",
+          "type": "string",
+          "description": "JSON list of parameters to pass to the new rule (valid fields can be found in the \"list ioa types\" output)",
+          "required": true
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "Comment for the audit log (optional)",
+          "required": false
+        },
+        {
+          "name": "enabled",
+          "type": "boolean",
+          "description": "Enable this rule immediately",
+          "required": false,
+          "default": false
+        }
+      ]
+    },
+    {
+      "id": "update_ioa_rule",
+      "name": "Update Ioa Rule",
+      "description": "Update an existing IOA Rule",
+      "http_method": "POST",
+      "endpoint": "/actions/update_ioa_rule",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "rule_group_id",
+          "type": "string",
+          "description": "Rule Group ID containing the rule",
+          "required": true,
+          "contains": [
+            "crowdstrike ioa rule group id"
+          ]
+        },
+        {
+          "name": "rule_group_version",
+          "type": "number",
+          "description": "Latest version of Rule Group",
+          "required": true
+        },
+        {
+          "name": "rule_id",
+          "type": "string",
+          "description": "Rule ID to update",
+          "required": true,
+          "contains": [
+            "crowdstrike ioa rule id"
+          ]
+        },
+        {
+          "name": "rule_version",
+          "type": "number",
+          "description": "Latest version of Rule",
+          "required": true
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Rule name",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Rule description",
+          "required": true
+        },
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Rule severity (run the \"list ioa severities\" action to find valid severities)",
+          "required": true
+        },
+        {
+          "name": "disposition_id",
+          "type": "number",
+          "description": "The action that the rule should take when triggered (valid dispositions can be found in the \"list ioa types\" output)",
+          "required": true
+        },
+        {
+          "name": "field_values",
+          "type": "string",
+          "description": "JSON list of parameters to pass to the new rule (valid fields can be found in the \"list ioa types\" output)",
+          "required": true
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "Comment for the audit log (optional)",
+          "required": false
+        },
+        {
+          "name": "enabled",
+          "type": "boolean",
+          "description": "Enable this rule",
+          "required": false,
+          "default": false
+        }
+      ]
+    },
+    {
+      "id": "delete_ioa_rule",
+      "name": "Delete Ioa Rule",
+      "description": "Delete an existing IOA Rule",
+      "http_method": "POST",
+      "endpoint": "/actions/delete_ioa_rule",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "rule_group_id",
+          "type": "string",
+          "description": "Rule Group ID containing the rule",
+          "required": true,
+          "contains": [
+            "crowdstrike ioa rule group id"
+          ]
+        },
+        {
+          "name": "rule_id",
+          "type": "string",
+          "description": "Rule ID to delete",
+          "required": true,
+          "contains": [
+            "crowdstrike ioa rule id"
+          ]
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "CrowdStrike OAuth API",
+    "original_type": "endpoint",
+    "converted_at": "2025-12-18T16:25:28.708439",
+    "source_version": "5.1.0"
+  }
+}

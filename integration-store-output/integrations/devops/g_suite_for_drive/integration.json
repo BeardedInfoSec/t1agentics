@@ -1,0 +1,292 @@
+{
+  "id": "g_suite_for_drive",
+  "name": "G Suite for Drive",
+  "description": "This app allows various file manipulation actions to be performed on Google Drive",
+  "version": "2.2.4",
+  "category": "devops",
+  "vendor": "Google",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "list_users",
+      "name": "List Users",
+      "description": "Get the list of users",
+      "http_method": "GET",
+      "endpoint": "/actions/list_users",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "max_items",
+          "type": "number",
+          "description": "Maximum number of users to return",
+          "required": false,
+          "default": 500
+        },
+        {
+          "name": "next_page_token",
+          "type": "string",
+          "description": "Next Page Token",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "delete_file",
+      "name": "Delete File",
+      "description": "Delete a file",
+      "http_method": "POST",
+      "endpoint": "/actions/delete_file",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "email",
+          "type": "string",
+          "description": "Email (use this drive)",
+          "required": false,
+          "contains": [
+            "email"
+          ]
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "description": "File ID",
+          "required": true,
+          "contains": [
+            "drive file id"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "create_folder",
+      "name": "Create Folder",
+      "description": "Create a new folder",
+      "http_method": "GET",
+      "endpoint": "/actions/create_folder",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "email",
+          "type": "string",
+          "description": "Email (use this drive)",
+          "required": false,
+          "contains": [
+            "email"
+          ]
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Name of the new folder",
+          "required": true
+        },
+        {
+          "name": "folder_id",
+          "type": "string",
+          "description": "ID of the parent folder",
+          "required": false,
+          "contains": [
+            "drive file id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "create_file",
+      "name": "Upload File",
+      "description": "Upload a file from the Vault to Drive",
+      "http_method": "GET",
+      "endpoint": "/actions/create_file",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "email",
+          "type": "string",
+          "description": "Email (use this drive)",
+          "required": false,
+          "contains": [
+            "email"
+          ]
+        },
+        {
+          "name": "vault_id",
+          "type": "string",
+          "description": "Vault ID",
+          "required": true,
+          "contains": [
+            "vault id",
+            "sha1"
+          ]
+        },
+        {
+          "name": "source_mime_type",
+          "type": "string",
+          "description": "MIME type of file in vault",
+          "required": false,
+          "contains": [
+            "mime type"
+          ]
+        },
+        {
+          "name": "dest_mime_type",
+          "type": "string",
+          "description": "MIME type of new Drive file (will disable convert)",
+          "required": false,
+          "contains": [
+            "mime type"
+          ]
+        },
+        {
+          "name": "folder_id",
+          "type": "string",
+          "description": "ID of the parent folder",
+          "required": false,
+          "contains": [
+            "drive file id"
+          ]
+        },
+        {
+          "name": "file_name",
+          "type": "string",
+          "description": "Set the file name in Drive",
+          "required": false
+        },
+        {
+          "name": "convert",
+          "type": "boolean",
+          "description": "Attempt to convert file to native Drive type. Will only have an effect if dest_mime_type is not set",
+          "required": false,
+          "default": true
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "get_file",
+      "name": "Get File",
+      "description": "Get information about a file or download it to the Vault",
+      "http_method": "GET",
+      "endpoint": "/actions/get_file",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "email",
+          "type": "string",
+          "description": "Email (use this drive)",
+          "required": false,
+          "contains": [
+            "email"
+          ]
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "description": "File ID",
+          "required": true,
+          "contains": [
+            "drive file id"
+          ]
+        },
+        {
+          "name": "download_file",
+          "type": "boolean",
+          "description": "Download the file to the Vault",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "ph",
+          "type": "string",
+          "description": "",
+          "required": false
+        },
+        {
+          "name": "mime_type",
+          "type": "string",
+          "description": "MIME Type for exported file. This will only have an effect if the original document is file type that needs to be exported (i.e. Google Docs / Sheets / Slides files)",
+          "required": false,
+          "contains": [
+            "mime type"
+          ]
+        },
+        {
+          "name": "file_name",
+          "type": "string",
+          "description": "Set a new name for the file before adding it to the vault",
+          "required": false
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "list_files",
+      "name": "List Files",
+      "description": "Get the list of files",
+      "http_method": "GET",
+      "endpoint": "/actions/list_files",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "email",
+          "type": "string",
+          "description": "Email (use this drive)",
+          "required": false,
+          "contains": [
+            "email"
+          ]
+        },
+        {
+          "name": "max_results",
+          "type": "number",
+          "description": "Max Results",
+          "required": false
+        },
+        {
+          "name": "next_page_token",
+          "type": "string",
+          "description": "Next Page Token",
+          "required": false
+        },
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Query",
+          "required": false
+        }
+      ],
+      "observable_type": "file_hash"
+    }
+  ],
+  "source_metadata": {
+    "original_name": "G Suite for Drive",
+    "original_type": "devops",
+    "converted_at": "2025-12-18T16:25:28.840156",
+    "source_version": "2.2.4"
+  }
+}

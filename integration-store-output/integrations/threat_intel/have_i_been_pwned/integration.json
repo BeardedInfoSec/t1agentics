@@ -1,0 +1,77 @@
+{
+  "id": "have_i_been_pwned",
+  "name": "Have I Been Pwned",
+  "description": "Queries Have I Been Pwned for data breach information with investigative actions",
+  "version": "2.1.4",
+  "category": "threat_intel",
+  "vendor": "Troy Hunt",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "https://haveibeenpwned.com/api/v3/",
+  "actions": [
+    {
+      "id": "lookup_email",
+      "name": "Lookup Email",
+      "description": "Searches for breaches associated with an email",
+      "http_method": "GET",
+      "endpoint": "/actions/lookup_email",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "email",
+          "type": "string",
+          "description": "Email address",
+          "required": true,
+          "contains": [
+            "email"
+          ]
+        },
+        {
+          "name": "truncate",
+          "type": "string",
+          "description": "Truncate results to just domains (Default: False)",
+          "required": false,
+          "default": "False"
+        }
+      ],
+      "observable_type": "email"
+    },
+    {
+      "id": "lookup_domain",
+      "name": "Lookup Domain",
+      "description": "Searches for breaches associated with a domain",
+      "http_method": "GET",
+      "endpoint": "/actions/lookup_domain",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "domain",
+          "type": "string",
+          "description": "URL or domain to query",
+          "required": true,
+          "contains": [
+            "url",
+            "domain"
+          ]
+        }
+      ],
+      "observable_type": "domain"
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Have I Been Pwned",
+    "original_type": "investigative",
+    "converted_at": "2025-12-18T16:25:28.849673",
+    "source_version": "2.1.4"
+  }
+}

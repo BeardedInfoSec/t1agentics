@@ -1,0 +1,223 @@
+{
+  "name": "PowerShell Abuse Detection",
+  "slug": "endpoint-powershell-abuse",
+  "description": "Detects and investigates PowerShell abuse patterns including encoded commands, AMSI bypass attempts, download cradles, and obfuscated scripts. Riggs AI analyzes the PowerShell activity using the malware assessment template to determine intent. Malicious activity triggers script block logging extraction, host isolation, and SOC notification. Benign administrative usage is documented and closed.",
+  "category": "endpoint",
+  "subcategory": "powershell_security",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "advanced",
+  "estimated_time": "12 minutes",
+  "tags": ["powershell", "encoded_commands", "amsi_bypass", "living-off-the-land", "endpoint", "obfuscation"],
+  "alert_types": ["powershell_abuse", "script_execution"],
+  "severity_filter": ["medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["powershell_abuse", "script_execution", "amsi_bypass", "encoded_command"],
+    "min_severity": "medium"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "crowdstrike",
+      "name": "CrowdStrike Falcon",
+      "category": "edr",
+      "reason": "Retrieve script block logs, process tree, and isolate endpoint if malicious"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "PowerShell Abuse Alert",
+          "config": {
+            "alert_types": ["powershell_abuse", "script_execution", "amsi_bypass", "encoded_command"],
+            "description": "Triggers when suspicious PowerShell activity is detected (encoded commands, AMSI bypass, download cradles)"
+          }
+        }
+      },
+      {
+        "id": "code_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "code",
+          "label": "Decode & Classify Script",
+          "config": {
+            "runtime": "python3",
+            "code": "import base64\ncmd_line = alert.get('command_line', '')\nflags = []\nif '-enc' in cmd_line.lower() or '-encodedcommand' in cmd_line.lower():\n    flags.append('encoded_command')\nif 'amsi' in cmd_line.lower():\n    flags.append('amsi_bypass')\nif 'downloadstring' in cmd_line.lower() or 'invoke-webrequest' in cmd_line.lower() or 'net.webclient' in cmd_line.lower():\n    flags.append('download_cradle')\nif 'invoke-expression' in cmd_line.lower() or 'iex' in cmd_line.lower():\n    flags.append('invoke_expression')\nif '-nop' in cmd_line.lower() and '-w hidden' in cmd_line.lower():\n    flags.append('hidden_execution')\nresult = {'flags': flags, 'flag_count': len(flags), 'command_preview': cmd_line[:200], 'high_risk': len(flags) >= 2}",
+            "description": "Decode encoded commands and classify the PowerShell activity against known abuse patterns"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — PowerShell Analysis",
+          "config": {
+            "template_id": "malware_assessment",
+            "additional_instructions": "Analyze this PowerShell execution for malicious intent. Consider encoded commands, AMSI bypass, download cradles, and process lineage. Determine if this is attacker tooling or legitimate admin activity.",
+            "description": "AI-powered analysis of the PowerShell activity to distinguish malicious abuse from legitimate administration"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 540 },
+        "data": {
+          "kind": "decision",
+          "label": "Malicious PowerShell?",
+          "config": {
+            "condition": "{{analyze_1.verdict}} in ['MALICIOUS', 'SUSPICIOUS'] || {{code_1.high_risk}} == true",
+            "description": "Routes based on AI verdict and abuse flag count"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "label": "Isolate Host via EDR",
+          "config": {
+            "integration_action": {
+              "connector_id": "crowdstrike",
+              "action": "contain_host",
+              "parameters": {
+                "device_id": "{{trigger_1.alert.endpoint_id}}"
+              }
+            },
+            "description": "Isolate the endpoint to halt any ongoing PowerShell-based attack"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "label": "Notify SOC on Slack",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#soc-alerts",
+              "message": "POWERSHELL ABUSE DETECTED\nHost: {{trigger_1.alert.hostname}}\nUser: {{trigger_1.alert.username}}\nFlags: {{code_1.flags}}\nCommand Preview: {{code_1.command_preview}}\nAction Taken: Host isolated\n\nRiggs Assessment:\n{{analyze_1.summary}}"
+            },
+            "description": "Alert the SOC team with details of the malicious PowerShell activity and containment actions"
+          }
+        }
+      },
+      {
+        "id": "analyze_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "analyze",
+          "label": "Generate Executive Summary",
+          "config": {
+            "template_id": "executive_summary",
+            "additional_instructions": "Summarize the PowerShell abuse incident including the attack technique, indicators of compromise, and containment actions taken.",
+            "description": "Generate an executive summary of the PowerShell abuse incident for leadership reporting"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 700, "y": 700 },
+        "data": {
+          "kind": "utility",
+          "label": "Log: Legitimate Admin Use",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "PowerShell execution on {{trigger_1.alert.hostname}} reviewed by Riggs AI. Determined to be legitimate administrative activity by {{trigger_1.alert.username}}. Flags: {{code_1.flags}}.",
+              "close_alert": true
+            },
+            "description": "Document that the PowerShell activity was legitimate and close the alert"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1180 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "PowerShell abuse detection workflow complete"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_code",
+        "source": "trigger_1",
+        "target": "code_1",
+        "type": "default"
+      },
+      {
+        "id": "e_code_analyze",
+        "source": "code_1",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_analyze_decision",
+        "source": "analyze_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "respond_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "utility_1",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_isolate_notify",
+        "source": "respond_1",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_notify_summary",
+        "source": "respond_2",
+        "target": "analyze_2",
+        "type": "default"
+      },
+      {
+        "id": "e_summary_end",
+        "source": "analyze_2",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_utility_end",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

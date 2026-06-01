@@ -1,0 +1,226 @@
+{
+  "name": "Port Scan Detection & Response",
+  "slug": "network-port-scan-response",
+  "description": "Detects and responds to port scanning activity targeting internal or external-facing assets. Riggs AI enriches the source IP across threat intelligence feeds and determines scan intent (reconnaissance, vulnerability probing, or worm propagation). External malicious scanners are blocked on the firewall and added to the EDL blocklist. Internal scan sources trigger a lateral movement investigation. Low-risk scans from known vulnerability scanners are whitelisted and closed.",
+  "category": "network",
+  "subcategory": "reconnaissance_detection",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "10 minutes",
+  "tags": ["port_scan", "reconnaissance", "network", "firewall", "enrichment"],
+  "alert_types": ["network", "port_scan", "reconnaissance"],
+  "severity_filter": ["low", "medium", "high"],
+  "trigger_conditions": {
+    "alert_types": ["network", "port_scan", "tcp_scan", "syn_scan", "service_enumeration"],
+    "min_severity": "low"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "virustotal",
+      "name": "VirusTotal",
+      "category": "threat_intel",
+      "reason": "IP reputation lookup for the scanning source"
+    },
+    {
+      "connector_id": "abuseipdb",
+      "name": "AbuseIPDB",
+      "category": "threat_intel",
+      "reason": "Check abuse reports and scan history for the source IP"
+    },
+    {
+      "connector_id": "palo_alto_ngfw",
+      "name": "Palo Alto NGFW",
+      "category": "network",
+      "reason": "Block confirmed malicious external scanners at the perimeter"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Port Scan Detected",
+          "config": {
+            "alert_types": ["network", "port_scan", "tcp_scan", "syn_scan", "service_enumeration"],
+            "description": "Triggers when IDS/IPS or network monitoring detects port scanning activity against internal or external assets"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — Enrich Scanner IP",
+          "config": {
+            "template_id": "ioc_correlation",
+            "additional_instructions": "Enrich the source IP across VirusTotal, AbuseIPDB, and GreyNoise. Determine if this is a known scanner, an authorized vulnerability assessment tool, or a malicious reconnaissance actor. Check if source is internal or external.",
+            "description": "AI-powered enrichment of the scanning source IP to determine reputation, origin (internal vs external), and likely intent"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "label": "External Malicious Scanner?",
+          "config": {
+            "condition": "{{analyze_1.source_type}} == 'external' and {{analyze_1.verdict}} in ['MALICIOUS', 'SUSPICIOUS']",
+            "description": "Routes based on whether the scanner is an external malicious source versus an internal or authorized scanner"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "respond",
+          "label": "Block Scanner IP on Firewall",
+          "config": {
+            "integration_action": {
+              "connector_id": "palo_alto_ngfw",
+              "action": "block_ip",
+              "parameters": {
+                "ip_address": "{{trigger_1.alert.source_ip}}",
+                "rule_name": "T1-ScanBlock-{{trigger_1.alert.alert_id}}",
+                "direction": "inbound",
+                "comment": "Port scanner blocked — Scanned {{trigger_1.alert.ports_scanned}} ports, Verdict: {{analyze_1.verdict}}"
+              }
+            },
+            "description": "Blocks the external malicious scanner IP on the perimeter firewall to prevent further reconnaissance"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "label": "Add to EDL Blocklist",
+          "config": {
+            "utility_action": {
+              "action": "add_to_edl",
+              "parameters": {
+                "indicator": "{{trigger_1.alert.source_ip}}",
+                "list_name": "scanner-blocklist",
+                "indicator_type": "ip",
+                "expiry_days": 30,
+                "comment": "Malicious port scanner — {{trigger_1.alert.ports_scanned}} ports scanned against {{trigger_1.alert.target_ip}}"
+              }
+            },
+            "description": "Adds the scanner IP to the EDL blocklist for organization-wide perimeter blocking"
+          }
+        }
+      },
+      {
+        "id": "respond_3",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "label": "Notify SOC on Slack",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#soc-alerts",
+              "message": "PORT SCAN BLOCKED\n\nScanner IP: {{trigger_1.alert.source_ip}}\nTarget: {{trigger_1.alert.target_ip}}\nPorts Scanned: {{trigger_1.alert.ports_scanned}}\nScan Type: {{trigger_1.alert.scan_type}}\nVerdict: {{analyze_1.verdict}}\n\nActions: Blocked on firewall + added to EDL\nAlert ID: {{trigger_1.alert.alert_id}}"
+            },
+            "description": "Notifies the SOC team that an external port scanner has been blocked"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "utility",
+          "label": "Annotate: Internal/Authorized Scan",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "Port scan from {{trigger_1.alert.source_ip}} analyzed — Verdict: {{analyze_1.verdict}}. Source identified as {{analyze_1.source_type}}. No block action required.",
+              "close_alert": true
+            },
+            "description": "Annotates the alert when the scanner is internal or an authorized vulnerability assessment tool and closes without action"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1020 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "Port scan detection and response workflow complete"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_analyze",
+        "source": "trigger_1",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_analyze_decision",
+        "source": "analyze_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "respond_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "utility_1",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_block_edl",
+        "source": "respond_1",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_edl_notify",
+        "source": "respond_2",
+        "target": "respond_3",
+        "type": "default"
+      },
+      {
+        "id": "e_notify_end",
+        "source": "respond_3",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_utility_end",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

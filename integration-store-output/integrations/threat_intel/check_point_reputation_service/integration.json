@@ -1,0 +1,95 @@
+{
+  "id": "check_point_reputation_service",
+  "name": "Check Point Reputation Service",
+  "description": "Queries Check Point Reputation Service for IOC reputation",
+  "version": "2.0.0",
+  "category": "threat_intel",
+  "vendor": "Check Point Software Technologies",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "https://rep.checkpoint.com",
+  "actions": [
+    {
+      "id": "url_reputation",
+      "name": "Url Reputation",
+      "description": "For a domain/URL returns the classification and risk in accessing the resource",
+      "http_method": "GET",
+      "endpoint": "/actions/url_reputation",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "resource",
+          "type": "string",
+          "description": "URL",
+          "required": true,
+          "contains": [
+            "url",
+            "domain"
+          ]
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "ip_reputation",
+      "name": "Ip Reputation",
+      "description": "For an IP address returns its classification and risk in accessing a resource hosted on it",
+      "http_method": "GET",
+      "endpoint": "/actions/ip_reputation",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "resource",
+          "type": "string",
+          "description": "IP address",
+          "required": true,
+          "contains": [
+            "ip"
+          ]
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "file_reputation",
+      "name": "File Reputation",
+      "description": "For a file digest (md5/sha1/sha256) returns the risk in downloading the file without the need to scan it",
+      "http_method": "GET",
+      "endpoint": "/actions/file_reputation",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "resource",
+          "type": "string",
+          "description": "File Digest",
+          "required": true,
+          "contains": [
+            "md5",
+            "sha1",
+            "sha256"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Check Point Reputation Service",
+    "original_type": "investigative",
+    "converted_at": "2025-12-18T16:25:28.641427",
+    "source_version": "2.0.0"
+  }
+}

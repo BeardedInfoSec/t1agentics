@@ -1,0 +1,223 @@
+{
+  "id": "forgerock",
+  "name": "ForgeRock Identity Management",
+  "description": "Identity management through PingOne Advanced Identity Cloud (ForgeRock) REST API for managing users, roles, assignments, and managed objects",
+  "version": "1.0.0",
+  "category": "identity",
+  "vendor": "Ping Identity (ForgeRock)",
+  "auth_type": "oauth2_client",
+  "auth_config": {
+    "type": "oauth2_client",
+    "token_url": "https://{tenant}.forgeblocks.com/am/oauth2/access_token",
+    "scope": "fr:idm:*"
+  },
+  "base_url": "https://{tenant}.forgeblocks.com/openidm",
+  "actions": [
+    {
+      "id": "list_users",
+      "name": "List Users",
+      "description": "List all managed users with optional filtering and pagination",
+      "http_method": "GET",
+      "endpoint": "/managed/user",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "_queryFilter",
+          "type": "string",
+          "description": "Query filter expression (e.g. userName eq \"john\")",
+          "required": false
+        },
+        {
+          "name": "_pageSize",
+          "type": "number",
+          "description": "Number of results per page",
+          "required": false
+        },
+        {
+          "name": "_fields",
+          "type": "string",
+          "description": "Comma-separated list of fields to return",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_user",
+      "name": "Get User",
+      "description": "Retrieve details of a specific managed user",
+      "http_method": "GET",
+      "endpoint": "/managed/user/{userId}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "userId",
+          "type": "string",
+          "description": "User ID",
+          "required": true
+        },
+        {
+          "name": "_fields",
+          "type": "string",
+          "description": "Comma-separated list of fields to return",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "disable_user",
+      "name": "Disable User",
+      "description": "Disable a managed user by setting accountStatus to inactive",
+      "http_method": "PATCH",
+      "endpoint": "/managed/user/{userId}",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "userId",
+          "type": "string",
+          "description": "User ID to disable",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "enable_user",
+      "name": "Enable User",
+      "description": "Enable a managed user by setting accountStatus to active",
+      "http_method": "PATCH",
+      "endpoint": "/managed/user/{userId}",
+      "action_type": "correct",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "userId",
+          "type": "string",
+          "description": "User ID to enable",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "reset_password",
+      "name": "Reset Password",
+      "description": "Reset password for a managed user",
+      "http_method": "PATCH",
+      "endpoint": "/managed/user/{userId}",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "userId",
+          "type": "string",
+          "description": "User ID",
+          "required": true
+        },
+        {
+          "name": "password",
+          "type": "string",
+          "description": "New password",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_roles",
+      "name": "List Roles",
+      "description": "List all managed roles",
+      "http_method": "GET",
+      "endpoint": "/managed/role",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "_queryFilter",
+          "type": "string",
+          "description": "Query filter expression",
+          "required": false
+        },
+        {
+          "name": "_pageSize",
+          "type": "number",
+          "description": "Number of results per page",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_role",
+      "name": "Get Role",
+      "description": "Retrieve details of a specific managed role",
+      "http_method": "GET",
+      "endpoint": "/managed/role/{roleId}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "roleId",
+          "type": "string",
+          "description": "Role ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_assignments",
+      "name": "List Assignments",
+      "description": "List all managed assignments for provisioning",
+      "http_method": "GET",
+      "endpoint": "/managed/assignment",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "_queryFilter",
+          "type": "string",
+          "description": "Query filter expression",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_audit_events",
+      "name": "List Audit Events",
+      "description": "Retrieve audit events from the IDM audit log",
+      "http_method": "GET",
+      "endpoint": "/audit/activity",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "_queryFilter",
+          "type": "string",
+          "description": "Query filter for audit events",
+          "required": false
+        },
+        {
+          "name": "_pageSize",
+          "type": "number",
+          "description": "Number of results per page",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_recon_events",
+      "name": "List Reconciliation Events",
+      "description": "List reconciliation audit events for sync status tracking",
+      "http_method": "GET",
+      "endpoint": "/audit/recon",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "_queryFilter",
+          "type": "string",
+          "description": "Query filter for reconciliation events",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

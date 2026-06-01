@@ -1,0 +1,250 @@
+{
+  "name": "Change Management Compliance",
+  "slug": "compliance-change-management",
+  "description": "Verifies that all system changes follow the organization's change management policy. Collects recent change records, cross-references with approval workflows, and uses Riggs AI to identify unauthorized or improperly documented changes. Unauthorized changes trigger an investigation ticket and manager notification; properly documented changes are logged for audit evidence.",
+  "category": "compliance",
+  "subcategory": "change_management",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "15 minutes",
+  "tags": ["compliance", "change_management", "itil", "audit_trail", "approval", "unauthorized_change"],
+  "alert_types": ["compliance"],
+  "severity_filter": ["low", "medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["compliance", "change_detection"],
+    "trigger_type": "scheduled",
+    "schedule": "0 7 * * *"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "servicenow",
+      "name": "ServiceNow",
+      "category": "itsm",
+      "reason": "Retrieve change request records and approval status from ITSM system"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create investigation tickets for unauthorized changes"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Notify change management board and security of unauthorized changes"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Daily Change Management Audit",
+          "config": {
+            "trigger_type": "scheduled",
+            "schedule": "0 7 * * *",
+            "description": "Triggers daily audit of system changes against change management policy"
+          }
+        }
+      },
+      {
+        "id": "code_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "code",
+          "label": "Collect Detected Changes",
+          "config": {
+            "mode": "query",
+            "query": "SELECT change_id, system_name, change_type, changed_by, change_timestamp, change_description, configuration_diff FROM detected_changes WHERE change_timestamp >= NOW() - INTERVAL '24 hours' ORDER BY change_timestamp DESC",
+            "output_variable": "detected_changes",
+            "description": "Query configuration management database for all changes detected in the past 24 hours"
+          }
+        }
+      },
+      {
+        "id": "code_2",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "code",
+          "label": "Cross-Reference Approved CRs",
+          "config": {
+            "mode": "integration",
+            "integration_action": {
+              "connector_id": "servicenow",
+              "action": "list_change_requests",
+              "parameters": {
+                "filter": "state=implemented&sys_updated_on>=javascript:gs.daysAgoStart(1)",
+                "fields": "number,short_description,assignment_group,approval,implementation_date,requested_by"
+              }
+            },
+            "output_variable": "approved_changes",
+            "description": "Retrieve approved and implemented change requests from ServiceNow for the same period"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 540 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI -- Change Compliance Analysis",
+          "config": {
+            "template_id": "executive_summary",
+            "additional_instructions": "Cross-reference detected system changes against approved change requests. Identify: unauthorized changes (no matching CR), changes implemented outside the approved window, changes without proper rollback documentation, and emergency changes lacking retroactive approval. Flag each unauthorized change with its risk impact.",
+            "description": "AI-powered analysis comparing detected changes against approved change management records"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 700 },
+        "data": {
+          "kind": "decision",
+          "label": "Unauthorized Changes Found?",
+          "config": {
+            "condition": "{{analyze_1.unauthorized_count}} > 0",
+            "description": "Routes based on whether unauthorized changes were detected without matching approval"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "label": "Create Investigation Ticket",
+          "config": {
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_issue",
+              "parameters": {
+                "project": "COMPLIANCE",
+                "issue_type": "Incident",
+                "priority": "P2",
+                "summary": "Unauthorized Changes Detected: {{analyze_1.unauthorized_count}} changes without approval",
+                "description": "CHANGE MANAGEMENT COMPLIANCE VIOLATION\n\nUnauthorized Changes: {{analyze_1.unauthorized_count}}\nAffected Systems: {{analyze_1.affected_systems}}\n\nDetails:\n{{analyze_1.summary}}\n\nAction Required: Investigate each unauthorized change, determine if rollback is needed, and ensure retroactive documentation is completed.",
+                "labels": ["change-management", "unauthorized", "compliance-violation"]
+              }
+            },
+            "description": "Create an investigation ticket for unauthorized system changes"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "label": "Notify CAB on Slack",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#change-advisory-board",
+              "message": "UNAUTHORIZED CHANGES DETECTED\n\nUnauthorized Changes: {{analyze_1.unauthorized_count}}\nAffected Systems: {{analyze_1.affected_systems}}\nJira: {{respond_1.ticket_url}}\n\n{{analyze_1.summary}}\n\nCAB review required. Please investigate and determine if rollback is needed."
+            },
+            "description": "Notify the Change Advisory Board of unauthorized changes requiring investigation"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 700, "y": 860 },
+        "data": {
+          "kind": "utility",
+          "label": "Log: All Changes Authorized",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "Daily change management audit complete. All {{detected_changes.length}} detected changes match approved change requests. Full compliance with change management policy."
+            },
+            "description": "Document that all changes are properly authorized and documented"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1180 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "Change management compliance audit complete -- unauthorized changes flagged or clean audit confirmed"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_code1",
+        "source": "trigger_1",
+        "target": "code_1",
+        "type": "default"
+      },
+      {
+        "id": "e_code1_code2",
+        "source": "code_1",
+        "target": "code_2",
+        "type": "default"
+      },
+      {
+        "id": "e_code2_analyze",
+        "source": "code_2",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_analyze_decision",
+        "source": "analyze_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "respond_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "utility_1",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_respond1_respond2",
+        "source": "respond_1",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_respond2_end",
+        "source": "respond_2",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_utility1_end",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

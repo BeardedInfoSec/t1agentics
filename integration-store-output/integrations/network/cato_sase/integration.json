@@ -1,0 +1,195 @@
+{
+  "id": "cato_sase",
+  "name": "Cato SASE Cloud",
+  "description": "Cato Networks SASE Cloud GraphQL API for managing security policies, network monitoring, firewall rules, and site configuration",
+  "version": "1.0.0",
+  "category": "network",
+  "vendor": "Cato Networks",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "x-api-key",
+    "location": "header"
+  },
+  "base_url": "https://api.catonetworks.com/api/v1/graphql2",
+  "actions": [
+    {
+      "id": "list_internet_firewall_rules",
+      "name": "List Internet Firewall Rules",
+      "description": "Retrieve all Internet firewall policy rules (GraphQL query)",
+      "http_method": "POST",
+      "endpoint": "",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "accountId",
+          "type": "string",
+          "description": "Cato account ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_wan_firewall_rules",
+      "name": "List WAN Firewall Rules",
+      "description": "Retrieve all WAN firewall policy rules (GraphQL query)",
+      "http_method": "POST",
+      "endpoint": "",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "accountId",
+          "type": "string",
+          "description": "Cato account ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "create_internet_firewall_rule",
+      "name": "Create Internet Firewall Rule",
+      "description": "Create a new Internet firewall rule to block or allow traffic (GraphQL mutation)",
+      "http_method": "POST",
+      "endpoint": "",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "accountId",
+          "type": "string",
+          "description": "Cato account ID",
+          "required": true
+        },
+        {
+          "name": "input",
+          "type": "object",
+          "description": "InternetFirewallPolicyInput including rule name, source, destination, service, action (ALLOW/BLOCK/PROMPT_USER), and position",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_network_events",
+      "name": "Get Network Events",
+      "description": "Retrieve network security events and alerts (GraphQL query)",
+      "http_method": "POST",
+      "endpoint": "",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "accountId",
+          "type": "string",
+          "description": "Cato account ID",
+          "required": true
+        },
+        {
+          "name": "timeFrame",
+          "type": "string",
+          "description": "Time frame for events: last_hour, last_24_hours, last_7_days, last_30_days, or custom",
+          "required": true
+        },
+        {
+          "name": "filters",
+          "type": "object",
+          "description": "Event filter criteria including event type, severity, source, and destination",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_sites",
+      "name": "List Sites",
+      "description": "Retrieve all sites (locations) connected to the Cato SASE cloud (GraphQL query)",
+      "http_method": "POST",
+      "endpoint": "",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "accountId",
+          "type": "string",
+          "description": "Cato account ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_site_connectivity",
+      "name": "Get Site Connectivity",
+      "description": "Retrieve connectivity status and metrics for a specific site",
+      "http_method": "POST",
+      "endpoint": "",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "accountId",
+          "type": "string",
+          "description": "Cato account ID",
+          "required": true
+        },
+        {
+          "name": "siteId",
+          "type": "string",
+          "description": "ID of the site to query",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_traffic_stats",
+      "name": "Get Traffic Statistics",
+      "description": "Retrieve traffic statistics including bandwidth, throughput, and usage metrics",
+      "http_method": "POST",
+      "endpoint": "",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "accountId",
+          "type": "string",
+          "description": "Cato account ID",
+          "required": true
+        },
+        {
+          "name": "timeFrame",
+          "type": "string",
+          "description": "Time frame for statistics",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "block_domain",
+      "name": "Block Domain",
+      "description": "Create an Internet firewall rule to block a specific domain or URL category",
+      "http_method": "POST",
+      "endpoint": "",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "accountId",
+          "type": "string",
+          "description": "Cato account ID",
+          "required": true
+        },
+        {
+          "name": "domain",
+          "type": "string",
+          "description": "Domain or URL to block",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Reason for blocking the domain",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

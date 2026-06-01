@@ -1,0 +1,183 @@
+{
+  "id": "hornetsecurity",
+  "name": "Hornetsecurity",
+  "description": "Cloud-based email security platform providing spam filtering, malware protection, advanced threat protection, email archiving, and encryption",
+  "version": "1.0.0",
+  "category": "email_security",
+  "vendor": "Hornetsecurity",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header",
+    "prefix": "Bearer"
+  },
+  "base_url": "https://api.hornetsecurity.com/v1",
+  "actions": [
+    {
+      "id": "get_quarantine_messages",
+      "name": "Get Quarantine Messages",
+      "description": "Retrieve messages in the email quarantine",
+      "http_method": "GET",
+      "endpoint": "/quarantine/messages",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "from",
+          "type": "string",
+          "description": "Start date filter in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "to",
+          "type": "string",
+          "description": "End date filter in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "reason",
+          "type": "string",
+          "description": "Filter by quarantine reason (spam, virus, content, atp)",
+          "required": false
+        },
+        {
+          "name": "recipient",
+          "type": "string",
+          "description": "Filter by recipient email address",
+          "required": false
+        },
+        {
+          "name": "sender",
+          "type": "string",
+          "description": "Filter by sender email address",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of messages to return",
+          "required": false,
+          "default": 50
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Offset for pagination",
+          "required": false,
+          "default": 0
+        }
+      ]
+    },
+    {
+      "id": "release_quarantine_message",
+      "name": "Release Quarantine Message",
+      "description": "Release a quarantined email for delivery",
+      "http_method": "POST",
+      "endpoint": "/quarantine/messages/{message_id}/release",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "message_id",
+          "type": "string",
+          "description": "The quarantine message ID to release",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "delete_quarantine_message",
+      "name": "Delete Quarantine Message",
+      "description": "Delete a message from quarantine",
+      "http_method": "DELETE",
+      "endpoint": "/quarantine/messages/{message_id}",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "message_id",
+          "type": "string",
+          "description": "The quarantine message ID to delete",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_threat_events",
+      "name": "Get Threat Events",
+      "description": "Retrieve advanced threat protection events",
+      "http_method": "GET",
+      "endpoint": "/atp/events",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "from",
+          "type": "string",
+          "description": "Start date in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "to",
+          "type": "string",
+          "description": "End date in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of events to return",
+          "required": false,
+          "default": 50
+        }
+      ]
+    },
+    {
+      "id": "manage_blocklist",
+      "name": "Add to Blocklist",
+      "description": "Add a sender or domain to the blocklist",
+      "http_method": "POST",
+      "endpoint": "/blocklist",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Entry type (sender, domain)",
+          "required": true
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "description": "Email address or domain to block",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_email_statistics",
+      "name": "Get Email Statistics",
+      "description": "Retrieve email traffic and threat statistics",
+      "http_method": "GET",
+      "endpoint": "/statistics/email",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "from",
+          "type": "string",
+          "description": "Start date in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "to",
+          "type": "string",
+          "description": "End date in ISO 8601 format",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

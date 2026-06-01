@@ -1,0 +1,234 @@
+{
+  "id": "silobreaker",
+  "name": "Silobreaker",
+  "description": "Integrate with Silobreaker intelligence platform to search documents, entities, network indicators, and threat intelligence across open and dark web sources",
+  "version": "1.0.0",
+  "category": "threat_intel",
+  "vendor": "Silobreaker",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header",
+    "note": "HMAC-based digest authentication using API key. Contact Silobreaker representative for API credentials."
+  },
+  "base_url": "https://api.silobreaker.com/v1",
+  "actions": [
+    {
+      "id": "search_documents",
+      "name": "Search Documents",
+      "description": "Search Silobreaker indexed documents from news, blogs, dark web, and social media for threat intelligence",
+      "http_method": "GET",
+      "endpoint": "/documents",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "q",
+          "type": "string",
+          "description": "Search query using Silobreaker query syntax",
+          "required": true
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Document type filter (news, blog, forum, paste, social, darkweb)",
+          "required": false
+        },
+        {
+          "name": "from",
+          "type": "string",
+          "description": "Start date filter (ISO 8601 format)",
+          "required": false
+        },
+        {
+          "name": "to",
+          "type": "string",
+          "description": "End date filter (ISO 8601 format)",
+          "required": false
+        },
+        {
+          "name": "count",
+          "type": "number",
+          "description": "Maximum number of results to return",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "search_entities",
+      "name": "Search Entities",
+      "description": "Search Silobreaker for extracted entities including threat actors, malware, IPs, domains, and CVEs",
+      "http_method": "GET",
+      "endpoint": "/entities",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "q",
+          "type": "string",
+          "description": "Entity search query",
+          "required": true
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Entity type filter (ThreatActor, Malware, IPv4, Domain, CVE, Country, Organization)",
+          "required": false
+        },
+        {
+          "name": "count",
+          "type": "number",
+          "description": "Maximum number of results",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_entity_relations",
+      "name": "Get Entity Relations",
+      "description": "Get entities related to a specified entity for threat intelligence pivoting and correlation",
+      "http_method": "GET",
+      "endpoint": "/entities/{entity_id}/relations",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "entity_id",
+          "type": "string",
+          "description": "Silobreaker entity ID to find relations for",
+          "required": true
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Related entity type filter",
+          "required": false
+        },
+        {
+          "name": "count",
+          "type": "number",
+          "description": "Maximum number of related entities",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "search_network_indicators",
+      "name": "Search Network Indicators",
+      "description": "Search Silobreaker for network indicators (IPs, domains, URLs) correlated with threat intelligence",
+      "http_method": "GET",
+      "endpoint": "/entities",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "q",
+          "type": "string",
+          "description": "Network indicator value to search (IP, domain, URL)",
+          "required": true,
+          "contains": ["ip", "domain", "url"]
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Indicator type: IPv4, Domain, URL",
+          "required": false
+        },
+        {
+          "name": "count",
+          "type": "number",
+          "description": "Maximum number of results",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "search_threat_actors",
+      "name": "Search Threat Actors",
+      "description": "Search Silobreaker for threat actor intelligence from open source and dark web monitoring",
+      "http_method": "GET",
+      "endpoint": "/entities",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "q",
+          "type": "string",
+          "description": "Threat actor name or alias to search",
+          "required": true
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Entity type (should be 'ThreatActor')",
+          "required": false
+        },
+        {
+          "name": "count",
+          "type": "number",
+          "description": "Maximum number of results",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "search_malware",
+      "name": "Search Malware",
+      "description": "Search Silobreaker for malware intelligence including families, variants, and IOC associations",
+      "http_method": "GET",
+      "endpoint": "/entities",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "q",
+          "type": "string",
+          "description": "Malware name or keyword to search",
+          "required": true
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Entity type (should be 'Malware')",
+          "required": false
+        },
+        {
+          "name": "count",
+          "type": "number",
+          "description": "Maximum number of results",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_stix_feed",
+      "name": "Get STIX/TAXII Feed",
+      "description": "Retrieve Silobreaker threat indicators via STIX TAXII feed format for automated ingestion",
+      "http_method": "GET",
+      "endpoint": "/taxii/collections/{collection_id}/objects",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "collection_id",
+          "type": "string",
+          "description": "TAXII collection ID",
+          "required": true
+        },
+        {
+          "name": "added_after",
+          "type": "string",
+          "description": "Filter for objects added after this timestamp (ISO 8601)",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of STIX objects to return",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,178 @@
+{
+  "id": "blumira",
+  "name": "Blumira",
+  "description": "Integrates with Blumira SIEM+XDR for finding management, detection monitoring, log source status, and security summary retrieval via the Blumira REST API",
+  "version": "1.0.0",
+  "category": "siem",
+  "vendor": "Blumira",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "header_name": "Authorization",
+    "prefix": "Bearer",
+    "location": "header"
+  },
+  "base_url": "https://api.blumira.com/v1",
+  "actions": [
+    {
+      "id": "list_findings",
+      "name": "List Findings",
+      "description": "Retrieve security findings (actionable security events with context and guidance)",
+      "http_method": "GET",
+      "endpoint": "/findings",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Filter by finding status (open, in_progress, resolved, ignored)",
+          "required": false
+        },
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Filter by severity (critical, high, medium, low, info)",
+          "required": false
+        },
+        {
+          "name": "created_after",
+          "type": "string",
+          "description": "Findings created after this datetime (ISO 8601)",
+          "required": false
+        },
+        {
+          "name": "created_before",
+          "type": "string",
+          "description": "Findings created before this datetime",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum findings to return",
+          "required": false,
+          "default": 50
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Offset for pagination",
+          "required": false,
+          "default": 0
+        }
+      ]
+    },
+    {
+      "id": "get_finding",
+      "name": "Get Finding Details",
+      "description": "Retrieve details for a specific finding including playbook guidance",
+      "http_method": "GET",
+      "endpoint": "/findings/{findingId}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "findingId",
+          "type": "string",
+          "description": "Finding ID to retrieve",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "update_finding",
+      "name": "Update Finding",
+      "description": "Update finding status or add comments",
+      "http_method": "PATCH",
+      "endpoint": "/findings/{findingId}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "findingId",
+          "type": "string",
+          "description": "Finding ID to update",
+          "required": true
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "New status (open, in_progress, resolved, ignored)",
+          "required": false
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "Comment to add",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_detections",
+      "name": "List Detections",
+      "description": "Retrieve detection rules and their current state",
+      "http_method": "GET",
+      "endpoint": "/detections",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "enabled",
+          "type": "boolean",
+          "description": "Filter by enabled/disabled state",
+          "required": false
+        },
+        {
+          "name": "category",
+          "type": "string",
+          "description": "Filter by detection category",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum detections to return",
+          "required": false,
+          "default": 50
+        }
+      ]
+    },
+    {
+      "id": "get_log_sources",
+      "name": "Get Log Sources",
+      "description": "Retrieve configured log source integrations and their status",
+      "http_method": "GET",
+      "endpoint": "/log-sources",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Filter by log source status (active, inactive, error)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_security_summary",
+      "name": "Get Security Summary",
+      "description": "Retrieve an overview of the security posture and finding statistics",
+      "http_method": "GET",
+      "endpoint": "/summary",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "period",
+          "type": "string",
+          "description": "Time period for summary (7d, 30d, 90d)",
+          "required": false,
+          "default": "30d"
+        }
+      ]
+    }
+  ]
+}

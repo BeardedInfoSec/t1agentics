@@ -1,0 +1,595 @@
+{
+  "id": "jira",
+  "name": "Jira",
+  "description": "This app integrates with JIRA to perform several ticket management actions",
+  "version": "4.0.0",
+  "category": "ticketing",
+  "vendor": "Atlassian",
+  "auth_type": "basic_auth",
+  "auth_config": {
+    "type": "basic_auth",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "Using URL: {base_url}",
+  "actions": [
+    {
+      "id": "create_ticket",
+      "name": "Create Ticket",
+      "description": "Create a ticket (issue)",
+      "http_method": "GET",
+      "endpoint": "/actions/create_ticket",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "project_key",
+          "type": "string",
+          "description": "Project key to add the issue to (case-sensitive)",
+          "required": true,
+          "contains": [
+            "jira project key"
+          ]
+        },
+        {
+          "name": "summary",
+          "type": "string",
+          "description": "Summary of the issue",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Description of the issue",
+          "required": false
+        },
+        {
+          "name": "issue_type",
+          "type": "string",
+          "description": "Type of the issue (case-sensitive)",
+          "required": true,
+          "contains": [
+            "jira issue type"
+          ]
+        },
+        {
+          "name": "priority",
+          "type": "string",
+          "description": "Priority of the issue",
+          "required": false,
+          "contains": [
+            "jira ticket priority"
+          ]
+        },
+        {
+          "name": "assignee",
+          "type": "string",
+          "description": "Assignee username (required for Jira on-prem, assign required permissions)",
+          "required": false,
+          "contains": [
+            "user name"
+          ]
+        },
+        {
+          "name": "assignee_account_id",
+          "type": "string",
+          "description": "Assignee user account ID (required for Jira cloud, assign required permissions)",
+          "required": false,
+          "contains": [
+            "jira user account id"
+          ]
+        },
+        {
+          "name": "fields",
+          "type": "string",
+          "description": "JSON containing field values",
+          "required": false
+        },
+        {
+          "name": "vault_id",
+          "type": "string",
+          "description": "Vault ID of attachment",
+          "required": false,
+          "contains": [
+            "vault id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_attachments",
+      "name": "Get Attachments",
+      "description": "Gets specific attachments from a Jira Ticket (issue)",
+      "http_method": "GET",
+      "endpoint": "/actions/get_attachments",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "The key of the Jira issue",
+          "required": true,
+          "contains": [
+            "jira ticket key"
+          ]
+        },
+        {
+          "name": "retrieve_all",
+          "type": "boolean",
+          "description": "If this is set to true all attachments will be retrieved from the issue (if the value is not provided, it will internally be treated as 'false')",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "container_id",
+          "type": "string",
+          "description": "The Container ID to associate the file with",
+          "required": true
+        },
+        {
+          "name": "extension_filter",
+          "type": "string",
+          "description": "Comma-separated list of file extensions to be returned from the issue",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "update_ticket",
+      "name": "Update Ticket",
+      "description": "Update ticket (issue)",
+      "http_method": "GET",
+      "endpoint": "/actions/update_ticket",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Issue ID",
+          "required": true,
+          "contains": [
+            "jira ticket key"
+          ]
+        },
+        {
+          "name": "update_fields",
+          "type": "string",
+          "description": "JSON containing field values",
+          "required": false
+        },
+        {
+          "name": "vault_id",
+          "type": "string",
+          "description": "Vault ID of attachment",
+          "required": false,
+          "contains": [
+            "vault id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "add_comment",
+      "name": "Add Comment",
+      "description": "Add a comment to the ticket (issue)",
+      "http_method": "GET",
+      "endpoint": "/actions/add_comment",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Issue ID",
+          "required": true,
+          "contains": [
+            "jira ticket key"
+          ]
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "Comment to add",
+          "required": true
+        },
+        {
+          "name": "internal",
+          "type": "boolean",
+          "description": "Whether comment should be internal only or not in Jira Service Desk (if the value is not provided, it will internally be treated as 'false')",
+          "required": false,
+          "default": true
+        }
+      ]
+    },
+    {
+      "id": "delete_ticket",
+      "name": "Delete Ticket",
+      "description": "Delete ticket (issue)",
+      "http_method": "GET",
+      "endpoint": "/actions/delete_ticket",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Issue ID",
+          "required": true,
+          "contains": [
+            "jira ticket key"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_projects",
+      "name": "List Projects",
+      "description": "List all projects",
+      "http_method": "GET",
+      "endpoint": "/actions/list_projects",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "list_tickets",
+      "name": "List Tickets",
+      "description": "Get a list of tickets (issues) in a specified project",
+      "http_method": "GET",
+      "endpoint": "/actions/list_tickets",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "project_key",
+          "type": "string",
+          "description": "Project key to list the tickets (issues) of",
+          "required": false,
+          "contains": [
+            "jira project key"
+          ]
+        },
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Additional parameters to query for in JQL",
+          "required": false
+        },
+        {
+          "name": "start_index",
+          "type": "number",
+          "description": "Start index of the list",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "max_results",
+          "type": "number",
+          "description": "Maximum number of issues to return",
+          "required": false,
+          "default": 1000
+        }
+      ]
+    },
+    {
+      "id": "search_users",
+      "name": "Lookup Users",
+      "description": "Get a list of user resources that match the specified search string",
+      "http_method": "GET",
+      "endpoint": "/actions/search_users",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "username",
+          "type": "string",
+          "description": "A string to match with usernames, name, or email against for JIRA on-prem (required for Jira on-prem)",
+          "required": false,
+          "contains": [
+            "user name"
+          ]
+        },
+        {
+          "name": "display_name",
+          "type": "string",
+          "description": "A string to match with display name for JIRA cloud (required for Jira cloud)",
+          "required": false,
+          "contains": [
+            "jira user display name"
+          ]
+        },
+        {
+          "name": "max_results",
+          "type": "number",
+          "description": "Maximum number of users to return",
+          "required": false,
+          "default": 1000
+        }
+      ]
+    },
+    {
+      "id": "get_ticket",
+      "name": "Get Ticket",
+      "description": "Get ticket (issue) information",
+      "http_method": "GET",
+      "endpoint": "/actions/get_ticket",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Ticket (issue) key",
+          "required": true,
+          "contains": [
+            "jira ticket key"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "set_ticket_status",
+      "name": "Set Status",
+      "description": "Set ticket (issue) status",
+      "http_method": "GET",
+      "endpoint": "/actions/set_ticket_status",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Ticket (issue) key",
+          "required": true,
+          "contains": [
+            "jira ticket key"
+          ]
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Status to set",
+          "required": true,
+          "contains": [
+            "jira ticket status"
+          ]
+        },
+        {
+          "name": "resolution",
+          "type": "string",
+          "description": "Resolution to set",
+          "required": false,
+          "contains": [
+            "jira ticket resolution"
+          ]
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "Comment to set",
+          "required": false
+        },
+        {
+          "name": "update_fields",
+          "type": "string",
+          "description": "JSON containing field values",
+          "required": false
+        },
+        {
+          "name": "time_spent",
+          "type": "string",
+          "description": "Time Spent to Log",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "link_tickets",
+      "name": "Link Tickets",
+      "description": "Create a link between two separate tickets",
+      "http_method": "GET",
+      "endpoint": "/actions/link_tickets",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "from_id",
+          "type": "string",
+          "description": "First ticket (issue) key",
+          "required": true,
+          "contains": [
+            "jira ticket key"
+          ]
+        },
+        {
+          "name": "to_id",
+          "type": "string",
+          "description": "Second ticket (issue) key",
+          "required": true,
+          "contains": [
+            "jira ticket key"
+          ]
+        },
+        {
+          "name": "link_type",
+          "type": "string",
+          "description": "Type of link to create",
+          "required": true,
+          "default": "Duplicate"
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "Comment to add",
+          "required": false
+        },
+        {
+          "name": "comment_visibility_type",
+          "type": "string",
+          "description": "How to limit the comment visibility",
+          "required": false
+        },
+        {
+          "name": "comment_visibility_name",
+          "type": "string",
+          "description": "Name of group/role able to see the comment",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "add_watcher",
+      "name": "Add Watcher",
+      "description": "Add a user to an issue's watchers list",
+      "http_method": "GET",
+      "endpoint": "/actions/add_watcher",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Issue ID",
+          "required": true,
+          "contains": [
+            "jira ticket key"
+          ]
+        },
+        {
+          "name": "username",
+          "type": "string",
+          "description": "Username of the user to add to the watchers list (required for Jira on-prem)",
+          "required": false,
+          "contains": [
+            "user name"
+          ]
+        },
+        {
+          "name": "user_account_id",
+          "type": "string",
+          "description": "Account ID of the user to add to the watchers list (required for Jira cloud)",
+          "required": false,
+          "contains": [
+            "jira user account id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "remove_watcher",
+      "name": "Remove Watcher",
+      "description": "Remove a user from an issue's watchers list",
+      "http_method": "GET",
+      "endpoint": "/actions/remove_watcher",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Issue ID",
+          "required": true,
+          "contains": [
+            "jira ticket key"
+          ]
+        },
+        {
+          "name": "username",
+          "type": "string",
+          "description": "Username of the user to remove from watchers list (required for Jira on-prem)",
+          "required": false,
+          "contains": [
+            "user name"
+          ]
+        },
+        {
+          "name": "user_account_id",
+          "type": "string",
+          "description": "Account ID of the user to remove from the watchers list (required for Jira cloud)",
+          "required": false,
+          "contains": [
+            "jira user account id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "on_poll",
+      "name": "On Poll",
+      "description": "Ingest tickets from JIRA",
+      "http_method": "GET",
+      "endpoint": "/actions/on_poll",
+      "action_type": "ingest",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "start_time",
+          "type": "number",
+          "description": "Parameter ignored in this app",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "number",
+          "description": "Parameter ignored in this app",
+          "required": false
+        },
+        {
+          "name": "container_id",
+          "type": "string",
+          "description": "Parameter ignored in this app",
+          "required": false
+        },
+        {
+          "name": "container_count",
+          "type": "number",
+          "description": "Maximum number of tickets to be ingested during poll now",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "artifact_count",
+          "type": "number",
+          "description": "Parameter ignored in this app",
+          "required": false
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Jira",
+    "original_type": "ticketing",
+    "converted_at": "2025-12-18T16:25:28.889187",
+    "source_version": "4.0.0"
+  }
+}

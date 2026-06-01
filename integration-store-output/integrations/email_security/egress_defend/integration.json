@@ -1,0 +1,190 @@
+{
+  "id": "egress_defend",
+  "name": "Egress Defend",
+  "description": "AI-powered inbound email threat defense detecting BEC, phishing, ransomware, and supply chain attacks with behavioral analysis and risk scoring",
+  "version": "1.0.0",
+  "category": "email_security",
+  "vendor": "KnowBe4 (Egress)",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header",
+    "prefix": "Bearer"
+  },
+  "base_url": "https://api.egress.com/v1",
+  "actions": [
+    {
+      "id": "get_threats",
+      "name": "Get Threats",
+      "description": "Retrieve detected email threats from Egress Defend",
+      "http_method": "GET",
+      "endpoint": "/defend/threats",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "start_date",
+          "type": "string",
+          "description": "Start date in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "end_date",
+          "type": "string",
+          "description": "End date in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "classification",
+          "type": "string",
+          "description": "Filter by threat classification (phishing, bec, malware, suspicious)",
+          "required": false
+        },
+        {
+          "name": "action_taken",
+          "type": "string",
+          "description": "Filter by action taken (quarantined, warned, allowed)",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of threats to return",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Offset for pagination",
+          "required": false,
+          "default": 0
+        }
+      ]
+    },
+    {
+      "id": "get_threat_details",
+      "name": "Get Threat Details",
+      "description": "Retrieve detailed analysis of a specific threat",
+      "http_method": "GET",
+      "endpoint": "/defend/threats/{threat_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "threat_id",
+          "type": "string",
+          "description": "The threat ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_quarantine",
+      "name": "Get Quarantine",
+      "description": "Retrieve quarantined email messages",
+      "http_method": "GET",
+      "endpoint": "/defend/quarantine",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "start_date",
+          "type": "string",
+          "description": "Start date in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "end_date",
+          "type": "string",
+          "description": "End date in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of results",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "release_quarantine",
+      "name": "Release from Quarantine",
+      "description": "Release a quarantined email for delivery",
+      "http_method": "POST",
+      "endpoint": "/defend/quarantine/{message_id}/release",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "message_id",
+          "type": "string",
+          "description": "The message ID to release",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_risk_scores",
+      "name": "Get Risk Scores",
+      "description": "Retrieve individual risk scores for users based on email behavior telemetry",
+      "http_method": "GET",
+      "endpoint": "/defend/risk-scores",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "email",
+          "type": "string",
+          "description": "Filter by user email address",
+          "required": false
+        },
+        {
+          "name": "min_score",
+          "type": "number",
+          "description": "Minimum risk score to filter",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of results",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "report_threat",
+      "name": "Report Threat",
+      "description": "Report a missed threat or classify a false positive",
+      "http_method": "POST",
+      "endpoint": "/defend/threats/report",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "message_id",
+          "type": "string",
+          "description": "Message ID to report",
+          "required": true
+        },
+        {
+          "name": "classification",
+          "type": "string",
+          "description": "Threat classification (threat, false_positive, clean)",
+          "required": true
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "Comment explaining the report",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

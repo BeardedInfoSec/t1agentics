@@ -1,0 +1,112 @@
+{
+  "id": "lansweeper",
+  "name": "Lansweeper",
+  "description": "This app integrates with Lansweeper to perform investigative actions",
+  "version": "1.0.2",
+  "category": "threat_intel",
+  "vendor": "Lansweeper",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "list_authorized_sites",
+      "name": "List Authorized Sites",
+      "description": "Retrieve authorized sites from Lansweeper with their ID(s) and names",
+      "http_method": "GET",
+      "endpoint": "https://api.lansweeper.com/api/v2/graphql",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "hunt_ip",
+      "name": "Hunt Ip",
+      "description": "Fetch the details of the asset from the Lansweeper platform for the given site ID and IP address",
+      "http_method": "GET",
+      "endpoint": "/actions/hunt_ip",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "site_id",
+          "type": "string",
+          "description": "Site ID (allows comma-separated string)",
+          "required": false,
+          "contains": [
+            "lansweeper site id"
+          ]
+        },
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "IP address (allows comma-separated string)",
+          "required": true,
+          "contains": [
+            "lansweeper ip"
+          ]
+        },
+        {
+          "name": "max_results_per_site",
+          "type": "number",
+          "description": "Maximum number of assets to fetch per site. The default value is 50",
+          "required": false,
+          "default": 50
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "hunt_mac",
+      "name": "Hunt Mac",
+      "description": "Fetch the details of the asset from the Lansweeper platform for the given site ID and MAC address",
+      "http_method": "GET",
+      "endpoint": "/actions/hunt_mac",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "site_id",
+          "type": "string",
+          "description": "Site ID (allows comma-separated string)",
+          "required": false,
+          "contains": [
+            "lansweeper site id"
+          ]
+        },
+        {
+          "name": "mac",
+          "type": "string",
+          "description": "MAC address (allows comma-separated string)",
+          "required": true,
+          "contains": [
+            "lansweeper mac"
+          ]
+        },
+        {
+          "name": "max_results_per_site",
+          "type": "number",
+          "description": "Maximum number of assets to fetch per site. The default value is 50",
+          "required": false,
+          "default": 50
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Lansweeper",
+    "original_type": "investigative",
+    "converted_at": "2025-12-18T16:25:28.900201",
+    "source_version": "1.0.2"
+  }
+}

@@ -1,0 +1,119 @@
+{
+  "id": "burp_suite",
+  "name": "Burp Suite Enterprise",
+  "description": "Enterprise DAST web vulnerability scanner for automated security testing of web applications",
+  "version": "1.0.0",
+  "category": "code_security",
+  "vendor": "PortSwigger",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "location": "path",
+    "description": "API key is embedded in the URL path: /{api_key}/v0.1/..."
+  },
+  "base_url": "https://{host}:8080/v0.1",
+  "actions": [
+    {
+      "id": "list_scans",
+      "name": "List Scans",
+      "description": "List all scans with their status and summary information",
+      "http_method": "GET",
+      "endpoint": "/scan",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "get_scan",
+      "name": "Get Scan Details",
+      "description": "Retrieve detailed information about a specific scan including discovered issues",
+      "http_method": "GET",
+      "endpoint": "/scan/{task_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "task_id",
+          "type": "string",
+          "description": "Scan task ID",
+          "required": true,
+          "location": "path"
+        },
+        {
+          "name": "after",
+          "type": "integer",
+          "description": "Return issues after this issue event index",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "issue_events",
+          "type": "integer",
+          "description": "Maximum number of issue events to return",
+          "required": false,
+          "location": "query"
+        }
+      ]
+    },
+    {
+      "id": "start_scan",
+      "name": "Start Scan",
+      "description": "Launch a new active scan against a target URL",
+      "http_method": "POST",
+      "endpoint": "/scan",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "urls",
+          "type": "array",
+          "description": "List of target URLs to scan",
+          "required": true,
+          "location": "body"
+        },
+        {
+          "name": "scope",
+          "type": "object",
+          "description": "Scope configuration with include/exclude URL patterns",
+          "required": false,
+          "location": "body"
+        },
+        {
+          "name": "scan_configurations",
+          "type": "array",
+          "description": "Array of scan configuration objects with type and name",
+          "required": false,
+          "location": "body"
+        }
+      ]
+    },
+    {
+      "id": "get_issue_definitions",
+      "name": "Get Issue Definitions",
+      "description": "Retrieve the knowledge base of all issue type definitions",
+      "http_method": "GET",
+      "endpoint": "/knowledge_base/issue_definitions",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "cancel_scan",
+      "name": "Cancel Scan",
+      "description": "Cancel a running scan by task ID",
+      "http_method": "DELETE",
+      "endpoint": "/scan/{task_id}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "task_id",
+          "type": "string",
+          "description": "Scan task ID to cancel",
+          "required": true,
+          "location": "path"
+        }
+      ]
+    }
+  ]
+}

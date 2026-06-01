@@ -1,0 +1,104 @@
+{
+  "template_id": "spam-unsolicited-report",
+  "name": "Spam / Unsolicited Bulk Email Report",
+  "description": "Internal form for employees to flag persistent spam getting past the email filters. Lower priority than phishing or BEC, but helps the SOC tune filters and block senders.",
+  "title": "Report Spam or Unwanted Bulk Email",
+  "intro": "Getting the same junk email over and over? Marketing blasts you never signed up for? Use this form to let us know — we'll see if there's a pattern and tune the spam filters. This isn't urgent, so use the Phishing or BEC forms instead if you think the email is actually trying to trick you.",
+  "submit_message": "Thanks — we've logged it. We'll review for filter tuning. You can also delete or block-sender these directly in your email client.",
+  "fields": [
+    {
+      "key": "reporter_email",
+      "label": "Your email",
+      "type": "email",
+      "required": true,
+      "help": "So we can follow up if needed.",
+      "placeholder": "you@company.com",
+      "sample_value": "priya.shah@northwindcloud.com"
+    },
+    {
+      "key": "sender_email",
+      "label": "Sender address (or domain)",
+      "type": "text",
+      "required": true,
+      "help": "The 'From' address — or just the domain if it's coming from many addresses on the same domain.",
+      "placeholder": "spammer@example.com",
+      "sample_value": "deals@megasaver-promos.biz"
+    },
+    {
+      "key": "email_subject",
+      "label": "A recent subject line",
+      "type": "text",
+      "required": true,
+      "help": "Just one example is fine.",
+      "placeholder": "Subject line",
+      "sample_value": "FINAL CHANCE - 80% off premium subscriptions today only"
+    },
+    {
+      "key": "frequency",
+      "label": "How often are you getting these?",
+      "type": "select",
+      "required": true,
+      "help": "Roughly.",
+      "options": [
+        "Several times a day",
+        "Daily",
+        "A few times a week",
+        "Weekly",
+        "First time, but it looks like bulk spam"
+      ],
+      "sample_value": "Daily"
+    },
+    {
+      "key": "spam_type",
+      "label": "What kind of email is it?",
+      "type": "select",
+      "required": false,
+      "help": "Best guess.",
+      "options": [
+        "Marketing / promotional",
+        "Newsletter I never subscribed to",
+        "Survey or product feedback request",
+        "Conference or webinar invite",
+        "Cryptocurrency or investment pitch",
+        "Adult content",
+        "Recruiting / job offers",
+        "Other"
+      ],
+      "sample_value": "Marketing / promotional"
+    },
+    {
+      "key": "tried_unsubscribe",
+      "label": "Have you tried unsubscribing?",
+      "type": "select",
+      "required": false,
+      "help": "Some 'unsubscribe' links are actually trackers or scams — that's useful for us to know.",
+      "options": [
+        "No, I didn't want to click anything",
+        "Yes, and it stopped",
+        "Yes, but they keep coming",
+        "Yes, and the link looked suspicious so I closed it",
+        "There was no unsubscribe link"
+      ],
+      "sample_value": "Yes, but they keep coming"
+    },
+    {
+      "key": "additional_notes",
+      "label": "Anything else?",
+      "type": "textarea",
+      "required": false,
+      "help": "Optional. Are coworkers getting it too? Anything weird about it?",
+      "placeholder": "Optional notes",
+      "sample_value": "A few people on my team mentioned getting the same one. The unsubscribe link redirects through three different domains."
+    }
+  ],
+  "alert_template": {
+    "title": "Spam report from {{reporter_email}}: {{sender_email}}",
+    "description": "User {{reporter_email}} reported persistent spam.\n\nSender / domain: {{sender_email}}\nExample subject: {{email_subject}}\nFrequency: {{frequency}}\nType: {{spam_type}}\nUnsubscribe attempted: {{tried_unsubscribe}}\n\nNotes: {{additional_notes}}",
+    "severity": "low",
+    "source": "intake_form",
+    "category": "spam_unsolicited"
+  },
+  "icon": "Inbox",
+  "category": "Email Threats",
+  "estimated_minutes": 2
+}

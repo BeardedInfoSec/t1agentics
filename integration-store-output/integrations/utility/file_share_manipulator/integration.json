@@ -1,0 +1,85 @@
+{
+  "id": "file_share_manipulator",
+  "name": "File Share Manipulator",
+  "description": "File share manipulator is an application that has the ability to manipulate files on a specific server",
+  "version": "1.0.3",
+  "category": "utility",
+  "vendor": "Splunk",
+  "auth_type": "basic_auth",
+  "auth_config": {
+    "type": "basic_auth",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "get_file",
+      "name": "Get File",
+      "description": "Get file from the Network share, such action will return vault id number of file",
+      "http_method": "GET",
+      "endpoint": "/actions/get_file",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "share_name",
+          "type": "string",
+          "description": "Share name value",
+          "required": true
+        },
+        {
+          "name": "file_path",
+          "type": "string",
+          "description": "Whole path to the file which we want to download from the server",
+          "required": true
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "put_file",
+      "name": "Put File",
+      "description": "Put file to the Network share",
+      "http_method": "GET",
+      "endpoint": "/actions/put_file",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "share_name",
+          "type": "string",
+          "description": "Share name value",
+          "required": true
+        },
+        {
+          "name": "path",
+          "type": "string",
+          "description": "Whole path to place where you want to have a file",
+          "required": false,
+          "default": "/"
+        },
+        {
+          "name": "vault_id",
+          "type": "string",
+          "description": "Vault ID of file which you want to put from Container (Event)",
+          "required": true,
+          "contains": [
+            "vault id"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    }
+  ],
+  "source_metadata": {
+    "original_name": "File Share Manipulator",
+    "original_type": "network device",
+    "converted_at": "2025-12-18T16:25:28.771633",
+    "source_version": "1.0.3"
+  }
+}

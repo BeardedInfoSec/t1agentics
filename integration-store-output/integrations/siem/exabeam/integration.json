@@ -1,0 +1,239 @@
+{
+  "id": "exabeam",
+  "name": "Exabeam",
+  "description": "Integrates with Exabeam Security Operations Platform for search, incident management, notable user and asset investigation, and threat detection via the Exabeam REST API",
+  "version": "1.0.0",
+  "category": "siem",
+  "vendor": "Exabeam",
+  "auth_type": "oauth2_client",
+  "auth_config": {
+    "type": "oauth2_client",
+    "token_url": "https://{host}/auth/v1/token",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "https://{host}/api",
+  "actions": [
+    {
+      "id": "search_events",
+      "name": "Search Events",
+      "description": "Search for security events using Exabeam search query syntax",
+      "http_method": "POST",
+      "endpoint": "/search/v2/events",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Search query string",
+          "required": true
+        },
+        {
+          "name": "startTime",
+          "type": "string",
+          "description": "Start time in ISO 8601 format",
+          "required": true
+        },
+        {
+          "name": "endTime",
+          "type": "string",
+          "description": "End time in ISO 8601 format",
+          "required": true
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of results to return",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Offset for pagination",
+          "required": false,
+          "default": 0
+        }
+      ]
+    },
+    {
+      "id": "list_incidents",
+      "name": "List Incidents",
+      "description": "Retrieve incidents from Exabeam with filtering and pagination",
+      "http_method": "GET",
+      "endpoint": "/incidents/v2/incidents",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Filter by incident status (new, inProgress, closed, nothingToTriage)",
+          "required": false
+        },
+        {
+          "name": "priority",
+          "type": "string",
+          "description": "Filter by priority (low, medium, high, critical)",
+          "required": false
+        },
+        {
+          "name": "startTime",
+          "type": "string",
+          "description": "Start time filter in ISO 8601",
+          "required": false
+        },
+        {
+          "name": "endTime",
+          "type": "string",
+          "description": "End time filter in ISO 8601",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum results to return",
+          "required": false,
+          "default": 50
+        }
+      ]
+    },
+    {
+      "id": "get_incident",
+      "name": "Get Incident Details",
+      "description": "Retrieve detailed information about a specific incident",
+      "http_method": "GET",
+      "endpoint": "/incidents/v2/incidents/{incidentId}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "incidentId",
+          "type": "string",
+          "description": "Incident ID to retrieve",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "update_incident",
+      "name": "Update Incident",
+      "description": "Update an incident's status, priority, or assignee",
+      "http_method": "PATCH",
+      "endpoint": "/incidents/v2/incidents/{incidentId}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "incidentId",
+          "type": "string",
+          "description": "Incident ID to update",
+          "required": true
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "New status (new, inProgress, closed, nothingToTriage)",
+          "required": false
+        },
+        {
+          "name": "priority",
+          "type": "string",
+          "description": "New priority (low, medium, high, critical)",
+          "required": false
+        },
+        {
+          "name": "assignee",
+          "type": "string",
+          "description": "User to assign incident to",
+          "required": false
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "Comment to add with the update",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_notable_users",
+      "name": "Get Notable Users",
+      "description": "Retrieve users flagged as notable by Exabeam UEBA analytics",
+      "http_method": "GET",
+      "endpoint": "/analytics/v2/notableUsers",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of notable users to return",
+          "required": false,
+          "default": 50
+        },
+        {
+          "name": "timeRange",
+          "type": "string",
+          "description": "Time range filter (e.g., last24h, last7d, last30d)",
+          "required": false,
+          "default": "last7d"
+        }
+      ]
+    },
+    {
+      "id": "get_user_timeline",
+      "name": "Get User Timeline",
+      "description": "Retrieve the activity timeline for a specific user",
+      "http_method": "GET",
+      "endpoint": "/analytics/v2/timeline/{username}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "username",
+          "type": "string",
+          "description": "Username to retrieve timeline for",
+          "required": true
+        },
+        {
+          "name": "startTime",
+          "type": "string",
+          "description": "Start time in ISO 8601",
+          "required": false
+        },
+        {
+          "name": "endTime",
+          "type": "string",
+          "description": "End time in ISO 8601",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_correlation_rules",
+      "name": "List Correlation Rules",
+      "description": "Retrieve all configured correlation rules",
+      "http_method": "GET",
+      "endpoint": "/rules/v1/rules",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "enabled",
+          "type": "boolean",
+          "description": "Filter by rule enabled/disabled state",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum rules to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    }
+  ]
+}

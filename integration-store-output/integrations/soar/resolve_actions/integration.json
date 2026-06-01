@@ -1,0 +1,146 @@
+{
+  "id": "resolve_actions",
+  "name": "Resolve Actions",
+  "description": "Resolve Systems agentic IT automation and orchestration platform for incident resolution, infrastructure automation, and automated runbook execution via REST API.",
+  "version": "1.0.0",
+  "category": "soar",
+  "vendor": "Resolve Systems",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "header_name": "Authorization",
+    "location": "header",
+    "token_prefix": "Bearer"
+  },
+  "base_url": "https://{host}/api/v1",
+  "actions": [
+    {
+      "id": "list_incidents",
+      "name": "List Incidents",
+      "description": "Retrieve a list of incidents and service requests.",
+      "http_method": "GET",
+      "endpoint": "/incidents",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "page", "type": "integer", "description": "Page number.", "required": false},
+        {"name": "limit", "type": "integer", "description": "Results per page.", "required": false},
+        {"name": "status", "type": "string", "description": "Filter by incident status.", "required": false},
+        {"name": "priority", "type": "string", "description": "Filter by priority.", "required": false}
+      ]
+    },
+    {
+      "id": "get_incident",
+      "name": "Get Incident",
+      "description": "Retrieve details of a specific incident.",
+      "http_method": "GET",
+      "endpoint": "/incidents/{incidentId}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "incidentId", "type": "string", "description": "The incident ID.", "required": true}
+      ]
+    },
+    {
+      "id": "create_incident",
+      "name": "Create Incident",
+      "description": "Create a new incident or service request.",
+      "http_method": "POST",
+      "endpoint": "/incidents",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "title", "type": "string", "description": "Incident title.", "required": true},
+        {"name": "description", "type": "string", "description": "Incident description.", "required": false},
+        {"name": "priority", "type": "string", "description": "Priority: 'low', 'medium', 'high', 'critical'.", "required": false},
+        {"name": "category", "type": "string", "description": "Incident category.", "required": false},
+        {"name": "assignee", "type": "string", "description": "Assigned user or team.", "required": false}
+      ]
+    },
+    {
+      "id": "update_incident",
+      "name": "Update Incident",
+      "description": "Update an existing incident.",
+      "http_method": "PUT",
+      "endpoint": "/incidents/{incidentId}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "incidentId", "type": "string", "description": "The incident ID.", "required": true},
+        {"name": "status", "type": "string", "description": "Updated status.", "required": false},
+        {"name": "priority", "type": "string", "description": "Updated priority.", "required": false},
+        {"name": "assignee", "type": "string", "description": "Updated assignee.", "required": false}
+      ]
+    },
+    {
+      "id": "close_incident",
+      "name": "Close Incident",
+      "description": "Close/resolve an incident.",
+      "http_method": "PUT",
+      "endpoint": "/incidents/{incidentId}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "incidentId", "type": "string", "description": "The incident ID.", "required": true},
+        {"name": "status", "type": "string", "description": "Set to 'resolved' or 'closed'.", "required": true},
+        {"name": "resolution", "type": "string", "description": "Resolution summary.", "required": false}
+      ]
+    },
+    {
+      "id": "list_runbooks",
+      "name": "List Runbooks",
+      "description": "Retrieve a list of available automation runbooks.",
+      "http_method": "GET",
+      "endpoint": "/runbooks",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "page", "type": "integer", "description": "Page number.", "required": false},
+        {"name": "limit", "type": "integer", "description": "Results per page.", "required": false},
+        {"name": "category", "type": "string", "description": "Filter by category.", "required": false}
+      ]
+    },
+    {
+      "id": "execute_runbook",
+      "name": "Execute Runbook",
+      "description": "Execute an automation runbook with input parameters.",
+      "http_method": "POST",
+      "endpoint": "/runbooks/{runbookId}/execute",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "runbookId", "type": "string", "description": "The runbook ID.", "required": true},
+        {"name": "parameters", "type": "object", "description": "Input parameters for the runbook.", "required": false},
+        {"name": "incidentId", "type": "string", "description": "Associated incident ID.", "required": false}
+      ]
+    },
+    {
+      "id": "get_execution_status",
+      "name": "Get Execution Status",
+      "description": "Get the status and results of a runbook execution.",
+      "http_method": "GET",
+      "endpoint": "/runbooks/executions/{executionId}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "executionId", "type": "string", "description": "The execution ID.", "required": true}
+      ]
+    },
+    {
+      "id": "make_rest_call",
+      "name": "Make REST API Call",
+      "description": "Execute a generic RESTful API call to external services via the web service module.",
+      "http_method": "POST",
+      "endpoint": "/webservice/call",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "method", "type": "string", "description": "HTTP method: GET, POST, PUT, DELETE, PATCH.", "required": true},
+        {"name": "url", "type": "string", "description": "Target URL for the API call.", "required": true},
+        {"name": "headers", "type": "object", "description": "Request headers as key-value pairs.", "required": false},
+        {"name": "body", "type": "object", "description": "Request body payload.", "required": false},
+        {"name": "queryParams", "type": "object", "description": "Query parameters.", "required": false}
+      ]
+    }
+  ]
+}

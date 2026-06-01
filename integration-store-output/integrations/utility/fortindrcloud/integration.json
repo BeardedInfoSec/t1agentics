@@ -1,0 +1,965 @@
+{
+  "id": "fortindrcloud",
+  "name": "FortiNDRCloud",
+  "description": "This app allows the use of the information provided by the FortiNDR Cloud Service to perform containment and investigative actions on Splunk SOAR",
+  "version": "1.1.1",
+  "category": "utility",
+  "vendor": "Fortinet Inc.",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "on_poll",
+      "name": "On Poll",
+      "description": "Retrieve latest Detections from the FortiNDR Cloud Service",
+      "http_method": "GET",
+      "endpoint": "/actions/on_poll",
+      "action_type": "ingest",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "start_time",
+          "type": "string",
+          "description": "First Poll (<number> <time unit>, e.g., 12 hours, 7 days)",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "number",
+          "description": "Parameter Ignored in this app",
+          "required": false
+        },
+        {
+          "name": "container_id",
+          "type": "number",
+          "description": "Parameter Ignored in this app",
+          "required": false
+        },
+        {
+          "name": "container_count",
+          "type": "number",
+          "description": "Parameter Ignored in this app",
+          "required": false
+        },
+        {
+          "name": "artifact_count",
+          "type": "number",
+          "description": "Parameter Ignored in this app",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "fnc_get_sensors",
+      "name": "Get Sensors",
+      "description": "Get a list of all sensors",
+      "http_method": "GET",
+      "endpoint": "/actions/fnc_get_sensors",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "account_uuid",
+          "type": "string",
+          "description": "UUID of account to filter by",
+          "required": false
+        },
+        {
+          "name": "account_code",
+          "type": "string",
+          "description": "Account code to filter by",
+          "required": false
+        },
+        {
+          "name": "sensor_id",
+          "type": "string",
+          "description": "ID of the sensor to filter by",
+          "required": false
+        },
+        {
+          "name": "include",
+          "type": "string",
+          "description": "Include additional metadata such as status, interfaces, admin.sensor, admin.zeek, admin.suricata, and network_usage",
+          "required": false
+        },
+        {
+          "name": "enabled",
+          "type": "boolean",
+          "description": "Filter by true or false. If not provided, all the sensors are returned",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "fnc_get_devices",
+      "name": "Get Devices",
+      "description": "Get a list of all devices",
+      "http_method": "GET",
+      "endpoint": "/actions/fnc_get_devices",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "start_date",
+          "type": "string",
+          "description": "Filter devices based on when they were seen",
+          "required": false
+        },
+        {
+          "name": "end_date",
+          "type": "string",
+          "description": "Filter devices based on when they were seen",
+          "required": false
+        },
+        {
+          "name": "cidr",
+          "type": "string",
+          "description": "Filter devices that are under a specific CIDR",
+          "required": false
+        },
+        {
+          "name": "sensor_id",
+          "type": "string",
+          "description": "Filter devices that were observed by a specific sensor",
+          "required": false
+        },
+        {
+          "name": "traffic_direction",
+          "type": "string",
+          "description": "Filter devices that have been noted to only have a certain directionality of traffic (\"external\" vs \"internal\")",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "fnc_get_tasks",
+      "name": "Get Tasks",
+      "description": "Get a list of all the PCAP tasks",
+      "http_method": "GET",
+      "endpoint": "/actions/fnc_get_tasks",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "task_uuid",
+          "type": "string",
+          "description": "Filter to a specific task",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "fnc_create_task",
+      "name": "Create Task",
+      "description": "Create a new PCAP task",
+      "http_method": "GET",
+      "endpoint": "/actions/fnc_create_task",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "The name of the task",
+          "required": true
+        },
+        {
+          "name": "account_uuid",
+          "type": "string",
+          "description": "Account where the task will be created",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "A description for the task",
+          "required": true
+        },
+        {
+          "name": "bpf",
+          "type": "string",
+          "description": "The Berkeley Packet Filter for capture filtering",
+          "required": true
+        },
+        {
+          "name": "requested_start_date",
+          "type": "string",
+          "description": "The date the task will become active. (2019-01-30T00:00:00.000Z)",
+          "required": true
+        },
+        {
+          "name": "requested_end_date",
+          "type": "string",
+          "description": "The date the task will become inactive. (2019-12-31T23:59:59.000Z)",
+          "required": true
+        },
+        {
+          "name": "sensor_ids",
+          "type": "string",
+          "description": " List of sensor IDs, separated by ',', on which this task will run (separate multiple accounts by comma)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "fnc_get_telemetry_events",
+      "name": "Get Telemetry Events",
+      "description": "Get event telemetry data grouped by time",
+      "http_method": "GET",
+      "endpoint": "/actions/fnc_get_telemetry_events",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "interval",
+          "type": "string",
+          "description": "Interval to group by: hour (default) or day",
+          "required": false,
+          "default": "hour"
+        },
+        {
+          "name": "start_date",
+          "type": "string",
+          "description": "Start date/time to query for. The default is 1 day ago for interval=hour or 30 days ago for interval=day",
+          "required": false
+        },
+        {
+          "name": "end_date",
+          "type": "string",
+          "description": "End date/time to query for. The default is the current time",
+          "required": false
+        },
+        {
+          "name": "account_uuid",
+          "type": "string",
+          "description": "Account uuid to filter by",
+          "required": false
+        },
+        {
+          "name": "account_code",
+          "type": "string",
+          "description": "Account code to filter by",
+          "required": false
+        },
+        {
+          "name": "sensor_id",
+          "type": "string",
+          "description": "Sensor id to filter by",
+          "required": false
+        },
+        {
+          "name": "event_type",
+          "type": "string",
+          "description": "The type of event",
+          "required": false
+        },
+        {
+          "name": "group_by",
+          "type": "string",
+          "description": "Optionally group results by: sensor_id, event_type",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "fnc_get_telemetry_packetstats",
+      "name": "Get Telemetry Packetstats",
+      "description": "Get packetstats telemetry data grouped by time",
+      "http_method": "GET",
+      "endpoint": "/actions/fnc_get_telemetry_packetstats",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "interval",
+          "type": "string",
+          "description": "Aggregation interval. default by hour if not specified",
+          "required": false,
+          "default": "h"
+        },
+        {
+          "name": "start_date",
+          "type": "string",
+          "description": "Scopes the returned metrics to dates after the given start_date. If empty returns most current packet stats",
+          "required": false
+        },
+        {
+          "name": "end_date",
+          "type": "string",
+          "description": "Scopes the returned metrics to dates before the given end_date. If empty returns most current packet stats",
+          "required": false
+        },
+        {
+          "name": "account_code",
+          "type": "string",
+          "description": "Account code to filter by",
+          "required": false
+        },
+        {
+          "name": "sensor_id",
+          "type": "string",
+          "description": "Scopes the returned metrics to the interfaces of the specified sensor ID",
+          "required": false
+        },
+        {
+          "name": "group_by",
+          "type": "string",
+          "description": "Option to group by the following fields: interface_name, sensor_id, account_code",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "fnc_get_telemetry_network",
+      "name": "Get Telemetry Network",
+      "description": "Get network telemetry data grouped by time",
+      "http_method": "GET",
+      "endpoint": "/actions/fnc_get_telemetry_network",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "account_code",
+          "type": "string",
+          "description": "Account code to filter by",
+          "required": false
+        },
+        {
+          "name": "interval",
+          "type": "string",
+          "description": "The interval to filter by (day, month_to_day)",
+          "required": false
+        },
+        {
+          "name": "latest_each_month",
+          "type": "boolean",
+          "description": "Filters out all but the latest day and month_to_date for each month",
+          "required": false
+        },
+        {
+          "name": "sort_order",
+          "type": "string",
+          "description": "Sorts by account code first, then timestamp. asc or desc. The default is desc",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "The maximum number of records to return, default: 100, max: 1000",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "The number of records to skip past. Default: 0",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "start_date",
+          "type": "string",
+          "description": "Start date to filter by",
+          "required": false
+        },
+        {
+          "name": "end_date",
+          "type": "string",
+          "description": "End date to filter by",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "fnc_get_entity_summary",
+      "name": "Get Entity Summary",
+      "description": "Get summary information about an IP or domain",
+      "http_method": "GET",
+      "endpoint": "/actions/fnc_get_entity_summary",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "entity",
+          "type": "string",
+          "description": "Entity name to retrieve summary information for",
+          "required": true
+        },
+        {
+          "name": "entity_type",
+          "type": "string",
+          "description": "Type of the entity we are searching. Allowed values are: ip, domain or file",
+          "required": false
+        },
+        {
+          "name": "account_uuid",
+          "type": "string",
+          "description": "Account uuid to filter by. If absent, all the caller's allowed accounts will be queried",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "fnc_get_entity_pdns",
+      "name": "Get Entity Pdns",
+      "description": "Get passive DNS information about an IP or domain",
+      "http_method": "GET",
+      "endpoint": "/actions/fnc_get_entity_pdns",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "entity",
+          "type": "string",
+          "description": "IP or Domain to get passive DNS data for",
+          "required": true
+        },
+        {
+          "name": "record_type",
+          "type": "string",
+          "description": "Limit results to the specified DNS query type(s). Supported types are: A, AAAA, CNAME, MX, NS. Case insensitive",
+          "required": false
+        },
+        {
+          "name": "source",
+          "type": "string",
+          "description": "Limit the results to the specified data source(s). Note that not all Sources populate all fields. Supported sources are: ICEBRG_DNS. Case insensitive",
+          "required": false
+        },
+        {
+          "name": "resolve_external",
+          "type": "boolean",
+          "description": "When true, the service will query non-ICEBRG data sources. false by default",
+          "required": false
+        },
+        {
+          "name": "start_date",
+          "type": "string",
+          "description": "The earliest date before which to exclude results. Day granularity, inclusive",
+          "required": false
+        },
+        {
+          "name": "end_date",
+          "type": "string",
+          "description": "The latest date after which to exclude results. Day granularity, inclusive",
+          "required": false
+        },
+        {
+          "name": "account_uuid",
+          "type": "string",
+          "description": "Limit results to the specified account UUID(s). Defaults to all accounts for which the user has permission",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of records to be returned. Default 1000",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "fnc_get_entity_dhcp",
+      "name": "Get Entity Dhcp",
+      "description": "Get DHCP information about an IP address",
+      "http_method": "GET",
+      "endpoint": "/actions/fnc_get_entity_dhcp",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "entity",
+          "type": "string",
+          "description": "IP to get DHCP data for",
+          "required": true
+        },
+        {
+          "name": "start_date",
+          "type": "string",
+          "description": "The earliest date before which to exclude results. Day granularity, inclusive",
+          "required": false
+        },
+        {
+          "name": "end_date",
+          "type": "string",
+          "description": "The latest date after which to exclude results. Day granularity, inclusive",
+          "required": false
+        },
+        {
+          "name": "account_uuid",
+          "type": "string",
+          "description": "Limit results to the specified account UUID(s). Defaults to all accounts for which the user has permission",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "fnc_get_entity_file",
+      "name": "Get Entity File",
+      "description": "Get information about a file",
+      "http_method": "GET",
+      "endpoint": "/actions/fnc_get_entity_file",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "hash",
+          "type": "string",
+          "description": "File hash. Can be an MD5, SHA1, or SHA256 hash of the file",
+          "required": true,
+          "contains": [
+            "hash"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "fnc_get_detections",
+      "name": "Get Detections",
+      "description": "Get information about the detections",
+      "http_method": "GET",
+      "endpoint": "/actions/fnc_get_detections",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "rule_uuid",
+          "type": "string",
+          "description": "Filter to a specific rule",
+          "required": false
+        },
+        {
+          "name": "account_uuid",
+          "type": "string",
+          "description": "For those with access to multiple accounts, specify a single account to return results from",
+          "required": false
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Filter by detection status: active, resolved",
+          "required": false
+        },
+        {
+          "name": "device_ip",
+          "type": "string",
+          "description": "Device IP to filter by",
+          "required": false
+        },
+        {
+          "name": "sensor_id",
+          "type": "string",
+          "description": "Sensor ID to filter by",
+          "required": false
+        },
+        {
+          "name": "muted",
+          "type": "boolean",
+          "description": "List detections that a user muted: true / false",
+          "required": false
+        },
+        {
+          "name": "muted_device",
+          "type": "boolean",
+          "description": "List detections for muted devices: true / false",
+          "required": false
+        },
+        {
+          "name": "muted_rule",
+          "type": "boolean",
+          "description": "List detections for muted rules",
+          "required": false
+        },
+        {
+          "name": "include",
+          "type": "string",
+          "description": "Include additional information in the response (i.e. 'rules,indicators' add the rules and the indicators to the response)",
+          "required": false
+        },
+        {
+          "name": "sort_by",
+          "type": "string",
+          "description": "Field to sort by (first_seen, last_seen, status, device_ip, indicator_count)",
+          "required": false
+        },
+        {
+          "name": "sort_order",
+          "type": "string",
+          "description": "Sort direction ('asc' vs 'desc')",
+          "required": false
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "The number of records to skip past",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "The number of records to return, default: 100, max: 10000",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "created_start_date",
+          "type": "string",
+          "description": "Created start date to filter by (inclusive)",
+          "required": false
+        },
+        {
+          "name": "created_end_date",
+          "type": "string",
+          "description": "Created end date to filter by (exclusive)",
+          "required": false
+        },
+        {
+          "name": "created_or_shared_start_date",
+          "type": "string",
+          "description": "Created or shared start date to filter by (inclusive)",
+          "required": false
+        },
+        {
+          "name": "created_or_shared_end_date",
+          "type": "string",
+          "description": " Created or shared end date to filter by (exclusive)",
+          "required": false
+        },
+        {
+          "name": "active_start_date",
+          "type": "string",
+          "description": "Active start date to filter by (inclusive)",
+          "required": false
+        },
+        {
+          "name": "active_end_date",
+          "type": "string",
+          "description": "Active end date to filter by (exclusive)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "fnc_get_detection_rules",
+      "name": "Get Detection Rules",
+      "description": "Get a list of detection rules",
+      "http_method": "GET",
+      "endpoint": "/actions/fnc_get_detection_rules",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "account_uuid",
+          "type": "string",
+          "description": "For those with access to multiple accounts, specify a single account to return results from",
+          "required": false
+        },
+        {
+          "name": "search",
+          "type": "string",
+          "description": "Filter name or category",
+          "required": false
+        },
+        {
+          "name": "has_detections",
+          "type": "boolean",
+          "description": "Include rules that have unmuted, unresolved detections",
+          "required": false
+        },
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Filter by severity: high, moderate, low",
+          "required": false
+        },
+        {
+          "name": "confidence",
+          "type": "string",
+          "description": "Filter by confidence: high, moderate, low",
+          "required": false
+        },
+        {
+          "name": "category",
+          "type": "string",
+          "description": "Category to filter by",
+          "required": false
+        },
+        {
+          "name": "rule_account_muted",
+          "type": "boolean",
+          "description": "Include muted rules: true / false",
+          "required": false
+        },
+        {
+          "name": "enabled",
+          "type": "boolean",
+          "description": "Enabled rules only",
+          "required": false
+        },
+        {
+          "name": "sort_by",
+          "type": "string",
+          "description": "The field to sort by: created, updated, detections, severity, confidence, category, last_seen, detections_muted. Defaults to updated",
+          "required": false
+        },
+        {
+          "name": "sort_order",
+          "type": "string",
+          "description": "Sort direction ('asc' vs 'desc')",
+          "required": false
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "The number of records to skip past",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "The number of records to return, default: 100, max: 1000",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "fnc_resolve_detection",
+      "name": "Resolve Detection",
+      "description": "Resolve a specific detection",
+      "http_method": "GET",
+      "endpoint": "/actions/fnc_resolve_detection",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "detection_uuid",
+          "type": "string",
+          "description": "Detection UUID to resolve",
+          "required": true
+        },
+        {
+          "name": "resolution",
+          "type": "string",
+          "description": "Resolution state. Options: true_positive_mitigated, true_positive_no_action, false_positive, unknown'",
+          "required": true
+        },
+        {
+          "name": "resolution_comment",
+          "type": "string",
+          "description": "Optional comment for the resolution",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "fnc_get_rule_events",
+      "name": "Get Rule Events",
+      "description": "Get a list of the events that matched on a specific rule",
+      "http_method": "GET",
+      "endpoint": "/actions/fnc_get_rule_events",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "rule_uuid",
+          "type": "string",
+          "description": "Rule UUID to get events for",
+          "required": true
+        },
+        {
+          "name": "account_uuid",
+          "type": "string",
+          "description": "Account uuid to filter by",
+          "required": false
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "The number of records to skip past",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "The number of records to return, default: 100, max: 1000",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "fnc_get_detection_events",
+      "name": "Get Detection Events",
+      "description": "Get a list of the events associated with a specific detection",
+      "http_method": "GET",
+      "endpoint": "/actions/fnc_get_detection_events",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "detection_uuid",
+          "type": "string",
+          "description": "Detection uuid to filter by",
+          "required": true
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "The number of records to skip past",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "The number of records to return, default: 100, max: 1000",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "fnc_create_detection_rule",
+      "name": "Create Detection Rule",
+      "description": "Create a new detection rule",
+      "http_method": "GET",
+      "endpoint": "/actions/fnc_create_detection_rule",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "account_uuid",
+          "type": "string",
+          "description": "Account where the rule will be created",
+          "required": true
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "description": "The name of the rule",
+          "required": true
+        },
+        {
+          "name": "category",
+          "type": "string",
+          "description": "The category of the rule",
+          "required": true
+        },
+        {
+          "name": "query_signature",
+          "type": "string",
+          "description": " The IQL query for the rule",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "A description for the rule",
+          "required": false
+        },
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "The severity of the rule",
+          "required": true
+        },
+        {
+          "name": "confidence",
+          "type": "string",
+          "description": "The confidence of the rule",
+          "required": true
+        },
+        {
+          "name": "primary_attack_id",
+          "type": "string",
+          "description": "Primary Attack ID",
+          "required": false
+        },
+        {
+          "name": "secondary_attack_id",
+          "type": "string",
+          "description": "Secondary Attack ID",
+          "required": false
+        },
+        {
+          "name": "specificity",
+          "type": "string",
+          "description": "Specificity",
+          "required": false
+        },
+        {
+          "name": "device_ip_fields",
+          "type": "string",
+          "description": "List, separated by ',', of the fields to check for impacted devices. Using 'DEFAULT' if not provided",
+          "required": false
+        },
+        {
+          "name": "indicator_fields",
+          "type": "string",
+          "description": "List, separated by ',' of the indicator's fields",
+          "required": false
+        },
+        {
+          "name": "run_account_uuids",
+          "type": "string",
+          "description": "Account UUIDs on which this rule will run. This will usually be just your own account UUID. (separate multiple accounts by comma)",
+          "required": true
+        },
+        {
+          "name": "auto_resolution_minutes",
+          "type": "number",
+          "description": "The number of minutes after which detections will be auto-resolved. If 0 then detections have to be manually resolved",
+          "required": false
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "FortiNDRCloud",
+    "original_type": "generic",
+    "converted_at": "2025-12-18T16:25:28.798653",
+    "source_version": "1.1.1"
+  }
+}

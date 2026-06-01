@@ -1,0 +1,189 @@
+{
+  "id": "contrast_security",
+  "name": "Contrast Security",
+  "description": "IAST and RASP application security platform providing runtime vulnerability detection and protection for web applications",
+  "version": "1.0.0",
+  "category": "code_security",
+  "vendor": "Contrast Security",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header",
+    "additional_headers": {
+      "API-Key": "Contrast API key",
+      "Service-Key": "Contrast service key"
+    },
+    "description": "Requires Authorization header with base64(username:service_key) plus API-Key header"
+  },
+  "base_url": "https://app.contrastsecurity.com/Contrast/api/ng",
+  "actions": [
+    {
+      "id": "list_applications",
+      "name": "List Applications",
+      "description": "List all applications in the organization",
+      "http_method": "GET",
+      "endpoint": "/{org_uuid}/applications",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "org_uuid",
+          "type": "string",
+          "description": "Organization UUID",
+          "required": true,
+          "location": "path"
+        },
+        {
+          "name": "filterText",
+          "type": "string",
+          "description": "Search text to filter applications",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "description": "Number of results to return",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "offset",
+          "type": "integer",
+          "description": "Pagination offset",
+          "required": false,
+          "location": "query"
+        }
+      ]
+    },
+    {
+      "id": "list_vulnerabilities",
+      "name": "List Application Vulnerabilities",
+      "description": "List vulnerabilities (traces) for a specific application with filtering",
+      "http_method": "GET",
+      "endpoint": "/{org_uuid}/traces/{app_id}/filter",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "org_uuid",
+          "type": "string",
+          "description": "Organization UUID",
+          "required": true,
+          "location": "path"
+        },
+        {
+          "name": "app_id",
+          "type": "string",
+          "description": "Application ID",
+          "required": true,
+          "location": "path"
+        },
+        {
+          "name": "severities",
+          "type": "string",
+          "description": "Comma-separated severity levels: CRITICAL, HIGH, MEDIUM, LOW, NOTE",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Vulnerability status filter",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "description": "Number of results",
+          "required": false,
+          "location": "query"
+        }
+      ]
+    },
+    {
+      "id": "get_vulnerability",
+      "name": "Get Vulnerability Details",
+      "description": "Retrieve detailed information about a specific vulnerability trace",
+      "http_method": "GET",
+      "endpoint": "/{org_uuid}/traces/{app_id}/trace/{trace_uuid}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "org_uuid",
+          "type": "string",
+          "description": "Organization UUID",
+          "required": true,
+          "location": "path"
+        },
+        {
+          "name": "app_id",
+          "type": "string",
+          "description": "Application ID",
+          "required": true,
+          "location": "path"
+        },
+        {
+          "name": "trace_uuid",
+          "type": "string",
+          "description": "Vulnerability trace UUID",
+          "required": true,
+          "location": "path"
+        }
+      ]
+    },
+    {
+      "id": "get_recommendation",
+      "name": "Get Vulnerability Recommendation",
+      "description": "Retrieve remediation recommendation for a vulnerability",
+      "http_method": "GET",
+      "endpoint": "/{org_uuid}/traces/{trace_uuid}/recommendation",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "org_uuid",
+          "type": "string",
+          "description": "Organization UUID",
+          "required": true,
+          "location": "path"
+        },
+        {
+          "name": "trace_uuid",
+          "type": "string",
+          "description": "Vulnerability trace UUID",
+          "required": true,
+          "location": "path"
+        }
+      ]
+    },
+    {
+      "id": "list_servers",
+      "name": "List Servers",
+      "description": "List all servers monitored by the Contrast agent",
+      "http_method": "GET",
+      "endpoint": "/{org_uuid}/servers",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "org_uuid",
+          "type": "string",
+          "description": "Organization UUID",
+          "required": true,
+          "location": "path"
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "description": "Number of results",
+          "required": false,
+          "location": "query"
+        }
+      ]
+    }
+  ]
+}

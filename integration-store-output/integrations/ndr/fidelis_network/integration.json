@@ -1,0 +1,210 @@
+{
+  "id": "fidelis_network",
+  "name": "Fidelis Network",
+  "description": "Deep session inspection NDR platform providing real-time detection and forensic analysis of network threats including malware, data exfiltration, and lateral movement",
+  "version": "1.0.0",
+  "category": "ndr",
+  "vendor": "Fidelis Cybersecurity",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header",
+    "prefix": "Bearer"
+  },
+  "base_url": "https://{host}/api/v2",
+  "actions": [
+    {
+      "id": "get_alerts",
+      "name": "Get Alerts",
+      "description": "Retrieve Fidelis Network alerts with optional filtering",
+      "http_method": "GET",
+      "endpoint": "/alerts",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "start_time",
+          "type": "string",
+          "description": "Start time in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "string",
+          "description": "End time in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Filter by severity level (low, medium, high, critical)",
+          "required": false
+        },
+        {
+          "name": "src_ip",
+          "type": "string",
+          "description": "Filter by source IP address",
+          "required": false
+        },
+        {
+          "name": "dst_ip",
+          "type": "string",
+          "description": "Filter by destination IP address",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of alerts to return",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Offset for pagination",
+          "required": false,
+          "default": 0
+        }
+      ]
+    },
+    {
+      "id": "get_alert_details",
+      "name": "Get Alert Details",
+      "description": "Retrieve detailed information about a specific alert including metadata",
+      "http_method": "GET",
+      "endpoint": "/alerts/{alert_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "alert_id",
+          "type": "number",
+          "description": "The alert ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_alert_session",
+      "name": "Get Alert Session",
+      "description": "Retrieve session information related to an alert",
+      "http_method": "GET",
+      "endpoint": "/alerts/{alert_id}/session",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "alert_id",
+          "type": "number",
+          "description": "The alert ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_alert_pcap",
+      "name": "Get Alert PCAP",
+      "description": "Download the PCAP file associated with a specific alert",
+      "http_method": "GET",
+      "endpoint": "/alerts/{alert_id}/pcap",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "alert_id",
+          "type": "number",
+          "description": "The alert ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_metadata",
+      "name": "Get Metadata",
+      "description": "Retrieve network metadata and session details",
+      "http_method": "GET",
+      "endpoint": "/metadata",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "src_ip",
+          "type": "string",
+          "description": "Filter by source IP address",
+          "required": false
+        },
+        {
+          "name": "dst_ip",
+          "type": "string",
+          "description": "Filter by destination IP address",
+          "required": false
+        },
+        {
+          "name": "start_time",
+          "type": "string",
+          "description": "Start time in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "string",
+          "description": "End time in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of records to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "download_malware",
+      "name": "Download Malware",
+      "description": "Download a malware file associated with a specific alert for analysis",
+      "http_method": "GET",
+      "endpoint": "/alerts/{alert_id}/malware",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "alert_id",
+          "type": "number",
+          "description": "The alert ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "delete_alert",
+      "name": "Delete Alert",
+      "description": "Delete a specific alert from Fidelis Network",
+      "http_method": "DELETE",
+      "endpoint": "/alerts/{alert_id}",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "alert_id",
+          "type": "number",
+          "description": "The alert ID to delete",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_sensors",
+      "name": "Get Sensors",
+      "description": "Retrieve Fidelis Network sensor status and information",
+      "http_method": "GET",
+      "endpoint": "/sensors",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    }
+  ]
+}

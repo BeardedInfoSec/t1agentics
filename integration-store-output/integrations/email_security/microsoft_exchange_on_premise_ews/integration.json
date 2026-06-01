@@ -1,0 +1,492 @@
+{
+  "id": "microsoft_exchange_on_premise_ews",
+  "name": "Microsoft Exchange On-Premise EWS",
+  "description": "This app performs email ingestion, investigative and containment actions on an on-premise Exchange installation",
+  "version": "3.13.4",
+  "category": "email_security",
+  "vendor": "Microsoft",
+  "auth_type": "basic_auth",
+  "auth_config": {
+    "type": "basic_auth",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "run_query",
+      "name": "Run Query",
+      "description": "Search emails",
+      "http_method": "GET",
+      "endpoint": "/actions/run_query",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "email",
+          "type": "string",
+          "description": "User's Email (Mailbox to search in)",
+          "required": true,
+          "contains": [
+            "email"
+          ]
+        },
+        {
+          "name": "folder",
+          "type": "string",
+          "description": "Folder Name/Path (to search in)",
+          "required": false,
+          "default": "Inbox",
+          "contains": [
+            "mail folder",
+            "mail folder path"
+          ]
+        },
+        {
+          "name": "subject",
+          "type": "string",
+          "description": "Substring to search in Subject",
+          "required": false
+        },
+        {
+          "name": "sender",
+          "type": "string",
+          "description": "Sender Email address to match",
+          "required": false,
+          "contains": [
+            "email"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "string",
+          "description": "Substring to search in Body",
+          "required": false
+        },
+        {
+          "name": "internet_message_id",
+          "type": "string",
+          "description": "Internet Message ID",
+          "required": false,
+          "contains": [
+            "internet message id"
+          ]
+        },
+        {
+          "name": "query",
+          "type": "string",
+          "description": "AQS string",
+          "required": false
+        },
+        {
+          "name": "range",
+          "type": "string",
+          "description": "Email range to return (min_offset-max_offset)",
+          "required": false,
+          "default": "0-10"
+        },
+        {
+          "name": "ignore_subfolders",
+          "type": "boolean",
+          "description": "Ignore subfolders",
+          "required": false
+        },
+        {
+          "name": "is_public_folder",
+          "type": "boolean",
+          "description": "Mailbox folder is a public folder",
+          "required": false,
+          "default": false
+        }
+      ]
+    },
+    {
+      "id": "delete_email",
+      "name": "Delete Email",
+      "description": "Delete emails",
+      "http_method": "POST",
+      "endpoint": "/actions/delete_email",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Message IDs to delete (comma separated values supported)",
+          "required": true,
+          "contains": [
+            "exchange email id"
+          ]
+        },
+        {
+          "name": "email",
+          "type": "string",
+          "description": "Email of the mailbox owner (used during impersonation)",
+          "required": false,
+          "contains": [
+            "email"
+          ]
+        }
+      ],
+      "observable_type": "email"
+    },
+    {
+      "id": "copy_email",
+      "name": "Copy Email",
+      "description": "Copy an email to a folder",
+      "http_method": "GET",
+      "endpoint": "/actions/copy_email",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Message ID to copy",
+          "required": true,
+          "contains": [
+            "exchange email id"
+          ]
+        },
+        {
+          "name": "ph",
+          "type": "string",
+          "description": "",
+          "required": false
+        },
+        {
+          "name": "email",
+          "type": "string",
+          "description": "Destination Mailbox (Email)",
+          "required": true,
+          "contains": [
+            "email"
+          ]
+        },
+        {
+          "name": "folder",
+          "type": "string",
+          "description": "Destination Mail Folder Name/Path",
+          "required": true,
+          "contains": [
+            "mail folder",
+            "mail folder path"
+          ]
+        },
+        {
+          "name": "impersonate_email",
+          "type": "string",
+          "description": "Impersonation Email",
+          "required": false,
+          "contains": [
+            "email"
+          ]
+        },
+        {
+          "name": "dont_impersonate",
+          "type": "boolean",
+          "description": "Don't use impersonation",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "is_public_folder",
+          "type": "boolean",
+          "description": "Mailbox folder is a public folder",
+          "required": false,
+          "default": false
+        }
+      ],
+      "observable_type": "email"
+    },
+    {
+      "id": "move_email",
+      "name": "Move Email",
+      "description": "Move an email to a folder",
+      "http_method": "GET",
+      "endpoint": "/actions/move_email",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Message ID to move",
+          "required": true,
+          "contains": [
+            "exchange email id"
+          ]
+        },
+        {
+          "name": "ph",
+          "type": "string",
+          "description": "",
+          "required": false
+        },
+        {
+          "name": "email",
+          "type": "string",
+          "description": "Destination Mailbox (Email)",
+          "required": true,
+          "contains": [
+            "email"
+          ]
+        },
+        {
+          "name": "folder",
+          "type": "string",
+          "description": "Destination Mail Folder Name/Path",
+          "required": true,
+          "contains": [
+            "mail folder",
+            "mail folder path"
+          ]
+        },
+        {
+          "name": "impersonate_email",
+          "type": "string",
+          "description": "Impersonation Email",
+          "required": false,
+          "contains": [
+            "email"
+          ]
+        },
+        {
+          "name": "dont_impersonate",
+          "type": "boolean",
+          "description": "Don't use impersonation",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "is_public_folder",
+          "type": "boolean",
+          "description": "Mailbox folder is a public folder",
+          "required": false,
+          "default": false
+        }
+      ],
+      "observable_type": "email"
+    },
+    {
+      "id": "get_email",
+      "name": "Get Email",
+      "description": "Get an email from the server",
+      "http_method": "GET",
+      "endpoint": "/actions/get_email",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Message ID to get",
+          "required": false,
+          "contains": [
+            "exchange email id"
+          ]
+        },
+        {
+          "name": "email",
+          "type": "string",
+          "description": "Email of the mailbox owner (used during impersonation)",
+          "required": false,
+          "contains": [
+            "email"
+          ]
+        },
+        {
+          "name": "container_id",
+          "type": "number",
+          "description": "Container ID to get email data from",
+          "required": false,
+          "contains": [
+            "phantom container id"
+          ]
+        },
+        {
+          "name": "vault_id",
+          "type": "string",
+          "description": "Vault ID to get email from",
+          "required": false,
+          "contains": [
+            "vault id"
+          ]
+        },
+        {
+          "name": "ingest_email",
+          "type": "boolean",
+          "description": "Create containers and artifacts",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "use_current_container",
+          "type": "boolean",
+          "description": "Create artifacts in the same container",
+          "required": false,
+          "default": false
+        }
+      ],
+      "observable_type": "email"
+    },
+    {
+      "id": "expand_dl",
+      "name": "List Addresses",
+      "description": "Get the email addresses that make up a Distribution List",
+      "http_method": "GET",
+      "endpoint": "/actions/expand_dl",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "group",
+          "type": "string",
+          "description": "Distribution List to expand",
+          "required": true,
+          "contains": [
+            "email",
+            "exchange distribution list",
+            "user name"
+          ]
+        },
+        {
+          "name": "recursive",
+          "type": "boolean",
+          "description": "Expand all sub distribution lists",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "resolve_name",
+      "name": "Lookup Email",
+      "description": "Resolve an Alias name or email address, into mailboxes",
+      "http_method": "GET",
+      "endpoint": "/actions/resolve_name",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "email",
+          "type": "string",
+          "description": "Name to resolve",
+          "required": true,
+          "contains": [
+            "exchange alias",
+            "email"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "update_email",
+      "name": "Update Email",
+      "description": "Update an email on the server",
+      "http_method": "GET",
+      "endpoint": "/actions/update_email",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Message ID to update",
+          "required": true,
+          "contains": [
+            "exchange email id"
+          ]
+        },
+        {
+          "name": "email",
+          "type": "string",
+          "description": "Email of the mailbox owner (used during impersonation)",
+          "required": false,
+          "contains": [
+            "email"
+          ]
+        },
+        {
+          "name": "subject",
+          "type": "string",
+          "description": "Subject to set",
+          "required": false
+        },
+        {
+          "name": "category",
+          "type": "string",
+          "description": "Categories to set",
+          "required": false
+        }
+      ],
+      "observable_type": "email"
+    },
+    {
+      "id": "on_poll",
+      "name": "On Poll",
+      "description": "Ingest emails from the server into Splunk SOAR",
+      "http_method": "GET",
+      "endpoint": "/actions/on_poll",
+      "action_type": "ingest",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "start_time",
+          "type": "number",
+          "description": "Parameter Ignored in this app",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "number",
+          "description": "Parameter Ignored in this app",
+          "required": false
+        },
+        {
+          "name": "container_id",
+          "type": "number",
+          "description": "Parameter Ignored in this app",
+          "required": false
+        },
+        {
+          "name": "container_count",
+          "type": "number",
+          "description": "Maximum number of emails to ingest",
+          "required": true,
+          "default": 100
+        },
+        {
+          "name": "artifact_count",
+          "type": "number",
+          "description": "Parameter Ignored in this app",
+          "required": false,
+          "default": 1000
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Microsoft Exchange On-Premise EWS",
+    "original_type": "email",
+    "converted_at": "2025-12-18T16:25:28.938059",
+    "source_version": "3.13.4"
+  }
+}

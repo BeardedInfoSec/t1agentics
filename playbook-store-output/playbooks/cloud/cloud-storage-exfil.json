@@ -1,0 +1,246 @@
+{
+  "name": "Cloud Storage Exfiltration Detection",
+  "slug": "cloud-storage-exfil",
+  "description": "Detects bulk download or exfiltration from cloud storage (S3, GCS, Azure Blob). Riggs AI analyzes the data access pattern using the data_exfil template to determine if the activity represents genuine exfiltration. Confirmed exfiltration triggers immediate access restriction, investigation of accessed objects, incident ticket creation with forensic details, and team notification. Legitimate access receives a severity adjustment and note.",
+  "category": "cloud",
+  "subcategory": "data_protection",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "advanced",
+  "estimated_time": "20 minutes",
+  "tags": ["cloud", "storage", "exfiltration", "s3", "data_loss"],
+  "alert_types": ["cloud_security", "data_exfiltration"],
+  "severity_filter": ["high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["cloud_security", "data_exfiltration", "storage_anomaly"],
+    "min_severity": "high"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "aws_security_hub",
+      "name": "AWS Security Hub",
+      "category": "cloud_security",
+      "reason": "Source of storage access anomaly findings and S3 bucket policy management"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create forensic investigation tickets for confirmed data exfiltration events"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Notify the security team of data exfiltration detection and response actions"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Cloud Storage Anomaly Alert",
+          "config": {
+            "alert_types": ["cloud_security", "data_exfiltration", "storage_anomaly"],
+            "description": "Triggers when anomalous bulk download or data access pattern is detected on cloud storage resources"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — Data Exfiltration Assessment",
+          "config": {
+            "template_id": "data_exfil",
+            "additional_instructions": "Evaluate cloud storage access pattern: volume of data accessed, access timing, source IP reputation, data classification of accessed objects",
+            "description": "AI-powered data exfiltration analysis to determine if the bulk cloud storage access represents genuine data theft"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "label": "Exfiltration Confirmed?",
+          "config": {
+            "condition": "{{analyze_1.verdict}} == 'exfiltration' || {{analyze_1.confidence}} >= 0.8",
+            "description": "Routes based on whether the AI assessment confirmed data exfiltration from cloud storage"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "respond",
+          "label": "Restrict Bucket Access",
+          "config": {
+            "integration_action": {
+              "connector_id": "aws_security_hub",
+              "action": "restrict_bucket_access",
+              "parameters": {
+                "bucket_name": "{{trigger_1.alert.bucket_name}}",
+                "deny_principal": "{{trigger_1.alert.principal_id}}",
+                "reason": "Data exfiltration detected — AI confidence: {{analyze_1.confidence}}"
+              }
+            },
+            "description": "Immediately restrict the suspect principal's access to the affected cloud storage bucket"
+          }
+        }
+      },
+      {
+        "id": "code_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "code",
+          "label": "Investigate Accessed Objects",
+          "config": {
+            "mode": "query",
+            "query": "S3 access logs for bucket={{trigger_1.alert.bucket_name}} by principal={{trigger_1.alert.principal_id}} in the last 48 hours: object keys, data volume, source IPs, request types",
+            "output_variable": "access_investigation",
+            "description": "Query storage access logs to determine the full scope of objects accessed, total data volume, and access timeline"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "label": "Create Forensic Ticket",
+          "config": {
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_ticket",
+              "parameters": {
+                "project": "SEC",
+                "issue_type": "Investigation",
+                "priority": "Critical",
+                "summary": "Cloud Storage Exfiltration: {{trigger_1.alert.bucket_name}} — Forensic Review Required",
+                "description": "Confirmed data exfiltration from cloud storage.\n\nBucket: {{trigger_1.alert.bucket_name}}\nPrincipal: {{trigger_1.alert.principal_id}}\nData Volume: {{trigger_1.alert.data_volume}}\n\nActions Taken:\n- Principal access restricted\n- Access logs investigated\n\nAccess Investigation:\n{{code_1.access_investigation}}\n\nRiggs AI Assessment:\n{{analyze_1.summary}}\n\nNext Steps: Forensic review of all accessed objects, data classification impact assessment, and credential rotation for the affected principal."
+              }
+            },
+            "description": "Create a forensic investigation ticket with full details of the exfiltration scope"
+          }
+        }
+      },
+      {
+        "id": "respond_3",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "label": "Notify Security Team",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#security-incidents",
+              "message": "CLOUD STORAGE EXFILTRATION DETECTED\nBucket: {{trigger_1.alert.bucket_name}}\nPrincipal: {{trigger_1.alert.principal_id}}\nData Volume: {{trigger_1.alert.data_volume}}\nActions: Access restricted, logs investigated\nTicket: {{respond_2.ticket_url}}\n\nRiggs Assessment:\n{{analyze_1.summary}}"
+            },
+            "description": "Notify the security team of the data exfiltration event and containment actions"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "utility",
+          "label": "Add Note: Legitimate Access",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "Reviewed by Riggs AI (data_exfil template). Bulk storage access determined to be legitimate. Confidence: {{analyze_1.confidence}}. Assessment: {{analyze_1.summary}}"
+            },
+            "description": "Document that AI analysis determined the bulk access was legitimate and not exfiltration"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1180 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "Cloud storage exfiltration detection and response complete"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_analyze",
+        "source": "trigger_1",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_analyze_decision",
+        "source": "analyze_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "respond_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "utility_1",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_restrict_investigate",
+        "source": "respond_1",
+        "target": "code_1",
+        "type": "default"
+      },
+      {
+        "id": "e_investigate_ticket",
+        "source": "code_1",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_ticket_notify",
+        "source": "respond_2",
+        "target": "respond_3",
+        "type": "default"
+      },
+      {
+        "id": "e_notify_end",
+        "source": "respond_3",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_utility_end",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

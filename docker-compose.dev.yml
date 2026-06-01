@@ -1,0 +1,250 @@
+services:
+  # PostgreSQL - Primary Database (ALL DATA)
+  postgres:
+    image: pgvector/pgvector:pg15
+    container_name: t1agentics-postgres
+    ports:
+      - "127.0.0.1:5432:5432"
+    environment:
+      # Keep original credentials to preserve existing data
+      POSTGRES_DB: agentcore
+      POSTGRES_USER: agentcore
+      POSTGRES_PASSWORD: agentcore_dev_password
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=en_US.UTF-8"
+    volumes:
+      - ./docker-volumes/postgres-data:/var/lib/postgresql/data
+      - ./backend/init-db.sql:/docker-entrypoint-initdb.d/01-schema.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U agentcore -d agentcore"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - t1agentics-network
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+
+  # MongoDB has been REMOVED - all data is in PostgreSQL
+  # OpenSearch has been REMOVED (2026-01-21) - log storage migrated to ClickHouse
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: t1agentics-backend
+    ports:
+      - "8000:8000"
+      - "5514:5514"
+    volumes:
+      - "./integration-store-output:/app/integration-store:ro"
+      - "./backend/app.py:/app/app.py:ro"
+      - "./backend/services:/app/services:ro"
+      - "./backend/routes:/app/routes:ro"
+      - "./backend/integrations:/app/integrations:ro"
+      - "./backend/middleware:/app/middleware:ro"
+      - "./backend/config:/app/config:ro"
+      - "./backend/websocket:/app/websocket:ro"
+      - "./backend/reasoning_engine:/app/reasoning_engine:ro"
+      - "./backend/agents:/app/agents:ro"
+      - "./backend/soar:/app/soar:ro"
+      - "./backend/dependencies:/app/dependencies:ro"
+      - "./prompt_debug:/app/prompt_debug"
+    environment:
+      - ENVIRONMENT=development
+      - LOG_LEVEL=INFO
+      # PostgreSQL (primary - ALL DATA)
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=agentcore
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-agentcore_dev_password}
+      - POSTGRES_DB=agentcore
+      # JWT Secret Key (use .env file in production for security)
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-your-secret-key-change-in-production}
+      - JWT_EXPIRE_MINUTES=${JWT_EXPIRE_MINUTES:-1440}
+      - PLATFORM_JWT_SECRET=${PLATFORM_JWT_SECRET}
+      # Admin Account (MUST be set via .env file - no hardcoded defaults)
+      - ADMIN_USERNAME=${ADMIN_USERNAME:-admin}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - ADMIN_EMAIL=${ADMIN_EMAIL:-admin@t1agentics.local}
+      # Persistent encryption key for credentials vault (use .env file in production)
+      # Must be a valid Fernet key (32 bytes base64-url-encoded)
+      - CREDENTIALS_ENCRYPTION_KEY=${CREDENTIALS_ENCRYPTION_KEY:-zB4xkJPQW7nR9tYwLmN2dVoKjX5gHcE8sA1qF6iU3pM=}
+      # Base URL for external links (approval emails, etc.)
+      - BASE_URL=${BASE_URL:-http://localhost:8000}
+      # SMTP Configuration (env var fallback when DB config not set)
+      - SMTP_HOST=${SMTP_HOST:-}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_USERNAME=${SMTP_USERNAME:-}
+      - SMTP_PASSWORD=${SMTP_PASSWORD:-}
+      - SMTP_FROM_EMAIL=${SMTP_FROM_EMAIL:-}
+      - SMTP_FROM_NAME=${SMTP_FROM_NAME:-T1 Agentics}
+      - SMTP_USE_TLS=${SMTP_USE_TLS:-true}
+      - SMTP_USE_SSL=${SMTP_USE_SSL:-false}
+      # LDAP Configuration for IAM Response Actions
+      - LDAP_HOST=${LDAP_HOST:-localhost}
+      - LDAP_PORT=${LDAP_PORT:-389}
+      - LDAP_USE_SSL=${LDAP_USE_SSL:-true}
+      - LDAP_BASE_DN=${LDAP_BASE_DN:-dc=example,dc=com}
+      - LDAP_USER_OU=${LDAP_USER_OU:-ou=people}
+      - LDAP_GROUP_OU=${LDAP_GROUP_OU:-ou=groups}
+      - LDAP_SERVICE_ACCOUNT_DN=${LDAP_SERVICE_ACCOUNT_DN}
+      - LDAP_SERVICE_ACCOUNT_PASSWORD=${LDAP_SERVICE_ACCOUNT_PASSWORD}
+      - LDAP_VALIDATE_CERTS=${LDAP_VALIDATE_CERTS:-true}
+      # Agent Scheduler - T1 agents do automated triage, Riggs is conversational interface
+      # NOTE: T2 tier is disabled - Riggs handles all deep analysis
+      - AGENT_AUTO_TRIAGE_ENABLED=${AGENT_AUTO_TRIAGE_ENABLED:-true}
+      # Riggs Analysis - Force all alerts to Riggs for deep analysis (testing mode)
+      - RIGGS_ALL_ALERTS=${RIGGS_ALL_ALERTS:-false}
+      # ═══════════════════════════════════════════════════════════════════════════
+      # AI PROVIDER SELECTION
+      # Set AI_PROVIDER to choose the AI inference backend:
+      #   claude     = Anthropic Claude API (production - requires ANTHROPIC_API_KEY)
+      #   lm_studio  = LM Studio (development - convenient, uses local GPU)
+      # ═══════════════════════════════════════════════════════════════════════════
+      - AI_PROVIDER=${AI_PROVIDER:-claude}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - CLAUDE_DEFAULT_MODEL=${CLAUDE_DEFAULT_MODEL:-claude-sonnet-4-5-20250929}
+      # LM Studio Configuration (fallback for development)
+      - LM_STUDIO_URL=${LM_STUDIO_URL:-http://host.docker.internal:1234}
+      - LM_STUDIO_MODEL=${LM_STUDIO_MODEL:-gpt-oss-20b}
+      # Remote ML Server for embeddings, anomaly detection, classification
+      - ML_SERVER_HOST=${ML_SERVER_HOST:-localhost}
+      - ML_SERVER_PORT=${ML_SERVER_PORT:-8100}
+      - ML_SERVER_ENABLED=${ML_SERVER_ENABLED:-false}
+      # LLM Concurrency Control
+      - LLM_MAX_CONCURRENT_REQUESTS=${LLM_MAX_CONCURRENT_REQUESTS:-2}
+      - LLM_QUEUE_TIMEOUT=${LLM_QUEUE_TIMEOUT:-300}
+      # Job Queue Workers (for AI triage + RIGGS analysis)
+      - JOB_QUEUE_WORKERS=${JOB_QUEUE_WORKERS:-4}
+      # ═══════════════════════════════════════════════════════════════════════════
+      # ClickHouse Configuration (Log Storage - replaces OpenSearch)
+      # ═══════════════════════════════════════════════════════════════════════════
+      - CLICKHOUSE_HOST=${CLICKHOUSE_HOST:-clickhouse}
+      - CLICKHOUSE_PORT=${CLICKHOUSE_PORT:-9000}
+      - CLICKHOUSE_USER=${CLICKHOUSE_USER:-default}
+      - CLICKHOUSE_PASSWORD=${CLICKHOUSE_PASSWORD:-}
+      - CLICKHOUSE_DATABASE=${CLICKHOUSE_DATABASE:-t1_telemetry}
+      # Log retention settings (days)
+      - LOG_RETENTION_HOT=${LOG_RETENTION_HOT:-7}
+      - LOG_RETENTION_WARM=${LOG_RETENTION_WARM:-30}
+      - LOG_RETENTION_COLD=${LOG_RETENTION_COLD:-90}
+      - LOG_RETENTION_DELETE=${LOG_RETENTION_DELETE:-365}
+      # ═══════════════════════════════════════════════════════════════════════════
+      # CORS Configuration
+      # ═══════════════════════════════════════════════════════════════════════════
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:8000}
+      # ═══════════════════════════════════════════════════════════════════════════
+      # T1 TRIAGE OPTIMIZATION FLAGS
+      # ═══════════════════════════════════════════════════════════════════════════
+      - ENABLE_FLAG_BASED_TRIAGE=${ENABLE_FLAG_BASED_TRIAGE:-false}
+      - ENABLE_ENRICHMENT_WAIT=${ENABLE_ENRICHMENT_WAIT:-false}
+      - ENABLE_RIGGS_STREAMLINED=${ENABLE_RIGGS_STREAMLINED:-false}
+      - ENRICHMENT_WAIT_TIMEOUT=${ENRICHMENT_WAIT_TIMEOUT:-10.0}
+      # Tiered GPU Routing: Route T1 triage to secondary, Riggs to primary
+      - ENABLE_TIERED_ROUTING=${ENABLE_TIERED_ROUTING:-false}
+      # Redis (rate limiting & caching)
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - t1agentics-network
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '2.0'
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: t1agentics-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    environment:
+      - REACT_APP_API_URL=http://localhost:8000
+    restart: unless-stopped
+    networks:
+      - t1agentics-network
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.5'
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # Redis - Rate Limiting & Caching
+  # ═══════════════════════════════════════════════════════════════════════════
+  redis:
+    image: redis:7-alpine
+    container_name: t1agentics-redis
+    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
+    ports:
+      - "127.0.0.1:6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - t1agentics-network
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.25'
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # ClickHouse - Columnar Log Storage (Replaces OpenSearch)
+  # ═══════════════════════════════════════════════════════════════════════════
+  # High-performance columnar database optimized for analytical queries
+  # Used for security event storage, log search, and telemetry
+  clickhouse:
+    image: clickhouse/clickhouse-server:24.1
+    container_name: t1agentics-clickhouse
+    ports:
+      - "8123:8123"   # HTTP interface
+      - "9100:9000"   # Native client interface (remapped from 9000 to avoid host port conflict)
+    environment:
+      - CLICKHOUSE_DB=t1_telemetry
+      - CLICKHOUSE_USER=default
+      - CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT=1
+    volumes:
+      - ./docker-volumes/clickhouse-data:/var/lib/clickhouse
+      - ./docker-volumes/clickhouse-logs:/var/log/clickhouse-server
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8123/ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - t1agentics-network
+
+# Using bind mounts to ./docker-volumes/ instead of named volumes
+# volumes:
+#   postgres-data:
+#   clickhouse-data:
+#   clickhouse-logs:
+
+networks:
+  t1agentics-network:
+    driver: bridge

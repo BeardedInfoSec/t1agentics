@@ -1,0 +1,251 @@
+{
+  "id": "bishop_fox_cast",
+  "name": "Bishop Fox CAST",
+  "description": "This app works with the Bishop Fox Continuous Attack Surface Testing (CAST) API to ingest and manage CAST findings",
+  "version": "1.1.1",
+  "category": "threat_intel",
+  "vendor": "Bishop Fox",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "{}/orgs/{}",
+  "actions": [
+    {
+      "id": "get_findings",
+      "name": "Get Findings",
+      "description": "Get findings based on provided filters",
+      "http_method": "GET",
+      "endpoint": "/findings",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "finding_uid",
+          "type": "string",
+          "description": "Get a specific finding (may have multiple subjects)",
+          "required": false,
+          "contains": [
+            "bishopfox finding uid"
+          ]
+        },
+        {
+          "name": "subject_uid",
+          "type": "string",
+          "description": "Specify a specific subject. This should only return 1 result",
+          "required": false,
+          "contains": [
+            "bishopfox subject uid"
+          ]
+        },
+        {
+          "name": "since",
+          "type": "string",
+          "description": "Date parameter of the form 'YYYY-MM-DD' corresponding to the 'reportedAt' field of a finding. Only findings published after this are returned",
+          "required": false
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Used to search for findings with a specific status. Only findings with this status are returned",
+          "required": false,
+          "contains": [
+            "bishopfox status"
+          ]
+        },
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Used to search for findings with a specific severity. Only findings with this severity are returned",
+          "required": false,
+          "contains": [
+            "bishopfox severity"
+          ]
+        },
+        {
+          "name": "client_id",
+          "type": "string",
+          "description": "Used to search for a finding using the client defined identifier for a finding",
+          "required": false,
+          "contains": [
+            "bishopfox client id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "update_status",
+      "name": "Update Status",
+      "description": "Sets a findings's status",
+      "http_method": "GET",
+      "endpoint": "/actions/update_status",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "finding_uid",
+          "type": "string",
+          "description": "Finding UUID",
+          "required": true,
+          "contains": [
+            "bishopfox finding uid"
+          ]
+        },
+        {
+          "name": "subject_uid",
+          "type": "string",
+          "description": "Subject UUID",
+          "required": true,
+          "contains": [
+            "bishopfox subject uid"
+          ]
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Status to set",
+          "required": true,
+          "contains": [
+            "bishopfox status"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "update_client_id",
+      "name": "Update Client Id",
+      "description": "Updates a finding's clientId",
+      "http_method": "GET",
+      "endpoint": "/actions/update_client_id",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "finding_uid",
+          "type": "string",
+          "description": "Finding UUID",
+          "required": true,
+          "contains": [
+            "bishopfox finding uid"
+          ]
+        },
+        {
+          "name": "subject_uid",
+          "type": "string",
+          "description": "Subject UUID",
+          "required": false,
+          "contains": [
+            "bishopfox subject uid"
+          ]
+        },
+        {
+          "name": "client_id",
+          "type": "string",
+          "description": "ClientID to set",
+          "required": true,
+          "contains": [
+            "bishopfox client id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "update_client_note",
+      "name": "Update Client Note",
+      "description": "Updates a finding's client note",
+      "http_method": "GET",
+      "endpoint": "/actions/update_client_note",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "finding_uid",
+          "type": "string",
+          "description": "Finding UUID",
+          "required": true,
+          "contains": [
+            "bishopfox finding uid"
+          ]
+        },
+        {
+          "name": "subject_uid",
+          "type": "string",
+          "description": "Subject UUID",
+          "required": false,
+          "contains": [
+            "bishopfox subject uid"
+          ]
+        },
+        {
+          "name": "client_note",
+          "type": "string",
+          "description": "Client note to set",
+          "required": true,
+          "contains": [
+            "bishopfox client note"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "on_poll",
+      "name": "On Poll",
+      "description": "Ingest findings from Bishop Fox",
+      "http_method": "GET",
+      "endpoint": "/actions/on_poll",
+      "action_type": "ingest",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "start_time",
+          "type": "number",
+          "description": "Parameter ignored in this app",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "number",
+          "description": "Parameter ignored in this app",
+          "required": false
+        },
+        {
+          "name": "container_id",
+          "type": "string",
+          "description": "Parameter ignored in this app",
+          "required": false
+        },
+        {
+          "name": "container_count",
+          "type": "number",
+          "description": "Maximum number of findings to be ingested during poll now",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "artifact_count",
+          "type": "number",
+          "description": "Parameter ignored in this app",
+          "required": false
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Bishop Fox CAST",
+    "original_type": "information",
+    "converted_at": "2025-12-18T16:25:28.609414",
+    "source_version": "1.1.1"
+  }
+}

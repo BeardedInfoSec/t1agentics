@@ -1,0 +1,79 @@
+{
+  "id": "ssl_labs",
+  "name": "SSL Labs",
+  "description": "This app supports executing investigative actions to analyze a host",
+  "version": "2.0.8",
+  "category": "threat_intel",
+  "vendor": "Qualys",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "Using url: {base_url}{api_uri}{endpoint}",
+  "actions": [
+    {
+      "id": "run_query",
+      "name": "Run Query",
+      "description": "Run SSL Labs analysis of a host",
+      "http_method": "GET",
+      "endpoint": "/actions/run_query",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "host",
+          "type": "string",
+          "description": "Host address ie. www.qualys.com",
+          "required": true,
+          "contains": [
+            "domain"
+          ]
+        },
+        {
+          "name": "publish",
+          "type": "string",
+          "description": "Publish report publicly ([off]/on)",
+          "required": false,
+          "default": "off"
+        },
+        {
+          "name": "start_new",
+          "type": "string",
+          "description": "Start a new assessment ([off]/on)",
+          "required": false,
+          "default": "off"
+        },
+        {
+          "name": "max_age",
+          "type": "number",
+          "description": "Maximum age in hours of the cached report. If the value passed is less than or equal to 0 it will consider default to 12",
+          "required": false
+        },
+        {
+          "name": "return_all_data",
+          "type": "string",
+          "description": "Return full information ([off]/on)",
+          "required": false,
+          "default": "off"
+        },
+        {
+          "name": "ignore_mismatch",
+          "type": "string",
+          "description": "Proceed with assessments even when the server certificate doesn't match the assessment hostname. Set to off by default. Please note that this parameter is ignored if a cached report is returned",
+          "required": false,
+          "default": "off"
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "SSL Labs",
+    "original_type": "information",
+    "converted_at": "2025-12-18T16:25:29.177434",
+    "source_version": "2.0.8"
+  }
+}

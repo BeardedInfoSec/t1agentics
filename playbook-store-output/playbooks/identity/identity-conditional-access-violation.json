@@ -1,0 +1,187 @@
+{
+  "name": "Conditional Access Policy Violation",
+  "slug": "identity-conditional-access-violation",
+  "description": "Responds to conditional access policy violations such as access from non-compliant devices, untrusted locations, or missing MFA. Analyzes the violation context with AI, enforces compliance by blocking access or requiring step-up authentication, notifies the user of the violation, and alerts the security team for persistent violators.",
+  "category": "identity",
+  "subcategory": "conditional_access",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "beginner",
+  "estimated_time": "8 minutes",
+  "tags": ["conditional_access", "policy_violation", "compliance", "zero_trust", "device_compliance"],
+  "alert_types": ["conditional_access_violation", "policy_violation", "compliance"],
+  "severity_filter": ["medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["conditional_access_violation", "policy_violation"],
+    "min_severity": "medium"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "microsoft_graph",
+      "name": "Microsoft Graph",
+      "category": "identity",
+      "reason": "Enforce conditional access policies and block non-compliant access"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "cv-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "title": "Conditional Access Violation Alert",
+          "summary": "Fires on conditional access or policy violation detection",
+          "config": {
+            "trigger_type": "alert",
+            "alert_filter": "conditional_access_violation OR policy_violation"
+          }
+        }
+      },
+      {
+        "id": "cv-2",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "title": "AI Violation Analysis",
+          "summary": "Analyze the violation context, device compliance state, and user risk",
+          "config": {
+            "mode": "ai_analysis",
+            "template_id": "suspicious_login",
+            "custom_instructions": "",
+            "alert_path": "$.trigger.alert",
+            "include_context": true
+          }
+        }
+      },
+      {
+        "id": "cv-3",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "title": "Repeat Violator?",
+          "summary": "Branch if the user has multiple recent conditional access violations",
+          "config": {
+            "conditions": {
+              "operator": "AND",
+              "conditions": [
+                {
+                  "field": "$.trigger.alert.violation_count_30d",
+                  "operator": "greater_than",
+                  "value": "3"
+                }
+              ],
+              "groups": []
+            },
+            "expression": "$.trigger.alert.violation_count_30d > 3",
+            "default_branch": "no"
+          }
+        }
+      },
+      {
+        "id": "cv-4",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "respond",
+          "title": "Block User Access",
+          "summary": "Temporarily block user access until compliance is restored",
+          "config": {
+            "response_type": "integration_action",
+            "integration_instance_id": "microsoft_graph",
+            "action_type": "block_sign_in",
+            "params": {
+              "user_id": "$.trigger.alert.target_user_id",
+              "reason": "Repeated conditional access policy violations — access blocked pending compliance"
+            },
+            "requires_approval": false,
+            "priority": "high"
+          }
+        }
+      },
+      {
+        "id": "cv-5",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "title": "Notify User of Block",
+          "summary": "Inform the user their access is blocked due to repeated violations",
+          "config": {
+            "response_type": "notification",
+            "channel": "email",
+            "email_recipients": "$.trigger.alert.target_user_email",
+            "email_subject": "Access Blocked: Conditional Access Policy Violations",
+            "message": "Your access has been temporarily blocked due to repeated conditional access policy violations ({{$.trigger.alert.violation_count_30d}} in 30 days). Violation: {{$.trigger.alert.violation_type}}. Please contact IT to resolve device compliance and restore access.",
+            "requires_approval": false,
+            "priority": "high"
+          }
+        }
+      },
+      {
+        "id": "cv-6",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "title": "Alert Security Team",
+          "summary": "Notify security team of persistent policy violator",
+          "config": {
+            "response_type": "notification",
+            "channel": "slack",
+            "slack_channel": "#soc-alerts",
+            "message": "Persistent conditional access violator: {{$.trigger.alert.target_user_email}}. {{$.trigger.alert.violation_count_30d}} violations in 30 days. Access blocked. Latest violation: {{$.trigger.alert.violation_type}}.",
+            "requires_approval": false,
+            "priority": "high"
+          }
+        }
+      },
+      {
+        "id": "cv-7",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "respond",
+          "title": "Notify User of Violation",
+          "summary": "Send the user a warning about their policy violation",
+          "config": {
+            "response_type": "notification",
+            "channel": "email",
+            "email_recipients": "$.trigger.alert.target_user_email",
+            "email_subject": "Conditional Access Policy Violation Warning",
+            "message": "A conditional access policy violation was detected: {{$.trigger.alert.violation_type}}. Please ensure your device is compliant and you are connecting from an approved location. Repeated violations will result in access being blocked.",
+            "requires_approval": false,
+            "priority": "medium"
+          }
+        }
+      },
+      {
+        "id": "cv-8",
+        "type": "signal",
+        "position": { "x": 520, "y": 1020 },
+        "data": {
+          "kind": "end",
+          "title": "Playbook Complete",
+          "summary": "Conditional access violation response finished",
+          "config": {
+            "disposition": "completed",
+            "summary": "Conditional access policy violation response completed"
+          }
+        }
+      }
+    ],
+    "edges": [
+      { "id": "cv-e1", "source": "cv-1", "target": "cv-2", "animated": true, "type": "smoothstep" },
+      { "id": "cv-e2", "source": "cv-2", "target": "cv-3", "animated": true, "type": "smoothstep" },
+      { "id": "cv-e3", "source": "cv-3", "target": "cv-4", "sourceHandle": "yes", "label": "Yes", "animated": true, "type": "smoothstep" },
+      { "id": "cv-e4", "source": "cv-3", "target": "cv-7", "sourceHandle": "no", "label": "No", "animated": true, "type": "smoothstep" },
+      { "id": "cv-e5", "source": "cv-4", "target": "cv-5", "animated": true, "type": "smoothstep" },
+      { "id": "cv-e6", "source": "cv-5", "target": "cv-6", "animated": true, "type": "smoothstep" },
+      { "id": "cv-e7", "source": "cv-6", "target": "cv-8", "animated": true, "type": "smoothstep" },
+      { "id": "cv-e8", "source": "cv-7", "target": "cv-8", "animated": true, "type": "smoothstep" }
+    ]
+  }
+}

@@ -1,0 +1,238 @@
+{
+  "name": "Firmware Integrity Check",
+  "slug": "endpoint-firmware-check",
+  "description": "Validates firmware integrity on managed endpoints by comparing current firmware versions and hashes against known-good baselines. When a firmware drift is detected, Riggs AI performs an insider threat assessment to determine if the change is malicious (bootkit/rootkit) or a legitimate vendor update. Unauthorized changes trigger host isolation, a P1 incident ticket, and security leadership notification. Authorized updates are documented and closed.",
+  "category": "endpoint",
+  "subcategory": "firmware_security",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "advanced",
+  "estimated_time": "15 minutes",
+  "tags": ["firmware", "integrity", "bootkit", "rootkit", "endpoint", "supply_chain", "uefi"],
+  "alert_types": ["firmware_change", "firmware_drift"],
+  "severity_filter": ["high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["firmware_change", "firmware_drift", "bios_modification", "uefi_change"],
+    "min_severity": "high"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "crowdstrike",
+      "name": "CrowdStrike Falcon",
+      "category": "edr",
+      "reason": "Query firmware version and isolate endpoint if firmware is compromised"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create P1 incident ticket for unauthorized firmware modifications"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Firmware Drift Detected",
+          "config": {
+            "alert_types": ["firmware_change", "firmware_drift", "bios_modification", "uefi_change"],
+            "description": "Triggers when a firmware version or hash deviates from the known-good baseline"
+          }
+        }
+      },
+      {
+        "id": "code_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "code",
+          "label": "Compare Against Baseline",
+          "config": {
+            "runtime": "python3",
+            "code": "current_version = alert.get('firmware_version', '')\ncurrent_hash = alert.get('firmware_hash', '')\nbaseline_version = alert.get('baseline_version', '')\nbaseline_hash = alert.get('baseline_hash', '')\nvendor = alert.get('firmware_vendor', 'Unknown')\nversion_changed = current_version != baseline_version\nhash_changed = current_hash != baseline_hash\nresult = {'current_version': current_version, 'baseline_version': baseline_version, 'current_hash': current_hash, 'hash_changed': hash_changed, 'version_changed': version_changed, 'vendor': vendor, 'drift_detected': version_changed or hash_changed}",
+            "description": "Compare the current firmware version and hash against the known-good baseline"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — Firmware Assessment",
+          "config": {
+            "template_id": "insider_threat",
+            "additional_instructions": "Analyze this firmware change for signs of bootkit/rootkit implantation or supply chain compromise. Determine if the change matches a known vendor update or represents unauthorized modification. Consider firmware vendor, version progression, and timing.",
+            "description": "AI-powered analysis to determine if the firmware change is a legitimate vendor update or malicious modification"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 540 },
+        "data": {
+          "kind": "decision",
+          "label": "Unauthorized Modification?",
+          "config": {
+            "condition": "{{analyze_1.verdict}} in ['MALICIOUS', 'SUSPICIOUS']",
+            "description": "Routes based on whether the AI determined the firmware change is unauthorized"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "label": "Isolate Endpoint",
+          "config": {
+            "integration_action": {
+              "connector_id": "crowdstrike",
+              "action": "contain_host",
+              "parameters": {
+                "device_id": "{{trigger_1.alert.endpoint_id}}"
+              }
+            },
+            "description": "Immediately isolate the endpoint to prevent potential bootkit/rootkit from spreading"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "label": "Create P1 Incident Ticket",
+          "config": {
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_issue",
+              "parameters": {
+                "project_key": "SEC",
+                "issue_type": "Incident",
+                "title": "P1: Unauthorized Firmware Modification — {{trigger_1.alert.hostname}}",
+                "description": "Unauthorized firmware modification detected.\nHost: {{trigger_1.alert.hostname}}\nVendor: {{code_1.vendor}}\nBaseline: {{code_1.baseline_version}}\nCurrent: {{code_1.current_version}}\nHash Changed: {{code_1.hash_changed}}\n\nRiggs Assessment:\n{{analyze_1.summary}}\n\nAction Taken: Host isolated. Requires physical inspection and firmware reflash.",
+                "priority": "critical"
+              }
+            },
+            "description": "Create a P1 critical incident ticket for the unauthorized firmware modification"
+          }
+        }
+      },
+      {
+        "id": "respond_3",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "label": "Notify Security Leadership",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#security-leadership",
+              "message": "P1 FIRMWARE COMPROMISE ALERT\nHost: {{trigger_1.alert.hostname}}\nVendor: {{code_1.vendor}}\nFirmware changed from {{code_1.baseline_version}} to {{code_1.current_version}}\nHash Mismatch: {{code_1.hash_changed}}\nAction: Host isolated, P1 ticket created\n\n{{analyze_1.summary}}"
+            },
+            "description": "Alert security leadership about the potential firmware compromise"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 700, "y": 700 },
+        "data": {
+          "kind": "utility",
+          "label": "Log: Vendor Update",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "Firmware change on {{trigger_1.alert.hostname}} reviewed. Change from {{code_1.baseline_version}} to {{code_1.current_version}} matches known {{code_1.vendor}} vendor update. Updating baseline.",
+              "close_alert": true
+            },
+            "description": "Document the legitimate vendor firmware update and update the baseline"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1180 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "Firmware integrity check workflow complete"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_code",
+        "source": "trigger_1",
+        "target": "code_1",
+        "type": "default"
+      },
+      {
+        "id": "e_code_analyze",
+        "source": "code_1",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_analyze_decision",
+        "source": "analyze_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "respond_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "utility_1",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_isolate_ticket",
+        "source": "respond_1",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_ticket_notify",
+        "source": "respond_2",
+        "target": "respond_3",
+        "type": "default"
+      },
+      {
+        "id": "e_notify_end",
+        "source": "respond_3",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_utility_end",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

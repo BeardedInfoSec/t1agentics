@@ -1,0 +1,221 @@
+{
+  "name": "Log Retention Compliance Verification",
+  "slug": "compliance-log-retention",
+  "description": "Verifies that log retention policies are being enforced across all systems. Queries each log source to check actual retention periods against required minimums defined by regulatory frameworks (PCI DSS, HIPAA, SOX, etc.). Riggs AI analyzes gaps and flags systems where logs are being purged too early or retention is misconfigured. Non-compliant systems get remediation tickets; compliant systems are logged for audit evidence.",
+  "category": "compliance",
+  "subcategory": "log_retention",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "15 minutes",
+  "tags": ["compliance", "log_retention", "audit_trail", "logging", "regulatory", "evidence"],
+  "alert_types": ["compliance"],
+  "severity_filter": ["low", "medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["compliance"],
+    "trigger_type": "scheduled",
+    "schedule": "0 5 1 * *"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "splunk",
+      "name": "Splunk",
+      "category": "siem",
+      "reason": "Query log sources to verify actual retention periods across all indexed data"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create remediation tickets for systems with non-compliant log retention"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Monthly Log Retention Check",
+          "config": {
+            "trigger_type": "scheduled",
+            "schedule": "0 5 1 * *",
+            "description": "Triggers monthly log retention compliance verification across all systems"
+          }
+        }
+      },
+      {
+        "id": "code_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "code",
+          "label": "Query Log Retention Status",
+          "config": {
+            "mode": "integration",
+            "integration_action": {
+              "connector_id": "splunk",
+              "action": "search",
+              "parameters": {
+                "query": "| rest /services/data/indexes | table title, currentDBSizeMB, maxTotalDataSizeMB, frozenTimePeriodInSecs, minTime, maxTime | eval retention_days=frozenTimePeriodInSecs/86400",
+                "timeframe": "now"
+              }
+            },
+            "output_variable": "retention_status",
+            "description": "Query all SIEM indexes to determine actual log retention periods"
+          }
+        }
+      },
+      {
+        "id": "code_2",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "code",
+          "label": "Load Retention Requirements",
+          "config": {
+            "mode": "query",
+            "query": "SELECT system_name, log_source, required_retention_days, regulatory_framework, last_verified FROM retention_policy_requirements WHERE active = true ORDER BY regulatory_framework",
+            "output_variable": "retention_requirements",
+            "description": "Load the required retention periods for each log source from the compliance policy database"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 540 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI -- Retention Gap Analysis",
+          "config": {
+            "template_id": "executive_summary",
+            "additional_instructions": "Compare actual log retention periods against required minimums. Identify systems where retention falls below regulatory requirements. Flag any gaps by regulatory framework (PCI DSS requires 1 year, HIPAA 6 years, SOX 7 years).",
+            "description": "AI-powered gap analysis comparing actual vs. required log retention periods"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 700 },
+        "data": {
+          "kind": "decision",
+          "label": "Retention Gaps Found?",
+          "config": {
+            "condition": "{{analyze_1.gaps_found}} == true",
+            "description": "Routes based on whether log retention gaps were identified"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "label": "Create Retention Gap Ticket",
+          "config": {
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_issue",
+              "parameters": {
+                "project": "COMPLIANCE",
+                "issue_type": "Bug",
+                "priority": "P2",
+                "summary": "Log Retention Gap: {{analyze_1.non_compliant_count}} systems below required retention",
+                "description": "LOG RETENTION COMPLIANCE FAILURE\n\nNon-Compliant Systems: {{analyze_1.non_compliant_count}}\nRegulatory Frameworks Affected: {{analyze_1.affected_frameworks}}\n\nFindings:\n{{analyze_1.summary}}\n\nAction Required: Extend log retention periods on affected systems to meet regulatory minimums.",
+                "labels": ["log-retention", "compliance-gap", "regulatory"]
+              }
+            },
+            "description": "Create a Jira ticket for systems with insufficient log retention"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 700, "y": 860 },
+        "data": {
+          "kind": "utility",
+          "label": "Log: All Retention Compliant",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "Monthly log retention verification complete. All systems meet or exceed required retention periods across all regulatory frameworks."
+            },
+            "description": "Document that all log retention policies are compliant"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1020 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "Log retention compliance verification complete -- gaps documented or clean bill confirmed"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_code1",
+        "source": "trigger_1",
+        "target": "code_1",
+        "type": "default"
+      },
+      {
+        "id": "e_code1_code2",
+        "source": "code_1",
+        "target": "code_2",
+        "type": "default"
+      },
+      {
+        "id": "e_code2_analyze",
+        "source": "code_2",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_analyze_decision",
+        "source": "analyze_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "respond_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "utility_1",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_respond1_end",
+        "source": "respond_1",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_utility1_end",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

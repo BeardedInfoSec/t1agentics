@@ -1,0 +1,165 @@
+{
+  "id": "aws_inspector",
+  "name": "AWS Inspector",
+  "description": "AWS vulnerability management service that continuously scans EC2 instances, Lambda functions, and container images for software vulnerabilities and network exposure",
+  "version": "1.0.0",
+  "category": "aws_security",
+  "vendor": "Amazon Web Services",
+  "auth_type": "aws",
+  "auth_config": {
+    "type": "aws",
+    "service": "inspector2",
+    "signing_version": "v4"
+  },
+  "base_url": "https://inspector2.{region}.amazonaws.com",
+  "actions": [
+    {
+      "id": "list_findings",
+      "name": "List Findings",
+      "description": "List Inspector findings with optional filters for severity, type, and resource",
+      "http_method": "POST",
+      "endpoint": "/findings/list",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "filterCriteria",
+          "type": "object",
+          "description": "Filter criteria object (e.g., {\"severity\": [{\"comparison\": \"EQUALS\", \"value\": \"CRITICAL\"}]})",
+          "required": false
+        },
+        {
+          "name": "sortCriteria",
+          "type": "object",
+          "description": "Sort criteria (e.g., {\"field\": \"SEVERITY\", \"sortOrder\": \"DESC\"})",
+          "required": false
+        },
+        {
+          "name": "maxResults",
+          "type": "number",
+          "description": "Maximum findings to return (1-100)",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "nextToken",
+          "type": "string",
+          "description": "Pagination token",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_findings_report_status",
+      "name": "Get Findings Report Status",
+      "description": "Check the status of a findings report generation request",
+      "http_method": "POST",
+      "endpoint": "/reporting/status/get",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "reportId",
+          "type": "string",
+          "description": "The report ID to check status for",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_coverage",
+      "name": "List Coverage",
+      "description": "List resources and their Inspector scanning coverage status",
+      "http_method": "POST",
+      "endpoint": "/coverage/list",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "filterCriteria",
+          "type": "object",
+          "description": "Filter criteria for coverage (e.g., resource type, scan status)",
+          "required": false
+        },
+        {
+          "name": "maxResults",
+          "type": "number",
+          "description": "Maximum results to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "list_coverage_statistics",
+      "name": "List Coverage Statistics",
+      "description": "Get aggregated statistics about Inspector scanning coverage",
+      "http_method": "POST",
+      "endpoint": "/coverage/statistics",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "filterCriteria",
+          "type": "object",
+          "description": "Filter criteria for statistics calculation",
+          "required": false
+        },
+        {
+          "name": "groupBy",
+          "type": "string",
+          "description": "Group by field (SCAN_STATUS_CODE, SCAN_STATUS_REASON, ACCOUNT_ID, RESOURCE_TYPE)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_finding_aggregations",
+      "name": "List Finding Aggregations",
+      "description": "List aggregated Inspector findings grouped by specified criteria",
+      "http_method": "POST",
+      "endpoint": "/findings/aggregation/list",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "aggregationType",
+          "type": "string",
+          "description": "Aggregation type (FINDING_TYPE, PACKAGE, TITLE, REPOSITORY, AMI, AWS_EC2_INSTANCE, AWS_ECR_CONTAINER, IMAGE_LAYER, ACCOUNT, AWS_LAMBDA_FUNCTION, LAMBDA_LAYER)",
+          "required": true
+        },
+        {
+          "name": "filterCriteria",
+          "type": "object",
+          "description": "Filter criteria for aggregation",
+          "required": false
+        },
+        {
+          "name": "maxResults",
+          "type": "number",
+          "description": "Maximum results to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "list_account_permissions",
+      "name": "List Account Permissions",
+      "description": "List permissions associated with the Inspector service linked role",
+      "http_method": "POST",
+      "endpoint": "/accountpermissions/list",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "maxResults",
+          "type": "number",
+          "description": "Maximum results to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    }
+  ]
+}

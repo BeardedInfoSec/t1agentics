@@ -1,0 +1,361 @@
+{
+  "id": "symantec_endpoint_protection_14",
+  "name": "Symantec Endpoint Protection 14",
+  "description": "Integrate with Symantec Endpoint Protection 14 to execute investigative, containment, and corrective actions",
+  "version": "2.1.11",
+  "category": "edr",
+  "vendor": "Symantec",
+  "auth_type": "basic_auth",
+  "auth_config": {
+    "type": "basic_auth",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "/sepm/api/v1",
+  "actions": [
+    {
+      "id": "list_domains",
+      "name": "List Domains",
+      "description": "List all of the administrative domains configured on the device",
+      "http_method": "GET",
+      "endpoint": "/domains",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [],
+      "observable_type": "domain"
+    },
+    {
+      "id": "list_groups",
+      "name": "List Groups",
+      "description": "List all of the administrative groups configured on the device",
+      "http_method": "GET",
+      "endpoint": "/groups",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "list_endpoints",
+      "name": "List Endpoints",
+      "description": "List all the endpoints/sensors configured on the device",
+      "http_method": "GET",
+      "endpoint": "/domains",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "admin_domain",
+          "type": "string",
+          "description": "Administrative domain of the endpoints to query",
+          "required": true,
+          "default": "default",
+          "contains": [
+            "symantec admin domain"
+          ]
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of endpoints to be fetched",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_system_info",
+      "name": "Get System Info",
+      "description": "Gets the information about the computers in a specified domain",
+      "http_method": "GET",
+      "endpoint": "/actions/get_system_info",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "hostname",
+          "type": "string",
+          "description": "Hostname of the device to get system info",
+          "required": true,
+          "contains": [
+            "host name"
+          ]
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "get_status",
+      "name": "Get Status",
+      "description": "Get command status report",
+      "http_method": "GET",
+      "endpoint": "/command-queue",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Command ID",
+          "required": true,
+          "contains": [
+            "symantec command id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "unquarantine_device",
+      "name": "Unquarantine Device",
+      "description": "Unquarantine the endpoint",
+      "http_method": "POST",
+      "endpoint": "/actions/unquarantine_device",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Comma(,) separated Computer IDs of the endpoints to unquarantine",
+          "required": false,
+          "contains": [
+            "symantec device id"
+          ]
+        },
+        {
+          "name": "ip_hostname",
+          "type": "string",
+          "description": "Comma(,) separated Hostname/IP of the endpoints to unquarantine",
+          "required": false,
+          "contains": [
+            "ip",
+            "host name"
+          ]
+        },
+        {
+          "name": "timeout",
+          "type": "number",
+          "description": "Timeout (Default: 30 seconds)",
+          "required": false,
+          "default": 30
+        }
+      ]
+    },
+    {
+      "id": "quarantine_device",
+      "name": "Quarantine Device",
+      "description": "Quarantine the endpoint",
+      "http_method": "POST",
+      "endpoint": "/actions/quarantine_device",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Comma(,) separated Computer IDs of the endpoints to quarantine",
+          "required": false,
+          "contains": [
+            "symantec device id"
+          ]
+        },
+        {
+          "name": "ip_hostname",
+          "type": "string",
+          "description": "Comma(,) separated Hostname/IP of the endpoints to quarantine",
+          "required": false,
+          "contains": [
+            "ip",
+            "host name"
+          ]
+        },
+        {
+          "name": "timeout",
+          "type": "number",
+          "description": "Timeout (Default: 30 secs)",
+          "required": false,
+          "default": 30
+        }
+      ]
+    },
+    {
+      "id": "unblock_hash",
+      "name": "Unblock Hash",
+      "description": "Unblock hashes on endpoints",
+      "http_method": "POST",
+      "endpoint": "/actions/unblock_hash",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "group_id",
+          "type": "string",
+          "description": "Group ID",
+          "required": true,
+          "contains": [
+            "symantec group id"
+          ]
+        },
+        {
+          "name": "hash",
+          "type": "string",
+          "description": "Comma(,) separated MD5 hash value of files to unblock",
+          "required": true,
+          "contains": [
+            "md5"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "block_hash",
+      "name": "Block Hash",
+      "description": "Block hashes on endpoints",
+      "http_method": "POST",
+      "endpoint": "/actions/block_hash",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "group_id",
+          "type": "string",
+          "description": "Group ID",
+          "required": true,
+          "contains": [
+            "symantec group id"
+          ]
+        },
+        {
+          "name": "hash",
+          "type": "string",
+          "description": "Comma(,) separated MD5 hash value of files to block",
+          "required": true,
+          "contains": [
+            "md5"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "scan_endpoint",
+      "name": "Scan Endpoint",
+      "description": "Scan an endpoint",
+      "http_method": "GET",
+      "endpoint": "/actions/scan_endpoint",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Comma(,) separated Computer IDs of the endpoints to scan",
+          "required": false,
+          "contains": [
+            "symantec device id"
+          ]
+        },
+        {
+          "name": "ip_hostname",
+          "type": "string",
+          "description": "Comma(,) separated Hostname/IP of the endpoints to scan",
+          "required": false,
+          "contains": [
+            "ip",
+            "host name"
+          ]
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Scan Type (Default: QUICK_SCAN)",
+          "required": false,
+          "default": "QUICK_SCAN",
+          "contains": [
+            "symantec scan type"
+          ]
+        },
+        {
+          "name": "timeout",
+          "type": "number",
+          "description": "Timeout (Default: 30 seconds)",
+          "required": false,
+          "default": 30
+        }
+      ]
+    },
+    {
+      "id": "full_scan",
+      "name": "Full Scan",
+      "description": "Scan a computer",
+      "http_method": "GET",
+      "endpoint": "/actions/full_scan",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "computer_id",
+          "type": "string",
+          "description": "Comma(,) separated computer IDs to scan",
+          "required": false,
+          "contains": [
+            "symantec device id"
+          ]
+        },
+        {
+          "name": "group_id",
+          "type": "string",
+          "description": "Comma(,) separated group IDs to scan",
+          "required": false,
+          "contains": [
+            "symantec group id"
+          ]
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Scan Type (Default: fullscan)",
+          "required": false,
+          "default": "fullscan",
+          "contains": [
+            "symantec fullscan type"
+          ]
+        },
+        {
+          "name": "timeout",
+          "type": "number",
+          "description": "Timeout (Default: 30 seconds)",
+          "required": false,
+          "default": 30
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Symantec Endpoint Protection 14",
+    "original_type": "endpoint",
+    "converted_at": "2025-12-18T16:25:29.185755",
+    "source_version": "2.1.11"
+  }
+}

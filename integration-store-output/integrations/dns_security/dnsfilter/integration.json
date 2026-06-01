@@ -1,0 +1,212 @@
+{
+  "id": "dnsfilter",
+  "name": "DNSFilter",
+  "description": "DNSFilter REST API for managing DNS filtering policies, domain blocking, network configuration, and DNS query log analysis",
+  "version": "1.0.0",
+  "category": "dns_security",
+  "vendor": "DNSFilter",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "header_name": "Authorization",
+    "location": "header",
+    "token_prefix": "Bearer"
+  },
+  "base_url": "https://api.dnsfilter.com/v1",
+  "actions": [
+    {
+      "id": "list_policies",
+      "name": "List Filtering Policies",
+      "description": "Retrieve all DNS filtering policies configured in the organization",
+      "http_method": "GET",
+      "endpoint": "/policies",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "page",
+          "type": "integer",
+          "description": "Page number for pagination",
+          "required": false
+        },
+        {
+          "name": "per_page",
+          "type": "integer",
+          "description": "Number of results per page",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_policy",
+      "name": "Get Filtering Policy",
+      "description": "Retrieve details of a specific DNS filtering policy",
+      "http_method": "GET",
+      "endpoint": "/policies/{policy_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "policy_id",
+          "type": "integer",
+          "description": "ID of the policy to retrieve",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "update_policy",
+      "name": "Update Filtering Policy",
+      "description": "Update a DNS filtering policy including category blocks and custom domain rules",
+      "http_method": "PUT",
+      "endpoint": "/policies/{policy_id}",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "policy_id",
+          "type": "integer",
+          "description": "ID of the policy to update",
+          "required": true
+        },
+        {
+          "name": "body",
+          "type": "object",
+          "description": "Updated policy settings including blocked categories, allow/deny domain lists, and safe search settings",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_networks",
+      "name": "List Networks",
+      "description": "Retrieve all networks (sites) registered for DNS filtering",
+      "http_method": "GET",
+      "endpoint": "/networks",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "get_network",
+      "name": "Get Network",
+      "description": "Retrieve details and configuration of a specific network",
+      "http_method": "GET",
+      "endpoint": "/networks/{network_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "network_id",
+          "type": "integer",
+          "description": "ID of the network to retrieve",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "block_domain",
+      "name": "Block Domain",
+      "description": "Add a domain to the deny list for a policy to block DNS resolution",
+      "http_method": "POST",
+      "endpoint": "/policies/{policy_id}/deny_domains",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "policy_id",
+          "type": "integer",
+          "description": "ID of the policy to add the domain block to",
+          "required": true
+        },
+        {
+          "name": "domain",
+          "type": "string",
+          "description": "Domain name to block (e.g., malicious-site.com)",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "allow_domain",
+      "name": "Allow Domain",
+      "description": "Add a domain to the allow list for a policy to bypass filtering",
+      "http_method": "POST",
+      "endpoint": "/policies/{policy_id}/allow_domains",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "policy_id",
+          "type": "integer",
+          "description": "ID of the policy to add the domain allow to",
+          "required": true
+        },
+        {
+          "name": "domain",
+          "type": "string",
+          "description": "Domain name to allow",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_query_logs",
+      "name": "Get DNS Query Logs",
+      "description": "Retrieve DNS query logs for analysis and threat investigation",
+      "http_method": "GET",
+      "endpoint": "/traffic_reports/queries",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "start_date",
+          "type": "string",
+          "description": "Start date for log query (ISO 8601 format)",
+          "required": false
+        },
+        {
+          "name": "end_date",
+          "type": "string",
+          "description": "End date for log query (ISO 8601 format)",
+          "required": false
+        },
+        {
+          "name": "network_id",
+          "type": "integer",
+          "description": "Filter logs by network ID",
+          "required": false
+        },
+        {
+          "name": "domain",
+          "type": "string",
+          "description": "Filter logs by domain name",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_threat_report",
+      "name": "Get Threat Report",
+      "description": "Retrieve threat summary report including blocked threats by category",
+      "http_method": "GET",
+      "endpoint": "/traffic_reports/threats",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "start_date",
+          "type": "string",
+          "description": "Start date for the report period",
+          "required": false
+        },
+        {
+          "name": "end_date",
+          "type": "string",
+          "description": "End date for the report period",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,212 @@
+{
+  "name": "API Key Rotation Enforcement",
+  "slug": "identity-api-key-rotation",
+  "description": "Enforces API key rotation policies by scanning for keys that exceed the maximum age threshold. Checks key age against policy, auto-rotates keys for supported integrations, alerts key owners for manual rotation when auto-rotation is unavailable, and creates tracking tickets for keys approaching expiration.",
+  "category": "identity",
+  "subcategory": "api_key_management",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "15 minutes",
+  "tags": ["api_key", "rotation", "credential_hygiene", "scheduled", "compliance"],
+  "alert_types": ["scheduled", "api_key_expiry"],
+  "severity_filter": ["medium", "high"],
+  "trigger_conditions": {
+    "alert_types": ["scheduled", "api_key_expiry"],
+    "min_severity": "medium"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "aws",
+      "name": "AWS",
+      "category": "cloud",
+      "reason": "Rotate AWS IAM access keys and query key metadata"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create tracking tickets for API key rotation tasks"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "ak-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "title": "API Key Rotation Check",
+          "summary": "Fires on schedule or API key expiry alert to check key ages",
+          "config": {
+            "trigger_type": "schedule",
+            "schedule": "0 7 * * 1",
+            "description": "Weekly Monday 7 AM API key age scan"
+          }
+        }
+      },
+      {
+        "id": "ak-2",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "code",
+          "title": "Scan API Key Ages",
+          "summary": "Query all API keys and calculate age against 90-day rotation policy",
+          "config": {
+            "language": "python",
+            "code": "from datetime import datetime, timedelta\nmax_age_days = 90\nnow = datetime.utcnow()\nkeys = context.get('api_keys', [])\nexpired = [k for k in keys if (now - datetime.fromisoformat(k.get('created_date', now.isoformat()))).days > max_age_days]\napproaching = [k for k in keys if 75 < (now - datetime.fromisoformat(k.get('created_date', now.isoformat()))).days <= max_age_days]\nresult = {'expired_keys': expired, 'approaching_expiry': approaching, 'expired_count': len(expired), 'approaching_count': len(approaching)}"
+          }
+        }
+      },
+      {
+        "id": "ak-3",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "title": "Expired Keys Found?",
+          "summary": "Branch if any API keys exceed the maximum age threshold",
+          "config": {
+            "conditions": {
+              "operator": "AND",
+              "conditions": [
+                {
+                  "field": "$.nodes.ak-2.result.expired_count",
+                  "operator": "greater_than",
+                  "value": "0"
+                }
+              ],
+              "groups": []
+            },
+            "expression": "$.nodes.ak-2.result.expired_count > 0",
+            "default_branch": "no"
+          }
+        }
+      },
+      {
+        "id": "ak-4",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "loop",
+          "title": "Loop Over Expired Keys",
+          "summary": "Iterate over each expired API key for rotation",
+          "config": {
+            "collection_path": "$.nodes.ak-2.result.expired_keys",
+            "iterator_variable": "key",
+            "max_iterations": 200
+          }
+        }
+      },
+      {
+        "id": "ak-5",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "decision",
+          "title": "Auto-Rotation Supported?",
+          "summary": "Check if the key's service supports automatic rotation",
+          "config": {
+            "conditions": {
+              "operator": "AND",
+              "conditions": [
+                {
+                  "field": "$.loop.key.auto_rotation_supported",
+                  "operator": "equals",
+                  "value": "true"
+                }
+              ],
+              "groups": []
+            },
+            "expression": "$.loop.key.auto_rotation_supported == true",
+            "default_branch": "no"
+          }
+        }
+      },
+      {
+        "id": "ak-6",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "title": "Auto-Rotate Key",
+          "summary": "Automatically rotate the expired API key",
+          "config": {
+            "response_type": "integration_action",
+            "integration_instance_id": "aws",
+            "action_type": "rotate_access_key",
+            "params": {
+              "key_id": "$.loop.key.key_id",
+              "user_name": "$.loop.key.owner",
+              "reason": "API key exceeded 90-day rotation policy — auto-rotated"
+            },
+            "requires_approval": false,
+            "priority": "high"
+          }
+        }
+      },
+      {
+        "id": "ak-7",
+        "type": "signal",
+        "position": { "x": 700, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "title": "Alert Key Owner",
+          "summary": "Notify the key owner to manually rotate their expired API key",
+          "config": {
+            "response_type": "notification",
+            "channel": "email",
+            "email_recipients": "$.loop.key.owner_email",
+            "email_subject": "Action Required: API Key Rotation Overdue — {{$.loop.key.service_name}}",
+            "message": "Your API key for {{$.loop.key.service_name}} (ID: {{$.loop.key.key_id}}) has exceeded the 90-day rotation policy. Auto-rotation is not available for this service. Please rotate the key manually within 48 hours.",
+            "requires_approval": false,
+            "priority": "high"
+          }
+        }
+      },
+      {
+        "id": "ak-8",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "utility",
+          "title": "Log Clean Scan",
+          "summary": "Log that no expired API keys were found this cycle",
+          "config": {
+            "operation": "add_note",
+            "note": "Weekly API key rotation scan completed. No expired keys found. All keys within 90-day rotation policy."
+          }
+        }
+      },
+      {
+        "id": "ak-9",
+        "type": "signal",
+        "position": { "x": 520, "y": 1020 },
+        "data": {
+          "kind": "end",
+          "title": "Playbook Complete",
+          "summary": "API key rotation enforcement finished",
+          "config": {
+            "disposition": "completed",
+            "summary": "API key rotation enforcement cycle completed"
+          }
+        }
+      }
+    ],
+    "edges": [
+      { "id": "ak-e1", "source": "ak-1", "target": "ak-2", "animated": true, "type": "smoothstep" },
+      { "id": "ak-e2", "source": "ak-2", "target": "ak-3", "animated": true, "type": "smoothstep" },
+      { "id": "ak-e3", "source": "ak-3", "target": "ak-4", "sourceHandle": "yes", "label": "Yes", "animated": true, "type": "smoothstep" },
+      { "id": "ak-e4", "source": "ak-3", "target": "ak-8", "sourceHandle": "no", "label": "No", "animated": true, "type": "smoothstep" },
+      { "id": "ak-e5", "source": "ak-4", "target": "ak-5", "animated": true, "type": "smoothstep" },
+      { "id": "ak-e6", "source": "ak-5", "target": "ak-6", "sourceHandle": "yes", "label": "Yes", "animated": true, "type": "smoothstep" },
+      { "id": "ak-e7", "source": "ak-5", "target": "ak-7", "sourceHandle": "no", "label": "No", "animated": true, "type": "smoothstep" },
+      { "id": "ak-e8", "source": "ak-6", "target": "ak-4", "animated": true, "type": "smoothstep", "label": "Next" },
+      { "id": "ak-e9", "source": "ak-7", "target": "ak-4", "animated": true, "type": "smoothstep", "label": "Next" },
+      { "id": "ak-e10", "source": "ak-4", "target": "ak-9", "animated": true, "type": "smoothstep", "label": "Done" },
+      { "id": "ak-e11", "source": "ak-8", "target": "ak-9", "animated": true, "type": "smoothstep" }
+    ]
+  }
+}

@@ -1,0 +1,199 @@
+/* Copyright (c) 2024-2026 T1 Agentics LLC -- SPDX-License-Identifier: Apache-2.0 */
+
+/**
+ * Drawer CSS Module
+ * Styles for accessible slide-out panel
+ */
+
+/* =============================================================================
+   OVERLAY
+   ============================================================================= */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(2px);
+  z-index: var(--z-modal, 400);
+  animation: fadeIn 0.2s ease;
+}
+
+.overlayOpen {
+  pointer-events: auto;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* =============================================================================
+   DRAWER CONTAINER
+   ============================================================================= */
+
+.drawer {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  background: var(--bg-secondary);
+  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.4);
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  outline: none;
+  overflow: hidden;
+}
+
+/* Position variants */
+.positionRight {
+  right: 0;
+  animation: slideInRight 0.25s ease;
+}
+
+.positionLeft {
+  left: 0;
+  border-left: none;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.4);
+  animation: slideInLeft 0.25s ease;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+/* Size variants */
+.sizeSm {
+  width: 320px;
+  max-width: 90vw;
+}
+
+.sizeMd {
+  width: 500px;
+  max-width: 90vw;
+}
+
+.sizeLg {
+  width: 700px;
+  max-width: 90vw;
+}
+
+.sizeXl {
+  width: 900px;
+  max-width: 90vw;
+}
+
+/* =============================================================================
+   HEADER
+   ============================================================================= */
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+  background: var(--bg-tertiary);
+}
+
+.title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.closeButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  margin: -0.5rem -0.5rem -0.5rem 0.5rem;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: var(--text-muted);
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.closeButton:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+}
+
+.closeButton:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* =============================================================================
+   CONTENT
+   ============================================================================= */
+
+.content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* =============================================================================
+   SUB-COMPONENTS
+   ============================================================================= */
+
+.customHeader {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--bg-tertiary);
+}
+
+.body {
+  padding: 1.25rem;
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--bg-tertiary);
+  flex-shrink: 0;
+}
+
+/* =============================================================================
+   REDUCED MOTION
+   ============================================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .overlay,
+  .drawer,
+  .positionRight,
+  .positionLeft {
+    animation: none;
+  }
+}

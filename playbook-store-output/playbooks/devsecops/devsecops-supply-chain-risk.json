@@ -1,0 +1,260 @@
+{
+  "name": "Supply Chain Dependency Risk Assessment",
+  "slug": "devsecops-supply-chain-risk",
+  "description": "Automated supply chain risk assessment for new or updated third-party dependencies. When a new package is introduced or an existing one is updated, Riggs AI evaluates the package reputation, maintainer trustworthiness, typosquatting risk, and known malicious indicators. Suspicious packages are blocked and flagged for security review.",
+  "category": "devsecops",
+  "subcategory": "supply_chain",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "advanced",
+  "estimated_time": "12 minutes",
+  "tags": ["devsecops", "supply-chain", "dependency", "typosquatting", "malicious-package", "reputation"],
+  "alert_types": ["supply_chain_risk", "new_dependency"],
+  "severity_filter": ["low", "medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["supply_chain_risk", "new_dependency", "package_reputation_alert", "dependency_confusion"],
+    "min_severity": "medium"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "github",
+      "name": "GitHub",
+      "category": "scm",
+      "reason": "Block merging of PRs that introduce suspicious dependencies"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Alert security team about suspicious or malicious supply chain packages"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create investigation tickets for suspicious packages requiring manual review"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "title": "New/Updated Dependency Detected",
+          "summary": "Triggers when a new package is added or an existing dependency is updated",
+          "config": {
+            "trigger_type": "alert",
+            "alert_types": ["supply_chain_risk", "new_dependency", "package_reputation_alert", "dependency_confusion"],
+            "description": "Monitors for new or updated dependencies in package manifests (package.json, requirements.txt, pom.xml, go.mod)"
+          }
+        }
+      },
+      {
+        "id": "analyze-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "title": "AI Supply Chain Risk Analysis",
+          "summary": "Riggs AI evaluates the package reputation, maintainer trust, and risk signals",
+          "config": {
+            "template_id": "malware_assessment",
+            "additional_instructions": "Evaluate the package for supply chain risk: check maintainer reputation and history, package age and download count, whether the name resembles a popular package (typosquatting), presence of install scripts or obfuscated code, recent maintainer changes, and known security advisories. Flag dependency confusion risks.",
+            "description": "AI-powered supply chain risk assessment for third-party packages"
+          }
+        }
+      },
+      {
+        "id": "decision-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "title": "Malicious or Highly Suspicious?",
+          "summary": "Check if the package is flagged as malicious or highly suspicious",
+          "config": {
+            "conditions": {
+              "operator": "OR",
+              "conditions": [
+                {
+                  "left": { "type": "path", "value": "$.nodes.analyze-1.result.verdict" },
+                  "operator": "equals",
+                  "right": { "type": "value", "value": "malicious" }
+                },
+                {
+                  "left": { "type": "path", "value": "$.nodes.analyze-1.result.risk_score" },
+                  "operator": "greater_than",
+                  "right": { "type": "value", "value": 80 }
+                }
+              ],
+              "groups": []
+            },
+            "expression": "$.nodes.analyze-1.result.verdict == \"malicious\" or $.nodes.analyze-1.result.risk_score > 80",
+            "default_branch": "no"
+          }
+        }
+      },
+      {
+        "id": "respond-1",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "respond",
+          "title": "Block Package / Reject PR",
+          "summary": "Block the suspicious package from being merged into the codebase",
+          "config": {
+            "response_type": "integration_action",
+            "integration_action": {
+              "connector_id": "github",
+              "action": "create_review",
+              "parameters": {
+                "repository": "{{trigger-1.alert.repository}}",
+                "pull_request": "{{trigger-1.alert.pull_request_number}}",
+                "event": "REQUEST_CHANGES",
+                "body": "SECURITY BLOCK: Package {{trigger-1.alert.package_name}}@{{trigger-1.alert.package_version}} flagged as suspicious.\n\nRisk Score: {{analyze-1.result.risk_score}}/100\nVerdict: {{analyze-1.result.verdict}}\nReason: {{analyze-1.result.risk_reason}}\n\nThis dependency cannot be merged until reviewed by the security team."
+              }
+            },
+            "description": "Block the PR that introduces the suspicious dependency"
+          }
+        }
+      },
+      {
+        "id": "respond-2",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "title": "Alert Security Team",
+          "summary": "Notify the security team about the suspicious supply chain package",
+          "config": {
+            "response_type": "notify",
+            "channel": "slack",
+            "slack_channel": "#security-incidents",
+            "message": "SUPPLY CHAIN RISK — Suspicious Package Detected\n\nPackage: {{trigger-1.alert.package_name}}@{{trigger-1.alert.package_version}}\nRegistry: {{trigger-1.alert.registry}}\nRepo: {{trigger-1.alert.repository}}\nPR: #{{trigger-1.alert.pull_request_number}}\nRisk Score: {{analyze-1.result.risk_score}}/100\nVerdict: {{analyze-1.result.verdict}}\n\nRisk Indicators:\n{{analyze-1.result.risk_reason}}\n\nPR has been blocked. Manual review required.",
+            "priority": "critical"
+          }
+        }
+      },
+      {
+        "id": "respond-3",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "title": "Create Investigation Ticket",
+          "summary": "Create a Jira ticket for the security team to investigate the suspicious package",
+          "config": {
+            "response_type": "integration_action",
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_issue",
+              "parameters": {
+                "project": "SEC",
+                "issue_type": "Task",
+                "priority": "P1",
+                "summary": "SUPPLY CHAIN: Investigate {{trigger-1.alert.package_name}}@{{trigger-1.alert.package_version}}",
+                "description": "Suspicious package detected in supply chain.\n\nPackage: {{trigger-1.alert.package_name}}@{{trigger-1.alert.package_version}}\nRegistry: {{trigger-1.alert.registry}}\nRepo: {{trigger-1.alert.repository}}\nPR: #{{trigger-1.alert.pull_request_number}}\n\nRiggs Assessment:\n{{analyze-1.result.summary}}\n\nRisk Indicators:\n{{analyze-1.result.risk_reason}}",
+                "labels": ["supply-chain", "suspicious-package", "investigation"]
+              }
+            },
+            "description": "Create an investigation ticket for the suspicious supply chain package"
+          }
+        }
+      },
+      {
+        "id": "decision-2",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "decision",
+          "title": "Moderate Risk?",
+          "summary": "Check if the package has moderate risk signals warranting a note",
+          "config": {
+            "conditions": {
+              "operator": "AND",
+              "conditions": [
+                {
+                  "left": { "type": "path", "value": "$.nodes.analyze-1.result.risk_score" },
+                  "operator": "greater_than",
+                  "right": { "type": "value", "value": 40 }
+                }
+              ],
+              "groups": []
+            },
+            "expression": "$.nodes.analyze-1.result.risk_score > 40",
+            "default_branch": "no"
+          }
+        }
+      },
+      {
+        "id": "respond-4",
+        "type": "signal",
+        "position": { "x": 600, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "title": "Add PR Review Comment",
+          "summary": "Add a review comment to the PR noting moderate supply chain risk",
+          "config": {
+            "response_type": "integration_action",
+            "integration_action": {
+              "connector_id": "github",
+              "action": "create_review",
+              "parameters": {
+                "repository": "{{trigger-1.alert.repository}}",
+                "pull_request": "{{trigger-1.alert.pull_request_number}}",
+                "event": "COMMENT",
+                "body": "Supply Chain Note: Package {{trigger-1.alert.package_name}}@{{trigger-1.alert.package_version}} has moderate risk signals (score: {{analyze-1.result.risk_score}}/100).\n\n{{analyze-1.result.summary}}\n\nPlease review before merging."
+              }
+            },
+            "description": "Add a review comment to the PR with supply chain risk information"
+          }
+        }
+      },
+      {
+        "id": "utility-1",
+        "type": "signal",
+        "position": { "x": 860, "y": 540 },
+        "data": {
+          "kind": "utility",
+          "title": "Approve — Low Risk",
+          "summary": "Package assessed as low risk — no action needed",
+          "config": {
+            "operation": "update_status",
+            "status": "approved",
+            "note": "Package {{trigger-1.alert.package_name}}@{{trigger-1.alert.package_version}} passed supply chain risk assessment. Risk score: {{analyze-1.result.risk_score}}/100."
+          }
+        }
+      },
+      {
+        "id": "end-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1020 },
+        "data": {
+          "kind": "end",
+          "title": "End",
+          "summary": "Supply chain risk assessment complete",
+          "config": {
+            "disposition": "evaluated",
+            "summary": "Supply chain dependency risk assessment complete."
+          }
+        }
+      }
+    ],
+    "edges": [
+      { "id": "e1", "source": "trigger-1", "target": "analyze-1", "animated": true, "type": "smoothstep" },
+      { "id": "e2", "source": "analyze-1", "target": "decision-1", "animated": true, "type": "smoothstep" },
+      { "id": "e3", "source": "decision-1", "target": "respond-1", "sourceHandle": "yes", "label": "Yes", "animated": true, "type": "smoothstep" },
+      { "id": "e4", "source": "decision-1", "target": "decision-2", "sourceHandle": "no", "label": "No", "animated": true, "type": "smoothstep" },
+      { "id": "e5", "source": "respond-1", "target": "respond-2", "animated": true, "type": "smoothstep" },
+      { "id": "e6", "source": "respond-2", "target": "respond-3", "animated": true, "type": "smoothstep" },
+      { "id": "e7", "source": "respond-3", "target": "end-1", "animated": true, "type": "smoothstep" },
+      { "id": "e8", "source": "decision-2", "target": "respond-4", "sourceHandle": "yes", "label": "Yes", "animated": true, "type": "smoothstep" },
+      { "id": "e9", "source": "decision-2", "target": "utility-1", "sourceHandle": "no", "label": "No", "animated": true, "type": "smoothstep" },
+      { "id": "e10", "source": "respond-4", "target": "end-1", "animated": true, "type": "smoothstep" },
+      { "id": "e11", "source": "utility-1", "target": "end-1", "animated": true, "type": "smoothstep" }
+    ]
+  }
+}

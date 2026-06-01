@@ -1,0 +1,290 @@
+{
+  "name": "APT Campaign Tracking",
+  "slug": "ti-apt-campaign-tracking",
+  "description": "Tracks Advanced Persistent Threat campaigns by correlating incoming IOCs against known APT group indicators and TTPs. When a new threat intel alert arrives, the playbook extracts indicators, enriches them via VirusTotal and MISP, then uses AI-powered correlation to map indicators to known APT campaigns. Confirmed campaign matches trigger automatic blocklist updates, an endpoint sweep for related IOCs, and a detailed campaign tracking report distributed to the threat intel team. Unmatched indicators are added to a watchlist for continued monitoring.",
+  "category": "threat_intel",
+  "subcategory": "campaign_tracking",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "advanced",
+  "estimated_time": "20 minutes",
+  "tags": ["apt", "campaign", "tracking", "threat_intel", "correlation", "ttp"],
+  "alert_types": ["threat_intel", "apt"],
+  "severity_filter": ["medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["threat_intel", "apt_indicator", "campaign_alert"],
+    "min_severity": "medium"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "virustotal",
+      "name": "VirusTotal",
+      "category": "threat_intel",
+      "reason": "Enrich IOCs with detection ratios, campaign tags, and threat actor attribution data"
+    },
+    {
+      "connector_id": "misp",
+      "name": "MISP",
+      "category": "threat_intel",
+      "reason": "Correlate indicators against MISP galaxy clusters and known APT campaign databases"
+    },
+    {
+      "connector_id": "crowdstrike",
+      "name": "CrowdStrike Falcon",
+      "category": "edr",
+      "reason": "Sweep endpoints for IOCs associated with confirmed APT campaigns"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "APT Indicator Alert Received",
+          "config": {
+            "alert_types": ["threat_intel", "apt_indicator", "campaign_alert"],
+            "description": "Triggers when an APT-related threat intelligence alert is ingested containing indicators potentially linked to advanced threat campaigns"
+          }
+        }
+      },
+      {
+        "id": "code_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "code",
+          "label": "Extract IOCs and Campaign Context",
+          "config": {
+            "code": "import re\n\nalert = inputs.get('alert', {})\nraw_text = str(alert)\n\nip_pattern = r'\\b(?:\\d{1,3}\\.){3}\\d{1,3}\\b'\ndomain_pattern = r'\\b(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,}\\b'\nsha256_pattern = r'\\b[a-fA-F0-9]{64}\\b'\nmd5_pattern = r'\\b[a-fA-F0-9]{32}\\b'\n\nips = list(set(re.findall(ip_pattern, raw_text)))\ndomains = list(set(re.findall(domain_pattern, raw_text)))\nhashes = list(set(re.findall(sha256_pattern, raw_text) + re.findall(md5_pattern, raw_text)))\n\nindicators = []\nfor ip in ips:\n    indicators.append({'type': 'ip', 'value': ip})\nfor d in domains:\n    indicators.append({'type': 'domain', 'value': d})\nfor h in hashes:\n    indicators.append({'type': 'hash', 'value': h})\n\ncampaign_hint = alert.get('campaign_name', alert.get('threat_group', 'Unknown'))\n\nresult = {\n    'indicators': indicators,\n    'total_count': len(indicators),\n    'campaign_hint': campaign_hint,\n    'source_alert_id': alert.get('id', 'N/A')\n}",
+            "inputs": {
+              "alert": "{{trigger_1.alert}}"
+            },
+            "description": "Extracts all IOCs from the alert and captures any existing campaign attribution hints for correlation"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "analyze",
+          "label": "Enrich IOCs — VT & MISP",
+          "config": {
+            "mode": "enrich",
+            "observable_type": "auto",
+            "data_path": "$.code_1.outputs.result.indicators",
+            "sources": ["virustotal", "misp"],
+            "description": "Enriches all extracted indicators against VirusTotal and MISP to gather detection ratios, campaign tags, and threat group associations"
+          }
+        }
+      },
+      {
+        "id": "analyze_2",
+        "type": "signal",
+        "position": { "x": 520, "y": 540 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — APT Campaign Correlation",
+          "config": {
+            "template_id": "ioc_correlation",
+            "additional_instructions": "Map all enriched indicators to known APT campaigns and threat groups. Identify MITRE ATT&CK techniques, infrastructure overlaps, and campaign timelines. Determine confidence level of campaign attribution.",
+            "description": "AI-powered analysis correlating enriched IOCs against known APT campaigns, identifying TTPs and campaign timelines"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 700 },
+        "data": {
+          "kind": "decision",
+          "label": "Confirmed APT Campaign Match?",
+          "config": {
+            "condition": "{{analyze_2.confidence}} >= 70 or {{analyze_2.campaign_match}} == true",
+            "description": "Routes based on whether AI correlation confirmed a match to a known APT campaign with sufficient confidence"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "label": "Update Blocklists with Campaign IOCs",
+          "config": {
+            "integration_action": {
+              "action": "edl_add",
+              "parameters": {
+                "list_name": "apt_campaign_blocklist",
+                "indicators": "{{analyze_2.confirmed_iocs}}",
+                "source": "ti-apt-campaign-tracking",
+                "campaign": "{{analyze_2.campaign_name}}",
+                "expiry_days": 90
+              }
+            },
+            "description": "Adds all confirmed campaign IOCs to the APT campaign blocklist for automated blocking across perimeter controls"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "label": "Sweep Endpoints for Campaign IOCs",
+          "config": {
+            "integration_action": {
+              "connector_id": "crowdstrike",
+              "action": "ioc_scan",
+              "parameters": {
+                "indicators": "{{analyze_2.confirmed_iocs}}",
+                "scan_scope": "all_endpoints",
+                "priority": "high",
+                "campaign_tag": "{{analyze_2.campaign_name}}"
+              }
+            },
+            "description": "Initiates an endpoint-wide sweep via CrowdStrike to detect systems communicating with confirmed APT campaign infrastructure"
+          }
+        }
+      },
+      {
+        "id": "analyze_3",
+        "type": "signal",
+        "position": { "x": 340, "y": 1180 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — Campaign Tracking Report",
+          "config": {
+            "template_id": "executive_summary",
+            "additional_instructions": "Generate a detailed APT campaign tracking report including campaign timeline, affected infrastructure, MITRE ATT&CK mapping, and recommended defensive actions. Include IOC counts, confidence levels, and attribution details.",
+            "description": "AI-generated campaign tracking report with full attribution details, ATT&CK mapping, and defensive recommendations"
+          }
+        }
+      },
+      {
+        "id": "respond_3",
+        "type": "signal",
+        "position": { "x": 340, "y": 1340 },
+        "data": {
+          "kind": "respond",
+          "label": "Distribute Campaign Report",
+          "config": {
+            "notify": {
+              "channel": "email",
+              "target": "threat-intel-team@organization.com",
+              "subject": "APT CAMPAIGN TRACKING: {{analyze_2.campaign_name}} — {{code_1.outputs.result.total_count}} IOCs Confirmed",
+              "message": "Campaign: {{analyze_2.campaign_name}}\nConfidence: {{analyze_2.confidence}}%\nTotal IOCs: {{code_1.outputs.result.total_count}}\n\nActions Taken:\n- Campaign IOCs added to blocklist\n- Endpoint sweep initiated via CrowdStrike\n\nCampaign Report:\n{{analyze_3.summary}}"
+            },
+            "description": "Distributes the campaign tracking report to the threat intel team with full details and response actions taken"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 700, "y": 860 },
+        "data": {
+          "kind": "utility",
+          "label": "Add to Campaign Watchlist",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "APT campaign correlation did not confirm a match. {{code_1.outputs.result.total_count}} indicators added to watchlist for continued monitoring.\n\nCampaign Hint: {{code_1.outputs.result.campaign_hint}}\nCorrelation Confidence: {{analyze_2.confidence}}%\n\nRiggs AI Summary:\n{{analyze_2.summary}}"
+            },
+            "description": "Documents unmatched indicators and adds them to a watchlist for continued monitoring and future correlation"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1500 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "APT campaign tracking complete"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_extract",
+        "source": "trigger_1",
+        "target": "code_1",
+        "type": "default"
+      },
+      {
+        "id": "e_extract_enrich",
+        "source": "code_1",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_enrich_correlate",
+        "source": "analyze_1",
+        "target": "analyze_2",
+        "type": "default"
+      },
+      {
+        "id": "e_correlate_decision",
+        "source": "analyze_2",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "respond_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "utility_1",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_blocklist_sweep",
+        "source": "respond_1",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_sweep_report",
+        "source": "respond_2",
+        "target": "analyze_3",
+        "type": "default"
+      },
+      {
+        "id": "e_report_distribute",
+        "source": "analyze_3",
+        "target": "respond_3",
+        "type": "default"
+      },
+      {
+        "id": "e_distribute_end",
+        "source": "respond_3",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_watchlist_end",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

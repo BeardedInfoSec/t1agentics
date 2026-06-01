@@ -1,0 +1,195 @@
+{
+  "id": "aws_config",
+  "name": "AWS Config",
+  "description": "AWS service for assessing, auditing, and evaluating configurations of AWS resources, enabling compliance monitoring and configuration change tracking",
+  "version": "1.0.0",
+  "category": "aws_security",
+  "vendor": "Amazon Web Services",
+  "auth_type": "aws",
+  "auth_config": {
+    "type": "aws",
+    "service": "config",
+    "signing_version": "v4"
+  },
+  "base_url": "https://config.{region}.amazonaws.com",
+  "actions": [
+    {
+      "id": "get_compliance_summary",
+      "name": "Get Compliance Summary",
+      "description": "Retrieve the compliance summary for all AWS Config rules by account",
+      "http_method": "POST",
+      "endpoint": "/",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "AccountId",
+          "type": "string",
+          "description": "AWS account ID (optional, defaults to current account)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_compliance_details_by_rule",
+      "name": "Get Compliance Details by Rule",
+      "description": "Retrieve compliance evaluation results for a specific Config rule",
+      "http_method": "POST",
+      "endpoint": "/",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "ConfigRuleName",
+          "type": "string",
+          "description": "Name of the Config rule",
+          "required": true
+        },
+        {
+          "name": "ComplianceTypes",
+          "type": "array",
+          "description": "Filter by compliance type (COMPLIANT, NON_COMPLIANT, NOT_APPLICABLE, INSUFFICIENT_DATA)",
+          "required": false
+        },
+        {
+          "name": "Limit",
+          "type": "number",
+          "description": "Maximum results to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "describe_config_rules",
+      "name": "Describe Config Rules",
+      "description": "List all AWS Config rules and their current evaluation status",
+      "http_method": "POST",
+      "endpoint": "/",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "ConfigRuleNames",
+          "type": "array",
+          "description": "Array of specific rule names to describe (empty returns all)",
+          "required": false
+        },
+        {
+          "name": "NextToken",
+          "type": "string",
+          "description": "Pagination token",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_resource_config_history",
+      "name": "Get Resource Config History",
+      "description": "Retrieve configuration history for a specific AWS resource",
+      "http_method": "POST",
+      "endpoint": "/",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "resourceType",
+          "type": "string",
+          "description": "AWS resource type (e.g., AWS::EC2::Instance, AWS::S3::Bucket)",
+          "required": true
+        },
+        {
+          "name": "resourceId",
+          "type": "string",
+          "description": "Resource ID",
+          "required": true
+        },
+        {
+          "name": "laterTime",
+          "type": "string",
+          "description": "End of the time range (ISO 8601)",
+          "required": false
+        },
+        {
+          "name": "earlierTime",
+          "type": "string",
+          "description": "Start of the time range (ISO 8601)",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum items to return",
+          "required": false,
+          "default": 10
+        }
+      ]
+    },
+    {
+      "id": "select_resource_config",
+      "name": "Select Resource Config",
+      "description": "Query the current configuration state of AWS resources using SQL-like syntax",
+      "http_method": "POST",
+      "endpoint": "/",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "Expression",
+          "type": "string",
+          "description": "SQL expression for querying resource configurations (e.g., \"SELECT * WHERE resourceType = 'AWS::EC2::Instance'\")",
+          "required": true
+        },
+        {
+          "name": "Limit",
+          "type": "number",
+          "description": "Maximum results to return",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "NextToken",
+          "type": "string",
+          "description": "Pagination token",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "describe_compliance_by_resource",
+      "name": "Describe Compliance by Resource",
+      "description": "Retrieve compliance information for resources evaluated by Config rules",
+      "http_method": "POST",
+      "endpoint": "/",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "ResourceType",
+          "type": "string",
+          "description": "AWS resource type to filter by",
+          "required": false
+        },
+        {
+          "name": "ResourceId",
+          "type": "string",
+          "description": "Resource ID to filter by",
+          "required": false
+        },
+        {
+          "name": "ComplianceTypes",
+          "type": "array",
+          "description": "Filter by compliance type",
+          "required": false
+        },
+        {
+          "name": "Limit",
+          "type": "number",
+          "description": "Maximum results to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    }
+  ]
+}

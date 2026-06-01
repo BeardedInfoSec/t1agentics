@@ -1,0 +1,245 @@
+{
+  "id": "prisma_cloud",
+  "name": "Prisma Cloud",
+  "description": "Palo Alto Networks CNAPP platform providing CSPM, CWPP, code security, and cloud infrastructure protection via REST API",
+  "version": "1.0.0",
+  "category": "cloud_security",
+  "vendor": "Palo Alto Networks",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "x-redlock-auth",
+    "location": "header",
+    "login_url": "/login",
+    "note": "POST to /login with {username, password} to obtain JWT token, then use as x-redlock-auth header"
+  },
+  "base_url": "https://api.prismacloud.io",
+  "actions": [
+    {
+      "id": "list_alerts",
+      "name": "List Alerts",
+      "description": "Retrieve a list of alerts filtered by time range, policy, severity, and status",
+      "http_method": "POST",
+      "endpoint": "/v2/alert",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "timeRange",
+          "type": "object",
+          "description": "Time range filter (e.g., {\"type\": \"relative\", \"value\": {\"amount\": 24, \"unit\": \"hour\"}})",
+          "required": true
+        },
+        {
+          "name": "filters",
+          "type": "array",
+          "description": "Array of filter objects (e.g., [{\"name\": \"alert.status\", \"value\": \"open\", \"operator\": \"=\"}])",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of alerts to return",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "sortBy",
+          "type": "array",
+          "description": "Sort criteria (e.g., [\"severity:desc\"])",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_alert_details",
+      "name": "Get Alert Details",
+      "description": "Get detailed information about a specific Prisma Cloud alert by ID",
+      "http_method": "GET",
+      "endpoint": "/alert/{alertId}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "alertId",
+          "type": "string",
+          "description": "The unique identifier of the alert",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_policies",
+      "name": "List Policies",
+      "description": "Retrieve all security policies including built-in and custom policies",
+      "http_method": "GET",
+      "endpoint": "/v2/policy",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "policy.severity",
+          "type": "string",
+          "description": "Filter by severity (high, medium, low, critical)",
+          "required": false
+        },
+        {
+          "name": "policy.enabled",
+          "type": "boolean",
+          "description": "Filter by enabled status",
+          "required": false
+        },
+        {
+          "name": "cloud.type",
+          "type": "string",
+          "description": "Filter by cloud type (aws, azure, gcp, alibaba_cloud, oci)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_compliance_posture",
+      "name": "Get Compliance Posture",
+      "description": "Retrieve compliance posture statistics for a given compliance standard",
+      "http_method": "GET",
+      "endpoint": "/compliance/posture/{complianceId}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "complianceId",
+          "type": "string",
+          "description": "Compliance standard ID",
+          "required": true
+        },
+        {
+          "name": "timeType",
+          "type": "string",
+          "description": "Time range type (to_now, absolute, relative)",
+          "required": false,
+          "default": "to_now"
+        },
+        {
+          "name": "timeUnit",
+          "type": "string",
+          "description": "Time unit (hour, day, week, month, year, epoch, login)",
+          "required": false,
+          "default": "epoch"
+        }
+      ]
+    },
+    {
+      "id": "search_assets",
+      "name": "Search Assets",
+      "description": "Search cloud assets using RQL (Resource Query Language) for configuration, network, or event queries",
+      "http_method": "POST",
+      "endpoint": "/search/config",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "RQL query string (e.g., \"config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-ec2-describe-instances'\")",
+          "required": true
+        },
+        {
+          "name": "timeRange",
+          "type": "object",
+          "description": "Time range filter object",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum results to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "list_cloud_accounts",
+      "name": "List Cloud Accounts",
+      "description": "List all onboarded cloud accounts and their monitoring status",
+      "http_method": "GET",
+      "endpoint": "/cloud",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "cloudType",
+          "type": "string",
+          "description": "Filter by cloud type (aws, azure, gcp, alibaba_cloud, oci)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_vulnerabilities",
+      "name": "List Vulnerabilities",
+      "description": "Retrieve vulnerability findings across workloads and images",
+      "http_method": "GET",
+      "endpoint": "/v2/vulnerability",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "cveId",
+          "type": "string",
+          "description": "Filter by specific CVE ID",
+          "required": false
+        },
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Filter by severity (critical, high, medium, low)",
+          "required": false
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Offset for pagination",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum results to return",
+          "required": false,
+          "default": 50
+        }
+      ]
+    },
+    {
+      "id": "dismiss_alert",
+      "name": "Dismiss Alert",
+      "description": "Dismiss one or more alerts with a reason and optional dismissal note",
+      "http_method": "POST",
+      "endpoint": "/alert/dismiss",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "alerts",
+          "type": "array",
+          "description": "Array of alert IDs to dismiss",
+          "required": true
+        },
+        {
+          "name": "dismissalNote",
+          "type": "string",
+          "description": "Reason for dismissing the alerts",
+          "required": true
+        },
+        {
+          "name": "filter",
+          "type": "object",
+          "description": "Filter criteria to select alerts for bulk dismissal",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

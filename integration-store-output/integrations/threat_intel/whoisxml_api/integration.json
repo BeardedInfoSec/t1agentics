@@ -1,0 +1,214 @@
+{
+  "id": "whoisxml_api",
+  "name": "WhoisXML API",
+  "description": "WhoisXML API provides comprehensive domain and IP intelligence including WHOIS records, DNS lookup, domain availability, reverse WHOIS, IP geolocation, and domain reputation data across 374M+ active domains.",
+  "version": "1.0.0",
+  "category": "threat_intel",
+  "vendor": "WhoisXML API",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "param_name": "apiKey",
+    "location": "query"
+  },
+  "base_url": "https://www.whoisxmlapi.com",
+  "actions": [
+    {
+      "id": "whois_lookup",
+      "name": "WHOIS Lookup",
+      "description": "Retrieve parsed WHOIS registration data for a domain including registrant, registrar, creation date, expiration date, name servers, and status codes.",
+      "http_method": "GET",
+      "endpoint": "/whoisserver/WhoisService",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "domainName",
+          "type": "string",
+          "description": "The domain name to look up (e.g., 'example.com')",
+          "required": true,
+          "contains": ["domain"]
+        },
+        {
+          "name": "outputFormat",
+          "type": "string",
+          "description": "Response format: 'JSON' or 'XML' (default: XML)",
+          "required": false
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "dns_lookup",
+      "name": "DNS Lookup",
+      "description": "Perform DNS lookups to retrieve A, AAAA, MX, NS, TXT, SOA, CNAME, and other DNS records for a domain.",
+      "http_method": "GET",
+      "endpoint": "/whoisserver/DNSService",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "domainName",
+          "type": "string",
+          "description": "The domain name to query DNS records for",
+          "required": true,
+          "contains": ["domain"]
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "DNS record type (e.g., 'A', 'MX', 'NS', 'TXT', 'CNAME', 'SOA', '_all')",
+          "required": false
+        },
+        {
+          "name": "outputFormat",
+          "type": "string",
+          "description": "Response format: 'JSON' or 'XML'",
+          "required": false
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "whois_history",
+      "name": "WHOIS History",
+      "description": "Retrieve historical WHOIS records for a domain showing ownership changes, registrar transfers, and status modifications over time.",
+      "http_method": "GET",
+      "endpoint": "/whoisserver/WhoisService",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "domainName",
+          "type": "string",
+          "description": "The domain name to look up historical WHOIS for",
+          "required": true,
+          "contains": ["domain"]
+        },
+        {
+          "name": "mode",
+          "type": "string",
+          "description": "Set to 'purchase' to retrieve historical records",
+          "required": true
+        },
+        {
+          "name": "outputFormat",
+          "type": "string",
+          "description": "Response format: 'JSON' or 'XML'",
+          "required": false
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "reverse_whois",
+      "name": "Reverse WHOIS",
+      "description": "Find all domains registered by a specific person, company, or email address by searching across WHOIS registration data.",
+      "http_method": "POST",
+      "endpoint": "/whoisserver/ReverseWhoisService",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "searchType",
+          "type": "string",
+          "description": "Type of reverse search: 'current' or 'historic'",
+          "required": true
+        },
+        {
+          "name": "basicSearchTerms",
+          "type": "object",
+          "description": "Search terms object containing 'include' array of keywords to search for in WHOIS records",
+          "required": true
+        },
+        {
+          "name": "outputFormat",
+          "type": "string",
+          "description": "Response format: 'JSON' or 'XML'",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "domain_availability",
+      "name": "Domain Availability",
+      "description": "Check whether a domain name is available for registration or currently registered.",
+      "http_method": "GET",
+      "endpoint": "/whoisserver/WhoisService",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "domainName",
+          "type": "string",
+          "description": "The domain name to check availability for",
+          "required": true,
+          "contains": ["domain"]
+        },
+        {
+          "name": "da",
+          "type": "integer",
+          "description": "Set to 2 to enable domain availability check mode",
+          "required": true
+        },
+        {
+          "name": "outputFormat",
+          "type": "string",
+          "description": "Response format: 'JSON' or 'XML'",
+          "required": false
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "ip_geolocation",
+      "name": "IP Geolocation",
+      "description": "Get geolocation data for an IP address including country, region, city, coordinates, ISP, and organization.",
+      "http_method": "GET",
+      "endpoint": "/whoisserver/IPService",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "ipAddress",
+          "type": "string",
+          "description": "The IP address to geolocate",
+          "required": true,
+          "contains": ["ip"]
+        },
+        {
+          "name": "outputFormat",
+          "type": "string",
+          "description": "Response format: 'JSON' or 'XML'",
+          "required": false
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "domain_reputation",
+      "name": "Domain Reputation",
+      "description": "Get a reputation score for a domain based on multiple threat intelligence factors including malware, phishing, and spam indicators.",
+      "http_method": "GET",
+      "endpoint": "/whoisserver/reputationService",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "domainName",
+          "type": "string",
+          "description": "The domain name to check reputation for",
+          "required": true,
+          "contains": ["domain"]
+        },
+        {
+          "name": "outputFormat",
+          "type": "string",
+          "description": "Response format: 'JSON' or 'XML'",
+          "required": false
+        }
+      ],
+      "observable_type": "domain"
+    }
+  ]
+}

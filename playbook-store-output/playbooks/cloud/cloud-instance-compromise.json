@@ -1,0 +1,277 @@
+{
+  "name": "Cloud Instance Compromise Response",
+  "slug": "cloud-instance-compromise",
+  "description": "Responds to suspected cloud instance (EC2, GCE, Azure VM) compromise. Riggs AI analyzes the alert for indicators of compromise such as unusual outbound connections, credential harvesting from metadata service, or cryptomining behavior. Confirmed compromises trigger instance snapshot for forensic preservation, network isolation, forensic analysis of the snapshot, incident ticket creation, and team notification. Unconfirmed alerts receive documentation.",
+  "category": "cloud",
+  "subcategory": "instance_security",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "advanced",
+  "estimated_time": "25 minutes",
+  "tags": ["cloud", "ec2", "instance", "compromise", "forensics", "isolation"],
+  "alert_types": ["cloud_security", "instance_compromise"],
+  "severity_filter": ["high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["cloud_security", "instance_compromise", "ec2_anomaly"],
+    "min_severity": "high"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "aws_security_hub",
+      "name": "AWS Security Hub",
+      "category": "cloud_security",
+      "reason": "Source of instance compromise findings and API for snapshot/isolation operations"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create forensic investigation tickets for confirmed instance compromises"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Notify the security team of instance compromise and forensic response actions"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Instance Compromise Alert",
+          "config": {
+            "alert_types": ["cloud_security", "instance_compromise", "ec2_anomaly"],
+            "description": "Triggers when suspicious behavior is detected on a cloud instance such as unusual outbound traffic, metadata service abuse, or known malware signatures"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — Cloud Security Assessment",
+          "config": {
+            "template_id": "cloud_security",
+            "additional_instructions": "Evaluate instance compromise indicators: metadata service access patterns, unusual outbound connections, known C2 IPs, cryptomining signatures, privilege escalation attempts",
+            "description": "AI-powered analysis of cloud instance behavior to determine if the instance has been compromised"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "label": "Instance Compromised?",
+          "config": {
+            "condition": "{{analyze_1.verdict}} == 'compromised' || {{analyze_1.confidence}} >= 0.8",
+            "description": "Routes based on whether the AI assessment confirmed the cloud instance is compromised"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "respond",
+          "label": "Snapshot Instance for Forensics",
+          "config": {
+            "integration_action": {
+              "connector_id": "aws_security_hub",
+              "action": "create_snapshot",
+              "parameters": {
+                "instance_id": "{{trigger_1.alert.instance_id}}",
+                "description": "Forensic snapshot — incident: {{trigger_1.alert.alert_id}}",
+                "tags": {
+                  "Purpose": "forensic_preservation",
+                  "Incident": "{{trigger_1.alert.alert_id}}"
+                }
+              }
+            },
+            "description": "Create an EBS snapshot of all attached volumes for forensic preservation before any remediation actions"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "label": "Isolate Instance",
+          "config": {
+            "integration_action": {
+              "connector_id": "aws_security_hub",
+              "action": "isolate_instance",
+              "parameters": {
+                "instance_id": "{{trigger_1.alert.instance_id}}",
+                "method": "security_group_deny_all",
+                "preserve_metadata": true,
+                "reason": "Instance compromised — AI confidence: {{analyze_1.confidence}}"
+              }
+            },
+            "description": "Network-isolate the compromised instance by replacing its security group with a deny-all group while preserving the instance for analysis"
+          }
+        }
+      },
+      {
+        "id": "code_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "code",
+          "label": "Forensic Analysis of Snapshot",
+          "config": {
+            "mode": "query",
+            "query": "Analyze snapshot for instance={{trigger_1.alert.instance_id}}: running processes, open network connections, modified system files, installed packages delta, cron jobs, user accounts, SSH authorized_keys changes",
+            "output_variable": "forensic_analysis",
+            "description": "Perform automated forensic analysis on the snapshot to identify malware, backdoors, and the full scope of compromise"
+          }
+        }
+      },
+      {
+        "id": "respond_3",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "label": "Create Forensic Ticket",
+          "config": {
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_ticket",
+              "parameters": {
+                "project": "SEC",
+                "issue_type": "Investigation",
+                "priority": "Critical",
+                "summary": "Instance Compromise: {{trigger_1.alert.instance_id}} — Forensic Review Required",
+                "description": "Confirmed cloud instance compromise.\n\nInstance: {{trigger_1.alert.instance_id}}\nRegion: {{trigger_1.alert.region}}\nVPC: {{trigger_1.alert.vpc_id}}\n\nActions Taken:\n- Forensic snapshot created\n- Instance network-isolated\n- Automated forensic analysis completed\n\nForensic Analysis:\n{{code_1.forensic_analysis}}\n\nRiggs AI Assessment:\n{{analyze_1.summary}}\n\nNext Steps: Review forensic findings, determine lateral movement scope, rebuild instance from clean AMI."
+              }
+            },
+            "description": "Create a forensic investigation ticket with snapshot details and automated analysis results"
+          }
+        }
+      },
+      {
+        "id": "respond_4",
+        "type": "signal",
+        "position": { "x": 340, "y": 1180 },
+        "data": {
+          "kind": "respond",
+          "label": "Notify Security Team",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#security-incidents",
+              "message": "CLOUD INSTANCE COMPROMISED\nInstance: {{trigger_1.alert.instance_id}}\nRegion: {{trigger_1.alert.region}}\nActions: Snapshot created, instance isolated, forensics complete\nTicket: {{respond_3.ticket_url}}\n\nRiggs Assessment:\n{{analyze_1.summary}}"
+            },
+            "description": "Notify the security team of the instance compromise and all forensic response actions"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "utility",
+          "label": "Add Note: No Compromise Confirmed",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "Reviewed by Riggs AI (cloud_security template). Instance behavior determined non-malicious. Confidence: {{analyze_1.confidence}}. Assessment: {{analyze_1.summary}}"
+            },
+            "description": "Document that AI analysis did not confirm an instance compromise"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1340 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "Cloud instance compromise response complete"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_analyze",
+        "source": "trigger_1",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_analyze_decision",
+        "source": "analyze_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "respond_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "utility_1",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_snapshot_isolate",
+        "source": "respond_1",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_isolate_forensics",
+        "source": "respond_2",
+        "target": "code_1",
+        "type": "default"
+      },
+      {
+        "id": "e_forensics_ticket",
+        "source": "code_1",
+        "target": "respond_3",
+        "type": "default"
+      },
+      {
+        "id": "e_ticket_notify",
+        "source": "respond_3",
+        "target": "respond_4",
+        "type": "default"
+      },
+      {
+        "id": "e_notify_end",
+        "source": "respond_4",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_utility_end",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

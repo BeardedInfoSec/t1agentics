@@ -1,0 +1,175 @@
+{
+  "id": "snyk_code",
+  "name": "Snyk Code",
+  "description": "SAST and SCA vulnerability scanner for code repositories, open source dependencies, and container images",
+  "version": "1.0.0",
+  "category": "code_security",
+  "vendor": "Snyk",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "prefix": "token ",
+    "location": "header"
+  },
+  "base_url": "https://api.snyk.io/v1",
+  "actions": [
+    {
+      "id": "list_projects",
+      "name": "List Projects",
+      "description": "List all projects in an organization",
+      "http_method": "GET",
+      "endpoint": "/org/{org_id}/projects",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "org_id",
+          "type": "string",
+          "description": "Organization ID",
+          "required": true,
+          "location": "path"
+        }
+      ]
+    },
+    {
+      "id": "list_aggregated_issues",
+      "name": "List Aggregated Issues",
+      "description": "List all aggregated issues for a project including vulnerabilities and license issues",
+      "http_method": "POST",
+      "endpoint": "/org/{org_id}/project/{project_id}/aggregated-issues",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "org_id",
+          "type": "string",
+          "description": "Organization ID",
+          "required": true,
+          "location": "path"
+        },
+        {
+          "name": "project_id",
+          "type": "string",
+          "description": "Project ID",
+          "required": true,
+          "location": "path"
+        },
+        {
+          "name": "includeDescription",
+          "type": "boolean",
+          "description": "Include issue descriptions in the response",
+          "required": false,
+          "location": "body"
+        },
+        {
+          "name": "includeIntroducedThrough",
+          "type": "boolean",
+          "description": "Include dependency paths that introduce the issue",
+          "required": false,
+          "location": "body"
+        }
+      ]
+    },
+    {
+      "id": "get_project_issues",
+      "name": "Get Project Issues",
+      "description": "Get detailed issues for a specific project with filtering support",
+      "http_method": "POST",
+      "endpoint": "/org/{org_id}/project/{project_id}/issues",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "org_id",
+          "type": "string",
+          "description": "Organization ID",
+          "required": true,
+          "location": "path"
+        },
+        {
+          "name": "project_id",
+          "type": "string",
+          "description": "Project ID",
+          "required": true,
+          "location": "path"
+        },
+        {
+          "name": "filters",
+          "type": "object",
+          "description": "Filter by severity (high, medium, low), types (vuln, license), ignored, patched",
+          "required": false,
+          "location": "body"
+        }
+      ]
+    },
+    {
+      "id": "get_project_dependencies",
+      "name": "Get Project Dependencies",
+      "description": "List all dependencies for a specific project",
+      "http_method": "POST",
+      "endpoint": "/org/{org_id}/dependencies",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "org_id",
+          "type": "string",
+          "description": "Organization ID",
+          "required": true,
+          "location": "path"
+        },
+        {
+          "name": "filters",
+          "type": "object",
+          "description": "Filter dependencies by project or language",
+          "required": false,
+          "location": "body"
+        }
+      ]
+    },
+    {
+      "id": "search_vulnerability",
+      "name": "Search Vulnerability by CVE",
+      "description": "Look up a specific vulnerability by its Snyk ID or CVE identifier",
+      "http_method": "GET",
+      "endpoint": "/vuln/{vuln_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "vuln_id",
+          "type": "string",
+          "description": "Vulnerability ID (Snyk ID or CVE, e.g., SNYK-JS-LODASH-590103)",
+          "required": true,
+          "location": "path"
+        }
+      ]
+    },
+    {
+      "id": "get_project_settings",
+      "name": "Get Project Settings",
+      "description": "Retrieve settings for a specific project",
+      "http_method": "GET",
+      "endpoint": "/org/{org_id}/project/{project_id}/settings",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "org_id",
+          "type": "string",
+          "description": "Organization ID",
+          "required": true,
+          "location": "path"
+        },
+        {
+          "name": "project_id",
+          "type": "string",
+          "description": "Project ID",
+          "required": true,
+          "location": "path"
+        }
+      ]
+    }
+  ]
+}

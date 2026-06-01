@@ -1,0 +1,347 @@
+{
+  "id": "dnsdb",
+  "name": "DNSDB",
+  "description": "This app supports investigative DNS lookup actions on DNSDB",
+  "version": "2.1.1",
+  "category": "threat_intel",
+  "vendor": "Farsight Security, Inc.",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "https://api.dnsdb.info/dnsdb/v2/lookup",
+  "actions": [
+    {
+      "id": "check_rate_limit",
+      "name": "Check Rate Limit",
+      "description": "Get data of current data limit",
+      "http_method": "GET",
+      "endpoint": "/actions/check_rate_limit",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "lookup_rdata_name",
+      "name": "Rdata Name Lookup",
+      "description": "Performs Name RDATA Lookup",
+      "http_method": "GET",
+      "endpoint": "/actions/lookup_rdata_name",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Name to lookup",
+          "required": true,
+          "contains": [
+            "domain"
+          ]
+        },
+        {
+          "name": "time_first_after",
+          "type": "string",
+          "description": "Record first seen after (epoch, relative seconds e.g. -31536000, or UTC timestamp e.g. 2021-01-05T12:06:02Z)",
+          "required": false
+        },
+        {
+          "name": "time_first_before",
+          "type": "string",
+          "description": "Record first seen before (epoch, relative seconds e.g. -31536000, or UTC timestamp e.g. 2021-01-05T12:06:02Z)",
+          "required": false
+        },
+        {
+          "name": "time_last_after",
+          "type": "string",
+          "description": "Record last seen after (epoch, relative seconds e.g. -31536000, or UTC timestamp e.g. 2021-01-05T12:06:02Z)",
+          "required": false
+        },
+        {
+          "name": "time_last_before",
+          "type": "string",
+          "description": "Record last seen before (epoch, relative seconds e.g. -31536000, or UTC timestamp e.g. 2021-01-05T12:06:02Z)",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Max records to return",
+          "required": false,
+          "default": 200
+        }
+      ]
+    },
+    {
+      "id": "lookup_rdata_ip",
+      "name": "Rdata Ip Lookup",
+      "description": "Performs IP RDATA Lookup",
+      "http_method": "GET",
+      "endpoint": "/actions/lookup_rdata_ip",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "IP to resolve",
+          "required": true,
+          "contains": [
+            "ip",
+            "dnsdb ipv6"
+          ]
+        },
+        {
+          "name": "network_prefix",
+          "type": "number",
+          "description": "Network prefix",
+          "required": false
+        },
+        {
+          "name": "time_first_after",
+          "type": "string",
+          "description": "Record first seen after (epoch, relative seconds e.g. -31536000, or UTC timestamp e.g. 2021-01-05T12:06:02Z)",
+          "required": false
+        },
+        {
+          "name": "time_first_before",
+          "type": "string",
+          "description": "Record first seen before (epoch, relative seconds e.g. -31536000, or UTC timestamp e.g. 2021-01-05T12:06:02Z)",
+          "required": false
+        },
+        {
+          "name": "time_last_after",
+          "type": "string",
+          "description": "Record last seen after (epoch, relative seconds e.g. -31536000, or UTC timestamp e.g. 2021-01-05T12:06:02Z)",
+          "required": false
+        },
+        {
+          "name": "time_last_before",
+          "type": "string",
+          "description": "Record last seen before (epoch, relative seconds e.g. -31536000, or UTC timestamp e.g. 2021-01-05T12:06:02Z)",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Max records to return",
+          "required": false,
+          "default": 200
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "lookup_rdata_raw",
+      "name": "Rdata Raw Lookup",
+      "description": "Lookup raw RDATA",
+      "http_method": "GET",
+      "endpoint": "/actions/lookup_rdata_raw",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "raw_rdata",
+          "type": "string",
+          "description": "An even number of hexadecimal digits specifying a raw octet string",
+          "required": true,
+          "contains": [
+            "dnsdb rdata"
+          ]
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "DNS record type",
+          "required": false,
+          "contains": [
+            "dnsdb rrtype"
+          ]
+        },
+        {
+          "name": "time_first_after",
+          "type": "string",
+          "description": "Record first seen after (epoch, relative seconds e.g. -31536000, or UTC timestamp e.g. 2021-01-05T12:06:02Z)",
+          "required": false
+        },
+        {
+          "name": "time_first_before",
+          "type": "string",
+          "description": "Record first seen before (epoch, relative seconds e.g. -31536000, or UTC timestamp e.g. 2021-01-05T12:06:02Z)",
+          "required": false
+        },
+        {
+          "name": "time_last_after",
+          "type": "string",
+          "description": "Record last seen after (epoch, relative seconds e.g. -31536000, or UTC timestamp e.g. 2021-01-05T12:06:02Z)",
+          "required": false
+        },
+        {
+          "name": "time_last_before",
+          "type": "string",
+          "description": "Record last seen before (epoch, relative seconds e.g. -31536000, or UTC timestamp e.g. 2021-01-05T12:06:02Z)",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Max records to return",
+          "required": false,
+          "default": 200
+        }
+      ]
+    },
+    {
+      "id": "lookup_rrset",
+      "name": "Rrset Lookup",
+      "description": "Perform a DNSDB RRSET lookup",
+      "http_method": "GET",
+      "endpoint": "/actions/lookup_rrset",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "owner_name",
+          "type": "string",
+          "description": "Domain to resolve",
+          "required": true,
+          "contains": [
+            "domain"
+          ]
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "DNS record type",
+          "required": false,
+          "contains": [
+            "dnsdb rrtype"
+          ]
+        },
+        {
+          "name": "time_first_after",
+          "type": "string",
+          "description": "Record first seen after (epoch, relative seconds e.g. -31536000, or UTC timestamp e.g. 2021-01-05T12:06:02Z)",
+          "required": false
+        },
+        {
+          "name": "time_first_before",
+          "type": "string",
+          "description": "Record first seen before (epoch, relative seconds e.g. -31536000, or UTC timestamp e.g. 2021-01-05T12:06:02Z)",
+          "required": false
+        },
+        {
+          "name": "time_last_after",
+          "type": "string",
+          "description": "Record last seen after (epoch, relative seconds e.g. -31536000, or UTC timestamp e.g. 2021-01-05T12:06:02Z)",
+          "required": false
+        },
+        {
+          "name": "time_last_before",
+          "type": "string",
+          "description": "Record last seen before (epoch, relative seconds e.g. -31536000, or UTC timestamp e.g. 2021-01-05T12:06:02Z)",
+          "required": false
+        },
+        {
+          "name": "bailiwick",
+          "type": "string",
+          "description": "Bailiwick",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Max records to return",
+          "required": false,
+          "default": 200
+        }
+      ]
+    },
+    {
+      "id": "flex_search",
+      "name": "Flex Search",
+      "description": "Perform a Flex search",
+      "http_method": "GET",
+      "endpoint": "/actions/flex_search",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Flex search query",
+          "required": true
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "DNS record type",
+          "required": true
+        },
+        {
+          "name": "search_type",
+          "type": "string",
+          "description": "Search syntax type",
+          "required": true
+        },
+        {
+          "name": "time_first_after",
+          "type": "string",
+          "description": "Record first seen after (epoch, relative seconds e.g. -31536000, or UTC timestamp e.g. 2021-01-05T12:06:02Z)",
+          "required": false
+        },
+        {
+          "name": "time_first_before",
+          "type": "string",
+          "description": "Record first seen before (epoch, relative seconds e.g. -31536000, or UTC timestamp e.g. 2021-01-05T12:06:02Z)",
+          "required": false
+        },
+        {
+          "name": "time_last_after",
+          "type": "string",
+          "description": "Record last seen after (epoch, relative seconds e.g. -31536000, or UTC timestamp e.g. 2021-01-05T12:06:02Z)",
+          "required": false
+        },
+        {
+          "name": "time_last_before",
+          "type": "string",
+          "description": "Record last seen before (epoch, relative seconds e.g. -31536000, or UTC timestamp e.g. 2021-01-05T12:06:02Z)",
+          "required": false
+        },
+        {
+          "name": "exclude",
+          "type": "string",
+          "description": "Exclusion pattern (regex)",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Max records to return",
+          "required": false,
+          "default": 10000
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "DNSDB",
+    "original_type": "investigative",
+    "converted_at": "2025-12-18T16:25:28.740618",
+    "source_version": "2.1.1"
+  }
+}

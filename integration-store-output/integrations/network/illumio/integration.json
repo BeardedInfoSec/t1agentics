@@ -1,0 +1,448 @@
+{
+  "id": "illumio",
+  "name": "Illumio",
+  "description": "This app integrates with the Illumio Policy Compute Engine to implement actions for automating workload containment",
+  "version": "1.0.2",
+  "category": "network",
+  "vendor": "Illumio",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "get_traffic_analysis",
+      "name": "Get Traffic Analysis",
+      "description": "List of traffic on specified port",
+      "http_method": "GET",
+      "endpoint": "/actions/get_traffic_analysis",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "start_time",
+          "type": "string",
+          "description": "Start time for traffic analysis (Valid date format allowed: MM/DD/YYYY hh:mm:ss and YYYY/MM/DD hh:mm:ss)",
+          "required": true
+        },
+        {
+          "name": "end_time",
+          "type": "string",
+          "description": "End time for traffic analysis (Valid date format allowed: MM/DD/YYYY hh:mm:ss and YYYY/MM/DD hh:mm:ss)",
+          "required": true
+        },
+        {
+          "name": "port",
+          "type": "number",
+          "description": "Port number (Maximum port value is 65535)",
+          "required": true,
+          "contains": [
+            "port"
+          ]
+        },
+        {
+          "name": "protocol",
+          "type": "string",
+          "description": "Protocol",
+          "required": true,
+          "default": "TCP"
+        },
+        {
+          "name": "policy_decisions",
+          "type": "string",
+          "description": "Policy decisions (Comma-seperated values are allowed)",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "create_virtual_service",
+      "name": "Create Virtual Service",
+      "description": "Creates a new virtual service",
+      "http_method": "GET",
+      "endpoint": "/actions/create_virtual_service",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "port",
+          "type": "number",
+          "description": "Port",
+          "required": true,
+          "contains": [
+            "port"
+          ]
+        },
+        {
+          "name": "protocol",
+          "type": "string",
+          "description": "Protocol",
+          "required": true,
+          "default": "TCP"
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Virtual service name",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "provision_objects",
+      "name": "Provision Objects",
+      "description": "Provisions the specified objects",
+      "http_method": "GET",
+      "endpoint": "/actions/provision_objects",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "hrefs",
+          "type": "string",
+          "description": "Object HREFs (Comma-seperated values)",
+          "required": true,
+          "contains": [
+            "illumio virtual service href",
+            "illumio rule href",
+            "illumio ruleset href",
+            "illumio enforcement boundary href"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_ip_lists",
+      "name": "Get Ip Lists",
+      "description": "Get IP list of specified name",
+      "http_method": "GET",
+      "endpoint": "/actions/get_ip_lists",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Name of IP list",
+          "required": false
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Description of IP list",
+          "required": false
+        },
+        {
+          "name": "fqdn",
+          "type": "string",
+          "description": "FQDN of IP list",
+          "required": false
+        },
+        {
+          "name": "ip_address",
+          "type": "string",
+          "description": "IP Address linked with IP List",
+          "required": false,
+          "contains": [
+            "ip",
+            "ipv6"
+          ]
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "create_ruleset",
+      "name": "Create Ruleset",
+      "description": "Create ruleset",
+      "http_method": "GET",
+      "endpoint": "/actions/create_ruleset",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Name of ruleset",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "create_rule",
+      "name": "Create Rule",
+      "description": "Create rule",
+      "http_method": "GET",
+      "endpoint": "/actions/create_rule",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "providers",
+          "type": "string",
+          "description": "List of HREFS (Comma-seperated values are allowed)",
+          "required": true,
+          "contains": [
+            "illumio virtual service href",
+            "illumio ip list href",
+            "illumio workload href"
+          ]
+        },
+        {
+          "name": "consumers",
+          "type": "string",
+          "description": "List of HREFS (Comma-seperated values are allowed)",
+          "required": true,
+          "contains": [
+            "illumio virtual service href",
+            "illumio ip list href",
+            "illumio workload href"
+          ]
+        },
+        {
+          "name": "ruleset_href",
+          "type": "string",
+          "description": "Ruleset HREF",
+          "required": true,
+          "contains": [
+            "illumio ruleset href"
+          ]
+        },
+        {
+          "name": "resolve_consumers_as",
+          "type": "string",
+          "description": "Consumers (Comma-seperated values are allowed)",
+          "required": true
+        },
+        {
+          "name": "resolve_providers_as",
+          "type": "string",
+          "description": "Providers (Comma-seperated values are allowed)",
+          "required": true
+        },
+        {
+          "name": "ingress_services",
+          "type": "string",
+          "description": "Ingress services (Comma-seperated values are allowed)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "create_enforcement_boundary",
+      "name": "Create Enforcement Boundary",
+      "description": "Creates enforcement boundary",
+      "http_method": "GET",
+      "endpoint": "/actions/create_enforcement_boundary",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "providers",
+          "type": "string",
+          "description": "List of HREFs (Comma-seperated values are allowed)",
+          "required": true,
+          "contains": [
+            "illumio virtual service href",
+            "illumio ip list href",
+            "illumio workload href"
+          ]
+        },
+        {
+          "name": "consumers",
+          "type": "string",
+          "description": "List of HREFs (Comma-seperated values are allowed)",
+          "required": true,
+          "contains": [
+            "illumio virtual service href",
+            "illumio ip list href",
+            "illumio workload href"
+          ]
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Name of enforcement boundary",
+          "required": true
+        },
+        {
+          "name": "port",
+          "type": "number",
+          "description": "Port number (Maximum port value is 65535)",
+          "required": true,
+          "contains": [
+            "port"
+          ]
+        },
+        {
+          "name": "protocol",
+          "type": "string",
+          "description": "Protocol",
+          "required": true,
+          "default": "TCP"
+        }
+      ]
+    },
+    {
+      "id": "get_workloads",
+      "name": "Get Workloads",
+      "description": "Gets list of workloads for a given enforcement mode",
+      "http_method": "GET",
+      "endpoint": "/actions/get_workloads",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "max_results",
+          "type": "number",
+          "description": "Maximum workloads to fetch (Default value is 500)",
+          "required": false,
+          "default": 500
+        },
+        {
+          "name": "enforcement_mode",
+          "type": "string",
+          "description": "Enforcement mode",
+          "required": false
+        },
+        {
+          "name": "online",
+          "type": "string",
+          "description": "Online",
+          "required": false
+        },
+        {
+          "name": "managed",
+          "type": "string",
+          "description": "Managed",
+          "required": false
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Workload Name",
+          "required": false
+        },
+        {
+          "name": "labels",
+          "type": "string",
+          "description": "Label HREFs (Comma-seperated values are allowed)",
+          "required": false
+        },
+        {
+          "name": "public_ip_address",
+          "type": "string",
+          "description": "Public IP Address",
+          "required": false,
+          "contains": [
+            "ip",
+            "ipv6"
+          ]
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Workload Description",
+          "required": false
+        },
+        {
+          "name": "hostname",
+          "type": "string",
+          "description": "Hostname",
+          "required": false
+        },
+        {
+          "name": "os_id",
+          "type": "string",
+          "description": "OS ID",
+          "required": false
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "create_service_binding",
+      "name": "Create Service Binding",
+      "description": "Binds workload with virtual service",
+      "http_method": "GET",
+      "endpoint": "/actions/create_service_binding",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "workload_hrefs",
+          "type": "string",
+          "description": "List of workload HREFS (Comma-seperated values are allowed)",
+          "required": true,
+          "contains": [
+            "illumio workload href"
+          ]
+        },
+        {
+          "name": "virtual_service_href",
+          "type": "string",
+          "description": "Virtual service HREF",
+          "required": true,
+          "contains": [
+            "illumio virtual service href"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "update_enforcement_mode",
+      "name": "Update Enforcement Mode",
+      "description": "Update enforcement mode of workloads",
+      "http_method": "GET",
+      "endpoint": "/actions/update_enforcement_mode",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "workload_hrefs",
+          "type": "string",
+          "description": "List of HREFs (Comma-seperated values are allowed)",
+          "required": true,
+          "contains": [
+            "illumio workload href"
+          ]
+        },
+        {
+          "name": "enforcement_mode",
+          "type": "string",
+          "description": "Enforcement mode to apply to the given Workloads",
+          "required": true
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Illumio",
+    "original_type": "network security",
+    "converted_at": "2025-12-18T16:25:28.860671",
+    "source_version": "1.0.2"
+  }
+}

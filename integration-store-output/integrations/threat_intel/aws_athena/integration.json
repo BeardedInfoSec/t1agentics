@@ -1,0 +1,95 @@
+{
+  "id": "aws_athena",
+  "name": "AWS Athena",
+  "description": "This app supports investigative actions on AWS Athena",
+  "version": "2.3.0",
+  "category": "threat_intel",
+  "vendor": "AWS",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "list_queries",
+      "name": "List Queries",
+      "description": "List named queries on Athena",
+      "http_method": "GET",
+      "endpoint": "/actions/list_queries",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "credentials",
+          "type": "string",
+          "description": "Assumed role credentials",
+          "required": false,
+          "contains": [
+            "aws credentials"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "run_query",
+      "name": "Run Query",
+      "description": "Run a named query on Athena",
+      "http_method": "GET",
+      "endpoint": "/actions/run_query",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Query to run",
+          "required": true,
+          "contains": [
+            "athena query",
+            "athena named query"
+          ]
+        },
+        {
+          "name": "database",
+          "type": "string",
+          "description": "Database to run query on",
+          "required": false
+        },
+        {
+          "name": "s3_location",
+          "type": "string",
+          "description": "S3 location to save results",
+          "required": true
+        },
+        {
+          "name": "encryption",
+          "type": "string",
+          "description": "Encyption scheme of S3 location",
+          "required": false
+        },
+        {
+          "name": "credentials",
+          "type": "string",
+          "description": "Assumed role credentials",
+          "required": false,
+          "contains": [
+            "aws credentials"
+          ]
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "AWS Athena",
+    "original_type": "information",
+    "converted_at": "2025-12-18T16:25:28.570058",
+    "source_version": "2.3.0"
+  }
+}

@@ -1,0 +1,190 @@
+{
+  "name": "Internal Account Phishing Response",
+  "slug": "phishing-internal-phishing",
+  "description": "Responds to phishing emails originating from internal (compromised) accounts. When an internal user account sends phishing emails, this playbook immediately disables the account via Active Directory, performs a mailbox sweep to identify all phishing messages sent from the account, quarantines those messages from recipient mailboxes, and notifies both the SOC and the affected user's manager. Includes AI analysis to assess whether the account compromise extends beyond email.",
+  "category": "phishing",
+  "subcategory": "internal_phishing",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "advanced",
+  "estimated_time": "20 minutes",
+  "tags": ["phishing", "internal", "compromised-account", "insider", "account-disable", "sweep", "quarantine"],
+  "alert_types": ["phishing"],
+  "severity_filter": ["high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["phishing", "internal_phishing", "compromised_account", "suspicious_internal_email"],
+    "min_severity": "high"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "active_directory",
+      "name": "Active Directory",
+      "category": "identity",
+      "reason": "Disable compromised internal user account"
+    },
+    {
+      "connector_id": "microsoft_graph",
+      "name": "Microsoft Graph",
+      "category": "email_security",
+      "reason": "Sweep and quarantine phishing emails sent from compromised account"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Notify SOC and management of compromised internal account"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "title": "Internal Phishing Alert",
+          "summary": "Triggers when phishing email originates from an internal account",
+          "config": {
+            "trigger_type": "alert",
+            "alert_types": ["phishing", "internal_phishing", "compromised_account", "suspicious_internal_email"]
+          }
+        }
+      },
+      {
+        "id": "analyze-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "title": "AI Compromise Assessment",
+          "summary": "Assess the scope of account compromise and phishing indicators",
+          "config": {
+            "mode": "ai_analysis",
+            "template_id": "credential_access",
+            "custom_instructions": "Assess internal account compromise: analyze sent phishing email content, determine if the account was taken over via credential theft or session hijack, look for signs of lateral movement or data access beyond email",
+            "alert_path": "$.trigger.alert",
+            "include_context": true
+          }
+        }
+      },
+      {
+        "id": "approval-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "approval",
+          "title": "Approve Account Disable",
+          "summary": "SOC analyst must approve disabling the internal user account",
+          "config": {
+            "approvers": ["soc_analyst", "soc_lead"],
+            "timeout_minutes": 15,
+            "auto_action_on_timeout": "approve",
+            "message": "Internal account {{$.trigger.alert.sender}} is sending phishing emails. AI assessment: {{$.nodes.analyze-1.result.summary}}. Approve disabling the account?"
+          }
+        }
+      },
+      {
+        "id": "respond-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 540 },
+        "data": {
+          "kind": "respond",
+          "title": "Disable Account",
+          "summary": "Disable the compromised internal account in Active Directory",
+          "config": {
+            "response_type": "integration_action",
+            "action_type": "disable_account",
+            "target_path": "$.trigger.alert.sender",
+            "requires_approval": false,
+            "priority": "critical",
+            "message": "Disabling compromised account {{$.trigger.alert.sender}} — sending phishing emails internally",
+            "params": {
+              "user": "{{$.trigger.alert.sender}}",
+              "invalidate_sessions": true,
+              "revoke_tokens": true
+            }
+          }
+        }
+      },
+      {
+        "id": "code-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 700 },
+        "data": {
+          "kind": "code",
+          "title": "Identify Sent Phishing Emails",
+          "summary": "Query for all phishing emails sent by the compromised account",
+          "config": {
+            "mode": "script",
+            "script": {
+              "function_name": "main",
+              "inputs": [
+                { "name": "alert", "path": "$.trigger.alert" }
+              ],
+              "code": "def main(alert):\n    sent_emails = alert.get('related_messages', alert.get('sent_messages', []))\n    recipients = []\n    message_ids = []\n    for email in sent_emails:\n        msg_id = email.get('message_id', '')\n        if msg_id:\n            message_ids.append(msg_id)\n        rcpts = email.get('recipients', email.get('to', []))\n        if isinstance(rcpts, str):\n            rcpts = [r.strip() for r in rcpts.split(',')]\n        recipients.extend(rcpts)\n    return {\n        'compromised_user': alert.get('sender', ''),\n        'message_ids': list(set(message_ids)),\n        'affected_recipients': list(set(recipients)),\n        'email_count': len(message_ids),\n        'recipient_count': len(set(recipients))\n    }"
+            }
+          }
+        }
+      },
+      {
+        "id": "respond-2",
+        "type": "signal",
+        "position": { "x": 520, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "title": "Quarantine Sent Phishing Emails",
+          "summary": "Remove all phishing emails sent by the compromised account from recipient mailboxes",
+          "config": {
+            "response_type": "integration_action",
+            "action_type": "purge_email",
+            "target_path": "$.nodes.code-1.result.message_ids",
+            "requires_approval": false,
+            "priority": "critical",
+            "message": "Quarantining {{$.nodes.code-1.result.email_count}} phishing email(s) sent by {{$.nodes.code-1.result.compromised_user}} from {{$.nodes.code-1.result.recipient_count}} recipient mailboxes"
+          }
+        }
+      },
+      {
+        "id": "respond-3",
+        "type": "signal",
+        "position": { "x": 520, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "title": "Notify SOC & Management",
+          "summary": "Alert SOC team and compromised user's manager",
+          "config": {
+            "response_type": "notify",
+            "channel": "slack",
+            "slack_channel": "#soc-incidents",
+            "message": "INTERNAL ACCOUNT COMPROMISED — PHISHING DETECTED\n\nCompromised Account: {{$.nodes.code-1.result.compromised_user}}\nPhishing Emails Sent: {{$.nodes.code-1.result.email_count}}\nAffected Recipients: {{$.nodes.code-1.result.recipient_count}}\n\nAI Assessment:\n{{$.nodes.analyze-1.result.summary}}\n\nActions Taken:\n- Account disabled (sessions + tokens revoked)\n- All phishing emails quarantined from recipient mailboxes\n\nNext Steps:\n- Investigate how the account was compromised\n- Check for lateral movement from this account\n- Reset credentials and re-enable after verification",
+            "priority": "critical"
+          }
+        }
+      },
+      {
+        "id": "end-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1180 },
+        "data": {
+          "kind": "end",
+          "title": "End — Account Contained",
+          "summary": "Compromised account disabled, phishing emails quarantined, teams notified",
+          "config": {
+            "disposition": "true_positive",
+            "summary": "Internal compromised account disabled, all sent phishing emails quarantined, SOC and management notified."
+          }
+        }
+      }
+    ],
+    "edges": [
+      { "id": "e1", "source": "trigger-1", "target": "analyze-1", "animated": true, "type": "smoothstep" },
+      { "id": "e2", "source": "analyze-1", "target": "approval-1", "animated": true, "type": "smoothstep" },
+      { "id": "e3", "source": "approval-1", "target": "respond-1", "animated": true, "type": "smoothstep" },
+      { "id": "e4", "source": "respond-1", "target": "code-1", "animated": true, "type": "smoothstep" },
+      { "id": "e5", "source": "code-1", "target": "respond-2", "animated": true, "type": "smoothstep" },
+      { "id": "e6", "source": "respond-2", "target": "respond-3", "animated": true, "type": "smoothstep" },
+      { "id": "e7", "source": "respond-3", "target": "end-1", "animated": true, "type": "smoothstep" }
+    ]
+  }
+}

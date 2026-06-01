@@ -1,0 +1,236 @@
+{
+  "name": "QR Code Phishing (Quishing) Analysis",
+  "slug": "phishing-qr-code-analysis",
+  "description": "Detects and responds to QR code phishing (quishing) attacks. Extracts URLs embedded in QR codes from email attachments or images, enriches the extracted URLs against threat intelligence, and makes a disposition decision. Malicious QR phishing emails are quarantined, the embedded URL is blocked on the web proxy, and the SOC is notified. Addresses the growing trend of attackers using QR codes to bypass traditional URL scanning.",
+  "category": "phishing",
+  "subcategory": "qr_phishing",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "10 minutes",
+  "tags": ["phishing", "qr-code", "quishing", "url-extraction", "image-analysis", "proxy-block"],
+  "alert_types": ["phishing"],
+  "severity_filter": ["medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["phishing", "suspicious_email", "qr_phishing", "quishing"],
+    "min_severity": "medium"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "virustotal",
+      "name": "VirusTotal",
+      "category": "threat_intel",
+      "reason": "Check extracted QR code URL against threat intelligence"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "title": "QR Phishing Alert",
+          "summary": "Triggers on QR code phishing or quishing alerts",
+          "config": {
+            "trigger_type": "alert",
+            "alert_types": ["phishing", "suspicious_email", "qr_phishing", "quishing"]
+          }
+        }
+      },
+      {
+        "id": "code-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "code",
+          "title": "Extract QR Code URL",
+          "summary": "Decode QR code from email attachment/image and extract the embedded URL",
+          "config": {
+            "mode": "script",
+            "script": {
+              "function_name": "main",
+              "inputs": [
+                { "name": "alert", "path": "$.trigger.alert" }
+              ],
+              "code": "import re\n\ndef main(alert):\n    qr_data = alert.get('qr_decoded', alert.get('qr_url', ''))\n    attachments = alert.get('attachments', [])\n    extracted_urls = []\n    if qr_data:\n        url_pattern = r'https?://[^\\s<>\"]+'\n        urls = re.findall(url_pattern, qr_data)\n        extracted_urls.extend(urls)\n    for att in attachments:\n        if att.get('qr_decoded'):\n            urls = re.findall(r'https?://[^\\s<>\"]+', att['qr_decoded'])\n            extracted_urls.extend(urls)\n    extracted_urls = list(set(extracted_urls))\n    return {\n        'urls': extracted_urls,\n        'url_count': len(extracted_urls),\n        'has_qr': len(extracted_urls) > 0,\n        'primary_url': extracted_urls[0] if extracted_urls else '',\n        'qr_image': attachments[0].get('filename', 'unknown') if attachments else 'inline'\n    }"
+            }
+          }
+        }
+      },
+      {
+        "id": "analyze-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "analyze",
+          "title": "Enrich QR URL",
+          "summary": "Check extracted QR code URL against VirusTotal",
+          "config": {
+            "mode": "enrich",
+            "observable_type": "url",
+            "observable_path": "$.nodes.code-1.result.urls",
+            "sources": ["virustotal"],
+            "aggregate_results": true
+          }
+        }
+      },
+      {
+        "id": "analyze-2",
+        "type": "signal",
+        "position": { "x": 520, "y": 540 },
+        "data": {
+          "kind": "analyze",
+          "title": "AI Quishing Assessment",
+          "summary": "AI evaluates QR phishing indicators and social engineering tactics",
+          "config": {
+            "mode": "ai_analysis",
+            "template_id": "phishing_triage",
+            "custom_instructions": "Assess for QR code phishing (quishing): analyze the email context around the QR code, check for urgency tactics, fake MFA prompts, or document access lures. Evaluate the decoded URL for credential harvesting patterns.",
+            "alert_path": "$.trigger.alert",
+            "include_context": true
+          }
+        }
+      },
+      {
+        "id": "decision-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 700 },
+        "data": {
+          "kind": "decision",
+          "title": "Malicious QR URL?",
+          "summary": "Is the extracted QR code URL malicious based on enrichment and AI analysis?",
+          "config": {
+            "conditions": {
+              "operator": "OR",
+              "conditions": [
+                {
+                  "left": { "type": "path", "value": "$.nodes.analyze-1.result.max_score" },
+                  "operator": "greater",
+                  "right": { "type": "value", "value": "60" }
+                },
+                {
+                  "left": { "type": "path", "value": "$.nodes.analyze-2.result.verdict" },
+                  "operator": "equals",
+                  "right": { "type": "value", "value": "malicious" }
+                }
+              ],
+              "groups": []
+            },
+            "expression": "$.nodes.analyze-1.result.max_score > 60 || $.nodes.analyze-2.result.verdict == \"malicious\"",
+            "default_branch": "no"
+          }
+        }
+      },
+      {
+        "id": "respond-1",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "title": "Quarantine QR Phishing Email",
+          "summary": "Remove the quishing email from all recipient mailboxes",
+          "config": {
+            "response_type": "integration_action",
+            "action_type": "quarantine_email",
+            "target_path": "$.trigger.alert.message_id",
+            "requires_approval": true,
+            "priority": "high",
+            "message": "Quarantining QR phishing email — embedded URL: {{$.nodes.code-1.result.primary_url}}"
+          }
+        }
+      },
+      {
+        "id": "respond-2",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "title": "Block QR URL on Proxy",
+          "summary": "Block the malicious URL extracted from the QR code on the web proxy",
+          "config": {
+            "response_type": "integration_action",
+            "action_type": "block_url",
+            "target_path": "$.nodes.code-1.result.primary_url",
+            "requires_approval": true,
+            "priority": "high",
+            "message": "Blocking QR-embedded URL {{$.nodes.code-1.result.primary_url}} on web proxy"
+          }
+        }
+      },
+      {
+        "id": "respond-3",
+        "type": "signal",
+        "position": { "x": 340, "y": 1180 },
+        "data": {
+          "kind": "respond",
+          "title": "Notify SOC",
+          "summary": "Alert SOC with quishing details and actions taken",
+          "config": {
+            "response_type": "notify",
+            "channel": "slack",
+            "slack_channel": "#soc-alerts",
+            "message": "QR CODE PHISHING (QUISHING) DETECTED\n\nSender: {{$.trigger.alert.sender}}\nQR Image: {{$.nodes.code-1.result.qr_image}}\nEmbedded URL: {{$.nodes.code-1.result.primary_url}}\nThreat Score: {{$.nodes.analyze-1.result.max_score}}\n\nAI Assessment: {{$.nodes.analyze-2.result.summary}}\n\nActions:\n- Email quarantined\n- URL blocked on proxy",
+            "priority": "high"
+          }
+        }
+      },
+      {
+        "id": "utility-1",
+        "type": "signal",
+        "position": { "x": 700, "y": 860 },
+        "data": {
+          "kind": "utility",
+          "title": "Close — Clean QR",
+          "summary": "QR code URL is clean, close the alert",
+          "config": {
+            "operation": "update_status",
+            "status": "closed",
+            "note": "QR code URL {{$.nodes.code-1.result.primary_url}} checked against threat intel and AI analysis. No malicious indicators found."
+          }
+        }
+      },
+      {
+        "id": "end-1",
+        "type": "signal",
+        "position": { "x": 340, "y": 1340 },
+        "data": {
+          "kind": "end",
+          "title": "End — Quishing Contained",
+          "summary": "QR phishing email quarantined, URL blocked, SOC notified",
+          "config": {
+            "disposition": "true_positive",
+            "summary": "QR code phishing detected and contained. Email quarantined, malicious URL blocked on proxy, SOC notified."
+          }
+        }
+      },
+      {
+        "id": "end-2",
+        "type": "signal",
+        "position": { "x": 700, "y": 1020 },
+        "data": {
+          "kind": "end",
+          "title": "End — QR Clean",
+          "summary": "QR code URL is clean, alert closed",
+          "config": {
+            "disposition": "false_positive",
+            "summary": "QR code URL analyzed and found clean. Alert closed."
+          }
+        }
+      }
+    ],
+    "edges": [
+      { "id": "e1", "source": "trigger-1", "target": "code-1", "animated": true, "type": "smoothstep" },
+      { "id": "e2", "source": "code-1", "target": "analyze-1", "animated": true, "type": "smoothstep" },
+      { "id": "e3", "source": "analyze-1", "target": "analyze-2", "animated": true, "type": "smoothstep" },
+      { "id": "e4", "source": "analyze-2", "target": "decision-1", "animated": true, "type": "smoothstep" },
+      { "id": "e5", "source": "decision-1", "target": "respond-1", "sourceHandle": "yes", "label": "Yes", "animated": true, "type": "smoothstep" },
+      { "id": "e6", "source": "decision-1", "target": "utility-1", "sourceHandle": "no", "label": "No", "animated": true, "type": "smoothstep" },
+      { "id": "e7", "source": "respond-1", "target": "respond-2", "animated": true, "type": "smoothstep" },
+      { "id": "e8", "source": "respond-2", "target": "respond-3", "animated": true, "type": "smoothstep" },
+      { "id": "e9", "source": "respond-3", "target": "end-1", "animated": true, "type": "smoothstep" },
+      { "id": "e10", "source": "utility-1", "target": "end-2", "animated": true, "type": "smoothstep" }
+    ]
+  }
+}

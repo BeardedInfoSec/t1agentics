@@ -1,0 +1,227 @@
+{
+  "name": "Phishing Link Click Tracking & Remediation",
+  "slug": "phishing-link-click-tracking",
+  "description": "Tracks and remediates users who clicked phishing links from a confirmed phishing campaign. Extracts the list of users who interacted with the malicious URL from proxy or email gateway logs, loops over each affected user to force a password reset and enroll them in targeted security awareness training. After remediation, a summary report is sent to the SOC and management. Designed for post-incident remediation of phishing campaigns where link engagement is confirmed.",
+  "category": "phishing",
+  "subcategory": "click_tracking",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "25 minutes",
+  "tags": ["phishing", "link-click", "tracking", "password-reset", "training", "loop", "remediation", "campaign"],
+  "alert_types": ["phishing"],
+  "severity_filter": ["high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["phishing", "phishing_campaign", "url_click"],
+    "min_severity": "high"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "active_directory",
+      "name": "Active Directory",
+      "category": "identity",
+      "reason": "Force password reset for users who clicked phishing links"
+    },
+    {
+      "connector_id": "web_proxy",
+      "name": "Web Proxy",
+      "category": "network_security",
+      "reason": "Query proxy logs to identify users who accessed the phishing URL"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "title": "Phishing Link Campaign Alert",
+          "summary": "Triggers on confirmed phishing campaign with URL engagement",
+          "config": {
+            "trigger_type": "alert",
+            "alert_types": ["phishing", "phishing_campaign", "url_click"]
+          }
+        }
+      },
+      {
+        "id": "code-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "code",
+          "title": "Extract Clicker List",
+          "summary": "Extract list of users who clicked the phishing URL from proxy/gateway logs",
+          "config": {
+            "mode": "script",
+            "script": {
+              "function_name": "main",
+              "inputs": [
+                { "name": "alert", "path": "$.trigger.alert" }
+              ],
+              "code": "def main(alert):\n    clickers = alert.get('clickers', alert.get('affected_users', []))\n    if isinstance(clickers, str):\n        clickers = [u.strip() for u in clickers.split(',') if u.strip()]\n    unique_clickers = list(set(clickers))\n    phishing_url = alert.get('url', alert.get('malicious_url', ''))\n    return {\n        'clickers': unique_clickers,\n        'count': len(unique_clickers),\n        'phishing_url': phishing_url,\n        'campaign_id': alert.get('campaign_id', alert.get('name', 'unknown'))\n    }"
+            }
+          }
+        }
+      },
+      {
+        "id": "decision-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "title": "Users Clicked?",
+          "summary": "Were any users found who clicked the phishing link?",
+          "config": {
+            "conditions": {
+              "operator": "AND",
+              "conditions": [
+                {
+                  "left": { "type": "path", "value": "$.nodes.code-1.result.count" },
+                  "operator": "greater",
+                  "right": { "type": "value", "value": "0" }
+                }
+              ],
+              "groups": []
+            },
+            "expression": "$.nodes.code-1.result.count > 0",
+            "default_branch": "no"
+          }
+        }
+      },
+      {
+        "id": "loop-1",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "loop",
+          "title": "For Each Clicker",
+          "summary": "Iterate over each user who clicked the phishing link",
+          "config": {
+            "items_path": "$.nodes.code-1.result.clickers",
+            "loop_variable": "clicker",
+            "max_iterations": 500
+          }
+        }
+      },
+      {
+        "id": "respond-1",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "title": "Force Password Reset",
+          "summary": "Force password reset for the current user via Active Directory",
+          "config": {
+            "response_type": "integration_action",
+            "action_type": "reset_password",
+            "target_path": "$.loop.clicker",
+            "requires_approval": false,
+            "priority": "high",
+            "message": "Forcing password reset for {{$.loop.clicker}} — clicked phishing link {{$.nodes.code-1.result.phishing_url}}",
+            "params": {
+              "user": "{{$.loop.clicker}}",
+              "force_change_at_login": true,
+              "invalidate_sessions": true
+            }
+          }
+        }
+      },
+      {
+        "id": "respond-2",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "title": "Assign Security Training",
+          "summary": "Enroll user in targeted phishing awareness training module",
+          "config": {
+            "response_type": "integration_action",
+            "action_type": "assign_training",
+            "target_path": "$.loop.clicker",
+            "requires_approval": false,
+            "priority": "medium",
+            "message": "Enrolling {{$.loop.clicker}} in phishing awareness training following link click",
+            "params": {
+              "user": "{{$.loop.clicker}}",
+              "training_module": "phishing_awareness_remedial",
+              "due_days": 7
+            }
+          }
+        }
+      },
+      {
+        "id": "respond-3",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "title": "Notify SOC & Management",
+          "summary": "Send remediation summary to SOC and management channels",
+          "config": {
+            "response_type": "notify",
+            "channel": "slack",
+            "slack_channel": "#soc-incidents",
+            "message": "PHISHING LINK CLICK REMEDIATION COMPLETE\n\nCampaign: {{$.nodes.code-1.result.campaign_id}}\nPhishing URL: {{$.nodes.code-1.result.phishing_url}}\nUsers who clicked: {{$.nodes.code-1.result.count}}\n\nActions for each user:\n- Password reset forced\n- Phishing awareness training assigned (7-day deadline)\n- Active sessions invalidated",
+            "priority": "high"
+          }
+        }
+      },
+      {
+        "id": "utility-1",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "utility",
+          "title": "No Clickers — Close Alert",
+          "summary": "No users clicked the phishing link, close alert",
+          "config": {
+            "operation": "update_status",
+            "status": "closed",
+            "note": "Phishing campaign URL was not clicked by any users. No remediation needed."
+          }
+        }
+      },
+      {
+        "id": "end-1",
+        "type": "signal",
+        "position": { "x": 340, "y": 1180 },
+        "data": {
+          "kind": "end",
+          "title": "End — Remediation Complete",
+          "summary": "All clickers remediated, passwords reset, training assigned",
+          "config": {
+            "disposition": "true_positive",
+            "summary": "Phishing link click remediation complete. Password reset and training assigned for all affected users."
+          }
+        }
+      },
+      {
+        "id": "end-2",
+        "type": "signal",
+        "position": { "x": 700, "y": 700 },
+        "data": {
+          "kind": "end",
+          "title": "End — No Clicks",
+          "summary": "No users clicked, alert closed",
+          "config": {
+            "disposition": "false_positive",
+            "summary": "No users clicked the phishing link. Alert closed."
+          }
+        }
+      }
+    ],
+    "edges": [
+      { "id": "e1", "source": "trigger-1", "target": "code-1", "animated": true, "type": "smoothstep" },
+      { "id": "e2", "source": "code-1", "target": "decision-1", "animated": true, "type": "smoothstep" },
+      { "id": "e3", "source": "decision-1", "target": "loop-1", "sourceHandle": "yes", "label": "Yes", "animated": true, "type": "smoothstep" },
+      { "id": "e4", "source": "decision-1", "target": "utility-1", "sourceHandle": "no", "label": "No", "animated": true, "type": "smoothstep" },
+      { "id": "e5", "source": "loop-1", "target": "respond-1", "animated": true, "type": "smoothstep" },
+      { "id": "e6", "source": "respond-1", "target": "respond-2", "animated": true, "type": "smoothstep" },
+      { "id": "e7", "source": "respond-2", "target": "respond-3", "animated": true, "type": "smoothstep" },
+      { "id": "e8", "source": "respond-3", "target": "end-1", "animated": true, "type": "smoothstep" },
+      { "id": "e9", "source": "utility-1", "target": "end-2", "animated": true, "type": "smoothstep" }
+    ]
+  }
+}

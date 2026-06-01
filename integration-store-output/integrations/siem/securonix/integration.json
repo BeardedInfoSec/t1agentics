@@ -1,0 +1,230 @@
+{
+  "id": "securonix",
+  "name": "Securonix",
+  "description": "Integrates with Securonix SNYPR for incident management, threat and violation retrieval, activity event monitoring, and watchlist management via the Securonix REST API",
+  "version": "1.0.0",
+  "category": "siem",
+  "vendor": "Securonix",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "token",
+    "location": "query"
+  },
+  "base_url": "https://{host}/Snypr/ws",
+  "actions": [
+    {
+      "id": "get_incidents",
+      "name": "Get Incidents",
+      "description": "Retrieve security incidents from Securonix with optional filtering",
+      "http_method": "GET",
+      "endpoint": "/incident/get",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "from",
+          "type": "string",
+          "description": "Start date for incident retrieval (MM/dd/yyyy HH:mm:ss)",
+          "required": false
+        },
+        {
+          "name": "to",
+          "type": "string",
+          "description": "End date for incident retrieval (MM/dd/yyyy HH:mm:ss)",
+          "required": false
+        },
+        {
+          "name": "rangeType",
+          "type": "string",
+          "description": "Range type filter (updated, created)",
+          "required": false
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Filter by incident status",
+          "required": false
+        },
+        {
+          "name": "max",
+          "type": "number",
+          "description": "Maximum number of incidents to return",
+          "required": false,
+          "default": 50
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Offset for pagination",
+          "required": false,
+          "default": 0
+        }
+      ]
+    },
+    {
+      "id": "get_incident_actions",
+      "name": "Get Incident Actions",
+      "description": "Retrieve available actions for an incident",
+      "http_method": "GET",
+      "endpoint": "/incident/actions",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "incidentId",
+          "type": "string",
+          "description": "Incident ID to retrieve actions for",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "perform_incident_action",
+      "name": "Perform Incident Action",
+      "description": "Perform an action on an incident (e.g., assign, close, escalate)",
+      "http_method": "POST",
+      "endpoint": "/incident/actions",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "incidentId",
+          "type": "string",
+          "description": "Incident ID to perform action on",
+          "required": true
+        },
+        {
+          "name": "actionName",
+          "type": "string",
+          "description": "Name of the action to perform",
+          "required": true
+        },
+        {
+          "name": "assignTo",
+          "type": "string",
+          "description": "User to assign the incident to (if applicable)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_violations",
+      "name": "Get Violations",
+      "description": "Retrieve violation/alert data from Securonix",
+      "http_method": "GET",
+      "endpoint": "/spotter/index/violation",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Spotter query string to search violations",
+          "required": true
+        },
+        {
+          "name": "from",
+          "type": "string",
+          "description": "Start time for the query",
+          "required": false
+        },
+        {
+          "name": "to",
+          "type": "string",
+          "description": "End time for the query",
+          "required": false
+        },
+        {
+          "name": "max",
+          "type": "number",
+          "description": "Maximum number of violations to return",
+          "required": false,
+          "default": 50
+        }
+      ]
+    },
+    {
+      "id": "search_activity",
+      "name": "Search Activity Events",
+      "description": "Search for activity events in Securonix using Spotter query language",
+      "http_method": "GET",
+      "endpoint": "/spotter/index/activity",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Spotter query string to search activity events",
+          "required": true
+        },
+        {
+          "name": "from",
+          "type": "string",
+          "description": "Start time for the query",
+          "required": false
+        },
+        {
+          "name": "to",
+          "type": "string",
+          "description": "End time for the query",
+          "required": false
+        },
+        {
+          "name": "max",
+          "type": "number",
+          "description": "Maximum results to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "get_watchlists",
+      "name": "Get Watchlists",
+      "description": "Retrieve all configured watchlists",
+      "http_method": "GET",
+      "endpoint": "/watchlist/getWatchlists",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "add_to_watchlist",
+      "name": "Add to Watchlist",
+      "description": "Add an entity to a Securonix watchlist",
+      "http_method": "POST",
+      "endpoint": "/watchlist/addEntityToWatchlist",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "watchlistName",
+          "type": "string",
+          "description": "Name of the watchlist to add entity to",
+          "required": true
+        },
+        {
+          "name": "entityType",
+          "type": "string",
+          "description": "Type of entity (Users, Activityaccount, Resources, Activityip)",
+          "required": true
+        },
+        {
+          "name": "entityName",
+          "type": "string",
+          "description": "Entity name/identifier to add",
+          "required": true
+        },
+        {
+          "name": "expiryDays",
+          "type": "number",
+          "description": "Number of days until watchlist entry expires",
+          "required": false,
+          "default": 30
+        }
+      ]
+    }
+  ]
+}

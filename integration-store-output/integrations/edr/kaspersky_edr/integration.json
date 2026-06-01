@@ -1,0 +1,247 @@
+{
+  "id": "kaspersky_edr",
+  "name": "Kaspersky EDR Expert",
+  "description": "Integrates with Kaspersky EDR Expert REST API for endpoint detection, incident management, host isolation, and automated threat response",
+  "version": "1.0.0",
+  "category": "edr",
+  "vendor": "Kaspersky",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "header_name": "Authorization",
+    "prefix": "Bearer"
+  },
+  "base_url": "https://{server_host}:443/api/v1",
+  "actions": [
+    {
+      "id": "list_alerts",
+      "name": "List Alerts",
+      "description": "Retrieve EDR alerts with filtering and pagination options",
+      "http_method": "GET",
+      "endpoint": "/alerts",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of alerts to return",
+          "required": false,
+          "default": 50
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Starting offset for pagination",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Filter by severity (critical, high, medium, low, informational)",
+          "required": false
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Filter by alert status (new, inProgress, resolved)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_alert",
+      "name": "Get Alert Details",
+      "description": "Retrieve detailed information about a specific alert",
+      "http_method": "GET",
+      "endpoint": "/alerts/{alert_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "alert_id",
+          "type": "string",
+          "description": "The unique identifier of the alert",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_incidents",
+      "name": "List Incidents",
+      "description": "Retrieve EDR incidents that group related alerts into unified security events",
+      "http_method": "GET",
+      "endpoint": "/incidents",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of incidents to return",
+          "required": false,
+          "default": 50
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Starting offset for pagination",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Filter by incident status",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_hosts",
+      "name": "List Hosts",
+      "description": "Retrieve the list of hosts (endpoints) managed by Kaspersky EDR",
+      "http_method": "GET",
+      "endpoint": "/hosts",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of hosts to return",
+          "required": false,
+          "default": 50
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Starting offset for pagination",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "search",
+          "type": "string",
+          "description": "Search term for hostname or IP address",
+          "required": false
+        }
+      ],
+      "observable_type": "hostname"
+    },
+    {
+      "id": "get_host",
+      "name": "Get Host Details",
+      "description": "Retrieve detailed information about a specific host",
+      "http_method": "GET",
+      "endpoint": "/hosts/{host_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "host_id",
+          "type": "string",
+          "description": "The unique identifier of the host",
+          "required": true
+        }
+      ],
+      "observable_type": "hostname"
+    },
+    {
+      "id": "isolate_host",
+      "name": "Isolate Host",
+      "description": "Isolate a host from the network to prevent lateral movement during incident response",
+      "http_method": "POST",
+      "endpoint": "/hosts/{host_id}/isolate",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "host_id",
+          "type": "string",
+          "description": "The unique identifier of the host to isolate",
+          "required": true
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "Comment explaining the reason for isolation",
+          "required": false
+        }
+      ],
+      "observable_type": "hostname"
+    },
+    {
+      "id": "unisolate_host",
+      "name": "Unisolate Host",
+      "description": "Remove network isolation from a previously isolated host",
+      "http_method": "POST",
+      "endpoint": "/hosts/{host_id}/unisolate",
+      "action_type": "correct",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "host_id",
+          "type": "string",
+          "description": "The unique identifier of the host to unisolate",
+          "required": true
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "Comment explaining the reason for removing isolation",
+          "required": false
+        }
+      ],
+      "observable_type": "hostname"
+    },
+    {
+      "id": "create_ioc_scan_task",
+      "name": "Create IOC Scan Task",
+      "description": "Create a task to scan hosts for specific indicators of compromise using YARA rules or IOC definitions",
+      "http_method": "POST",
+      "endpoint": "/tasks/ioc-scan",
+      "action_type": "investigate",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "host_ids",
+          "type": "string",
+          "description": "JSON array of host IDs to scan",
+          "required": true
+        },
+        {
+          "name": "ioc_type",
+          "type": "string",
+          "description": "Type of IOC: file_hash, yara_rule, openioc",
+          "required": true
+        },
+        {
+          "name": "ioc_value",
+          "type": "string",
+          "description": "The IOC value or content to scan for",
+          "required": true
+        }
+      ],
+      "observable_type": "hash"
+    },
+    {
+      "id": "get_task_status",
+      "name": "Get Task Status",
+      "description": "Retrieve the status and results of a previously created response task",
+      "http_method": "GET",
+      "endpoint": "/tasks/{task_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "task_id",
+          "type": "string",
+          "description": "The unique identifier of the task",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

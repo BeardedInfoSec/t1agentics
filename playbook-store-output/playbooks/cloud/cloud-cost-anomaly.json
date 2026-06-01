@@ -1,0 +1,266 @@
+{
+  "name": "Cloud Cost Anomaly & Cryptojacking Response",
+  "slug": "cloud-cost-anomaly",
+  "description": "Detects abnormal cloud cost spikes that may indicate cryptojacking or unauthorized resource provisioning. Riggs AI analyzes the cost anomaly to identify the responsible resource and determine if it represents malicious activity. Confirmed cryptojacking triggers resource identification, termination of unauthorized instances, forensic investigation of the provisioning actor, incident ticket creation, and team notification. Legitimate cost spikes receive documentation and budget alert.",
+  "category": "cloud",
+  "subcategory": "cost_security",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "15 minutes",
+  "tags": ["cloud", "cost_anomaly", "cryptojacking", "resource_abuse", "finops"],
+  "alert_types": ["cloud_security", "cost_anomaly"],
+  "severity_filter": ["medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["cloud_security", "cost_anomaly", "cryptojacking"],
+    "min_severity": "medium"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "aws_security_hub",
+      "name": "AWS Security Hub",
+      "category": "cloud_security",
+      "reason": "Source of cost anomaly and resource abuse findings, API for resource termination"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create incident tickets for confirmed cryptojacking or unauthorized resource usage"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Notify the security and FinOps teams of cost anomalies and response actions"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Cloud Cost Anomaly Alert",
+          "config": {
+            "alert_types": ["cloud_security", "cost_anomaly", "cryptojacking"],
+            "description": "Triggers when an abnormal cost spike is detected by AWS Cost Anomaly Detection, GCP billing alerts, or Azure Cost Management"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — Cloud Security Assessment",
+          "config": {
+            "template_id": "cloud_security",
+            "additional_instructions": "Analyze cost anomaly for cryptojacking indicators: large GPU/compute instances, unusual regions, high CPU utilization patterns, unknown AMIs or container images",
+            "description": "AI-powered analysis of the cost anomaly to determine whether it indicates cryptojacking, unauthorized resource provisioning, or legitimate usage growth"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "label": "Cryptojacking / Abuse Detected?",
+          "config": {
+            "condition": "{{analyze_1.verdict}} == 'malicious' || {{analyze_1.verdict}} == 'cryptojacking'",
+            "description": "Routes based on whether the AI assessment identified the cost spike as malicious activity"
+          }
+        }
+      },
+      {
+        "id": "code_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "code",
+          "label": "Identify Offending Resources",
+          "config": {
+            "mode": "query",
+            "query": "List all resources created in the last 72h in region={{trigger_1.alert.region}} with high cost attribution: instance types, launch times, creators (CloudTrail), associated IAM roles, CPU utilization",
+            "output_variable": "offending_resources",
+            "description": "Query cloud APIs to identify the specific resources responsible for the cost spike and their provisioning details"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "label": "Terminate Unauthorized Resources",
+          "config": {
+            "integration_action": {
+              "connector_id": "aws_security_hub",
+              "action": "terminate_instances",
+              "parameters": {
+                "resource_ids": "{{code_1.offending_resources.resource_ids}}",
+                "reason": "Cryptojacking / unauthorized resource abuse — terminating to stop cost bleed"
+              }
+            },
+            "description": "Terminate all identified unauthorized or cryptojacking resources to immediately stop the cost bleed"
+          }
+        }
+      },
+      {
+        "id": "code_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "code",
+          "label": "Investigate Provisioning Actor",
+          "config": {
+            "mode": "query",
+            "query": "CloudTrail events for resource creation by actor={{code_1.offending_resources.creator}}: all API calls in last 7 days, source IPs, other resources created, IAM policy changes",
+            "output_variable": "actor_investigation",
+            "description": "Investigate the actor who provisioned the unauthorized resources to determine if credentials were compromised"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "label": "Create Incident Ticket",
+          "config": {
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_ticket",
+              "parameters": {
+                "project": "SEC",
+                "issue_type": "Incident",
+                "priority": "High",
+                "summary": "Cryptojacking / Cost Anomaly: {{trigger_1.alert.cost_spike_amount}} spike in {{trigger_1.alert.region}}",
+                "description": "Confirmed cryptojacking or unauthorized resource abuse causing cost anomaly.\n\nCost Spike: {{trigger_1.alert.cost_spike_amount}}\nRegion: {{trigger_1.alert.region}}\nEstimated Daily Burn: {{trigger_1.alert.daily_cost}}\n\nActions Taken:\n- Offending resources identified and terminated\n- Provisioning actor investigated\n\nOffending Resources:\n{{code_1.offending_resources}}\n\nActor Investigation:\n{{code_2.actor_investigation}}\n\nRiggs AI Assessment:\n{{analyze_1.summary}}"
+              }
+            },
+            "description": "Create an incident ticket documenting the cost anomaly, terminated resources, and actor investigation"
+          }
+        }
+      },
+      {
+        "id": "respond_3",
+        "type": "signal",
+        "position": { "x": 340, "y": 1180 },
+        "data": {
+          "kind": "respond",
+          "label": "Notify Security & FinOps Teams",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#cloud-security-alerts",
+              "message": "CRYPTOJACKING / COST ANOMALY RESOLVED\nCost Spike: {{trigger_1.alert.cost_spike_amount}}\nRegion: {{trigger_1.alert.region}}\nResources Terminated: {{code_1.offending_resources.count}}\nTicket: {{respond_2.ticket_url}}\n\nRiggs Assessment:\n{{analyze_1.summary}}"
+            },
+            "description": "Notify security and FinOps teams of the cost anomaly resolution"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "utility",
+          "label": "Add Note: Legitimate Cost Spike",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "Reviewed by Riggs AI (cloud_security template). Cost spike determined to be legitimate usage growth, not cryptojacking. Assessment: {{analyze_1.summary}}"
+            },
+            "description": "Document that the cost anomaly was determined to be legitimate"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1340 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "Cloud cost anomaly detection and response complete"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_analyze",
+        "source": "trigger_1",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_analyze_decision",
+        "source": "analyze_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "code_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "utility_1",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_identify_terminate",
+        "source": "code_1",
+        "target": "respond_1",
+        "type": "default"
+      },
+      {
+        "id": "e_terminate_investigate",
+        "source": "respond_1",
+        "target": "code_2",
+        "type": "default"
+      },
+      {
+        "id": "e_investigate_ticket",
+        "source": "code_2",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_ticket_notify",
+        "source": "respond_2",
+        "target": "respond_3",
+        "type": "default"
+      },
+      {
+        "id": "e_notify_end",
+        "source": "respond_3",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_utility_end",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

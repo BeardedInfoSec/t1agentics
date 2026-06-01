@@ -1,0 +1,125 @@
+{
+  "template_id": "bec-report",
+  "name": "Business Email Compromise (BEC) Report",
+  "description": "Internal form for employees to report an email that appears to come from a colleague, executive, or vendor making an unusual request — wire transfers, gift cards, payment redirects, changed banking details. High priority because these are active fraud attempts.",
+  "title": "Report a Suspicious Request from a Colleague or Vendor",
+  "intro": "Did you get an email that looks like it's from a coworker, executive, or vendor — but the request feels off? Things like a sudden wire transfer, a gift card purchase, a change to banking details, or 'reach me at this new number'? Report it here before you act on it. Even if it turns out to be legitimate, we'd rather check than miss a real fraud attempt. **Do not reply to the email or take any action until we confirm.**",
+  "submit_message": "Thanks — this is in our high-priority queue. An analyst will reach out shortly. In the meantime, do not reply to the email or take any action it requested.",
+  "fields": [
+    {
+      "key": "reporter_email",
+      "label": "Your email",
+      "type": "email",
+      "required": true,
+      "help": "We'll use this to reach you directly.",
+      "placeholder": "you@company.com",
+      "sample_value": "jordan.lee@northwindcloud.com"
+    },
+    {
+      "key": "claimed_sender_name",
+      "label": "Who does the email claim to be from?",
+      "type": "text",
+      "required": true,
+      "help": "The name shown as the sender — for example, your CEO, a coworker, or a vendor.",
+      "placeholder": "e.g., Sarah Kim, CFO",
+      "sample_value": "Marcus Webb, CEO"
+    },
+    {
+      "key": "sender_email",
+      "label": "Sender email address",
+      "type": "email",
+      "required": true,
+      "help": "The actual 'From' address. Check carefully — is it your company domain, or something slightly different?",
+      "placeholder": "sender@example.com",
+      "sample_value": "marcus.webb@northwindclouds.com"
+    },
+    {
+      "key": "request_type",
+      "label": "What is the email asking for?",
+      "type": "select",
+      "required": true,
+      "help": "Pick the closest match.",
+      "options": [
+        "Wire transfer or ACH payment",
+        "Buy gift cards",
+        "Change vendor or payroll banking details",
+        "Send sensitive data (W-2s, employee info, customer list)",
+        "Pay an invoice urgently",
+        "Reach me on a new phone number / WhatsApp",
+        "Buy something on their behalf",
+        "Other unusual request"
+      ],
+      "sample_value": "Buy gift cards"
+    },
+    {
+      "key": "amount_or_target",
+      "label": "Dollar amount or what they're asking for",
+      "type": "text",
+      "required": false,
+      "help": "If money is involved, roughly how much? Otherwise, what's the target of the request?",
+      "placeholder": "e.g., $4,500 in Amazon gift cards",
+      "sample_value": "$2,000 in Apple gift cards, send codes via email"
+    },
+    {
+      "key": "urgency_signals",
+      "label": "What feels off about the request?",
+      "type": "multiselect",
+      "required": false,
+      "help": "Pick anything that applies.",
+      "options": [
+        "Unusually urgent or time-sensitive",
+        "Asked to keep it confidential",
+        "Sender is unreachable by phone or Teams/Slack",
+        "Sender claims to be in a meeting / traveling / on a plane",
+        "Writing style doesn't match the person",
+        "Reply-To address differs from the From address",
+        "Lookalike domain (e.g., 'rn' instead of 'm')",
+        "First time they've asked me for something like this"
+      ],
+      "sample_value": ["Unusually urgent or time-sensitive", "Asked to keep it confidential", "Sender claims to be in a meeting / traveling / on a plane"]
+    },
+    {
+      "key": "action_taken",
+      "label": "Did you take any action yet?",
+      "type": "select",
+      "required": true,
+      "help": "Be honest — we need to know so we can help.",
+      "options": [
+        "No, I haven't done anything yet",
+        "I replied to the email",
+        "I started the wire / payment but haven't sent",
+        "I sent money or gift card codes",
+        "I shared the data they asked for",
+        "I called the number they provided"
+      ],
+      "sample_value": "No, I haven't done anything yet"
+    },
+    {
+      "key": "email_content",
+      "label": "Paste the email content",
+      "type": "textarea",
+      "required": true,
+      "help": "Copy the full email body, including any signature.",
+      "placeholder": "Paste the email here...",
+      "sample_value": "Hi Jordan,\n\nI'm in back-to-back board meetings today and can't take calls. I need you to pick up $2,000 in Apple gift cards for a client appreciation gift before EOD. Scratch off the backs and email me the codes. Keep this between us until I announce it.\n\nThanks,\nMarcus"
+    },
+    {
+      "key": "eml_attachment",
+      "label": "Attach the original email (.eml or .msg)",
+      "type": "file",
+      "required": false,
+      "help": "Optional but helpful. Drag the email from Outlook to your desktop, then upload it.",
+      "sample_value": "bec-attempt-marcus-2026-05-08.eml"
+    }
+  ],
+  "alert_template": {
+    "title": "Possible BEC from {{reporter_email}} - impersonating {{claimed_sender_name}}",
+    "description": "User {{reporter_email}} reported a suspected BEC attempt.\n\nEmail claims to be from: {{claimed_sender_name}}\nActual sender address: {{sender_email}}\nRequest type: {{request_type}}\nAmount / target: {{amount_or_target}}\nRed flags: {{urgency_signals}}\nAction already taken: {{action_taken}}\n\nEmail content:\n{{email_content}}\n\n.eml attached: {{eml_attachment}}",
+    "severity": "high",
+    "source": "intake_form",
+    "category": "bec"
+  },
+  "icon": "AlertOctagon",
+  "category": "Email Threats",
+  "estimated_minutes": 4
+}

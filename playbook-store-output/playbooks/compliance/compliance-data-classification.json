@@ -1,0 +1,230 @@
+{
+  "name": "Data Classification Enforcement",
+  "slug": "compliance-data-classification",
+  "description": "Scans data repositories for misclassified or unclassified data and enforces the organization's data classification policy. A code node queries DLP systems for data discovery results, Riggs AI evaluates classification accuracy against the data classification framework, and misclassified data is flagged with remediation tickets. Data owners are notified of classification corrections needed.",
+  "category": "compliance",
+  "subcategory": "data_classification",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "20 minutes",
+  "tags": ["compliance", "data_classification", "dlp", "data_governance", "labeling", "sensitive_data"],
+  "alert_types": ["compliance", "dlp"],
+  "severity_filter": ["low", "medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["dlp_scan", "data_discovery"],
+    "trigger_type": "scheduled",
+    "schedule": "0 3 * * 0"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "microsoft_purview",
+      "name": "Microsoft Purview",
+      "category": "dlp",
+      "reason": "Scan data repositories for classification labels and sensitive data discovery"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create remediation tickets for misclassified data findings"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Notify data owners and governance team of classification issues"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Weekly Data Classification Scan",
+          "config": {
+            "trigger_type": "scheduled",
+            "schedule": "0 3 * * 0",
+            "description": "Triggers weekly data classification enforcement scan across all repositories"
+          }
+        }
+      },
+      {
+        "id": "code_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "code",
+          "label": "Query DLP Discovery Results",
+          "config": {
+            "mode": "integration",
+            "integration_action": {
+              "connector_id": "microsoft_purview",
+              "action": "get_scan_results",
+              "parameters": {
+                "scan_type": "data_discovery",
+                "timeframe": "7d",
+                "include_unclassified": true
+              }
+            },
+            "output_variable": "discovery_results",
+            "description": "Query DLP system for data discovery results including unclassified and potentially misclassified data"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI -- Classification Analysis",
+          "config": {
+            "template_id": "executive_summary",
+            "additional_instructions": "Evaluate data discovery results against the organization's classification framework (Public, Internal, Confidential, Restricted). Identify misclassified data, unclassified sensitive data, and classification label inconsistencies. Prioritize findings by data sensitivity and exposure risk.",
+            "description": "AI-powered analysis of data classification accuracy across all repositories"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 540 },
+        "data": {
+          "kind": "decision",
+          "label": "Misclassified Data Found?",
+          "config": {
+            "condition": "{{analyze_1.misclassified_count}} > 0",
+            "description": "Routes based on whether misclassified or unclassified sensitive data was detected"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "label": "Create Classification Remediation Ticket",
+          "config": {
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_issue",
+              "parameters": {
+                "project": "COMPLIANCE",
+                "issue_type": "Task",
+                "priority": "P2",
+                "summary": "Data Classification Issue: {{analyze_1.misclassified_count}} items require reclassification",
+                "description": "DATA CLASSIFICATION ENFORCEMENT FINDINGS\n\nMisclassified Items: {{analyze_1.misclassified_count}}\nUnclassified Sensitive Data: {{analyze_1.unclassified_count}}\nHighest Risk: {{analyze_1.highest_risk_finding}}\n\nFindings:\n{{analyze_1.summary}}\n\nAction Required: Reclassify data per organizational data classification policy.",
+                "labels": ["data-classification", "compliance", "dlp"]
+              }
+            },
+            "description": "Create a Jira ticket for data classification remediation"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "label": "Notify Data Owners on Slack",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#data-governance",
+              "message": "DATA CLASSIFICATION ENFORCEMENT ALERT\n\nMisclassified Items: {{analyze_1.misclassified_count}}\nUnclassified Sensitive Data: {{analyze_1.unclassified_count}}\nJira: {{respond_1.ticket_url}}\n\n{{analyze_1.summary}}\n\nData owners: please review and correct classifications in your repositories."
+            },
+            "description": "Notify data governance team and data owners of classification issues"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 700, "y": 700 },
+        "data": {
+          "kind": "utility",
+          "label": "Log: Classification Compliant",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "Weekly data classification scan complete. All data properly classified per organizational policy. No remediation needed."
+            },
+            "description": "Document clean classification scan result"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1020 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "Data classification enforcement complete -- findings documented and data owners notified"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_code",
+        "source": "trigger_1",
+        "target": "code_1",
+        "type": "default"
+      },
+      {
+        "id": "e_code_analyze",
+        "source": "code_1",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_analyze_decision",
+        "source": "analyze_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "respond_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "utility_1",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_respond1_respond2",
+        "source": "respond_1",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_respond2_end",
+        "source": "respond_2",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_utility1_end",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

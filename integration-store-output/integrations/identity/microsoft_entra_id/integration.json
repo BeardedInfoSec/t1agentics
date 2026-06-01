@@ -1,0 +1,308 @@
+{
+  "id": "microsoft_entra_id",
+  "name": "Microsoft Entra ID",
+  "description": "Identity and access management through Microsoft Graph API for managing users, groups, roles, and directory objects in Microsoft Entra ID",
+  "version": "1.0.0",
+  "category": "identity",
+  "vendor": "Microsoft",
+  "auth_type": "oauth2_client",
+  "auth_config": {
+    "type": "oauth2_client",
+    "token_url": "https://login.microsoftonline.com/{tenantId}/oauth2/v2.0/token",
+    "scope": "https://graph.microsoft.com/.default"
+  },
+  "base_url": "https://graph.microsoft.com/v1.0",
+  "actions": [
+    {
+      "id": "list_users",
+      "name": "List Users",
+      "description": "List all users in the directory with optional filtering",
+      "http_method": "GET",
+      "endpoint": "/users",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "$filter",
+          "type": "string",
+          "description": "OData filter expression (e.g. accountEnabled eq true)",
+          "required": false
+        },
+        {
+          "name": "$select",
+          "type": "string",
+          "description": "Comma-separated list of properties to include",
+          "required": false
+        },
+        {
+          "name": "$top",
+          "type": "number",
+          "description": "Maximum number of results to return",
+          "required": false
+        },
+        {
+          "name": "$search",
+          "type": "string",
+          "description": "Search expression for user properties",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_user",
+      "name": "Get User",
+      "description": "Retrieve details of a specific user by ID or userPrincipalName",
+      "http_method": "GET",
+      "endpoint": "/users/{id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "User ID or userPrincipalName",
+          "required": true
+        },
+        {
+          "name": "$select",
+          "type": "string",
+          "description": "Comma-separated list of properties to include",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "disable_user",
+      "name": "Disable User",
+      "description": "Disable a user account by setting accountEnabled to false",
+      "http_method": "PATCH",
+      "endpoint": "/users/{id}",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "User ID or userPrincipalName to disable",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "enable_user",
+      "name": "Enable User",
+      "description": "Enable a disabled user account by setting accountEnabled to true",
+      "http_method": "PATCH",
+      "endpoint": "/users/{id}",
+      "action_type": "correct",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "User ID or userPrincipalName to enable",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "reset_password",
+      "name": "Reset Password",
+      "description": "Reset or set a user's password with optional force change at next login",
+      "http_method": "POST",
+      "endpoint": "/users/{id}/authentication/methods/{authMethodId}/resetPassword",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "User ID or userPrincipalName",
+          "required": true
+        },
+        {
+          "name": "newPassword",
+          "type": "string",
+          "description": "New password for the user",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "revoke_sign_in_sessions",
+      "name": "Revoke Sign-In Sessions",
+      "description": "Invalidate all refresh tokens and session cookies for a user",
+      "http_method": "POST",
+      "endpoint": "/users/{id}/revokeSignInSessions",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "User ID or userPrincipalName",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_groups",
+      "name": "List Groups",
+      "description": "List all groups in the directory",
+      "http_method": "GET",
+      "endpoint": "/groups",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "$filter",
+          "type": "string",
+          "description": "OData filter expression",
+          "required": false
+        },
+        {
+          "name": "$top",
+          "type": "number",
+          "description": "Maximum number of results to return",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_group",
+      "name": "Get Group",
+      "description": "Retrieve details of a specific group",
+      "http_method": "GET",
+      "endpoint": "/groups/{id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Group ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_group_members",
+      "name": "List Group Members",
+      "description": "List all members of a specific group",
+      "http_method": "GET",
+      "endpoint": "/groups/{id}/members",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Group ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "add_group_member",
+      "name": "Add Group Member",
+      "description": "Add a user to a group",
+      "http_method": "POST",
+      "endpoint": "/groups/{id}/members/$ref",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Group ID",
+          "required": true
+        },
+        {
+          "name": "userId",
+          "type": "string",
+          "description": "User ID to add to the group",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "remove_group_member",
+      "name": "Remove Group Member",
+      "description": "Remove a user from a group",
+      "http_method": "DELETE",
+      "endpoint": "/groups/{id}/members/{memberId}/$ref",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Group ID",
+          "required": true
+        },
+        {
+          "name": "memberId",
+          "type": "string",
+          "description": "User ID to remove from the group",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_directory_roles",
+      "name": "List Directory Roles",
+      "description": "List all directory roles in the tenant",
+      "http_method": "GET",
+      "endpoint": "/directoryRoles",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "list_sign_in_logs",
+      "name": "List Sign-In Logs",
+      "description": "Retrieve Azure AD sign-in activity logs for auditing",
+      "http_method": "GET",
+      "endpoint": "/auditLogs/signIns",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "$filter",
+          "type": "string",
+          "description": "OData filter expression for sign-in logs",
+          "required": false
+        },
+        {
+          "name": "$top",
+          "type": "number",
+          "description": "Maximum number of results",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_audit_logs",
+      "name": "List Audit Logs",
+      "description": "Retrieve directory audit logs for change tracking",
+      "http_method": "GET",
+      "endpoint": "/auditLogs/directoryAudits",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "$filter",
+          "type": "string",
+          "description": "OData filter expression for audit logs",
+          "required": false
+        },
+        {
+          "name": "$top",
+          "type": "number",
+          "description": "Maximum number of results",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

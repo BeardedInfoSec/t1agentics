@@ -1,0 +1,213 @@
+{
+  "id": "trellix_helix",
+  "name": "Trellix Helix",
+  "description": "Integrates with Trellix Helix (formerly FireEye Helix) for alert management, archive search, event investigation, and rule management via the Helix REST API",
+  "version": "1.0.0",
+  "category": "siem",
+  "vendor": "Trellix",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "x-fireeye-api-key",
+    "location": "header"
+  },
+  "base_url": "https://apps.fireeye.com/helix/id/{helixId}",
+  "actions": [
+    {
+      "id": "list_alerts",
+      "name": "List Alerts",
+      "description": "Retrieve alerts from Trellix Helix with optional filtering",
+      "http_method": "GET",
+      "endpoint": "/api/v3/alerts",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "state",
+          "type": "string",
+          "description": "Filter by alert state (open, closed, suppressed)",
+          "required": false
+        },
+        {
+          "name": "risk",
+          "type": "string",
+          "description": "Filter by risk level (Low, Medium, High, Critical)",
+          "required": false
+        },
+        {
+          "name": "created_at_gte",
+          "type": "string",
+          "description": "Filter alerts created after this time (ISO 8601)",
+          "required": false
+        },
+        {
+          "name": "created_at_lte",
+          "type": "string",
+          "description": "Filter alerts created before this time",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum alerts to return",
+          "required": false,
+          "default": 50
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Offset for pagination",
+          "required": false,
+          "default": 0
+        }
+      ]
+    },
+    {
+      "id": "get_alert",
+      "name": "Get Alert Details",
+      "description": "Retrieve details for a specific alert by ID",
+      "http_method": "GET",
+      "endpoint": "/api/v3/alerts/{alertId}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "alertId",
+          "type": "number",
+          "description": "Alert ID to retrieve",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "update_alert",
+      "name": "Update Alert",
+      "description": "Update alert state, assignee, or add notes",
+      "http_method": "PATCH",
+      "endpoint": "/api/v3/alerts/{alertId}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "alertId",
+          "type": "number",
+          "description": "Alert ID to update",
+          "required": true
+        },
+        {
+          "name": "state",
+          "type": "string",
+          "description": "New state (open, closed, suppressed)",
+          "required": false
+        },
+        {
+          "name": "assignee",
+          "type": "string",
+          "description": "Email of the user to assign to",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "add_alert_note",
+      "name": "Add Alert Note",
+      "description": "Add a note/comment to an alert",
+      "http_method": "POST",
+      "endpoint": "/api/v3/alerts/{alertId}/notes",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "alertId",
+          "type": "number",
+          "description": "Alert ID to add note to",
+          "required": true
+        },
+        {
+          "name": "note",
+          "type": "string",
+          "description": "Note text to add",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "archive_search",
+      "name": "Archive Search",
+      "description": "Execute an archive search query across historical event data",
+      "http_method": "POST",
+      "endpoint": "/api/v3/search",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "MQL (Mandiant Query Language) search query",
+          "required": true
+        },
+        {
+          "name": "start",
+          "type": "string",
+          "description": "Start time in ISO 8601 format",
+          "required": true
+        },
+        {
+          "name": "end",
+          "type": "string",
+          "description": "End time in ISO 8601 format",
+          "required": true
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum events to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "list_rules",
+      "name": "List Rules",
+      "description": "List detection/correlation rules configured in Helix",
+      "http_method": "GET",
+      "endpoint": "/api/v3/rules",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "enabled",
+          "type": "boolean",
+          "description": "Filter by enabled/disabled rules",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum rules to return",
+          "required": false,
+          "default": 50
+        }
+      ]
+    },
+    {
+      "id": "list_lists",
+      "name": "List Intel Lists",
+      "description": "Retrieve threat intelligence lists configured in Helix",
+      "http_method": "GET",
+      "endpoint": "/api/v3/lists",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum lists to return",
+          "required": false,
+          "default": 50
+        }
+      ]
+    }
+  ]
+}

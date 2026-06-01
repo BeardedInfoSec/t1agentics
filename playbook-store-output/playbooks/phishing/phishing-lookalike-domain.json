@@ -1,0 +1,239 @@
+{
+  "name": "Lookalike Domain Detection & Takedown",
+  "slug": "phishing-lookalike-domain",
+  "description": "Detects and responds to phishing attacks using lookalike (typosquat) domains that impersonate the organization's brand. Performs WHOIS enrichment on the suspicious domain, checks domain age and registrar, and evaluates similarity to company domains via AI analysis. Confirmed lookalike domains are blocked on the email gateway and web proxy, a domain takedown request is initiated, and the threat intelligence team is notified. Protects against brand impersonation and typosquatting.",
+  "category": "phishing",
+  "subcategory": "lookalike_domain",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "12 minutes",
+  "tags": ["phishing", "lookalike-domain", "typosquat", "brand-impersonation", "whois", "takedown", "domain-abuse"],
+  "alert_types": ["phishing"],
+  "severity_filter": ["medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["phishing", "lookalike_domain", "typosquat", "brand_impersonation"],
+    "min_severity": "medium"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "whois",
+      "name": "WHOIS",
+      "category": "threat_intel",
+      "reason": "Domain registration details, age, and registrar lookup"
+    },
+    {
+      "connector_id": "virustotal",
+      "name": "VirusTotal",
+      "category": "threat_intel",
+      "reason": "Domain reputation and threat scoring"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "title": "Lookalike Domain Alert",
+          "summary": "Triggers on lookalike domain, typosquat, or brand impersonation alerts",
+          "config": {
+            "trigger_type": "alert",
+            "alert_types": ["phishing", "lookalike_domain", "typosquat", "brand_impersonation"]
+          }
+        }
+      },
+      {
+        "id": "analyze-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "title": "WHOIS Enrichment",
+          "summary": "Look up domain registration details, age, and registrar information",
+          "config": {
+            "mode": "enrich",
+            "observable_type": "domain",
+            "observable_path": "$.trigger.alert.suspicious_domain",
+            "sources": ["whois"],
+            "aggregate_results": true
+          }
+        }
+      },
+      {
+        "id": "analyze-2",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "analyze",
+          "title": "VT Domain Reputation",
+          "summary": "Check the suspicious domain against VirusTotal",
+          "config": {
+            "mode": "enrich",
+            "observable_type": "domain",
+            "observable_path": "$.trigger.alert.suspicious_domain",
+            "sources": ["virustotal"],
+            "aggregate_results": true
+          }
+        }
+      },
+      {
+        "id": "analyze-3",
+        "type": "signal",
+        "position": { "x": 520, "y": 540 },
+        "data": {
+          "kind": "analyze",
+          "title": "AI Domain Similarity Analysis",
+          "summary": "AI evaluates domain similarity, brand impersonation, and phishing infrastructure",
+          "config": {
+            "mode": "ai_analysis",
+            "template_id": "phishing_triage",
+            "custom_instructions": "Evaluate lookalike domain: compare suspicious domain to legitimate company domains for typosquatting patterns (character substitution, homoglyphs, extra characters, TLD variations). Assess WHOIS data for recently registered domains with privacy protection. Check for active phishing infrastructure (MX records, web content cloning).",
+            "alert_path": "$.trigger.alert",
+            "include_context": true
+          }
+        }
+      },
+      {
+        "id": "decision-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 700 },
+        "data": {
+          "kind": "decision",
+          "title": "Confirmed Lookalike?",
+          "summary": "Is the domain confirmed as a malicious lookalike?",
+          "config": {
+            "conditions": {
+              "operator": "AND",
+              "conditions": [
+                {
+                  "left": { "type": "path", "value": "$.nodes.analyze-3.result.verdict" },
+                  "operator": "equals",
+                  "right": { "type": "value", "value": "malicious" }
+                }
+              ],
+              "groups": []
+            },
+            "expression": "$.nodes.analyze-3.result.verdict == \"malicious\"",
+            "default_branch": "no"
+          }
+        }
+      },
+      {
+        "id": "respond-1",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "title": "Block Domain",
+          "summary": "Block the lookalike domain on email gateway and web proxy",
+          "config": {
+            "response_type": "integration_action",
+            "action_type": "block_domain",
+            "target_path": "$.trigger.alert.suspicious_domain",
+            "requires_approval": true,
+            "priority": "high",
+            "message": "Blocking lookalike domain {{$.trigger.alert.suspicious_domain}} on email gateway and web proxy"
+          }
+        }
+      },
+      {
+        "id": "respond-2",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "title": "Initiate Takedown Request",
+          "summary": "Submit domain takedown request to the registrar",
+          "config": {
+            "response_type": "integration_action",
+            "action_type": "domain_takedown",
+            "target_path": "$.trigger.alert.suspicious_domain",
+            "requires_approval": true,
+            "priority": "medium",
+            "message": "Initiating takedown request for lookalike domain {{$.trigger.alert.suspicious_domain}} with registrar {{$.nodes.analyze-1.result.registrar}}",
+            "params": {
+              "domain": "{{$.trigger.alert.suspicious_domain}}",
+              "registrar": "{{$.nodes.analyze-1.result.registrar}}",
+              "abuse_email": "{{$.nodes.analyze-1.result.abuse_contact}}",
+              "reason": "Brand impersonation / phishing infrastructure"
+            }
+          }
+        }
+      },
+      {
+        "id": "respond-3",
+        "type": "signal",
+        "position": { "x": 340, "y": 1180 },
+        "data": {
+          "kind": "respond",
+          "title": "Notify Threat Intel Team",
+          "summary": "Alert threat intel team with full domain analysis",
+          "config": {
+            "response_type": "notify",
+            "channel": "slack",
+            "slack_channel": "#threat-intel",
+            "message": "LOOKALIKE DOMAIN DETECTED\n\nSuspicious Domain: {{$.trigger.alert.suspicious_domain}}\nRegistrar: {{$.nodes.analyze-1.result.registrar}}\nDomain Age: {{$.nodes.analyze-1.result.domain_age}}\nVT Score: {{$.nodes.analyze-2.result.max_score}}\n\nAI Assessment: {{$.nodes.analyze-3.result.summary}}\n\nActions:\n- Domain blocked on gateway and proxy\n- Takedown request initiated\n- Monitor for related domains",
+            "priority": "high"
+          }
+        }
+      },
+      {
+        "id": "utility-1",
+        "type": "signal",
+        "position": { "x": 700, "y": 860 },
+        "data": {
+          "kind": "utility",
+          "title": "Monitor — Not Confirmed",
+          "summary": "Domain not confirmed malicious, add to monitoring watchlist",
+          "config": {
+            "operation": "add_note",
+            "note": "Domain {{$.trigger.alert.suspicious_domain}} flagged but not confirmed as malicious lookalike. Added to monitoring watchlist.\nWHOIS: {{$.nodes.analyze-1.result.summary}}\nVT Score: {{$.nodes.analyze-2.result.max_score}}"
+          }
+        }
+      },
+      {
+        "id": "end-1",
+        "type": "signal",
+        "position": { "x": 340, "y": 1340 },
+        "data": {
+          "kind": "end",
+          "title": "End — Domain Blocked & Takedown Initiated",
+          "summary": "Lookalike domain blocked, takedown requested, intel team notified",
+          "config": {
+            "disposition": "true_positive",
+            "summary": "Lookalike domain confirmed and blocked. Takedown request submitted, threat intel team notified."
+          }
+        }
+      },
+      {
+        "id": "end-2",
+        "type": "signal",
+        "position": { "x": 700, "y": 1020 },
+        "data": {
+          "kind": "end",
+          "title": "End — Monitoring",
+          "summary": "Domain not confirmed, added to watchlist",
+          "config": {
+            "disposition": "under_review",
+            "summary": "Domain flagged but not confirmed malicious. Added to monitoring watchlist for continued observation."
+          }
+        }
+      }
+    ],
+    "edges": [
+      { "id": "e1", "source": "trigger-1", "target": "analyze-1", "animated": true, "type": "smoothstep" },
+      { "id": "e2", "source": "analyze-1", "target": "analyze-2", "animated": true, "type": "smoothstep" },
+      { "id": "e3", "source": "analyze-2", "target": "analyze-3", "animated": true, "type": "smoothstep" },
+      { "id": "e4", "source": "analyze-3", "target": "decision-1", "animated": true, "type": "smoothstep" },
+      { "id": "e5", "source": "decision-1", "target": "respond-1", "sourceHandle": "yes", "label": "Yes", "animated": true, "type": "smoothstep" },
+      { "id": "e6", "source": "decision-1", "target": "utility-1", "sourceHandle": "no", "label": "No", "animated": true, "type": "smoothstep" },
+      { "id": "e7", "source": "respond-1", "target": "respond-2", "animated": true, "type": "smoothstep" },
+      { "id": "e8", "source": "respond-2", "target": "respond-3", "animated": true, "type": "smoothstep" },
+      { "id": "e9", "source": "respond-3", "target": "end-1", "animated": true, "type": "smoothstep" },
+      { "id": "e10", "source": "utility-1", "target": "end-2", "animated": true, "type": "smoothstep" }
+    ]
+  }
+}

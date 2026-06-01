@@ -1,0 +1,246 @@
+{
+  "id": "nextdns",
+  "name": "NextDNS",
+  "description": "NextDNS REST API for managing DNS filtering profiles, deny/allow lists, analytics, and DNS query log streaming",
+  "version": "1.0.0",
+  "category": "dns_security",
+  "vendor": "NextDNS",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "X-Api-Key",
+    "location": "header"
+  },
+  "base_url": "https://api.nextdns.io",
+  "actions": [
+    {
+      "id": "list_profiles",
+      "name": "List Profiles",
+      "description": "Retrieve all DNS filtering profiles in the NextDNS account",
+      "http_method": "GET",
+      "endpoint": "/profiles",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "get_profile",
+      "name": "Get Profile",
+      "description": "Retrieve detailed configuration of a specific DNS filtering profile",
+      "http_method": "GET",
+      "endpoint": "/profiles/{profile_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "profile_id",
+          "type": "string",
+          "description": "ID of the profile (e.g., abc123)",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_denylist",
+      "name": "List Denylist Domains",
+      "description": "Retrieve all domains in the profile deny list (blocked domains)",
+      "http_method": "GET",
+      "endpoint": "/profiles/{profile_id}/denylist",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "profile_id",
+          "type": "string",
+          "description": "ID of the profile",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "block_domain",
+      "name": "Block Domain",
+      "description": "Add a domain to the profile deny list to block DNS resolution",
+      "http_method": "POST",
+      "endpoint": "/profiles/{profile_id}/denylist",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "profile_id",
+          "type": "string",
+          "description": "ID of the profile",
+          "required": true
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Domain name to add to the deny list (e.g., malicious-site.com)",
+          "required": true
+        },
+        {
+          "name": "active",
+          "type": "boolean",
+          "description": "Whether the deny entry is active (default: true)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "remove_blocked_domain",
+      "name": "Remove Blocked Domain",
+      "description": "Remove a domain from the profile deny list",
+      "http_method": "DELETE",
+      "endpoint": "/profiles/{profile_id}/denylist/{domain}",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "profile_id",
+          "type": "string",
+          "description": "ID of the profile",
+          "required": true
+        },
+        {
+          "name": "domain",
+          "type": "string",
+          "description": "Domain name to remove from the deny list",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_allowlist",
+      "name": "List Allowlist Domains",
+      "description": "Retrieve all domains in the profile allow list",
+      "http_method": "GET",
+      "endpoint": "/profiles/{profile_id}/allowlist",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "profile_id",
+          "type": "string",
+          "description": "ID of the profile",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "allow_domain",
+      "name": "Allow Domain",
+      "description": "Add a domain to the profile allow list to bypass filtering",
+      "http_method": "POST",
+      "endpoint": "/profiles/{profile_id}/allowlist",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "profile_id",
+          "type": "string",
+          "description": "ID of the profile",
+          "required": true
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Domain name to add to the allow list",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_analytics_status",
+      "name": "Get Query Analytics",
+      "description": "Retrieve DNS query analytics including allowed, blocked, and total query counts",
+      "http_method": "GET",
+      "endpoint": "/profiles/{profile_id}/analytics/status",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "profile_id",
+          "type": "string",
+          "description": "ID of the profile",
+          "required": true
+        },
+        {
+          "name": "from",
+          "type": "string",
+          "description": "Start time in ISO 8601 format or relative (e.g., -24h)",
+          "required": false
+        },
+        {
+          "name": "to",
+          "type": "string",
+          "description": "End time in ISO 8601 format",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_analytics_domains",
+      "name": "Get Top Domains",
+      "description": "Retrieve top queried domains with their resolution status and categories",
+      "http_method": "GET",
+      "endpoint": "/profiles/{profile_id}/analytics/domains",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "profile_id",
+          "type": "string",
+          "description": "ID of the profile",
+          "required": true
+        },
+        {
+          "name": "from",
+          "type": "string",
+          "description": "Start time for the analytics period",
+          "required": false
+        },
+        {
+          "name": "to",
+          "type": "string",
+          "description": "End time for the analytics period",
+          "required": false
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Filter by status: all, allowed, blocked",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_query_logs",
+      "name": "Get Query Logs",
+      "description": "Stream or retrieve DNS query logs for forensic analysis",
+      "http_method": "GET",
+      "endpoint": "/profiles/{profile_id}/logs",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "profile_id",
+          "type": "string",
+          "description": "ID of the profile",
+          "required": true
+        },
+        {
+          "name": "from",
+          "type": "string",
+          "description": "Start time for log query",
+          "required": false
+        },
+        {
+          "name": "to",
+          "type": "string",
+          "description": "End time for log query",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

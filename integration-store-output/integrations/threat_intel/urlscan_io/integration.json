@@ -1,0 +1,252 @@
+{
+  "id": "urlscan_io",
+  "name": "URLScan.io",
+  "description": "URLScan.io is a free service to scan and analyze websites. It provides detailed information about the technologies used, network traffic, DOM content, and potential security threats.",
+  "version": "1.0.0",
+  "category": "threat_intel",
+  "vendor": "URLScan.io",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "API-Key",
+    "location": "header"
+  },
+  "base_url": "https://urlscan.io/api/v1",
+  "documentation_url": "https://urlscan.io/docs/api/",
+  "setup_instructions": "## Get a urlscan.io API key\n\nurlscan.io requires a free account. Public submissions are unauthenticated but rate-limited; an API key unlocks **Unlisted** and **Private** scans and higher quotas.\n\n### 1. Register an account\n1. Open https://urlscan.io/user/signup and create an account.\n2. Confirm the email link they send.\n\n### 2. Generate an API key\n1. Log in and go to https://urlscan.io/user/apikeys/.\n2. Click **Create new API key**. Give it a name (e.g. `T1 Agentics`).\n3. Optionally pick a default **visibility** (Public / Unlisted / Private). For SOC use cases pick **Unlisted** so the URLs you investigate are not searchable on the public urlscan.io front page.\n4. Copy the key.\n\n### 3. Paste the key below\nPaste in the **API Key** field. T1 sends it as the `API-Key` request header automatically.\n\nClick **Test Authentication** to confirm. The test hits `/quotas/` and expects a 200.\n\n### Visibility — IMPORTANT\nEvery scan you submit gets a default visibility tied to the API key, BUT you can override per-scan by passing `visibility` in the `scan` action:\n- **public** — fully searchable on urlscan.io. Do NOT use for live investigations involving sensitive URLs.\n- **unlisted** — accessible by direct link only; recommended default for SOC work.\n- **private** — only visible to your account / team key.\n\n### Rate limits (Free tier)\n- 5,000 public scans/day, 1,000 unlisted/day, 100 private/day, 5/minute.\n- Search: 1,000 queries/day, 60/minute.\n\nT1 surfaces a `QuotaExceededError` on 429.\n\n### Troubleshooting\n- **`401 API key not authorized`**: key revoked or mistyped — regenerate.\n- **`400 dns-error`** on scan: the target URL doesn't resolve from urlscan's scanners; that's a finding, not a config error.\n- **`429 Too Many Requests`**: per-minute or per-day quota hit.\n- **Scan result missing fields**: very fresh scans aren't fully indexed for a few seconds. Use the `get_result` action with the UUID returned by `scan`, with a short retry.",
+  "actions": [
+    {
+      "id": "search",
+      "name": "Search",
+      "description": "Search for scans matching a query. Supports Elasticsearch query syntax.",
+      "http_method": "GET",
+      "endpoint": "/search/?q={query}&size={size}",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 1,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Search query (e.g., 'domain:example.com' or 'page.domain:example.com')",
+          "required": true
+        },
+        {
+          "name": "size",
+          "type": "number",
+          "description": "Number of results to return (default: 100, max: 10000)",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "domain_reputation",
+      "name": "Domain Reputation",
+      "description": "Search for all scans of a specific domain",
+      "http_method": "GET",
+      "endpoint": "/search/?q=domain:{domain}&size=10",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "domain",
+          "type": "string",
+          "description": "Domain to search for",
+          "required": true,
+          "contains": ["domain"]
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "url_reputation",
+      "name": "URL Reputation",
+      "description": "Search for scans of a specific URL",
+      "http_method": "GET",
+      "endpoint": "/search/?q=page.url:\"{url}\"&size=10",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "URL to search for",
+          "required": true,
+          "contains": ["url"]
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "ip_reputation",
+      "name": "IP Reputation",
+      "description": "Search for scans associated with a specific IP address",
+      "http_method": "GET",
+      "endpoint": "/search/?q=page.ip:{ip}&size=10",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "IP address to search for",
+          "required": true,
+          "contains": ["ip"]
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "hash_reputation",
+      "name": "Hash Reputation",
+      "description": "Search for scans containing a specific file hash",
+      "http_method": "GET",
+      "endpoint": "/search/?q=hash:{hash}&size=10",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "hash",
+          "type": "string",
+          "description": "File hash (SHA256) to search for",
+          "required": true,
+          "contains": ["hash", "sha256"]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "submit_url",
+      "name": "Submit URL for Scan",
+      "description": "Submit a URL to be scanned. Returns a scan UUID for retrieving results.",
+      "http_method": "POST",
+      "endpoint": "/scan/",
+      "action_type": "investigate",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "URL to scan",
+          "required": true,
+          "contains": ["url"]
+        },
+        {
+          "name": "visibility",
+          "type": "string",
+          "description": "Scan visibility: public, unlisted, or private",
+          "required": false,
+          "default": "public",
+          "enum": ["public", "unlisted", "private"]
+        },
+        {
+          "name": "tags",
+          "type": "array",
+          "description": "Tags to associate with this scan",
+          "required": false
+        },
+        {
+          "name": "country",
+          "type": "string",
+          "description": "Country code for the scanner location (e.g., 'us', 'de', 'jp')",
+          "required": false
+        },
+        {
+          "name": "referer",
+          "type": "string",
+          "description": "Custom referer header for the scan request",
+          "required": false
+        },
+        {
+          "name": "customagent",
+          "type": "string",
+          "description": "Custom user agent string",
+          "required": false
+        }
+      ],
+      "observable_type": "url",
+      "request_body_format": "json"
+    },
+    {
+      "id": "get_scan_result",
+      "name": "Get Scan Result",
+      "description": "Retrieve the results of a completed scan using its UUID",
+      "http_method": "GET",
+      "endpoint": "/result/{uuid}/",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "uuid",
+          "type": "string",
+          "description": "Scan UUID returned from submit_url action",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_screenshot",
+      "name": "Get Screenshot",
+      "description": "Get the screenshot from a completed scan",
+      "http_method": "GET",
+      "endpoint": "/screenshots/{uuid}.png",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 30,
+      "parameters": [
+        {
+          "name": "uuid",
+          "type": "string",
+          "description": "Scan UUID",
+          "required": true
+        }
+      ],
+      "response_type": "binary"
+    },
+    {
+      "id": "get_dom",
+      "name": "Get DOM",
+      "description": "Get the DOM content from a completed scan",
+      "http_method": "GET",
+      "endpoint": "/dom/{uuid}/",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "uuid",
+          "type": "string",
+          "description": "Scan UUID",
+          "required": true
+        }
+      ]
+    }
+  ],
+  "rate_limits": {
+    "requests_per_minute": 60,
+    "requests_per_day": 5000,
+    "notes": "Free tier: 50 private scans/day, 5000 public searches/day. Paid plans available."
+  },
+  "source_metadata": {
+    "original_name": "URLScan.io",
+    "original_type": "threat_intel",
+    "converted_at": "2025-12-24T00:00:00.000000",
+    "source_version": "1.0.0"
+  }
+}

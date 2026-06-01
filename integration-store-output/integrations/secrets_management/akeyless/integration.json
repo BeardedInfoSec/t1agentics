@@ -1,0 +1,261 @@
+{
+  "id": "akeyless",
+  "name": "Akeyless Vault Platform",
+  "description": "SaaS-based secrets management through Akeyless REST API for managing static secrets, dynamic secrets, rotated secrets, and access policies",
+  "version": "1.0.0",
+  "category": "secrets_management",
+  "vendor": "Akeyless",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "token_url": "https://api.akeyless.io/auth",
+    "header_name": "Authorization",
+    "header_prefix": "Bearer",
+    "location": "header"
+  },
+  "base_url": "https://api.akeyless.io",
+  "actions": [
+    {
+      "id": "list_items",
+      "name": "List Items",
+      "description": "List all items (secrets, keys, certificates) in the vault",
+      "http_method": "POST",
+      "endpoint": "/list-items",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "path",
+          "type": "string",
+          "description": "Path prefix to filter items",
+          "required": false
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Filter by item type (static-secret, dynamic-secret, rotated-secret, etc.)",
+          "required": false
+        },
+        {
+          "name": "token",
+          "type": "string",
+          "description": "Authentication token",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_secret_value",
+      "name": "Get Secret Value",
+      "description": "Retrieve the value of a static secret",
+      "http_method": "POST",
+      "endpoint": "/get-secret-value",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "names",
+          "type": "array",
+          "description": "List of secret names to retrieve",
+          "required": true
+        },
+        {
+          "name": "token",
+          "type": "string",
+          "description": "Authentication token",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "create_secret",
+      "name": "Create Secret",
+      "description": "Create a new static secret in the vault",
+      "http_method": "POST",
+      "endpoint": "/create-secret",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Name/path of the secret",
+          "required": true
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "description": "Secret value",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Description of the secret",
+          "required": false
+        },
+        {
+          "name": "token",
+          "type": "string",
+          "description": "Authentication token",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "update_secret_val",
+      "name": "Update Secret Value",
+      "description": "Update the value of an existing static secret",
+      "http_method": "POST",
+      "endpoint": "/update-secret-val",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Name/path of the secret",
+          "required": true
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "description": "New secret value",
+          "required": true
+        },
+        {
+          "name": "token",
+          "type": "string",
+          "description": "Authentication token",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "delete_item",
+      "name": "Delete Item",
+      "description": "Delete a secret or item from the vault",
+      "http_method": "POST",
+      "endpoint": "/delete-item",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Name/path of the item to delete",
+          "required": true
+        },
+        {
+          "name": "token",
+          "type": "string",
+          "description": "Authentication token",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_dynamic_secret_value",
+      "name": "Get Dynamic Secret Value",
+      "description": "Generate temporary credentials from a dynamic secret producer",
+      "http_method": "POST",
+      "endpoint": "/get-dynamic-secret-value",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Name of the dynamic secret producer",
+          "required": true
+        },
+        {
+          "name": "token",
+          "type": "string",
+          "description": "Authentication token",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_rotated_secret_value",
+      "name": "Get Rotated Secret Value",
+      "description": "Retrieve the current value of a rotated secret",
+      "http_method": "POST",
+      "endpoint": "/get-rotated-secret-value",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "names",
+          "type": "string",
+          "description": "Name of the rotated secret",
+          "required": true
+        },
+        {
+          "name": "token",
+          "type": "string",
+          "description": "Authentication token",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "rotate_secret",
+      "name": "Rotate Secret",
+      "description": "Trigger an immediate rotation of a rotated secret",
+      "http_method": "POST",
+      "endpoint": "/rotate-secret",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Name of the rotated secret to rotate",
+          "required": true
+        },
+        {
+          "name": "token",
+          "type": "string",
+          "description": "Authentication token",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_auth_methods",
+      "name": "List Auth Methods",
+      "description": "List all authentication methods configured in the vault",
+      "http_method": "POST",
+      "endpoint": "/list-auth-methods",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "token",
+          "type": "string",
+          "description": "Authentication token",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_roles",
+      "name": "List Roles",
+      "description": "List all access roles for RBAC management",
+      "http_method": "POST",
+      "endpoint": "/list-roles",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "token",
+          "type": "string",
+          "description": "Authentication token",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,221 @@
+{
+  "name": "IDS/IPS Alert Triage",
+  "slug": "network-ids-alert-triage",
+  "description": "Triages IDS/IPS alerts by enriching source and destination indicators, then applying Riggs AI analysis to determine true positive versus false positive. High-severity confirmed threats are escalated with approval for containment actions including firewall blocking and SOC notification. Medium-severity alerts are routed to the SOC queue for manual review. Low-severity or false positive alerts are tuned out and closed with documentation.",
+  "category": "network",
+  "subcategory": "intrusion_detection",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "12 minutes",
+  "tags": ["ids", "ips", "triage", "network", "alert_management"],
+  "alert_types": ["network", "ids", "ips", "intrusion"],
+  "severity_filter": ["low", "medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["network", "ids_alert", "ips_alert", "snort_alert", "suricata_alert"],
+    "min_severity": "low"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "virustotal",
+      "name": "VirusTotal",
+      "category": "threat_intel",
+      "reason": "Enrich source and destination IPs with reputation data"
+    },
+    {
+      "connector_id": "palo_alto_ngfw",
+      "name": "Palo Alto NGFW",
+      "category": "network",
+      "reason": "Block confirmed threat sources at the network perimeter"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Notify SOC analysts of high-severity confirmed threats"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "IDS/IPS Alert Received",
+          "config": {
+            "alert_types": ["network", "ids_alert", "ips_alert", "snort_alert", "suricata_alert"],
+            "description": "Triggers on any IDS/IPS alert from Snort, Suricata, or similar network intrusion detection systems"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — Enrich & Classify",
+          "config": {
+            "template_id": "ioc_correlation",
+            "additional_instructions": "Enrich source and destination IPs via threat intel. Analyze the IDS signature, payload context, and traffic patterns. Classify as true positive, false positive, or inconclusive. Assess severity impact.",
+            "description": "AI-powered enrichment and classification of the IDS/IPS alert to determine true/false positive status and severity assessment"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "label": "True Positive — High Severity?",
+          "config": {
+            "condition": "{{analyze_1.verdict}} in ['MALICIOUS', 'SUSPICIOUS'] and {{analyze_1.severity}} in ['high', 'critical']",
+            "description": "Routes high-severity confirmed threats to the containment path, everything else to annotation/review"
+          }
+        }
+      },
+      {
+        "id": "approval_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "approval",
+          "label": "Analyst Approves Containment",
+          "config": {
+            "approver_role": "soc_analyst",
+            "timeout_minutes": 15,
+            "message": "IDS/IPS ALERT — HIGH SEVERITY\n\nSignature: {{trigger_1.alert.signature}}\nSource: {{trigger_1.alert.source_ip}} -> Dest: {{trigger_1.alert.destination_ip}}\nClassification: {{analyze_1.classification}}\nSeverity: {{analyze_1.severity}}\n\nRiggs AI Assessment:\n{{analyze_1.summary}}\n\nApprove firewall block of source IP?",
+            "description": "Requires SOC analyst approval before blocking the threat source to prevent disruption from false positives"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "label": "Block Source IP on Firewall",
+          "config": {
+            "integration_action": {
+              "connector_id": "palo_alto_ngfw",
+              "action": "block_ip",
+              "parameters": {
+                "ip_address": "{{trigger_1.alert.source_ip}}",
+                "rule_name": "T1-IDS-Block-{{trigger_1.alert.alert_id}}",
+                "direction": "both",
+                "comment": "Blocked per IDS alert — Signature: {{trigger_1.alert.signature}}, Verdict: {{analyze_1.verdict}}"
+              }
+            },
+            "description": "Blocks the confirmed threat source IP on the perimeter firewall"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "label": "Notify SOC — Threat Contained",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#soc-alerts",
+              "message": "IDS/IPS THREAT CONTAINED\n\nSignature: {{trigger_1.alert.signature}}\nSource: {{trigger_1.alert.source_ip}} -> Dest: {{trigger_1.alert.destination_ip}}\nSeverity: {{analyze_1.severity}}\nAction: Source IP blocked on firewall\nApproved by: {{approval_1.approver}}\n\nRiggs AI Summary:\n{{analyze_1.summary}}",
+              "priority": "high"
+            },
+            "description": "Sends notification to the SOC channel confirming the IDS threat has been contained"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "utility",
+          "label": "Route to SOC Queue / Close",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "IDS/IPS alert triaged by Riggs AI.\nSignature: {{trigger_1.alert.signature}}\nVerdict: {{analyze_1.verdict}}\nSeverity: {{analyze_1.severity}}\nClassification: {{analyze_1.classification}}\n\nAction: {{analyze_1.recommended_action}}",
+              "close_alert": "{{analyze_1.verdict}} == 'BENIGN'",
+              "assign_to": "soc_queue"
+            },
+            "description": "Routes medium/low alerts to the SOC queue for review or closes false positives with documentation"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1020 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "IDS/IPS alert triage workflow complete"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_analyze",
+        "source": "trigger_1",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_analyze_decision",
+        "source": "analyze_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "approval_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "utility_1",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_approval_block",
+        "source": "approval_1",
+        "target": "respond_1",
+        "type": "default"
+      },
+      {
+        "id": "e_block_notify",
+        "source": "respond_1",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_notify_end",
+        "source": "respond_2",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_utility_end",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

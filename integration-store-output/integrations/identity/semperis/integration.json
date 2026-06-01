@@ -1,0 +1,253 @@
+{
+  "id": "semperis",
+  "name": "Semperis Directory Services Protector",
+  "description": "Active Directory security and recovery through Semperis DSP REST API for monitoring directory changes, detecting threats, and managing AD recovery",
+  "version": "1.0.0",
+  "category": "identity",
+  "vendor": "Semperis",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "header_prefix": "Bearer",
+    "location": "header"
+  },
+  "base_url": "https://{host}/api/v1",
+  "actions": [
+    {
+      "id": "list_security_indicators",
+      "name": "List Security Indicators",
+      "description": "List all Active Directory security indicators and their current status",
+      "http_method": "GET",
+      "endpoint": "/security-indicators",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Filter by severity (critical, high, medium, low)",
+          "required": false
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Filter by status (exposed, mitigated)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_security_indicator",
+      "name": "Get Security Indicator",
+      "description": "Retrieve details of a specific security indicator including affected objects",
+      "http_method": "GET",
+      "endpoint": "/security-indicators/{indicatorId}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "indicatorId",
+          "type": "string",
+          "description": "Security indicator ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_directory_changes",
+      "name": "List Directory Changes",
+      "description": "List recent changes made to Active Directory objects",
+      "http_method": "GET",
+      "endpoint": "/changes",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "startTime",
+          "type": "string",
+          "description": "Start time (ISO 8601)",
+          "required": false
+        },
+        {
+          "name": "endTime",
+          "type": "string",
+          "description": "End time (ISO 8601)",
+          "required": false
+        },
+        {
+          "name": "objectType",
+          "type": "string",
+          "description": "Filter by AD object type (user, group, computer, gpo)",
+          "required": false
+        },
+        {
+          "name": "changeType",
+          "type": "string",
+          "description": "Filter by change type (create, modify, delete)",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of results",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "revert_change",
+      "name": "Revert Directory Change",
+      "description": "Revert a specific AD change to its previous state",
+      "http_method": "POST",
+      "endpoint": "/changes/{changeId}/revert",
+      "action_type": "correct",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "changeId",
+          "type": "string",
+          "description": "Change ID to revert",
+          "required": true
+        },
+        {
+          "name": "reason",
+          "type": "string",
+          "description": "Reason for reverting the change",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_alerts",
+      "name": "List Alerts",
+      "description": "List DSP alerts for threat detection and suspicious AD activity",
+      "http_method": "GET",
+      "endpoint": "/alerts",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Filter by severity",
+          "required": false
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Filter by alert status (new, acknowledged, resolved)",
+          "required": false
+        },
+        {
+          "name": "startTime",
+          "type": "string",
+          "description": "Start time (ISO 8601)",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of results",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "acknowledge_alert",
+      "name": "Acknowledge Alert",
+      "description": "Acknowledge a DSP alert",
+      "http_method": "PUT",
+      "endpoint": "/alerts/{alertId}/acknowledge",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "alertId",
+          "type": "string",
+          "description": "Alert ID",
+          "required": true
+        },
+        {
+          "name": "notes",
+          "type": "string",
+          "description": "Notes for the acknowledgement",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_forests",
+      "name": "List Forests",
+      "description": "List all monitored AD forests and their health status",
+      "http_method": "GET",
+      "endpoint": "/forests",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "get_forest_health",
+      "name": "Get Forest Health",
+      "description": "Retrieve health score and details for a specific AD forest",
+      "http_method": "GET",
+      "endpoint": "/forests/{forestId}/health",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "forestId",
+          "type": "string",
+          "description": "Forest ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_recovery_points",
+      "name": "List Recovery Points",
+      "description": "List available AD recovery/backup points",
+      "http_method": "GET",
+      "endpoint": "/recovery/backups",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "forestId",
+          "type": "string",
+          "description": "Filter by forest ID",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "search_ad_objects",
+      "name": "Search AD Objects",
+      "description": "Search for specific AD objects across monitored forests",
+      "http_method": "POST",
+      "endpoint": "/search/objects",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Search query for AD objects",
+          "required": true
+        },
+        {
+          "name": "objectType",
+          "type": "string",
+          "description": "Object type filter (user, group, computer, gpo, ou)",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of results",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

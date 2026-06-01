@@ -1,0 +1,107 @@
+{
+  "id": "postgresql",
+  "name": "PostgreSQL",
+  "description": "This app supports investigative actions against a PostgreSQL database",
+  "version": "2.0.19",
+  "category": "threat_intel",
+  "vendor": "PostgreSQL",
+  "auth_type": "basic_auth",
+  "auth_config": {
+    "type": "basic_auth",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "run_query",
+      "name": "Run Query",
+      "description": "Run a query against a table or tables in the database",
+      "http_method": "GET",
+      "endpoint": "/actions/run_query",
+      "action_type": "investigate",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Query string",
+          "required": true,
+          "contains": [
+            "sql query"
+          ]
+        },
+        {
+          "name": "format_vars",
+          "type": "string",
+          "description": "Comma separated list of variables",
+          "required": false
+        },
+        {
+          "name": "no_commit",
+          "type": "boolean",
+          "description": "Do not commit changes to database",
+          "required": false,
+          "default": false
+        }
+      ]
+    },
+    {
+      "id": "list_columns",
+      "name": "List Columns",
+      "description": "List the columns of a table",
+      "http_method": "GET",
+      "endpoint": "/actions/list_columns",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "table_name",
+          "type": "string",
+          "description": "Name of table",
+          "required": true,
+          "contains": [
+            "postgres table name"
+          ]
+        },
+        {
+          "name": "table_schema",
+          "type": "string",
+          "description": "Table schema",
+          "required": false,
+          "default": "public"
+        }
+      ]
+    },
+    {
+      "id": "list_tables",
+      "name": "List Tables",
+      "description": "List the tables in the database",
+      "http_method": "GET",
+      "endpoint": "/actions/list_tables",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "table_schema",
+          "type": "string",
+          "description": "Table schema",
+          "required": false,
+          "default": "public"
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "PostgreSQL",
+    "original_type": "information",
+    "converted_at": "2025-12-18T16:25:29.040586",
+    "source_version": "2.0.19"
+  }
+}

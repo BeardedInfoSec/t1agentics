@@ -1,0 +1,213 @@
+{
+  "name": "Kerberos Golden Ticket Detection",
+  "slug": "identity-golden-ticket",
+  "description": "Detects and responds to Kerberos golden ticket attacks by analyzing suspicious TGT activity. Uses AI to assess the threat, isolates the suspected domain controller, prepares emergency krbtgt password reset procedures, creates a critical incident ticket, and notifies the incident response team for immediate action.",
+  "category": "identity",
+  "subcategory": "kerberos_attack",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "advanced",
+  "estimated_time": "20 minutes",
+  "tags": ["golden_ticket", "kerberos", "active_directory", "domain_controller", "krbtgt"],
+  "alert_types": ["golden_ticket", "kerberos_anomaly", "credential_access"],
+  "severity_filter": ["critical"],
+  "trigger_conditions": {
+    "alert_types": ["golden_ticket", "kerberos_anomaly"],
+    "min_severity": "critical"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "microsoft_defender_endpoint",
+      "name": "Microsoft Defender for Endpoint",
+      "category": "edr",
+      "reason": "Isolate compromised domain controller from the network"
+    },
+    {
+      "connector_id": "microsoft_graph",
+      "name": "Microsoft Graph",
+      "category": "identity",
+      "reason": "Query Active Directory for krbtgt account status and domain controller health"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create P1 critical incident ticket for golden ticket response"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "gt-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "title": "Golden Ticket Alert",
+          "summary": "Fires on golden ticket or Kerberos anomaly detection",
+          "config": {
+            "trigger_type": "alert",
+            "alert_filter": "golden_ticket OR kerberos_anomaly"
+          }
+        }
+      },
+      {
+        "id": "gt-2",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "title": "AI Golden Ticket Analysis",
+          "summary": "Analyze Kerberos ticket anomalies for golden ticket indicators",
+          "config": {
+            "mode": "ai_analysis",
+            "template_id": "credential_access",
+            "custom_instructions": "",
+            "alert_path": "$.trigger.alert",
+            "include_context": true
+          }
+        }
+      },
+      {
+        "id": "gt-3",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "title": "Golden Ticket Confirmed?",
+          "summary": "Branch based on whether AI confirms golden ticket attack indicators",
+          "config": {
+            "conditions": {
+              "operator": "AND",
+              "conditions": [
+                {
+                  "field": "$.nodes.gt-2.result.confidence",
+                  "operator": "greater_than",
+                  "value": "0.8"
+                }
+              ],
+              "groups": []
+            },
+            "expression": "$.nodes.gt-2.result.confidence > 0.8",
+            "default_branch": "no"
+          }
+        }
+      },
+      {
+        "id": "gt-4",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "approval",
+          "title": "Approve DC Isolation",
+          "summary": "Require SOC manager approval before isolating domain controller",
+          "config": {
+            "approvers": ["soc-manager", "ad-admin"],
+            "timeout_minutes": 15,
+            "escalation": "auto_approve_on_timeout",
+            "message": "Golden ticket attack confirmed with high confidence. Requesting approval to isolate domain controller {{$.trigger.alert.domain_controller}} and initiate krbtgt reset."
+          }
+        }
+      },
+      {
+        "id": "gt-5",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "title": "Isolate Domain Controller",
+          "summary": "Network-isolate the compromised domain controller via EDR",
+          "config": {
+            "response_type": "integration_action",
+            "integration_instance_id": "microsoft_defender_endpoint",
+            "action_type": "isolate_machine",
+            "params": {
+              "machine_id": "$.trigger.alert.domain_controller_id",
+              "isolation_type": "full",
+              "reason": "Golden ticket attack — domain controller isolation"
+            },
+            "requires_approval": false,
+            "priority": "critical"
+          }
+        }
+      },
+      {
+        "id": "gt-6",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "title": "Create P1 Incident Ticket",
+          "summary": "Create critical P1 incident ticket for golden ticket response",
+          "config": {
+            "response_type": "create_ticket",
+            "system": "jira",
+            "project_key": "SEC",
+            "issue_type": "Incident",
+            "title": "P1 CRITICAL: Kerberos Golden Ticket Attack — {{$.trigger.alert.domain_controller}}",
+            "description": "Golden ticket attack confirmed. Domain controller {{$.trigger.alert.domain_controller}} has been isolated. krbtgt password double-reset required. All Kerberos tickets must be considered compromised.",
+            "priority": "critical",
+            "requires_approval": false
+          }
+        }
+      },
+      {
+        "id": "gt-7",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "title": "Notify IR Team",
+          "summary": "Page the incident response team with golden ticket attack details",
+          "config": {
+            "response_type": "notification",
+            "channel": "slack",
+            "slack_channel": "#incident-response",
+            "message": "CRITICAL: Golden ticket attack confirmed. DC {{$.trigger.alert.domain_controller}} isolated. krbtgt double-reset required immediately. P1 ticket created. All hands on deck.",
+            "requires_approval": false,
+            "priority": "critical"
+          }
+        }
+      },
+      {
+        "id": "gt-8",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "utility",
+          "title": "Log Low-Confidence Finding",
+          "summary": "Log the alert for further investigation — confidence below threshold",
+          "config": {
+            "operation": "add_note",
+            "note": "Kerberos anomaly detected but golden ticket attack not confirmed with high confidence. Logged for further investigation by Tier 2 analyst."
+          }
+        }
+      },
+      {
+        "id": "gt-9",
+        "type": "signal",
+        "position": { "x": 520, "y": 1180 },
+        "data": {
+          "kind": "end",
+          "title": "Playbook Complete",
+          "summary": "Golden ticket detection response finished",
+          "config": {
+            "disposition": "completed",
+            "summary": "Kerberos golden ticket detection and response actions completed"
+          }
+        }
+      }
+    ],
+    "edges": [
+      { "id": "gt-e1", "source": "gt-1", "target": "gt-2", "animated": true, "type": "smoothstep" },
+      { "id": "gt-e2", "source": "gt-2", "target": "gt-3", "animated": true, "type": "smoothstep" },
+      { "id": "gt-e3", "source": "gt-3", "target": "gt-4", "sourceHandle": "yes", "label": "Yes", "animated": true, "type": "smoothstep" },
+      { "id": "gt-e4", "source": "gt-3", "target": "gt-8", "sourceHandle": "no", "label": "No", "animated": true, "type": "smoothstep" },
+      { "id": "gt-e5", "source": "gt-4", "target": "gt-5", "animated": true, "type": "smoothstep" },
+      { "id": "gt-e6", "source": "gt-5", "target": "gt-6", "animated": true, "type": "smoothstep" },
+      { "id": "gt-e7", "source": "gt-6", "target": "gt-7", "animated": true, "type": "smoothstep" },
+      { "id": "gt-e8", "source": "gt-7", "target": "gt-9", "animated": true, "type": "smoothstep" },
+      { "id": "gt-e9", "source": "gt-8", "target": "gt-9", "animated": true, "type": "smoothstep" }
+    ]
+  }
+}

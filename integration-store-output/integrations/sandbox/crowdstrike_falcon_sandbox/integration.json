@@ -1,0 +1,391 @@
+{
+  "id": "crowdstrike_falcon_sandbox",
+  "name": "CrowdStrike Falcon Sandbox",
+  "description": "Automated malware analysis service powered by Hybrid Analysis, providing deep file and URL detonation with behavioral analysis, network traffic inspection, and threat intelligence enrichment",
+  "version": "1.0.0",
+  "category": "sandbox",
+  "vendor": "CrowdStrike",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "api-key",
+    "location": "header"
+  },
+  "base_url": "https://www.hybrid-analysis.com/api/v2",
+  "actions": [
+    {
+      "id": "submit_file",
+      "name": "Submit File",
+      "description": "Submit a file for sandbox analysis in a specified environment",
+      "http_method": "POST",
+      "endpoint": "/submit/file",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "file",
+          "type": "file",
+          "description": "The file to submit for analysis (multipart form data)",
+          "required": true
+        },
+        {
+          "name": "environment_id",
+          "type": "integer",
+          "description": "Environment ID for analysis (e.g., 300=Linux, 100=Windows 7 32-bit, 110=Windows 7 64-bit, 120=Windows 10 64-bit)",
+          "required": true
+        },
+        {
+          "name": "no_share_third_party",
+          "type": "boolean",
+          "description": "When true, the file will not be shared with any third party",
+          "required": false
+        },
+        {
+          "name": "allow_community_access",
+          "type": "boolean",
+          "description": "When true, the file and results will be shared with the community",
+          "required": false
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "Optional comment for the submission",
+          "required": false
+        },
+        {
+          "name": "custom_date_time_stamp",
+          "type": "string",
+          "description": "Custom date/time stamp for the sandbox clock",
+          "required": false
+        },
+        {
+          "name": "submit_name",
+          "type": "string",
+          "description": "Optional custom filename for the submission",
+          "required": false
+        },
+        {
+          "name": "action_script",
+          "type": "string",
+          "description": "Runtime script to apply during analysis (e.g., default, default_randomfiles, default_openie)",
+          "required": false
+        }
+      ],
+      "observable_type": "hash"
+    },
+    {
+      "id": "submit_url",
+      "name": "Submit URL",
+      "description": "Submit a URL or file URL for sandbox analysis",
+      "http_method": "POST",
+      "endpoint": "/submit/url",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "URL to analyze (website or direct file link)",
+          "required": true
+        },
+        {
+          "name": "environment_id",
+          "type": "integer",
+          "description": "Environment ID for analysis (e.g., 120=Windows 10 64-bit, 300=Linux)",
+          "required": true
+        },
+        {
+          "name": "no_share_third_party",
+          "type": "boolean",
+          "description": "When true, the URL and results will not be shared with any third party",
+          "required": false
+        },
+        {
+          "name": "allow_community_access",
+          "type": "boolean",
+          "description": "When true, the URL and results will be shared with the community",
+          "required": false
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "Optional comment for the submission",
+          "required": false
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "submit_dropped_file",
+      "name": "Submit Dropped File",
+      "description": "Submit an extracted/dropped file from a previous report for re-analysis",
+      "http_method": "POST",
+      "endpoint": "/submit/dropped-file",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Report ID from which to extract the dropped file (format: jobId or sha256:environmentId)",
+          "required": true
+        },
+        {
+          "name": "file_hash",
+          "type": "string",
+          "description": "SHA256 hash of the dropped file to submit",
+          "required": true
+        },
+        {
+          "name": "environment_id",
+          "type": "integer",
+          "description": "Environment ID for the new analysis",
+          "required": true
+        }
+      ],
+      "observable_type": "hash"
+    },
+    {
+      "id": "search_hash",
+      "name": "Search Hash",
+      "description": "Convert any hash format (MD5, SHA1, SHA256, SHA512) to SHA256 and return matching results",
+      "http_method": "GET",
+      "endpoint": "/search/hash",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "hash",
+          "type": "string",
+          "description": "File hash to search (MD5, SHA1, SHA256, or SHA512)",
+          "required": true
+        }
+      ],
+      "observable_type": "hash"
+    },
+    {
+      "id": "search_terms",
+      "name": "Search Terms",
+      "description": "Search the Falcon Sandbox database using various search terms and filters",
+      "http_method": "POST",
+      "endpoint": "/search/terms",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "filename",
+          "type": "string",
+          "description": "Filter by filename (e.g., invoice.exe)",
+          "required": false
+        },
+        {
+          "name": "filetype_desc",
+          "type": "string",
+          "description": "Filter by file type description (e.g., PE32 executable)",
+          "required": false
+        },
+        {
+          "name": "verdict",
+          "type": "integer",
+          "description": "Filter by verdict (1=whitelisted, 2=no specific threat, 3=no verdict, 4=suspicious, 5=malicious)",
+          "required": false
+        },
+        {
+          "name": "av_detect",
+          "type": "string",
+          "description": "AV multiscan detection percentage range (e.g., 50-100)",
+          "required": false
+        },
+        {
+          "name": "host",
+          "type": "string",
+          "description": "Filter by contacted host IP address",
+          "required": false
+        },
+        {
+          "name": "domain",
+          "type": "string",
+          "description": "Filter by contacted domain",
+          "required": false
+        },
+        {
+          "name": "url",
+          "type": "string",
+          "description": "Filter by HTTP request URL substring",
+          "required": false
+        },
+        {
+          "name": "tag",
+          "type": "string",
+          "description": "Filter by hashtag (e.g., ransomware)",
+          "required": false
+        },
+        {
+          "name": "similar_to",
+          "type": "string",
+          "description": "Filter by similar samples SHA256",
+          "required": false
+        },
+        {
+          "name": "imphash",
+          "type": "string",
+          "description": "Filter by import hash",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_overview",
+      "name": "Get Overview",
+      "description": "Return aggregated overview for a SHA256 hash including all available reports and verdicts",
+      "http_method": "GET",
+      "endpoint": "/overview/{sha256}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "sha256",
+          "type": "string",
+          "description": "SHA256 hash to get the overview for",
+          "required": true
+        }
+      ],
+      "observable_type": "hash"
+    },
+    {
+      "id": "get_overview_summary",
+      "name": "Get Overview Summary",
+      "description": "Return a condensed overview summary for a SHA256 hash",
+      "http_method": "GET",
+      "endpoint": "/overview/{sha256}/summary",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "sha256",
+          "type": "string",
+          "description": "SHA256 hash to get the summary for",
+          "required": true
+        }
+      ],
+      "observable_type": "hash"
+    },
+    {
+      "id": "get_report_summary",
+      "name": "Get Report Summary",
+      "description": "Retrieve the summary of a specific sandbox analysis report",
+      "http_method": "GET",
+      "endpoint": "/report/{id}/summary",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Report ID (format: jobId or sha256:environmentId)",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_report_state",
+      "name": "Get Report State",
+      "description": "Return the processing state of a sandbox submission",
+      "http_method": "GET",
+      "endpoint": "/report/{id}/state",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Report ID (format: jobId or sha256:environmentId)",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "download_sample",
+      "name": "Download Sample",
+      "description": "Download the original sample file from a SHA256 overview",
+      "http_method": "GET",
+      "endpoint": "/overview/{sha256}/sample",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "sha256",
+          "type": "string",
+          "description": "SHA256 hash of the sample to download",
+          "required": true
+        }
+      ],
+      "observable_type": "hash"
+    },
+    {
+      "id": "quick_scan_file",
+      "name": "Quick Scan File",
+      "description": "Submit a file for quick multi-engine scan without full sandbox detonation",
+      "http_method": "POST",
+      "endpoint": "/quick-scan/file",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "file",
+          "type": "file",
+          "description": "The file to scan (multipart form data)",
+          "required": true
+        },
+        {
+          "name": "scan_type",
+          "type": "string",
+          "description": "Type of scan to perform (e.g., all, lookup_ha, lookup_intezer)",
+          "required": true
+        }
+      ],
+      "observable_type": "hash"
+    },
+    {
+      "id": "quick_scan_url",
+      "name": "Quick Scan URL",
+      "description": "Submit a URL for quick multi-engine scan without full sandbox detonation",
+      "http_method": "POST",
+      "endpoint": "/quick-scan/url",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "URL to scan",
+          "required": true
+        },
+        {
+          "name": "scan_type",
+          "type": "string",
+          "description": "Type of scan to perform",
+          "required": true
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "get_quick_scan_results",
+      "name": "Get Quick Scan Results",
+      "description": "Retrieve results of a previously submitted quick scan",
+      "http_method": "GET",
+      "endpoint": "/quick-scan/{id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Quick scan ID returned from the submission",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

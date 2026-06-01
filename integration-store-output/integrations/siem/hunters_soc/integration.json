@@ -1,0 +1,215 @@
+{
+  "id": "hunters_soc",
+  "name": "Hunters SOC Platform",
+  "description": "Integrates with Hunters SOC Platform for lead investigation, alert management, entity exploration, and detection pipeline monitoring via the Hunters REST API",
+  "version": "1.0.0",
+  "category": "siem",
+  "vendor": "Hunters",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "header_name": "Authorization",
+    "prefix": "Bearer",
+    "location": "header"
+  },
+  "base_url": "https://api.hunters.ai/v1",
+  "actions": [
+    {
+      "id": "list_leads",
+      "name": "List Leads",
+      "description": "Retrieve leads (investigated alerts) from Hunters SOC Platform",
+      "http_method": "GET",
+      "endpoint": "/leads",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Filter by lead status (open, closed, in_progress)",
+          "required": false
+        },
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Filter by severity (low, medium, high, critical)",
+          "required": false
+        },
+        {
+          "name": "from",
+          "type": "string",
+          "description": "Start time filter (ISO 8601)",
+          "required": false
+        },
+        {
+          "name": "to",
+          "type": "string",
+          "description": "End time filter (ISO 8601)",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum leads to return",
+          "required": false,
+          "default": 50
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Offset for pagination",
+          "required": false,
+          "default": 0
+        }
+      ]
+    },
+    {
+      "id": "get_lead",
+      "name": "Get Lead Details",
+      "description": "Retrieve details for a specific lead including investigation context",
+      "http_method": "GET",
+      "endpoint": "/leads/{leadId}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "leadId",
+          "type": "string",
+          "description": "Lead ID to retrieve",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "update_lead",
+      "name": "Update Lead",
+      "description": "Update lead status or add comments",
+      "http_method": "PATCH",
+      "endpoint": "/leads/{leadId}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "leadId",
+          "type": "string",
+          "description": "Lead ID to update",
+          "required": true
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "New status (open, closed, in_progress)",
+          "required": false
+        },
+        {
+          "name": "verdict",
+          "type": "string",
+          "description": "Lead verdict (true_positive, false_positive, benign)",
+          "required": false
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "Comment to add",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_alerts",
+      "name": "List Alerts",
+      "description": "Retrieve raw alerts ingested by the Hunters pipeline",
+      "http_method": "GET",
+      "endpoint": "/alerts",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "from",
+          "type": "string",
+          "description": "Start time (ISO 8601)",
+          "required": false
+        },
+        {
+          "name": "to",
+          "type": "string",
+          "description": "End time (ISO 8601)",
+          "required": false
+        },
+        {
+          "name": "source",
+          "type": "string",
+          "description": "Filter by alert source",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum alerts to return",
+          "required": false,
+          "default": 50
+        }
+      ]
+    },
+    {
+      "id": "search_entities",
+      "name": "Search Entities",
+      "description": "Search for entities (users, IPs, hosts) across the Hunters data lake",
+      "http_method": "GET",
+      "endpoint": "/entities",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Entity search query (IP, hostname, username, etc.)",
+          "required": true
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Entity type (user, ip, hostname, email)",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum results",
+          "required": false,
+          "default": 20
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "get_entity_timeline",
+      "name": "Get Entity Timeline",
+      "description": "Retrieve the activity timeline for a specific entity",
+      "http_method": "GET",
+      "endpoint": "/entities/{entityId}/timeline",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "entityId",
+          "type": "string",
+          "description": "Entity ID to retrieve timeline for",
+          "required": true
+        },
+        {
+          "name": "from",
+          "type": "string",
+          "description": "Start time",
+          "required": false
+        },
+        {
+          "name": "to",
+          "type": "string",
+          "description": "End time",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

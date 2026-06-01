@@ -1,0 +1,250 @@
+{
+  "id": "imperva_waf",
+  "name": "Imperva Cloud WAF",
+  "description": "Imperva Cloud WAF (Incapsula) API for managing site security, ACL rules, IP blacklists, and security events",
+  "version": "1.0.0",
+  "category": "waf",
+  "vendor": "Imperva (Thales)",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "x-API-Id",
+    "location": "header",
+    "note": "Requires both x-API-Id and x-API-Key headers for authentication"
+  },
+  "base_url": "https://api.imperva.com",
+  "actions": [
+    {
+      "id": "list_sites",
+      "name": "List Sites",
+      "description": "Retrieve all sites protected by Imperva Cloud WAF",
+      "http_method": "POST",
+      "endpoint": "/sites/list",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "account_id",
+          "type": "integer",
+          "description": "Account ID to list sites for",
+          "required": true
+        },
+        {
+          "name": "page_size",
+          "type": "integer",
+          "description": "Number of sites per page",
+          "required": false
+        },
+        {
+          "name": "page_num",
+          "type": "integer",
+          "description": "Page number for pagination",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_site_status",
+      "name": "Get Site Status",
+      "description": "Retrieve the current security status and configuration of a site",
+      "http_method": "POST",
+      "endpoint": "/sites/status",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "site_id",
+          "type": "integer",
+          "description": "ID of the site to query",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "configure_acl",
+      "name": "Configure ACL Rules",
+      "description": "Update the ACL configuration (IP blacklist/whitelist) for a site",
+      "http_method": "POST",
+      "endpoint": "/sites/configure/acl",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "site_id",
+          "type": "integer",
+          "description": "ID of the site to configure",
+          "required": true
+        },
+        {
+          "name": "rule_id",
+          "type": "string",
+          "description": "ACL rule type: api.acl.blacklisted_ips, api.acl.blacklisted_countries, api.acl.blacklisted_urls, api.acl.whitelisted_ips",
+          "required": true
+        },
+        {
+          "name": "ips",
+          "type": "string",
+          "description": "Comma-separated list of IP addresses to add to the ACL",
+          "required": false
+        },
+        {
+          "name": "countries",
+          "type": "string",
+          "description": "Comma-separated list of country codes",
+          "required": false
+        },
+        {
+          "name": "urls",
+          "type": "string",
+          "description": "Comma-separated list of URLs to blacklist",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "configure_waf_settings",
+      "name": "Configure WAF Settings",
+      "description": "Update WAF security settings and threat actions for a site",
+      "http_method": "POST",
+      "endpoint": "/sites/configure/security",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "site_id",
+          "type": "integer",
+          "description": "ID of the site to configure",
+          "required": true
+        },
+        {
+          "name": "rule_id",
+          "type": "string",
+          "description": "Security rule type (e.g., api.threats.sql_injection, api.threats.cross_site_scripting, api.threats.bot_access_control)",
+          "required": true
+        },
+        {
+          "name": "security_rule_action",
+          "type": "string",
+          "description": "Action to take: alert, block, block_ip, block_user, captcha",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_security_events",
+      "name": "Get Security Events",
+      "description": "Retrieve WAF security events (attacks, blocks) for a site",
+      "http_method": "POST",
+      "endpoint": "/incidents/list",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "site_id",
+          "type": "integer",
+          "description": "ID of the site to query events for",
+          "required": true
+        },
+        {
+          "name": "time_range",
+          "type": "string",
+          "description": "Time range: today, last_7_days, last_30_days, last_90_days, month_to_date",
+          "required": false
+        },
+        {
+          "name": "page_size",
+          "type": "integer",
+          "description": "Number of events per page",
+          "required": false
+        },
+        {
+          "name": "page_num",
+          "type": "integer",
+          "description": "Page number for pagination",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_visit_stats",
+      "name": "Get Visit Statistics",
+      "description": "Retrieve traffic and visit statistics including threats blocked",
+      "http_method": "POST",
+      "endpoint": "/stats/visits",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "site_id",
+          "type": "integer",
+          "description": "ID of the site to query stats for",
+          "required": true
+        },
+        {
+          "name": "time_range",
+          "type": "string",
+          "description": "Time range: today, last_7_days, last_30_days, last_90_days",
+          "required": false
+        },
+        {
+          "name": "stats",
+          "type": "string",
+          "description": "Comma-separated stat types to retrieve",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "create_incap_rule",
+      "name": "Create Incap Rule",
+      "description": "Create a custom security rule (IncapRule) for advanced traffic filtering",
+      "http_method": "POST",
+      "endpoint": "/sites/incapRules/add",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "site_id",
+          "type": "integer",
+          "description": "ID of the site to add the rule to",
+          "required": true
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Name of the custom rule",
+          "required": true
+        },
+        {
+          "name": "action",
+          "type": "string",
+          "description": "Rule action: RULE_ACTION_BLOCK, RULE_ACTION_ALERT, RULE_ACTION_REDIRECT, RULE_ACTION_CAPTCHA",
+          "required": true
+        },
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "Filter expression for matching traffic",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_incap_rules",
+      "name": "List Incap Rules",
+      "description": "Retrieve all custom IncapRules for a site",
+      "http_method": "POST",
+      "endpoint": "/sites/incapRules/list",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "site_id",
+          "type": "integer",
+          "description": "ID of the site to list rules for",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

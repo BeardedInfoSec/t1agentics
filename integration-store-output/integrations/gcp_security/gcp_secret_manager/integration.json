@@ -1,0 +1,166 @@
+{
+  "id": "gcp_secret_manager_gcp_security",
+  "name": "Google Cloud Secret Manager",
+  "description": "Google Cloud service for storing, managing, and accessing secrets such as API keys, passwords, and certificates securely",
+  "version": "1.0.0",
+  "category": "gcp_security",
+  "vendor": "Google Cloud",
+  "auth_type": "oauth2_client",
+  "auth_config": {
+    "type": "oauth2_client",
+    "token_url": "https://oauth2.googleapis.com/token",
+    "scope": "https://www.googleapis.com/auth/cloud-platform",
+    "grant_type": "urn:ietf:params:oauth:grant-type:jwt-bearer"
+  },
+  "base_url": "https://secretmanager.googleapis.com/v1",
+  "actions": [
+    {
+      "id": "list_secrets",
+      "name": "List Secrets",
+      "description": "List all secrets in a GCP project",
+      "http_method": "GET",
+      "endpoint": "/projects/{project}/secrets",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "project",
+          "type": "string",
+          "description": "GCP project ID",
+          "required": true
+        },
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "Filter expression for secrets",
+          "required": false
+        },
+        {
+          "name": "pageSize",
+          "type": "number",
+          "description": "Maximum secrets to return per page",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "pageToken",
+          "type": "string",
+          "description": "Pagination token",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_secret",
+      "name": "Get Secret Metadata",
+      "description": "Retrieve metadata about a specific secret including labels, replication policy, and rotation settings",
+      "http_method": "GET",
+      "endpoint": "/projects/{project}/secrets/{secretId}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "project",
+          "type": "string",
+          "description": "GCP project ID",
+          "required": true
+        },
+        {
+          "name": "secretId",
+          "type": "string",
+          "description": "Secret ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_secret_versions",
+      "name": "List Secret Versions",
+      "description": "List all versions of a secret including their state (enabled, disabled, destroyed)",
+      "http_method": "GET",
+      "endpoint": "/projects/{project}/secrets/{secretId}/versions",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "project",
+          "type": "string",
+          "description": "GCP project ID",
+          "required": true
+        },
+        {
+          "name": "secretId",
+          "type": "string",
+          "description": "Secret ID",
+          "required": true
+        },
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "Filter expression (e.g., \"state=ENABLED\")",
+          "required": false
+        },
+        {
+          "name": "pageSize",
+          "type": "number",
+          "description": "Maximum versions to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "access_secret_version",
+      "name": "Access Secret Version",
+      "description": "Access the value of a specific secret version. Use with caution in automated workflows",
+      "http_method": "GET",
+      "endpoint": "/projects/{project}/secrets/{secretId}/versions/{versionId}:access",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "project",
+          "type": "string",
+          "description": "GCP project ID",
+          "required": true
+        },
+        {
+          "name": "secretId",
+          "type": "string",
+          "description": "Secret ID",
+          "required": true
+        },
+        {
+          "name": "versionId",
+          "type": "string",
+          "description": "Version ID or 'latest' for the most recent version",
+          "required": true,
+          "default": "latest"
+        }
+      ]
+    },
+    {
+      "id": "get_iam_policy",
+      "name": "Get Secret IAM Policy",
+      "description": "Retrieve the IAM policy for a secret to audit access permissions",
+      "http_method": "POST",
+      "endpoint": "/projects/{project}/secrets/{secretId}:getIamPolicy",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "project",
+          "type": "string",
+          "description": "GCP project ID",
+          "required": true
+        },
+        {
+          "name": "secretId",
+          "type": "string",
+          "description": "Secret ID",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,175 @@
+{
+  "id": "trellix_helix_soar",
+  "name": "Trellix Helix SOAR",
+  "description": "Trellix security operations platform (formerly FireEye Helix) with SOAR capabilities for alert management, case handling, automated response, and threat intelligence integration.",
+  "version": "1.0.0",
+  "category": "soar",
+  "vendor": "Trellix",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "x-fireeye-api-key",
+    "location": "header"
+  },
+  "base_url": "https://{host}/helix/id/v3",
+  "actions": [
+    {
+      "id": "list_alerts",
+      "name": "List Alerts",
+      "description": "Retrieve a list of alerts with optional filtering.",
+      "http_method": "GET",
+      "endpoint": "/alerts",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "offset", "type": "integer", "description": "Starting offset for pagination.", "required": false},
+        {"name": "limit", "type": "integer", "description": "Maximum alerts to return.", "required": false},
+        {"name": "status", "type": "string", "description": "Filter by status: 'open', 'acknowledged', 'closed'.", "required": false},
+        {"name": "severity", "type": "string", "description": "Filter by severity: 'low', 'medium', 'high', 'critical'.", "required": false},
+        {"name": "since", "type": "string", "description": "Filter alerts created since this ISO 8601 timestamp.", "required": false},
+        {"name": "until", "type": "string", "description": "Filter alerts created before this ISO 8601 timestamp.", "required": false}
+      ]
+    },
+    {
+      "id": "get_alert",
+      "name": "Get Alert",
+      "description": "Retrieve details of a specific alert.",
+      "http_method": "GET",
+      "endpoint": "/alerts/{alertId}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "alertId", "type": "string", "description": "The alert ID.", "required": true}
+      ]
+    },
+    {
+      "id": "update_alert",
+      "name": "Update Alert",
+      "description": "Update alert properties such as status or assignee.",
+      "http_method": "PATCH",
+      "endpoint": "/alerts/{alertId}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "alertId", "type": "string", "description": "The alert ID.", "required": true},
+        {"name": "status", "type": "string", "description": "Updated status.", "required": false},
+        {"name": "assignee", "type": "string", "description": "Updated assignee.", "required": false},
+        {"name": "severity", "type": "string", "description": "Updated severity.", "required": false}
+      ]
+    },
+    {
+      "id": "close_alert",
+      "name": "Close Alert",
+      "description": "Close an alert with resolution details.",
+      "http_method": "PATCH",
+      "endpoint": "/alerts/{alertId}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "alertId", "type": "string", "description": "The alert ID to close.", "required": true},
+        {"name": "status", "type": "string", "description": "Set to 'closed'.", "required": true},
+        {"name": "resolution", "type": "string", "description": "Resolution details.", "required": false}
+      ]
+    },
+    {
+      "id": "add_note_to_alert",
+      "name": "Add Note to Alert",
+      "description": "Add a note/comment to an alert.",
+      "http_method": "POST",
+      "endpoint": "/alerts/{alertId}/notes",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "alertId", "type": "string", "description": "The alert ID.", "required": true},
+        {"name": "message", "type": "string", "description": "Note text.", "required": true}
+      ]
+    },
+    {
+      "id": "list_cases",
+      "name": "List Cases",
+      "description": "Retrieve a list of investigation cases.",
+      "http_method": "GET",
+      "endpoint": "/cases",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "offset", "type": "integer", "description": "Starting offset.", "required": false},
+        {"name": "limit", "type": "integer", "description": "Maximum results.", "required": false},
+        {"name": "status", "type": "string", "description": "Filter by status.", "required": false}
+      ]
+    },
+    {
+      "id": "get_case",
+      "name": "Get Case",
+      "description": "Retrieve details of a specific case.",
+      "http_method": "GET",
+      "endpoint": "/cases/{caseId}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "caseId", "type": "string", "description": "The case ID.", "required": true}
+      ]
+    },
+    {
+      "id": "create_case",
+      "name": "Create Case",
+      "description": "Create a new investigation case.",
+      "http_method": "POST",
+      "endpoint": "/cases",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "name", "type": "string", "description": "Case name.", "required": true},
+        {"name": "description", "type": "string", "description": "Case description.", "required": false},
+        {"name": "severity", "type": "string", "description": "Severity: 'low', 'medium', 'high', 'critical'.", "required": false},
+        {"name": "assignee", "type": "string", "description": "Assigned analyst.", "required": false},
+        {"name": "alertIds", "type": "array", "description": "Array of alert IDs to associate with the case.", "required": false}
+      ]
+    },
+    {
+      "id": "update_case",
+      "name": "Update Case",
+      "description": "Update an existing case.",
+      "http_method": "PATCH",
+      "endpoint": "/cases/{caseId}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "caseId", "type": "string", "description": "The case ID.", "required": true},
+        {"name": "name", "type": "string", "description": "Updated name.", "required": false},
+        {"name": "status", "type": "string", "description": "Updated status.", "required": false},
+        {"name": "severity", "type": "string", "description": "Updated severity.", "required": false},
+        {"name": "assignee", "type": "string", "description": "Updated assignee.", "required": false}
+      ]
+    },
+    {
+      "id": "close_case",
+      "name": "Close Case",
+      "description": "Close a case with resolution details.",
+      "http_method": "PATCH",
+      "endpoint": "/cases/{caseId}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "caseId", "type": "string", "description": "The case ID.", "required": true},
+        {"name": "status", "type": "string", "description": "Set to 'closed'.", "required": true},
+        {"name": "resolution", "type": "string", "description": "Resolution summary.", "required": false}
+      ]
+    },
+    {
+      "id": "search_events",
+      "name": "Search Events",
+      "description": "Search security events in the Helix data store.",
+      "http_method": "POST",
+      "endpoint": "/search",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "query", "type": "string", "description": "MQL (Mandiant Query Language) search query.", "required": true},
+        {"name": "start", "type": "string", "description": "Start time in ISO 8601.", "required": true},
+        {"name": "end", "type": "string", "description": "End time in ISO 8601.", "required": true},
+        {"name": "limit", "type": "integer", "description": "Maximum results to return.", "required": false}
+      ]
+    }
+  ]
+}

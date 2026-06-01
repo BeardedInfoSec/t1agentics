@@ -1,0 +1,329 @@
+{
+  "id": "git",
+  "name": "Git",
+  "description": "This app integrates with git and supports common git actions",
+  "version": "4.1.5",
+  "category": "devops",
+  "vendor": "Generic",
+  "auth_type": "basic_auth",
+  "auth_config": {
+    "type": "basic_auth",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "configure_ssh",
+      "name": "Configure Ssh",
+      "description": "Create an RSA Key pair for SSH connectivity",
+      "http_method": "GET",
+      "endpoint": "/actions/configure_ssh",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "force_new",
+          "type": "boolean",
+          "description": "Force create a new key pair",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_repos",
+      "name": "List Repos",
+      "description": "List repos configured/pulled",
+      "http_method": "GET",
+      "endpoint": "/actions/list_repos",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "update_file",
+      "name": "Update File",
+      "description": "Update (overwrite) contents of a file in the working directory",
+      "http_method": "GET",
+      "endpoint": "/actions/update_file",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "file_path",
+          "type": "string",
+          "description": "File path in repo to update",
+          "required": true,
+          "contains": [
+            "file path"
+          ]
+        },
+        {
+          "name": "contents",
+          "type": "string",
+          "description": "Contents (text) of the file",
+          "required": false
+        },
+        {
+          "name": "vault_id",
+          "type": "string",
+          "description": "Vault ID",
+          "required": false,
+          "contains": [
+            "vault id"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "git_status",
+      "name": "Git Status",
+      "description": "Get the result of git status",
+      "http_method": "GET",
+      "endpoint": "/actions/git_status",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "delete_file",
+      "name": "Delete File",
+      "description": "Delete a file from the local working directory",
+      "http_method": "GET",
+      "endpoint": "/actions/delete_file",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "file_path",
+          "type": "string",
+          "description": "File path in repo to delete",
+          "required": true,
+          "contains": [
+            "file path"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "add_file",
+      "name": "Add File",
+      "description": "Create a file in the local working directory",
+      "http_method": "GET",
+      "endpoint": "/actions/add_file",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "file_path",
+          "type": "string",
+          "description": "File path in repo to add",
+          "required": true,
+          "contains": [
+            "file path"
+          ]
+        },
+        {
+          "name": "contents",
+          "type": "string",
+          "description": "Contents (text) of the file",
+          "required": false
+        },
+        {
+          "name": "vault_id",
+          "type": "string",
+          "description": "Vault ID",
+          "required": false,
+          "contains": [
+            "vault id"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "git_commit",
+      "name": "Git Commit",
+      "description": "Commit changes",
+      "http_method": "GET",
+      "endpoint": "/actions/git_commit",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "message",
+          "type": "string",
+          "description": "Commit message (Default: committed from splunk soar)",
+          "required": true,
+          "default": "committed from phantom"
+        },
+        {
+          "name": "push",
+          "type": "boolean",
+          "description": "Push to remote after commit",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "git_push",
+      "name": "Git Push",
+      "description": "Push commits to the remote server",
+      "http_method": "GET",
+      "endpoint": "/actions/git_push",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": []
+    },
+    {
+      "id": "git_pull",
+      "name": "Git Pull",
+      "description": "Pull the repo",
+      "http_method": "GET",
+      "endpoint": "/actions/git_pull",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "delete_clone",
+      "name": "Delete Repo",
+      "description": "Delete a cloned repository",
+      "http_method": "GET",
+      "endpoint": "/actions/delete_clone",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "repo_url",
+          "type": "string",
+          "description": "Repository URL",
+          "required": false,
+          "contains": [
+            "github repo",
+            "gitlab repo",
+            "bitbucket repo",
+            "git repo"
+          ]
+        },
+        {
+          "name": "branch",
+          "type": "string",
+          "description": "Branch",
+          "required": false,
+          "default": "main",
+          "contains": [
+            "github branch",
+            "gitlab branch",
+            "bitbucket branch",
+            "git branch"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "clone_repo",
+      "name": "Clone Repo",
+      "description": "Clone the repo",
+      "http_method": "GET",
+      "endpoint": "/actions/clone_repo",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "repo_url",
+          "type": "string",
+          "description": "Repository URL",
+          "required": false,
+          "contains": [
+            "github repo",
+            "gitlab repo",
+            "bitbucket repo",
+            "git repo"
+          ]
+        },
+        {
+          "name": "branch",
+          "type": "string",
+          "description": "Branch",
+          "required": false,
+          "default": "main",
+          "contains": [
+            "github branch",
+            "gitlab branch",
+            "bitbucket branch",
+            "git branch"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "on_poll",
+      "name": "On Poll",
+      "description": "Schedule regular cloning of a repository",
+      "http_method": "POST",
+      "endpoint": "/actions/on_poll",
+      "action_type": "ingest",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "repo_url",
+          "type": "string",
+          "description": "Repository URL",
+          "required": false,
+          "contains": [
+            "github repo",
+            "gitlab repo",
+            "bitbucket repo",
+            "git repo"
+          ]
+        },
+        {
+          "name": "branch",
+          "type": "string",
+          "description": "Branch",
+          "required": false,
+          "default": "main",
+          "contains": [
+            "github branch",
+            "gitlab branch",
+            "bitbucket branch",
+            "git branch"
+          ]
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Git",
+    "original_type": "devops",
+    "converted_at": "2025-12-18T16:25:28.814155",
+    "source_version": "4.1.5"
+  }
+}

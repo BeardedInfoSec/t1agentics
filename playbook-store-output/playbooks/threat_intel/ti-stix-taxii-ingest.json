@@ -1,0 +1,264 @@
+{
+  "name": "STIX/TAXII Feed Ingestion",
+  "slug": "ti-stix-taxii-ingest",
+  "description": "Ingests threat intelligence from STIX/TAXII feeds, parses STIX bundles into individual indicators, deduplicates against existing local intelligence, and adds new unique indicators to the local threat intel database. The playbook validates STIX object formatting, extracts IOCs with their context (confidence, TLP marking, kill chain phase), uses AI to assess the quality and relevance of ingested data, and generates an ingestion summary report. Duplicate indicators are logged and skipped to maintain database hygiene.",
+  "category": "threat_intel",
+  "subcategory": "feed_ingestion",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "advanced",
+  "estimated_time": "12 minutes",
+  "tags": ["stix", "taxii", "feed", "ingestion", "threat_intel", "deduplication", "indicators"],
+  "alert_types": ["threat_intel"],
+  "severity_filter": ["low", "medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["scheduled", "manual", "taxii_poll", "stix_ingest"],
+    "min_severity": "low"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "taxii_server",
+      "name": "TAXII Server",
+      "category": "threat_intel",
+      "reason": "Poll TAXII collections to retrieve latest STIX bundles from configured threat intel feeds"
+    },
+    {
+      "connector_id": "misp",
+      "name": "MISP",
+      "category": "threat_intel",
+      "reason": "Check for duplicate indicators and store validated new indicators in the local threat intel platform"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "STIX/TAXII Poll Trigger",
+          "config": {
+            "alert_types": ["scheduled", "manual", "taxii_poll", "stix_ingest"],
+            "schedule": "hourly",
+            "description": "Triggers on an hourly schedule or on-demand to poll TAXII collections for new STIX bundles"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "respond",
+          "label": "Poll TAXII Collections",
+          "config": {
+            "integration_action": {
+              "connector_id": "taxii_server",
+              "action": "poll_collection",
+              "parameters": {
+                "collections": "all_configured",
+                "since_last_poll": true,
+                "max_results": 1000
+              }
+            },
+            "description": "Polls all configured TAXII collections for new STIX bundles since the last successful poll"
+          }
+        }
+      },
+      {
+        "id": "code_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "code",
+          "label": "Parse STIX Bundles and Extract IOCs",
+          "config": {
+            "code": "stix_bundles = inputs.get('stix_bundles', [])\n\nindicators = []\nmalware_objects = []\nrelationships = []\nparse_errors = []\n\nfor bundle in stix_bundles:\n    objects = bundle.get('objects', [])\n    for obj in objects:\n        obj_type = obj.get('type', '')\n        if obj_type == 'indicator':\n            pattern = obj.get('pattern', '')\n            indicators.append({\n                'id': obj.get('id'),\n                'pattern': pattern,\n                'name': obj.get('name', ''),\n                'confidence': obj.get('confidence', 50),\n                'tlp': obj.get('object_marking_refs', ['TLP:AMBER'])[0] if obj.get('object_marking_refs') else 'TLP:AMBER',\n                'created': obj.get('created', ''),\n                'valid_from': obj.get('valid_from', ''),\n                'valid_until': obj.get('valid_until', ''),\n                'kill_chain_phases': obj.get('kill_chain_phases', []),\n                'source': bundle.get('id', 'unknown')\n            })\n        elif obj_type == 'malware':\n            malware_objects.append(obj)\n        elif obj_type == 'relationship':\n            relationships.append(obj)\n\nresult = {\n    'indicators': indicators,\n    'indicator_count': len(indicators),\n    'malware_count': len(malware_objects),\n    'relationship_count': len(relationships),\n    'bundle_count': len(stix_bundles),\n    'parse_errors': parse_errors\n}",
+            "inputs": {
+              "stix_bundles": "{{respond_1.outputs.stix_bundles}}"
+            },
+            "description": "Parses STIX bundles extracting indicators with their confidence levels, TLP markings, kill chain phases, and validity periods"
+          }
+        }
+      },
+      {
+        "id": "code_2",
+        "type": "signal",
+        "position": { "x": 520, "y": 540 },
+        "data": {
+          "kind": "code",
+          "label": "Deduplicate Against Local Intel",
+          "config": {
+            "code": "indicators = inputs.get('new_indicators', [])\nexisting = inputs.get('existing_indicators', [])\n\nexisting_patterns = set([e.get('pattern', '') for e in existing])\nexisting_ids = set([e.get('stix_id', '') for e in existing])\n\nnew_unique = []\nduplicates = []\n\nfor ind in indicators:\n    if ind['pattern'] in existing_patterns or ind['id'] in existing_ids:\n        duplicates.append(ind)\n    else:\n        new_unique.append(ind)\n\nresult = {\n    'new_unique': new_unique,\n    'new_unique_count': len(new_unique),\n    'duplicates': duplicates,\n    'duplicate_count': len(duplicates),\n    'dedup_rate': round(len(duplicates) / max(len(indicators), 1) * 100, 1)\n}",
+            "inputs": {
+              "new_indicators": "{{code_1.outputs.result.indicators}}",
+              "existing_indicators": "{{trigger_1.existing_indicators}}"
+            },
+            "description": "Deduplicates incoming indicators against existing local intelligence to identify truly new unique indicators"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 700 },
+        "data": {
+          "kind": "decision",
+          "label": "New Unique Indicators Found?",
+          "config": {
+            "condition": "{{code_2.outputs.result.new_unique_count}} > 0",
+            "description": "Routes based on whether any new unique indicators were found after deduplication"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — Quality Assessment",
+          "config": {
+            "template_id": "ioc_correlation",
+            "additional_instructions": "Assess the quality and relevance of the new STIX indicators. Evaluate confidence levels, check for overly broad patterns, verify TLP compliance, and flag any low-quality indicators that should be reviewed before ingestion. Provide a quality score.",
+            "description": "AI-powered quality assessment of new STIX indicators evaluating confidence, pattern specificity, and relevance"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "label": "Add to Local Threat Intel DB",
+          "config": {
+            "integration_action": {
+              "connector_id": "misp",
+              "action": "create_indicators",
+              "parameters": {
+                "indicators": "{{code_2.outputs.result.new_unique}}",
+                "source": "ti-stix-taxii-ingest",
+                "auto_publish": false,
+                "tags": ["stix-ingested", "automated"]
+              }
+            },
+            "description": "Adds all validated new unique indicators to the local MISP threat intelligence database"
+          }
+        }
+      },
+      {
+        "id": "respond_3",
+        "type": "signal",
+        "position": { "x": 340, "y": 1180 },
+        "data": {
+          "kind": "respond",
+          "label": "Generate Ingestion Summary",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#threat-intel",
+              "message": "STIX/TAXII Ingestion Complete\n\nBundles Processed: {{code_1.outputs.result.bundle_count}}\nIndicators Parsed: {{code_1.outputs.result.indicator_count}}\nNew Unique: {{code_2.outputs.result.new_unique_count}}\nDuplicates Skipped: {{code_2.outputs.result.duplicate_count}}\nDedup Rate: {{code_2.outputs.result.dedup_rate}}%\nQuality Score: {{analyze_1.quality_score}}\n\n{{analyze_1.summary}}"
+            },
+            "description": "Sends the ingestion summary to the threat intel Slack channel with statistics and quality assessment"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 700, "y": 860 },
+        "data": {
+          "kind": "utility",
+          "label": "Note: No New Indicators",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "STIX/TAXII poll completed. No new unique indicators found.\n\nBundles Processed: {{code_1.outputs.result.bundle_count}}\nIndicators Parsed: {{code_1.outputs.result.indicator_count}}\nAll Duplicates: {{code_2.outputs.result.duplicate_count}}\n\nNo ingestion action required."
+            },
+            "description": "Documents that the TAXII poll returned no new unique indicators"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1340 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "STIX/TAXII feed ingestion complete"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_poll",
+        "source": "trigger_1",
+        "target": "respond_1",
+        "type": "default"
+      },
+      {
+        "id": "e_poll_parse",
+        "source": "respond_1",
+        "target": "code_1",
+        "type": "default"
+      },
+      {
+        "id": "e_parse_dedup",
+        "source": "code_1",
+        "target": "code_2",
+        "type": "default"
+      },
+      {
+        "id": "e_dedup_decision",
+        "source": "code_2",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "analyze_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "utility_1",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_assess_add",
+        "source": "analyze_1",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_add_summary",
+        "source": "respond_2",
+        "target": "respond_3",
+        "type": "default"
+      },
+      {
+        "id": "e_summary_end",
+        "source": "respond_3",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_nonewindicators_end",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

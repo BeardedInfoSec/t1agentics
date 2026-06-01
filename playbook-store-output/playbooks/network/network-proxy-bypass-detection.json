@@ -1,0 +1,230 @@
+{
+  "name": "Proxy Bypass Detection & Enforcement",
+  "slug": "network-proxy-bypass-detection",
+  "description": "Detects and responds to attempts to bypass the corporate web proxy, including direct HTTP/HTTPS connections that skip the proxy, use of VPN tunnels to external endpoints, SSH SOCKS proxies, and CONNECT method abuse. Riggs AI analyzes the bypass method, user intent, and destinations accessed. Confirmed policy violations trigger traffic blocking, user notification, and compliance documentation. Authorized exceptions for specific applications are documented and whitelisted.",
+  "category": "network",
+  "subcategory": "proxy_security",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "10 minutes",
+  "tags": ["proxy", "bypass", "policy_enforcement", "web_security", "network"],
+  "alert_types": ["network", "proxy", "policy_violation"],
+  "severity_filter": ["medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["network", "proxy_bypass", "direct_connection", "unauthorized_tunnel", "proxy_evasion"],
+    "min_severity": "medium"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "palo_alto_ngfw",
+      "name": "Palo Alto NGFW",
+      "category": "network",
+      "reason": "Block direct connections that bypass the web proxy and enforce proxy policy"
+    },
+    {
+      "connector_id": "zscaler",
+      "name": "Zscaler",
+      "category": "proxy",
+      "reason": "Verify proxy enforcement status and manage bypass exceptions"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Notify security team and user's manager of proxy bypass violations"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Proxy Bypass Detected",
+          "config": {
+            "alert_types": ["network", "proxy_bypass", "direct_connection", "unauthorized_tunnel", "proxy_evasion"],
+            "description": "Triggers when network monitoring detects web traffic bypassing the corporate proxy via direct connections, tunnels, or evasion techniques"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — Bypass Method Analysis",
+          "config": {
+            "template_id": "ioc_correlation",
+            "additional_instructions": "Analyze the proxy bypass: identify the evasion method (direct connection, SSH tunnel, VPN tunnel, CONNECT abuse), destination categories, user identity, department, and data transferred. Determine if this is intentional policy violation, misconfigured application, or potential threat actor activity.",
+            "description": "AI-powered analysis of the proxy bypass method, user context, and destination risk to classify the violation type and intent"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "label": "Intentional Bypass / Threat?",
+          "config": {
+            "condition": "{{analyze_1.verdict}} in ['MALICIOUS', 'SUSPICIOUS'] or {{analyze_1.intent}} == 'intentional'",
+            "description": "Routes based on whether the proxy bypass is intentional evasion or potential threat activity versus a misconfigured application"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "respond",
+          "label": "Block Direct Connection",
+          "config": {
+            "integration_action": {
+              "connector_id": "palo_alto_ngfw",
+              "action": "block_traffic",
+              "parameters": {
+                "source_ip": "{{trigger_1.alert.source_ip}}",
+                "destination_ip": "{{trigger_1.alert.destination_ip}}",
+                "destination_port": "{{trigger_1.alert.destination_port}}",
+                "rule_name": "T1-ProxyEnforce-{{trigger_1.alert.alert_id}}",
+                "comment": "Proxy bypass blocked — Method: {{analyze_1.bypass_method}}, User: {{trigger_1.alert.username}}"
+              }
+            },
+            "description": "Blocks the direct connection that bypasses the proxy to enforce corporate web security policy"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "label": "Enforce Proxy on Endpoint",
+          "config": {
+            "integration_action": {
+              "connector_id": "zscaler",
+              "action": "enforce_proxy",
+              "parameters": {
+                "device_id": "{{trigger_1.alert.endpoint_id}}",
+                "username": "{{trigger_1.alert.username}}",
+                "force_tunnel": true,
+                "comment": "Proxy enforcement reinforced after bypass detection — Alert: {{trigger_1.alert.alert_id}}"
+              }
+            },
+            "description": "Reinforces proxy enforcement on the endpoint to prevent future bypass attempts"
+          }
+        }
+      },
+      {
+        "id": "respond_3",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "label": "Notify Security Team",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#security-alerts",
+              "message": "PROXY BYPASS VIOLATION\n\nUser: {{trigger_1.alert.username}}\nHost: {{trigger_1.alert.hostname}}\nBypass Method: {{analyze_1.bypass_method}}\nDestination: {{trigger_1.alert.destination_ip}}:{{trigger_1.alert.destination_port}}\nData Volume: {{trigger_1.alert.bytes_transferred}}\nDestination Category: {{analyze_1.destination_category}}\n\nActions:\n- Direct connection blocked\n- Proxy enforcement reinforced\n\nIntent: {{analyze_1.intent}}\nAlert ID: {{trigger_1.alert.alert_id}}",
+              "priority": "high"
+            },
+            "description": "Notifies the security team of the proxy bypass violation with user details and enforcement actions"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "utility",
+          "label": "Create Application Exception",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "Proxy bypass by {{trigger_1.alert.username}} — Application: {{analyze_1.application}}. Bypass caused by misconfigured application (not intentional evasion). Verdict: {{analyze_1.verdict}}.\n\nApplication exception request created for proxy team review.",
+              "assign_to": "proxy_admin",
+              "close_alert": true,
+              "create_exception_request": true
+            },
+            "description": "Creates a proxy exception request for applications that legitimately require direct connections and closes the alert"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1020 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "Proxy bypass detection and enforcement workflow complete"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_analyze",
+        "source": "trigger_1",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_analyze_decision",
+        "source": "analyze_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "respond_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "utility_1",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_block_enforce",
+        "source": "respond_1",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_enforce_notify",
+        "source": "respond_2",
+        "target": "respond_3",
+        "type": "default"
+      },
+      {
+        "id": "e_notify_end",
+        "source": "respond_3",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_utility_end",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

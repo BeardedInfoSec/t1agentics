@@ -1,0 +1,850 @@
+{
+  "id": "trustar",
+  "name": "TruSTAR",
+  "description": "This App integrates with TruSTAR to provide various hunting and reporting actions",
+  "version": "3.2.0",
+  "category": "threat_intel",
+  "vendor": "TruSTAR Technology",
+  "auth_type": "oauth2",
+  "auth_config": {
+    "type": "oauth2",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "hunt_ioc",
+      "name": "Hunt Ioc",
+      "description": "Get report IDs associated with an IOC",
+      "http_method": "GET",
+      "endpoint": "/actions/hunt_ioc",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "ioc",
+          "type": "string",
+          "description": "IOC to hunt",
+          "required": true,
+          "contains": [
+            "ip",
+            "url",
+            "md5",
+            "hash",
+            "sha1",
+            "email",
+            "domain",
+            "sha256",
+            "file name",
+            "trustar malware",
+            "trustar cve number",
+            "trustar registry key",
+            "trustar bitcoin address"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "hunt_ip",
+      "name": "Hunt Ip",
+      "description": "Get report IDs associated with an IP/CIDR",
+      "http_method": "GET",
+      "endpoint": "/actions/hunt_ip",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "IP/CIDR to hunt",
+          "required": true,
+          "contains": [
+            "ip"
+          ]
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "hunt_url",
+      "name": "Hunt Url",
+      "description": "Get report IDs associated with a URL",
+      "http_method": "GET",
+      "endpoint": "/actions/hunt_url",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "URL to hunt",
+          "required": true,
+          "contains": [
+            "url",
+            "domain"
+          ]
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "hunt_file",
+      "name": "Hunt File",
+      "description": "Get report IDs associated with a file",
+      "http_method": "GET",
+      "endpoint": "/actions/hunt_file",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "file",
+          "type": "string",
+          "description": "File to hunt",
+          "required": true,
+          "contains": [
+            "hash",
+            "file name",
+            "md5",
+            "sha1",
+            "sha256"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "hunt_email",
+      "name": "Hunt Email",
+      "description": "Get report IDs associated with an email address",
+      "http_method": "GET",
+      "endpoint": "/actions/hunt_email",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "email",
+          "type": "string",
+          "description": "Email address to hunt",
+          "required": true,
+          "contains": [
+            "email"
+          ]
+        }
+      ],
+      "observable_type": "email"
+    },
+    {
+      "id": "hunt_cve",
+      "name": "Hunt Cve",
+      "description": "Get report IDs associated with a CVE (Common Vulnerability and Exposure) number",
+      "http_method": "GET",
+      "endpoint": "/actions/hunt_cve",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "cve_number",
+          "type": "string",
+          "description": "CVE (Common Vulnerability and Exposure) number to hunt",
+          "required": true,
+          "contains": [
+            "trustar cve number"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "hunt_malware",
+      "name": "Hunt Malware",
+      "description": "Get report IDs associated with a malware indicator",
+      "http_method": "GET",
+      "endpoint": "/actions/hunt_malware",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "malware",
+          "type": "string",
+          "description": "Malware to hunt",
+          "required": true,
+          "contains": [
+            "trustar malware"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "hunt_registry_key",
+      "name": "Hunt Registry Key",
+      "description": "Get report IDs associated with a registry key",
+      "http_method": "GET",
+      "endpoint": "/actions/hunt_registry_key",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "registry_key",
+          "type": "string",
+          "description": "Registry key to hunt",
+          "required": true,
+          "contains": [
+            "trustar registry key"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "hunt_bitcoin_address",
+      "name": "Hunt Bitcoin Address",
+      "description": "Get report IDs associated with a bitcoin address",
+      "http_method": "GET",
+      "endpoint": "/actions/hunt_bitcoin_address",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "bitcoin_address",
+          "type": "string",
+          "description": "Bitcoin address to hunt",
+          "required": true,
+          "contains": [
+            "trustar bitcoin address"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_report",
+      "name": "Get Report",
+      "description": "Get report details",
+      "http_method": "GET",
+      "endpoint": "/api/1.3/reports/{report_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "report_id",
+          "type": "string",
+          "description": "Report ID",
+          "required": true,
+          "contains": [
+            "trustar report id",
+            "trustar tracking id"
+          ]
+        },
+        {
+          "name": "id_type",
+          "type": "string",
+          "description": "ID type (Default: internal)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "copy_report",
+      "name": "Copy Report",
+      "description": "Copy a report to another enclave",
+      "http_method": "GET",
+      "endpoint": "/api/1.3/reports/copy/{report_id}",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "report_id",
+          "type": "string",
+          "description": "Report ID",
+          "required": true,
+          "contains": [
+            "trustar report id",
+            "trustar tracking id"
+          ]
+        },
+        {
+          "name": "destination_enclave",
+          "type": "string",
+          "description": "ID of destination enclave",
+          "required": true,
+          "contains": [
+            "trustar enclave id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "move_report",
+      "name": "Move Report",
+      "description": "Move a report to another enclave",
+      "http_method": "GET",
+      "endpoint": "/api/1.3/reports/move/{report_id}",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "report_id",
+          "type": "string",
+          "description": "Report ID",
+          "required": true,
+          "contains": [
+            "trustar report id",
+            "trustar tracking id"
+          ]
+        },
+        {
+          "name": "destination_enclave",
+          "type": "string",
+          "description": "ID of destination enclave",
+          "required": true,
+          "contains": [
+            "trustar enclave id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "delete_report",
+      "name": "Delete Report",
+      "description": "Delete a report",
+      "http_method": "POST",
+      "endpoint": "/actions/delete_report",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "report_id",
+          "type": "string",
+          "description": "Report ID",
+          "required": true,
+          "contains": [
+            "trustar report id",
+            "trustar tracking id"
+          ]
+        },
+        {
+          "name": "id_type",
+          "type": "string",
+          "description": "ID type (Default: internal)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "submit_report",
+      "name": "Submit Report",
+      "description": "Submit report to TruSTAR",
+      "http_method": "GET",
+      "endpoint": "/api/1.3/reports",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "report_title",
+          "type": "string",
+          "description": "Report title",
+          "required": true
+        },
+        {
+          "name": "report_body",
+          "type": "string",
+          "description": "Text content of report",
+          "required": true
+        },
+        {
+          "name": "distribution_type",
+          "type": "string",
+          "description": "Distribution type",
+          "required": true
+        },
+        {
+          "name": "enclave_ids",
+          "type": "string",
+          "description": "(,) separated TruSTAR-generated enclave IDs",
+          "required": false,
+          "contains": [
+            "trustar enclave id"
+          ]
+        },
+        {
+          "name": "time_discovered",
+          "type": "string",
+          "description": "ISO-8601 formatted incident time with timezone (e.g. \"2016-09-22T11:38:35+00:00\")",
+          "required": false
+        },
+        {
+          "name": "external_tracking_id",
+          "type": "string",
+          "description": "External tracking ID (possibly a JIRA ticket number)",
+          "required": false,
+          "contains": [
+            "trustar tracking id"
+          ]
+        },
+        {
+          "name": "external_url",
+          "type": "string",
+          "description": "External URL (possibly a link to a JIRA ticket)",
+          "required": false,
+          "contains": [
+            "url"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "update_report",
+      "name": "Update Report",
+      "description": "Update a TruSTAR report ",
+      "http_method": "GET",
+      "endpoint": "/api/1.3/reports/{report_id}",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "report_id",
+          "type": "string",
+          "description": "Report ID",
+          "required": true,
+          "contains": [
+            "trustar report id",
+            "trustar tracking id"
+          ]
+        },
+        {
+          "name": "id_type",
+          "type": "string",
+          "description": "ID type (Default: internal)",
+          "required": false
+        },
+        {
+          "name": "report_title",
+          "type": "string",
+          "description": "Report title",
+          "required": false
+        },
+        {
+          "name": "report_body",
+          "type": "string",
+          "description": "Text content of report",
+          "required": false
+        },
+        {
+          "name": "enclave_ids",
+          "type": "string",
+          "description": "(,) separated TruSTAR-generated enclave IDs",
+          "required": false,
+          "contains": [
+            "trustar enclave id"
+          ]
+        },
+        {
+          "name": "time_discovered",
+          "type": "string",
+          "description": "ISO-8601 formatted incident time with timezone (e.g. \"2016-09-22T11:38:35+00:00\")",
+          "required": false
+        },
+        {
+          "name": "external_tracking_id",
+          "type": "string",
+          "description": "External tracking ID (possibly a JIRA ticket number)",
+          "required": false,
+          "contains": [
+            "trustar tracking id"
+          ]
+        },
+        {
+          "name": "external_url",
+          "type": "string",
+          "description": "External URL (possibly a link to a JIRA ticket)",
+          "required": false,
+          "contains": [
+            "url"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "safelist_ioc",
+      "name": "Safelist Ioc",
+      "description": "Add IOCs to the whitelist",
+      "http_method": "POST",
+      "endpoint": "/api/1.3/whitelist",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "ioc",
+          "type": "string",
+          "description": "A comma-separated list of IOCs to add to the whitelist",
+          "required": true,
+          "contains": [
+            "ip",
+            "url",
+            "md5",
+            "hash",
+            "sha1",
+            "email",
+            "domain",
+            "sha256",
+            "file name",
+            "trustar malware",
+            "trustar cve number",
+            "trustar registry key",
+            "trustar bitcoin address"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "unsafelist_ioc",
+      "name": "Unsafelist Ioc",
+      "description": "Remove IOC from the whitelist",
+      "http_method": "POST",
+      "endpoint": "/api/1.3/whitelist",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "ioc",
+          "type": "string",
+          "description": "IOC to remove from the whitelist",
+          "required": true,
+          "contains": [
+            "ip",
+            "url",
+            "md5",
+            "hash",
+            "sha1",
+            "email",
+            "domain",
+            "sha256",
+            "file name",
+            "trustar malware",
+            "trustar cve number",
+            "trustar registry key",
+            "trustar bitcoin address"
+          ]
+        },
+        {
+          "name": "ioc_type",
+          "type": "string",
+          "description": "The type of the given IOC",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_enclaves",
+      "name": "List Enclaves",
+      "description": "List all the accessible enclaves in TruSTAR",
+      "http_method": "GET",
+      "endpoint": "/api/1.3/whitelist",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "list_emails",
+      "name": "List Emails",
+      "description": "Get a list of emails submitted to Phishing Triage",
+      "http_method": "GET",
+      "endpoint": "/api/1.3/whitelist",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "start_time",
+          "type": "string",
+          "description": "ISO-8601 formatted start time with timezone (e.g. \"2021-06-01T11:38:35+00:00\") within the last month",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "string",
+          "description": "ISO-8601 formatted end time with timezone (e.g. \"2021-06-23T17:24:42+00:00\")",
+          "required": false
+        },
+        {
+          "name": "priority_event_score",
+          "type": "string",
+          "description": "A comma-separated list of priority scores to filter submissions by. Valid options: -1, 0, 1, 2, 3",
+          "required": false
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "A comma-separated list of statuses to filter submissions by. Valid options: CONFIRMED, IGNORED, UNRESOLVED",
+          "required": false
+        },
+        {
+          "name": "enclave_ids",
+          "type": "string",
+          "description": "A comma-separated list of enclave IDs to filter submissions by",
+          "required": false,
+          "contains": [
+            "trustar enclave id"
+          ]
+        }
+      ],
+      "observable_type": "email"
+    },
+    {
+      "id": "list_indicators",
+      "name": "List Indicators",
+      "description": "Get a list of indictors found in phishing submissions",
+      "http_method": "GET",
+      "endpoint": "/api/1.3/whitelist",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "start_time",
+          "type": "string",
+          "description": "Start time in UTC (YYYY-MM-DD HH:MM:SS)",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "string",
+          "description": "End time in UTC (YYYY-MM-DD HH:MM:SS)",
+          "required": false
+        },
+        {
+          "name": "indicator_score",
+          "type": "string",
+          "description": "A comma-separated list of indicator scores to filter indicators by",
+          "required": false
+        },
+        {
+          "name": "priority_event_score",
+          "type": "string",
+          "description": "A comma-separated list of priority scores to filter indicators by",
+          "required": false
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "A comma-separated list of statuses to filter indicators by",
+          "required": false
+        },
+        {
+          "name": "enclave_ids",
+          "type": "string",
+          "description": "A comma-separated list of enclave IDs to filter indicators by",
+          "required": false,
+          "contains": [
+            "trustar enclave id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "indicator_reputation",
+      "name": "Indicator Reputation",
+      "description": "Get enriched information of the indictor",
+      "http_method": "GET",
+      "endpoint": "/actions/indicator_reputation",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "indicator_value",
+          "type": "string",
+          "description": "The indicator value to search for",
+          "required": true
+        },
+        {
+          "name": "indicator_types",
+          "type": "string",
+          "description": "A comma-separated list of indicator types to filter indicators by",
+          "required": false
+        },
+        {
+          "name": "enclave_ids",
+          "type": "string",
+          "description": "A comma-separated list of enclave IDs to filter indicators by",
+          "required": false,
+          "contains": [
+            "trustar enclave id"
+          ]
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Specify the number of indicators to return (default value = 10000)",
+          "required": false,
+          "default": 10000
+        }
+      ]
+    },
+    {
+      "id": "get_indicator_summary",
+      "name": "Get Indicator Summary",
+      "description": "Get the structured summaries about indicators",
+      "http_method": "GET",
+      "endpoint": "/actions/get_indicator_summary",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "indicator_values",
+          "type": "string",
+          "description": "A comma-separated list of indicator values to query",
+          "required": true
+        },
+        {
+          "name": "enclave_ids",
+          "type": "string",
+          "description": "A comma-separated list of enclave IDs to filter indicators by",
+          "required": false,
+          "contains": [
+            "trustar enclave id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_indicator_metadata",
+      "name": "Get Indicator Metadata",
+      "description": "Get the metadata associated with the indicator",
+      "http_method": "GET",
+      "endpoint": "/actions/get_indicator_metadata",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "indicator_types",
+          "type": "string",
+          "description": "A comma-separated list of indicator types",
+          "required": false
+        },
+        {
+          "name": "indicator_values",
+          "type": "string",
+          "description": "A comma-separated list of indicator values to query",
+          "required": true
+        },
+        {
+          "name": "enclave_ids",
+          "type": "string",
+          "description": "A comma-separated list of enclave IDs to filter indicators by",
+          "required": false,
+          "contains": [
+            "trustar enclave id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "triage_email",
+      "name": "Triage Email",
+      "description": "Change the status of an email submission",
+      "http_method": "GET",
+      "endpoint": "/actions/triage_email",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "submission_id",
+          "type": "string",
+          "description": "ID of email submission to triage",
+          "required": true,
+          "contains": [
+            "trustar email submission id"
+          ]
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Status to set the email submission to",
+          "required": true
+        }
+      ],
+      "observable_type": "email"
+    },
+    {
+      "id": "parse_entities",
+      "name": "Parse Entities",
+      "description": "Find all of the entity terms that can be found from applying extraction rules on a chunk of text",
+      "http_method": "GET",
+      "endpoint": "/api/2.0/entities/parse",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "payload",
+          "type": "string",
+          "description": "Text using which all the entities will be extracted",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_observable_types",
+      "name": "List Observable Types",
+      "description": "Get all valid observable types",
+      "http_method": "GET",
+      "endpoint": "/api/1.3/whitelist",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    }
+  ],
+  "source_metadata": {
+    "original_name": "TruSTAR",
+    "original_type": "investigative",
+    "converted_at": "2025-12-18T16:25:29.252413",
+    "source_version": "3.2.0"
+  }
+}

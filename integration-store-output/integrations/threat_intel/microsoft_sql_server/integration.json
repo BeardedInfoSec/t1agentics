@@ -1,0 +1,194 @@
+{
+  "id": "microsoft_sql_server",
+  "name": "Microsoft SQL Server",
+  "description": "This app supports investigative actions against a Microsoft SQL Server",
+  "version": "2.3.4",
+  "category": "threat_intel",
+  "vendor": "Microsoft",
+  "auth_type": "basic_auth",
+  "auth_config": {
+    "type": "basic_auth",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "list_columns",
+      "name": "List Columns",
+      "description": "List all the columns in a table",
+      "http_method": "GET",
+      "endpoint": "/actions/list_columns",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "table_name",
+          "type": "string",
+          "description": "Table Name",
+          "required": true,
+          "contains": [
+            "mssql table name"
+          ]
+        },
+        {
+          "name": "table_schema",
+          "type": "string",
+          "description": "Table Schema",
+          "required": false,
+          "contains": [
+            "mssql table schema"
+          ]
+        },
+        {
+          "name": "host",
+          "type": "string",
+          "description": "Optional database hostname or ip address",
+          "required": false,
+          "contains": [
+            "hostname",
+            "host"
+          ]
+        },
+        {
+          "name": "database",
+          "type": "string",
+          "description": "Optional database name",
+          "required": false,
+          "contains": [
+            "mssql database name"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_tables",
+      "name": "List Tables",
+      "description": "List all the tables in the database",
+      "http_method": "GET",
+      "endpoint": "/actions/list_tables",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "table_schema",
+          "type": "string",
+          "description": "Table Schema",
+          "required": false,
+          "contains": [
+            "mssql table schema"
+          ]
+        },
+        {
+          "name": "host",
+          "type": "string",
+          "description": "Optional database hostname or ip address",
+          "required": false,
+          "contains": [
+            "hostname",
+            "host"
+          ]
+        },
+        {
+          "name": "database",
+          "type": "string",
+          "description": "Optional database name",
+          "required": false,
+          "contains": [
+            "mssql database name"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "run_query",
+      "name": "Run Query",
+      "description": "Run a query against a table or tables in the database",
+      "http_method": "GET",
+      "endpoint": "/actions/run_query",
+      "action_type": "investigate",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Query string",
+          "required": true,
+          "contains": [
+            "sql query"
+          ]
+        },
+        {
+          "name": "format_vars",
+          "type": "string",
+          "description": "Comma separated list of variables",
+          "required": false
+        },
+        {
+          "name": "no_commit",
+          "type": "boolean",
+          "description": "Do not commit changes to the Database",
+          "required": false
+        },
+        {
+          "name": "non_query",
+          "type": "boolean",
+          "description": "Do not run this command in a transaction",
+          "required": false
+        },
+        {
+          "name": "datetime_to_iso8601",
+          "type": "boolean",
+          "description": "Convert column types of datetime to iso8601",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "default_to_string",
+          "type": "boolean",
+          "description": "Convert any non-standard column types to string; ie. datetime",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "add_datasets_as_rows",
+          "type": "boolean",
+          "description": "Run query will return each dataset as a separate row in the action result",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "host",
+          "type": "string",
+          "description": "Optional database hostname or ip address",
+          "required": false,
+          "contains": [
+            "hostname",
+            "host"
+          ]
+        },
+        {
+          "name": "database",
+          "type": "string",
+          "description": "Optional database name",
+          "required": false,
+          "contains": [
+            "mssql database name"
+          ]
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Microsoft SQL Server",
+    "original_type": "information",
+    "converted_at": "2025-12-18T16:25:28.946559",
+    "source_version": "2.3.4"
+  }
+}

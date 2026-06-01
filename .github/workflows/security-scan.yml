@@ -1,0 +1,104 @@
+name: Security Scan
+
+# Runs supply-chain and SAST scanners across backend (pip), frontend
+# (npm), and container images. Jobs are independent so one failing
+# scanner does not block the others. Schedule runs weekly even if the
+# tree is quiet so we still catch advisories published against pinned
+# versions we have not touched recently.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Mondays at 12:00 UTC, after Dependabot has filed its weekly PRs
+    - cron: "0 12 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  pip-audit:
+    name: pip-audit (backend)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install pip-audit
+        run: pip install pip-audit
+
+      - name: Run pip-audit (informational)
+        # No --strict, no failing the job. The audit output is still
+        # captured in the run log so we can review findings on a cadence
+        # without every push going red because of a transitive CVE we
+        # haven't gotten to yet. Tighten by re-adding --strict (and
+        # optionally --ignore-vuln IDs) once the dep tree is clean.
+        run: pip-audit --requirement backend/requirements.txt || true
+
+  npm-audit:
+    name: npm audit (frontend)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Run npm audit (informational)
+        working-directory: frontend
+        # `|| true` keeps findings visible without failing the job. Every
+        # large Node tree has some high-severity transitive at any given
+        # moment; this is a reporting tool, not a gate.
+        run: npm audit --audit-level=high || true
+
+  trivy-backend-image:
+    name: Trivy (backend image)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build backend image
+        run: docker build -t t1-backend:scan ./backend
+
+      - name: Run Trivy (informational)
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: t1-backend:scan
+          severity: HIGH,CRITICAL
+          # exit-code: "0" keeps findings visible without failing the
+          # job. Re-set to "1" once the base image is clean and we want
+          # to gate merges on it.
+          exit-code: "0"
+          ignore-unfixed: true
+
+  trivy-frontend-image:
+    name: Trivy (frontend image)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build frontend image
+        run: docker build -t t1-frontend:scan ./frontend
+
+      - name: Run Trivy (informational)
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: t1-frontend:scan
+          severity: HIGH,CRITICAL
+          # exit-code: "0" keeps findings visible without failing the
+          # job. See backend Trivy job for the same rationale.
+          exit-code: "0"
+          ignore-unfixed: true

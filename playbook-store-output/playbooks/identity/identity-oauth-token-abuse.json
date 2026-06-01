@@ -1,0 +1,206 @@
+{
+  "name": "OAuth Token Abuse Detection",
+  "slug": "identity-oauth-token-abuse",
+  "description": "Detects and responds to OAuth token abuse including excessive token usage, unauthorized app consent grants, and token replay attacks. Revokes compromised tokens, audits third-party application permissions, removes suspicious app consents, and notifies the affected user and security team.",
+  "category": "identity",
+  "subcategory": "oauth_abuse",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "12 minutes",
+  "tags": ["oauth", "token_abuse", "app_consent", "token_revocation", "third_party"],
+  "alert_types": ["oauth_abuse", "token_anomaly", "app_consent"],
+  "severity_filter": ["medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["oauth_abuse", "token_anomaly"],
+    "min_severity": "medium"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "microsoft_graph",
+      "name": "Microsoft Graph",
+      "category": "identity",
+      "reason": "Revoke OAuth tokens and audit/remove app consent grants"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "oa-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "title": "OAuth Token Abuse Alert",
+          "summary": "Fires on OAuth token abuse or suspicious app consent detection",
+          "config": {
+            "trigger_type": "alert",
+            "alert_filter": "oauth_abuse OR token_anomaly OR app_consent"
+          }
+        }
+      },
+      {
+        "id": "oa-2",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "title": "AI Token Abuse Analysis",
+          "summary": "Analyze OAuth token usage patterns and consent grant anomalies",
+          "config": {
+            "mode": "ai_analysis",
+            "template_id": "credential_access",
+            "custom_instructions": "",
+            "alert_path": "$.trigger.alert",
+            "include_context": true
+          }
+        }
+      },
+      {
+        "id": "oa-3",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "title": "Malicious App Consent?",
+          "summary": "Branch if analysis confirms malicious or unauthorized app consent",
+          "config": {
+            "conditions": {
+              "operator": "AND",
+              "conditions": [
+                {
+                  "field": "$.nodes.oa-2.result.malicious_consent",
+                  "operator": "equals",
+                  "value": "true"
+                }
+              ],
+              "groups": []
+            },
+            "expression": "$.nodes.oa-2.result.malicious_consent == true",
+            "default_branch": "no"
+          }
+        }
+      },
+      {
+        "id": "oa-4",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "respond",
+          "title": "Revoke OAuth Tokens",
+          "summary": "Revoke all active OAuth tokens for the affected user",
+          "config": {
+            "response_type": "integration_action",
+            "integration_instance_id": "microsoft_graph",
+            "action_type": "revoke_oauth_tokens",
+            "params": {
+              "user_id": "$.trigger.alert.target_user_id",
+              "app_id": "$.trigger.alert.malicious_app_id",
+              "reason": "OAuth token abuse — revoking all tokens for malicious application"
+            },
+            "requires_approval": false,
+            "priority": "high"
+          }
+        }
+      },
+      {
+        "id": "oa-5",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "title": "Remove App Consent",
+          "summary": "Remove the malicious application consent grant from the tenant",
+          "config": {
+            "response_type": "integration_action",
+            "integration_instance_id": "microsoft_graph",
+            "action_type": "remove_app_consent",
+            "params": {
+              "app_id": "$.trigger.alert.malicious_app_id",
+              "tenant_wide": true,
+              "reason": "Malicious OAuth application — consent removed"
+            },
+            "requires_approval": false,
+            "priority": "high"
+          }
+        }
+      },
+      {
+        "id": "oa-6",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "title": "Notify Affected User",
+          "summary": "Inform the affected user about the unauthorized app consent and token revocation",
+          "config": {
+            "response_type": "notification",
+            "channel": "email",
+            "email_recipients": "$.trigger.alert.target_user_email",
+            "email_subject": "Security Alert: Unauthorized App Access Removed",
+            "message": "An unauthorized application ({{$.trigger.alert.malicious_app_name}}) was detected accessing your account. All tokens have been revoked and the app consent has been removed. If you authorized this application, please contact the security team.",
+            "requires_approval": false,
+            "priority": "high"
+          }
+        }
+      },
+      {
+        "id": "oa-7",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "title": "Notify Security Team",
+          "summary": "Alert security team of OAuth abuse and remediation actions",
+          "config": {
+            "response_type": "notification",
+            "channel": "slack",
+            "slack_channel": "#soc-alerts",
+            "message": "OAuth token abuse detected. App: {{$.trigger.alert.malicious_app_name}}. User: {{$.trigger.alert.target_user_email}}. Tokens revoked and app consent removed tenant-wide.",
+            "requires_approval": false,
+            "priority": "high"
+          }
+        }
+      },
+      {
+        "id": "oa-8",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "utility",
+          "title": "Log Suspicious Activity",
+          "summary": "Log the token anomaly for monitoring — no malicious consent confirmed",
+          "config": {
+            "operation": "add_note",
+            "note": "OAuth token anomaly reviewed. No malicious app consent confirmed. Token usage patterns logged for continued monitoring."
+          }
+        }
+      },
+      {
+        "id": "oa-9",
+        "type": "signal",
+        "position": { "x": 520, "y": 1180 },
+        "data": {
+          "kind": "end",
+          "title": "Playbook Complete",
+          "summary": "OAuth token abuse response finished",
+          "config": {
+            "disposition": "completed",
+            "summary": "OAuth token abuse detection and response actions completed"
+          }
+        }
+      }
+    ],
+    "edges": [
+      { "id": "oa-e1", "source": "oa-1", "target": "oa-2", "animated": true, "type": "smoothstep" },
+      { "id": "oa-e2", "source": "oa-2", "target": "oa-3", "animated": true, "type": "smoothstep" },
+      { "id": "oa-e3", "source": "oa-3", "target": "oa-4", "sourceHandle": "yes", "label": "Yes", "animated": true, "type": "smoothstep" },
+      { "id": "oa-e4", "source": "oa-3", "target": "oa-8", "sourceHandle": "no", "label": "No", "animated": true, "type": "smoothstep" },
+      { "id": "oa-e5", "source": "oa-4", "target": "oa-5", "animated": true, "type": "smoothstep" },
+      { "id": "oa-e6", "source": "oa-5", "target": "oa-6", "animated": true, "type": "smoothstep" },
+      { "id": "oa-e7", "source": "oa-6", "target": "oa-7", "animated": true, "type": "smoothstep" },
+      { "id": "oa-e8", "source": "oa-7", "target": "oa-9", "animated": true, "type": "smoothstep" },
+      { "id": "oa-e9", "source": "oa-8", "target": "oa-9", "animated": true, "type": "smoothstep" }
+    ]
+  }
+}

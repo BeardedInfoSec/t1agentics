@@ -1,0 +1,267 @@
+{
+  "name": "Identity Federation Abuse Response",
+  "slug": "cloud-identity-federation-abuse",
+  "description": "Detects abuse of identity federation (SAML, OIDC, AWS SSO) to gain unauthorized cloud access. Riggs AI analyzes the federation event for golden SAML indicators, forged tokens, or unauthorized identity provider trust. Confirmed abuse triggers immediate trust revocation, comprehensive access audit of the abused federation session, credential access investigation, incident ticket creation, and emergency team notification.",
+  "category": "cloud",
+  "subcategory": "identity_security",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "advanced",
+  "estimated_time": "20 minutes",
+  "tags": ["cloud", "federation", "saml", "oidc", "golden_saml", "identity"],
+  "alert_types": ["cloud_security", "federation_abuse"],
+  "severity_filter": ["high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["cloud_security", "federation_abuse", "saml_anomaly"],
+    "min_severity": "high"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "aws_security_hub",
+      "name": "AWS Security Hub",
+      "category": "cloud_security",
+      "reason": "Source of federation abuse findings and IAM identity provider management"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create critical incident tickets for identity federation abuse"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Emergency notification to security team of federation abuse"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Identity Federation Anomaly Alert",
+          "config": {
+            "alert_types": ["cloud_security", "federation_abuse", "saml_anomaly"],
+            "description": "Triggers when anomalous identity federation activity is detected such as SAML assertions from unexpected IdPs, unusual role assumptions via federation, or token forgery indicators"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — Credential Access Assessment",
+          "config": {
+            "template_id": "credential_access",
+            "additional_instructions": "Evaluate federation abuse indicators: SAML assertion anomalies, unexpected issuer, role assumption patterns inconsistent with IdP configuration, golden SAML attack indicators",
+            "description": "AI-powered analysis of identity federation activity to determine if tokens are forged, trust is compromised, or federation is being abused for unauthorized access"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "label": "Federation Abuse Confirmed?",
+          "config": {
+            "condition": "{{analyze_1.verdict}} == 'compromised' || {{analyze_1.confidence}} >= 0.8",
+            "description": "Routes based on whether the AI assessment confirmed identity federation abuse"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "respond",
+          "label": "Revoke Federation Trust",
+          "config": {
+            "integration_action": {
+              "connector_id": "aws_security_hub",
+              "action": "disable_identity_provider",
+              "parameters": {
+                "provider_arn": "{{trigger_1.alert.provider_arn}}",
+                "revoke_active_sessions": true,
+                "reason": "Identity federation abuse detected — revoking trust relationship"
+              }
+            },
+            "description": "Immediately disable the compromised identity provider trust and revoke all active federated sessions"
+          }
+        }
+      },
+      {
+        "id": "code_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "code",
+          "label": "Audit Federated Access",
+          "config": {
+            "mode": "query",
+            "query": "CloudTrail AssumeRoleWithSAML and AssumeRoleWithWebIdentity events for provider={{trigger_1.alert.provider_arn}} in last 72 hours: roles assumed, API calls made, resources accessed, source IPs",
+            "output_variable": "federation_audit",
+            "description": "Audit all federated access sessions from the compromised provider to determine the full scope of unauthorized access"
+          }
+        }
+      },
+      {
+        "id": "code_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "code",
+          "label": "Investigate Token Forgery Indicators",
+          "config": {
+            "mode": "query",
+            "query": "Analyze SAML assertions from provider={{trigger_1.alert.provider_arn}}: assertion validity periods, audience restrictions, signing certificate fingerprints, compare against known good IdP metadata",
+            "output_variable": "token_investigation",
+            "description": "Investigate the federation tokens for signs of forgery such as mismatched signing certificates, unusual validity periods, or golden SAML indicators"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "label": "Create Critical Incident Ticket",
+          "config": {
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_ticket",
+              "parameters": {
+                "project": "SEC",
+                "issue_type": "Incident",
+                "priority": "Critical",
+                "summary": "Identity Federation Abuse: {{trigger_1.alert.provider_arn}} — Trust Revoked",
+                "description": "Confirmed identity federation abuse detected.\n\nProvider: {{trigger_1.alert.provider_arn}}\nAbuse Type: {{trigger_1.alert.abuse_type}}\nAffected Roles: {{trigger_1.alert.affected_roles}}\n\nActions Taken:\n- Federation trust revoked\n- Active sessions terminated\n- Federated access audited (72h)\n- Token forgery investigated\n\nFederation Audit:\n{{code_1.federation_audit}}\n\nToken Investigation:\n{{code_2.token_investigation}}\n\nRiggs AI Assessment:\n{{analyze_1.summary}}\n\nIMPORTANT: The IdP signing certificate may be compromised. Coordinate with identity team to rotate SAML signing certificates before re-establishing trust."
+              }
+            },
+            "description": "Create a critical incident ticket documenting the federation abuse and all forensic findings"
+          }
+        }
+      },
+      {
+        "id": "respond_3",
+        "type": "signal",
+        "position": { "x": 340, "y": 1180 },
+        "data": {
+          "kind": "respond",
+          "label": "Emergency Team Notification",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#security-incidents",
+              "message": "CRITICAL: IDENTITY FEDERATION ABUSE\nProvider: {{trigger_1.alert.provider_arn}}\nAbuse Type: {{trigger_1.alert.abuse_type}}\nActions: Trust revoked, sessions terminated, access audited\nTicket: {{respond_2.ticket_url}}\n\nRiggs Assessment:\n{{analyze_1.summary}}\n\nIMPORTANT: SAML signing certificates may need rotation before trust is re-established."
+            },
+            "description": "Send emergency notification to the security team about the federation abuse"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "utility",
+          "label": "Add Note: Legitimate Federation",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "Reviewed by Riggs AI (credential_access template). Federation activity determined to be legitimate. IdP and SAML assertions are consistent with expected configuration. Assessment: {{analyze_1.summary}}"
+            },
+            "description": "Document that the federation activity was determined to be legitimate"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1340 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "Identity federation abuse response complete"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_analyze",
+        "source": "trigger_1",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_analyze_decision",
+        "source": "analyze_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "respond_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "utility_1",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_revoke_audit",
+        "source": "respond_1",
+        "target": "code_1",
+        "type": "default"
+      },
+      {
+        "id": "e_audit_investigate",
+        "source": "code_1",
+        "target": "code_2",
+        "type": "default"
+      },
+      {
+        "id": "e_investigate_ticket",
+        "source": "code_2",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_ticket_notify",
+        "source": "respond_2",
+        "target": "respond_3",
+        "type": "default"
+      },
+      {
+        "id": "e_notify_end",
+        "source": "respond_3",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_utility_end",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

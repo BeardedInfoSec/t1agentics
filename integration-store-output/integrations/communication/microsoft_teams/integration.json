@@ -1,0 +1,99 @@
+{
+  "id": "microsoft_teams",
+  "name": "Microsoft Teams",
+  "description": "Integrates with Microsoft Graph API v1.0 for Teams messaging, channel management, and team collaboration",
+  "version": "1.0.0",
+  "category": "communication",
+  "vendor": "Microsoft",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "https://graph.microsoft.com/v1.0",
+  "actions": [
+    {
+      "id": "send_channel_message",
+      "name": "Send Channel Message",
+      "description": "Send a message to a Microsoft Teams channel",
+      "http_method": "POST",
+      "endpoint": "/teams/{team_id}/channels/{channel_id}/messages",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "team_id", "type": "string", "description": "Team ID", "required": true},
+        {"name": "channel_id", "type": "string", "description": "Channel ID", "required": true},
+        {"name": "content", "type": "string", "description": "Message content (supports HTML)", "required": true},
+        {"name": "contentType", "type": "string", "description": "Content type (text or html)", "required": false, "default": "html"},
+        {"name": "importance", "type": "string", "description": "Message importance (normal, high, urgent)", "required": false, "default": "normal"}
+      ]
+    },
+    {
+      "id": "send_chat_message",
+      "name": "Send Chat Message",
+      "description": "Send a message to a Microsoft Teams chat",
+      "http_method": "POST",
+      "endpoint": "/chats/{chat_id}/messages",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "chat_id", "type": "string", "description": "Chat ID", "required": true},
+        {"name": "content", "type": "string", "description": "Message content", "required": true},
+        {"name": "contentType", "type": "string", "description": "Content type (text or html)", "required": false, "default": "html"}
+      ]
+    },
+    {
+      "id": "list_channels",
+      "name": "List Channels",
+      "description": "List channels in a Microsoft Teams team",
+      "http_method": "GET",
+      "endpoint": "/teams/{team_id}/channels",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "team_id", "type": "string", "description": "Team ID", "required": true},
+        {"name": "$filter", "type": "string", "description": "OData filter expression", "required": false}
+      ]
+    },
+    {
+      "id": "get_message",
+      "name": "Get Channel Message",
+      "description": "Retrieve a specific message from a Teams channel",
+      "http_method": "GET",
+      "endpoint": "/teams/{team_id}/channels/{channel_id}/messages/{message_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "team_id", "type": "string", "description": "Team ID", "required": true},
+        {"name": "channel_id", "type": "string", "description": "Channel ID", "required": true},
+        {"name": "message_id", "type": "string", "description": "Message ID", "required": true}
+      ]
+    },
+    {
+      "id": "create_channel",
+      "name": "Create Channel",
+      "description": "Create a new channel in a Microsoft Teams team",
+      "http_method": "POST",
+      "endpoint": "/teams/{team_id}/channels",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "team_id", "type": "string", "description": "Team ID", "required": true},
+        {"name": "displayName", "type": "string", "description": "Channel display name", "required": true},
+        {"name": "description", "type": "string", "description": "Channel description", "required": false},
+        {"name": "membershipType", "type": "string", "description": "Channel type (standard, private, shared)", "required": false, "default": "standard"}
+      ]
+    },
+    {
+      "id": "list_teams",
+      "name": "List Teams",
+      "description": "List all teams the user is a member of",
+      "http_method": "GET",
+      "endpoint": "/me/joinedTeams",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    }
+  ]
+}

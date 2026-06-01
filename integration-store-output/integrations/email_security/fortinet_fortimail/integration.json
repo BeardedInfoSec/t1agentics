@@ -1,0 +1,170 @@
+{
+  "id": "fortinet_fortimail",
+  "name": "Fortinet FortiMail",
+  "description": "Email security gateway providing anti-spam, anti-malware, sandboxing, and DLP with REST API for configuration, quarantine management, and system monitoring",
+  "version": "1.0.0",
+  "category": "email_security",
+  "vendor": "Fortinet",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header",
+    "prefix": "Bearer"
+  },
+  "base_url": "https://{host}/api/v1",
+  "actions": [
+    {
+      "id": "get_system_quarantine",
+      "name": "Get System Quarantine",
+      "description": "Retrieve messages in the system quarantine",
+      "http_method": "GET",
+      "endpoint": "/mailsetting/quarantine/systemquarantine",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "start",
+          "type": "number",
+          "description": "Start index for pagination",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "count",
+          "type": "number",
+          "description": "Number of results to return",
+          "required": false,
+          "default": 50
+        }
+      ]
+    },
+    {
+      "id": "release_quarantine_message",
+      "name": "Release Quarantine Message",
+      "description": "Release an email from system quarantine for delivery",
+      "http_method": "POST",
+      "endpoint": "/mailsetting/quarantine/systemquarantine/release",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "mkey",
+          "type": "string",
+          "description": "Message key of the quarantined email to release",
+          "required": true
+        },
+        {
+          "name": "recipient",
+          "type": "string",
+          "description": "Override recipient address (optional)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "delete_quarantine_message",
+      "name": "Delete Quarantine Message",
+      "description": "Delete a message from system quarantine",
+      "http_method": "DELETE",
+      "endpoint": "/mailsetting/quarantine/systemquarantine/{mkey}",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "mkey",
+          "type": "string",
+          "description": "Message key of the quarantined email to delete",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_mail_queue",
+      "name": "Get Mail Queue",
+      "description": "Retrieve messages currently in the mail queue",
+      "http_method": "GET",
+      "endpoint": "/monitor/mail/queue",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "start",
+          "type": "number",
+          "description": "Start index for pagination",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "count",
+          "type": "number",
+          "description": "Number of results to return",
+          "required": false,
+          "default": 50
+        }
+      ]
+    },
+    {
+      "id": "get_ip_policy",
+      "name": "Get IP Policy",
+      "description": "Retrieve IP-based access control policies",
+      "http_method": "GET",
+      "endpoint": "/mailsetting/policy/ip",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "add_sender_block",
+      "name": "Add Sender Block",
+      "description": "Add an email address or domain to the sender block list",
+      "http_method": "POST",
+      "endpoint": "/mailsetting/blacklist/sender",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "sender",
+          "type": "string",
+          "description": "Sender email address or domain to block",
+          "required": true
+        },
+        {
+          "name": "action",
+          "type": "string",
+          "description": "Action to take on blocked email (reject, discard, quarantine)",
+          "required": true,
+          "default": "reject"
+        }
+      ]
+    },
+    {
+      "id": "get_system_status",
+      "name": "Get System Status",
+      "description": "Retrieve FortiMail system status and health information",
+      "http_method": "GET",
+      "endpoint": "/monitor/system/status",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "get_mail_statistics",
+      "name": "Get Mail Statistics",
+      "description": "Retrieve email processing statistics and counters",
+      "http_method": "GET",
+      "endpoint": "/monitor/mail/statistics",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "timeperiod",
+          "type": "string",
+          "description": "Time period for statistics (1h, 24h, 7d, 30d)",
+          "required": false,
+          "default": "24h"
+        }
+      ]
+    }
+  ]
+}

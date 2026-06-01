@@ -1,0 +1,227 @@
+{
+  "id": "metadefender_sandbox",
+  "name": "Metadefender Sandbox",
+  "description": "MetaDefender Sandbox (previously known as OPSWAT Filescan Sandbox) is a unique adaptive threat analysis technology, enabling zero-day malware detection and comprehensive Indicator of Compromise (IOC) extraction",
+  "version": "1.2.1",
+  "category": "sandbox",
+  "vendor": "OPSWAT",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "detonate_url",
+      "name": "Detonate Url",
+      "description": "Retrieve detonation analysis results for URL",
+      "http_method": "GET",
+      "endpoint": "/actions/detonate_url",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "URL to be analyzed",
+          "required": true,
+          "contains": [
+            "url",
+            "domain"
+          ]
+        },
+        {
+          "name": "password",
+          "type": "string",
+          "description": "Custom password, in case uploaded archive is protected",
+          "required": false
+        },
+        {
+          "name": "is_private",
+          "type": "boolean",
+          "description": "If file should not be available for download by other users",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Uploaded file/url description",
+          "required": false
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "detonate_file",
+      "name": "Detonate File",
+      "description": "Retrieve detonation analysis results for file",
+      "http_method": "GET",
+      "endpoint": "/actions/detonate_file",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "vault_id",
+          "type": "string",
+          "description": "Vault ID of file to detonate",
+          "required": true,
+          "contains": [
+            "vault id",
+            "sha1"
+          ]
+        },
+        {
+          "name": "password",
+          "type": "string",
+          "description": "Custom password, in case uploaded archive is protected",
+          "required": false
+        },
+        {
+          "name": "is_private",
+          "type": "boolean",
+          "description": "If file should not be available for download by other users",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Uploaded file/url description",
+          "required": false
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "search_terms",
+      "name": "Search Terms",
+      "description": "Search for scan reports on MetaDefender Sandbox using parameters specified in the 'query' field",
+      "http_method": "GET",
+      "endpoint": "/actions/search_terms",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "The query string",
+          "required": true
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Number of total results, maximum 50 (if page and page_size was also provided, then it will be ignored)",
+          "required": false,
+          "default": 10
+        },
+        {
+          "name": "page",
+          "type": "number",
+          "description": "Page number, starting from 1",
+          "required": false
+        },
+        {
+          "name": "page_size",
+          "type": "number",
+          "description": "Page size. Can be 5, 10 or 20",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "file_reputation",
+      "name": "File Reputation",
+      "description": "Get the reputation for one given hash (returns with the last 10 MetaDefender Sandbox reports)",
+      "http_method": "GET",
+      "endpoint": "/actions/file_reputation",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "sha256",
+          "type": "string",
+          "description": "SHA256 value of the file",
+          "required": true
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "ip_reputation",
+      "name": "Ip Reputation",
+      "description": "Get the reputation for one given IP address (returns with the last 10 MetaDefender Sandbox reports)",
+      "http_method": "GET",
+      "endpoint": "/actions/ip_reputation",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "The IP address",
+          "required": true
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "domain_reputation",
+      "name": "Domain Reputation",
+      "description": "Get the reputation for one given Domain address (returns with the last 10 MetaDefender Sandbox reports)",
+      "http_method": "GET",
+      "endpoint": "/actions/domain_reputation",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "domain",
+          "type": "string",
+          "description": "The Domain address",
+          "required": true
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "url_reputation",
+      "name": "Url Reputation",
+      "description": "Get the reputation for one given URL address (returns with the last 10 MetaDefender Sandbox reports)",
+      "http_method": "GET",
+      "endpoint": "/actions/url_reputation",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "The URL address",
+          "required": true
+        }
+      ],
+      "observable_type": "url"
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Metadefender Sandbox",
+    "original_type": "sandbox",
+    "converted_at": "2025-12-18T16:25:28.921035",
+    "source_version": "1.2.1"
+  }
+}

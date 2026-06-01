@@ -1,0 +1,240 @@
+{
+  "id": "grr_rapid_response",
+  "name": "GRR Rapid Response",
+  "description": "This app implements various investigative actions from the GRR API",
+  "version": "2.0.6",
+  "category": "edr",
+  "vendor": "Google",
+  "auth_type": "basic_auth",
+  "auth_config": {
+    "type": "basic_auth",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "list_connections",
+      "name": "List Connections",
+      "description": "List all the connections configured on the device",
+      "http_method": "GET",
+      "endpoint": "/actions/list_connections",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "client_id",
+          "type": "string",
+          "description": "Grr client id",
+          "required": true,
+          "contains": [
+            "grr client id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_endpoints",
+      "name": "List Endpoints",
+      "description": "List all the endpoints/sensors configured on the device",
+      "http_method": "GET",
+      "endpoint": "/actions/list_endpoints",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "get_system_info",
+      "name": "Get System Info",
+      "description": "Get information about an endpoint",
+      "http_method": "GET",
+      "endpoint": "/actions/get_system_info",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "client_id",
+          "type": "string",
+          "description": "Grr client id",
+          "required": true,
+          "contains": [
+            "grr client id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_file_info",
+      "name": "Get File Info",
+      "description": "Look for files matching given criteria",
+      "http_method": "GET",
+      "endpoint": "/actions/get_file_info",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "client_id",
+          "type": "string",
+          "description": "Client ID",
+          "required": true,
+          "contains": [
+            "grr client id"
+          ]
+        },
+        {
+          "name": "file_path",
+          "type": "string",
+          "description": "File Path",
+          "required": true,
+          "contains": [
+            "grr file path"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "get_browser_cache",
+      "name": "Get Browser Cache",
+      "description": "Retrieve matching regex in a client's browser cache",
+      "http_method": "GET",
+      "endpoint": "/actions/get_browser_cache",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "client_id",
+          "type": "string",
+          "description": "Client ID",
+          "required": true,
+          "contains": [
+            "grr client id"
+          ]
+        },
+        {
+          "name": "browser_cache_regex",
+          "type": "string",
+          "description": "Regex to look for",
+          "required": true
+        },
+        {
+          "name": "users",
+          "type": "string",
+          "description": "Users to query. Use commas to separate",
+          "required": true,
+          "contains": [
+            "grr user"
+          ]
+        },
+        {
+          "name": "check_chrome",
+          "type": "boolean",
+          "description": "Check Chrome",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "check_firefox",
+          "type": "boolean",
+          "description": "Check FireFox",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "check_ie",
+          "type": "boolean",
+          "description": "Check IE",
+          "required": false,
+          "default": true
+        }
+      ]
+    },
+    {
+      "id": "get_hunts",
+      "name": "Get Hunts",
+      "description": "Retrieve available hunts",
+      "http_method": "GET",
+      "endpoint": "/actions/get_hunts",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Starting offset",
+          "required": false
+        },
+        {
+          "name": "count",
+          "type": "number",
+          "description": "Max number of items to fetch",
+          "required": false
+        },
+        {
+          "name": "created_by",
+          "type": "string",
+          "description": "Only return hunts created by a given user. If approved_by or/and description_contains are also supplied, then logical AND is applied to all the criteria. NOTE: This filter can only be used in conjunction with the 'active_within' filter (to prevent queries of death)",
+          "required": false,
+          "contains": [
+            "grr user"
+          ]
+        },
+        {
+          "name": "description_contains",
+          "type": "string",
+          "description": "Only return hunts where description contains given substring (matching is case-insensitive). If created_by or/and approved_by are also supplied, then logical AND is applied to all the criteria. NOTE: This filter can only be used in conjunction with the 'active_within' filter (to prevent queries of death)",
+          "required": false
+        },
+        {
+          "name": "active_within",
+          "type": "string",
+          "description": "Only return hunts that were active within given time duration",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_cron_jobs",
+      "name": "Get Cron Jobs",
+      "description": "Retrieve available cron jobs",
+      "http_method": "GET",
+      "endpoint": "/actions/get_cron_jobs",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Starting offset",
+          "required": false
+        },
+        {
+          "name": "count",
+          "type": "number",
+          "description": "Max number of items to fetch",
+          "required": false
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "GRR Rapid Response",
+    "original_type": "endpoint",
+    "converted_at": "2025-12-18T16:25:28.838154",
+    "source_version": "2.0.6"
+  }
+}

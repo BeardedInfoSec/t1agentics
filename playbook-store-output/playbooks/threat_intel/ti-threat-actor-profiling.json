@@ -1,0 +1,262 @@
+{
+  "name": "Threat Actor Profiling",
+  "slug": "ti-threat-actor-profiling",
+  "description": "Profiles threat actors from IOCs and alert data by correlating indicators against known threat group databases, extracting TTPs, and generating a comprehensive threat actor intelligence report. The playbook enriches IOCs to identify threat group attribution, uses AI to build a threat actor profile including motivations, capabilities, targeting patterns, and historical campaigns, then creates an actionable intel report. High-confidence attributions trigger proactive defense measures and team notification.",
+  "category": "threat_intel",
+  "subcategory": "actor_profiling",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "advanced",
+  "estimated_time": "18 minutes",
+  "tags": ["threat_actor", "profiling", "attribution", "apt", "threat_intel", "intelligence"],
+  "alert_types": ["threat_intel", "apt"],
+  "severity_filter": ["medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["threat_intel", "apt_indicator", "attribution_alert", "threat_actor"],
+    "min_severity": "medium"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "virustotal",
+      "name": "VirusTotal",
+      "category": "threat_intel",
+      "reason": "Enrich IOCs for threat actor attribution, campaign tags, and malware family associations"
+    },
+    {
+      "connector_id": "misp",
+      "name": "MISP",
+      "category": "threat_intel",
+      "reason": "Correlate indicators against MISP galaxy clusters for threat group identification and TTP mapping"
+    },
+    {
+      "connector_id": "mitre_attack",
+      "name": "MITRE ATT&CK",
+      "category": "threat_intel",
+      "reason": "Map identified threat actor TTPs to ATT&CK framework for comprehensive profiling"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Threat Actor Attribution Alert",
+          "config": {
+            "alert_types": ["threat_intel", "apt_indicator", "attribution_alert", "threat_actor"],
+            "description": "Triggers when indicators suggest potential threat actor activity requiring attribution and profiling"
+          }
+        }
+      },
+      {
+        "id": "code_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "code",
+          "label": "Extract IOCs for Attribution",
+          "config": {
+            "code": "import re\n\nalert = inputs.get('alert', {})\nraw_text = str(alert)\n\nip_pattern = r'\\b(?:\\d{1,3}\\.){3}\\d{1,3}\\b'\ndomain_pattern = r'\\b(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,}\\b'\nsha256_pattern = r'\\b[a-fA-F0-9]{64}\\b'\nmd5_pattern = r'\\b[a-fA-F0-9]{32}\\b'\n\nips = list(set(re.findall(ip_pattern, raw_text)))\ndomains = list(set(re.findall(domain_pattern, raw_text)))\nhashes = list(set(re.findall(sha256_pattern, raw_text) + re.findall(md5_pattern, raw_text)))\n\nindicators = []\nfor ip in ips:\n    indicators.append({'type': 'ip', 'value': ip})\nfor d in domains:\n    indicators.append({'type': 'domain', 'value': d})\nfor h in hashes:\n    indicators.append({'type': 'hash', 'value': h})\n\nresult = {\n    'indicators': indicators,\n    'total_count': len(indicators),\n    'actor_hint': alert.get('threat_group', alert.get('actor_name', 'Unknown')),\n    'alert_context': alert.get('description', raw_text[:500])\n}",
+            "inputs": {
+              "alert": "{{trigger_1.alert}}"
+            },
+            "description": "Extracts all IOCs from the alert and captures any existing threat actor attribution hints"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "analyze",
+          "label": "Enrich IOCs — VT & MISP",
+          "config": {
+            "mode": "enrich",
+            "observable_type": "auto",
+            "data_path": "$.code_1.outputs.result.indicators",
+            "sources": ["virustotal", "misp", "mitre_attack"],
+            "description": "Enriches all indicators against VT, MISP, and MITRE ATT&CK to gather threat actor attribution data, campaign associations, and TTP mappings"
+          }
+        }
+      },
+      {
+        "id": "analyze_2",
+        "type": "signal",
+        "position": { "x": 520, "y": 540 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — Build Threat Actor Profile",
+          "config": {
+            "template_id": "ioc_correlation",
+            "additional_instructions": "Build a comprehensive threat actor profile from the enriched IOCs. Identify: 1) Threat group name and aliases, 2) Motivation (espionage, financial, hacktivism), 3) Known capabilities and tools, 4) Targeting patterns (sectors, regions), 5) Historical campaigns, 6) MITRE ATT&CK technique preferences, 7) Attribution confidence level.",
+            "description": "AI-powered threat actor profiling correlating IOCs against known threat groups to build a comprehensive attribution profile"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 700 },
+        "data": {
+          "kind": "decision",
+          "label": "High-Confidence Attribution?",
+          "config": {
+            "condition": "{{analyze_2.attribution_confidence}} >= 70 or {{analyze_2.threat_group}} != 'Unknown'",
+            "description": "Routes based on whether the profiling achieved high-confidence threat actor attribution"
+          }
+        }
+      },
+      {
+        "id": "analyze_3",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — Intel Report Generation",
+          "config": {
+            "template_id": "executive_summary",
+            "additional_instructions": "Generate a detailed threat actor intelligence report including: executive summary, actor profile, historical campaign timeline, preferred TTPs with ATT&CK mapping, infrastructure patterns, recommended defensive measures, and IOC appendix. Format for distribution to SOC and threat intel teams.",
+            "description": "AI-generated comprehensive threat actor intelligence report with full profiling, TTPs, and defensive recommendations"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "label": "Update Defensive Blocklists",
+          "config": {
+            "integration_action": {
+              "action": "edl_add",
+              "parameters": {
+                "list_name": "threat_actor_blocklist",
+                "indicators": "{{code_1.outputs.result.indicators}}",
+                "source": "ti-threat-actor-profiling",
+                "actor": "{{analyze_2.threat_group}}",
+                "expiry_days": 120
+              }
+            },
+            "description": "Adds all indicators associated with the identified threat actor to the blocklist for proactive defense"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 1180 },
+        "data": {
+          "kind": "respond",
+          "label": "Distribute Intel Report",
+          "config": {
+            "notify": {
+              "channel": "email",
+              "target": "threat-intel-team@organization.com,soc-team@organization.com",
+              "subject": "THREAT ACTOR PROFILE: {{analyze_2.threat_group}} — Attribution Confidence {{analyze_2.attribution_confidence}}%",
+              "message": "Threat actor profiling completed with high-confidence attribution.\n\nThreat Group: {{analyze_2.threat_group}}\nMotivation: {{analyze_2.motivation}}\nConfidence: {{analyze_2.attribution_confidence}}%\nIOCs Analyzed: {{code_1.outputs.result.total_count}}\n\nActions Taken:\n- Defensive blocklists updated with actor IOCs\n\nFull Intel Report:\n{{analyze_3.summary}}"
+            },
+            "description": "Distributes the threat actor intelligence report to the threat intel and SOC teams"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 700, "y": 860 },
+        "data": {
+          "kind": "utility",
+          "label": "Note: Low-Confidence Attribution",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "Threat actor profiling completed but attribution confidence is below threshold.\n\nActor Hint: {{code_1.outputs.result.actor_hint}}\nIOCs Analyzed: {{code_1.outputs.result.total_count}}\nAttribution Confidence: {{analyze_2.attribution_confidence}}%\n\nIndicators retained for continued correlation.\n\nRiggs AI Summary:\n{{analyze_2.summary}}"
+            },
+            "description": "Documents the low-confidence attribution result with indicators retained for future correlation"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1340 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "Threat actor profiling complete"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_extract",
+        "source": "trigger_1",
+        "target": "code_1",
+        "type": "default"
+      },
+      {
+        "id": "e_extract_enrich",
+        "source": "code_1",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_enrich_profile",
+        "source": "analyze_1",
+        "target": "analyze_2",
+        "type": "default"
+      },
+      {
+        "id": "e_profile_decision",
+        "source": "analyze_2",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "analyze_3",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "utility_1",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_report_blocklist",
+        "source": "analyze_3",
+        "target": "respond_1",
+        "type": "default"
+      },
+      {
+        "id": "e_blocklist_distribute",
+        "source": "respond_1",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_distribute_end",
+        "source": "respond_2",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_lowconf_end",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

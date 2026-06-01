@@ -1,0 +1,225 @@
+{
+  "name": "VPN Connection Anomaly Investigation",
+  "slug": "network-vpn-anomaly",
+  "description": "Investigates anomalous VPN connections including impossible travel, unusual geolocation, off-hours access, and concurrent sessions from different locations. Riggs AI correlates the connection against the user's baseline behavior and geolocation data. Confirmed anomalies trigger VPN session termination, MFA re-verification enforcement, and security team notification. Legitimate connections from known travel or new locations are annotated and baselined.",
+  "category": "network",
+  "subcategory": "vpn_security",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "10 minutes",
+  "tags": ["vpn", "anomaly", "impossible_travel", "geolocation", "network"],
+  "alert_types": ["network", "vpn", "authentication"],
+  "severity_filter": ["medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["network", "vpn_anomaly", "impossible_travel", "vpn_geo_anomaly", "concurrent_vpn"],
+    "min_severity": "medium"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "cisco_anyconnect",
+      "name": "Cisco AnyConnect",
+      "category": "vpn",
+      "reason": "Terminate suspicious VPN sessions and query connection logs"
+    },
+    {
+      "connector_id": "okta",
+      "name": "Okta",
+      "category": "identity",
+      "reason": "Force MFA re-verification and check user authentication history"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Notify security team of confirmed VPN anomalies"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "VPN Anomaly Alert",
+          "config": {
+            "alert_types": ["network", "vpn_anomaly", "impossible_travel", "vpn_geo_anomaly", "concurrent_vpn"],
+            "description": "Triggers when VPN monitoring detects impossible travel, unusual geolocation, off-hours access, or concurrent sessions from different locations"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — VPN Behavior Analysis",
+          "config": {
+            "template_id": "lateral_movement",
+            "additional_instructions": "Analyze VPN connection against user baseline: check geolocation plausibility, time-of-day patterns, concurrent session conflicts, and source IP reputation. Determine if this is a compromised account or legitimate travel.",
+            "description": "AI-powered analysis of VPN connection patterns against the user's historical baseline to identify account compromise indicators"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "label": "Anomaly Confirmed?",
+          "config": {
+            "condition": "{{analyze_1.verdict}} in ['MALICIOUS', 'SUSPICIOUS']",
+            "description": "Routes based on whether Riggs AI confirmed the VPN connection is anomalous and potentially indicates account compromise"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "respond",
+          "label": "Terminate VPN Session",
+          "config": {
+            "integration_action": {
+              "connector_id": "cisco_anyconnect",
+              "action": "disconnect_session",
+              "parameters": {
+                "session_id": "{{trigger_1.alert.session_id}}",
+                "username": "{{trigger_1.alert.username}}",
+                "comment": "Session terminated due to VPN anomaly — {{analyze_1.anomaly_type}}, Alert: {{trigger_1.alert.alert_id}}"
+              }
+            },
+            "description": "Immediately terminates the suspicious VPN session to prevent unauthorized access while investigation continues"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "label": "Force MFA Re-verification",
+          "config": {
+            "integration_action": {
+              "connector_id": "okta",
+              "action": "force_mfa",
+              "parameters": {
+                "user_id": "{{trigger_1.alert.user_id}}",
+                "reason": "VPN anomaly detected — {{analyze_1.anomaly_type}}. User must re-verify identity before reconnecting.",
+                "clear_sessions": true
+              }
+            },
+            "description": "Forces MFA re-verification via Okta and clears all active sessions to ensure the user re-authenticates with strong credentials"
+          }
+        }
+      },
+      {
+        "id": "respond_3",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "label": "Notify Security Team",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#security-alerts",
+              "message": "VPN ANOMALY — SESSION TERMINATED\n\nUser: {{trigger_1.alert.username}}\nAnomaly Type: {{analyze_1.anomaly_type}}\nSource IP: {{trigger_1.alert.source_ip}}\nGeolocation: {{trigger_1.alert.geo_location}}\nBaseline Location: {{analyze_1.baseline_location}}\n\nActions Taken:\n- VPN session terminated\n- MFA re-verification enforced\n- All sessions cleared\n\nRiggs AI Assessment:\n{{analyze_1.summary}}"
+            },
+            "description": "Notifies the security team of the confirmed VPN anomaly with full context and containment actions taken"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "utility",
+          "label": "Annotate: Legitimate Connection",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "VPN connection from {{trigger_1.alert.source_ip}} ({{trigger_1.alert.geo_location}}) analyzed by Riggs AI. Verdict: {{analyze_1.verdict}}. Connection consistent with known travel or updated baseline. No action required.",
+              "close_alert": true,
+              "update_baseline": true
+            },
+            "description": "Annotates the alert as a legitimate connection and updates the user's location baseline when the anomaly is not confirmed"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1020 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "VPN connection anomaly investigation workflow complete"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_analyze",
+        "source": "trigger_1",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_analyze_decision",
+        "source": "analyze_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "respond_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "utility_1",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_terminate_mfa",
+        "source": "respond_1",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_mfa_notify",
+        "source": "respond_2",
+        "target": "respond_3",
+        "type": "default"
+      },
+      {
+        "id": "e_notify_end",
+        "source": "respond_3",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_utility_end",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

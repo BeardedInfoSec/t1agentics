@@ -1,0 +1,173 @@
+{
+  "id": "cortex_xsiam",
+  "name": "Cortex XSIAM",
+  "description": "Palo Alto Networks AI-driven security operations platform combining SIEM, SOAR, ASM, and XDR for automated incident management, alert handling, and endpoint response.",
+  "version": "1.0.0",
+  "category": "soar",
+  "vendor": "Palo Alto Networks",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "x-xdr-auth-id",
+    "location": "header",
+    "extra_headers": {
+      "Authorization": "{api_key}"
+    }
+  },
+  "base_url": "https://api-{tenant}.xdr.{region}.paloaltonetworks.com/public_api/v1",
+  "actions": [
+    {
+      "id": "get_incidents",
+      "name": "Get Incidents",
+      "description": "Retrieve a list of incidents with filtering options.",
+      "http_method": "POST",
+      "endpoint": "/incidents/get_incidents",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "request_data", "type": "object", "description": "Request data with filters, search_from, search_to, and sort.", "required": true},
+        {"name": "request_data.filters", "type": "array", "description": "Array of filter objects with field, operator, and value.", "required": false},
+        {"name": "request_data.search_from", "type": "integer", "description": "Starting index for pagination.", "required": false},
+        {"name": "request_data.search_to", "type": "integer", "description": "Ending index for pagination.", "required": false},
+        {"name": "request_data.sort", "type": "object", "description": "Sort object with field and keyword (asc/desc).", "required": false}
+      ]
+    },
+    {
+      "id": "get_incident_extra_data",
+      "name": "Get Incident Extra Data",
+      "description": "Retrieve full incident details including alerts and related data.",
+      "http_method": "POST",
+      "endpoint": "/incidents/get_incident_extra_data",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "request_data", "type": "object", "description": "Request data with incident_id.", "required": true},
+        {"name": "request_data.incident_id", "type": "string", "description": "The incident ID.", "required": true},
+        {"name": "request_data.alerts_limit", "type": "integer", "description": "Maximum number of alerts to return.", "required": false}
+      ]
+    },
+    {
+      "id": "update_incident",
+      "name": "Update Incident",
+      "description": "Update incident fields such as status, assignee, or severity.",
+      "http_method": "POST",
+      "endpoint": "/incidents/update_incident",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "request_data", "type": "object", "description": "Request data with incident_id and update_data.", "required": true},
+        {"name": "request_data.incident_id", "type": "string", "description": "The incident ID.", "required": true},
+        {"name": "request_data.update_data", "type": "object", "description": "Fields to update (status, assigned_user_mail, severity, etc.).", "required": true}
+      ]
+    },
+    {
+      "id": "get_alerts",
+      "name": "Get Alerts",
+      "description": "Retrieve all alerts with filtering and pagination.",
+      "http_method": "POST",
+      "endpoint": "/alerts/get_alerts_multi_events",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "request_data", "type": "object", "description": "Request data with filters and pagination.", "required": true},
+        {"name": "request_data.filters", "type": "array", "description": "Array of filter objects.", "required": false},
+        {"name": "request_data.search_from", "type": "integer", "description": "Starting index.", "required": false},
+        {"name": "request_data.search_to", "type": "integer", "description": "Ending index.", "required": false}
+      ]
+    },
+    {
+      "id": "insert_cef_alerts",
+      "name": "Insert CEF Alerts",
+      "description": "Insert new alerts in CEF (Common Event Format).",
+      "http_method": "POST",
+      "endpoint": "/alerts/insert_cef_alerts",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "request_data", "type": "object", "description": "Request data with alerts array.", "required": true},
+        {"name": "request_data.alerts", "type": "array", "description": "Array of CEF-formatted alert strings.", "required": true}
+      ]
+    },
+    {
+      "id": "insert_parsed_alerts",
+      "name": "Insert Parsed Alerts",
+      "description": "Insert new alerts in JSON format with parsed fields.",
+      "http_method": "POST",
+      "endpoint": "/alerts/insert_parsed_alerts",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "request_data", "type": "object", "description": "Request data with alerts array.", "required": true},
+        {"name": "request_data.alerts", "type": "array", "description": "Array of parsed alert objects.", "required": true}
+      ]
+    },
+    {
+      "id": "get_endpoints",
+      "name": "Get Endpoints",
+      "description": "Retrieve a list of endpoints with filtering.",
+      "http_method": "POST",
+      "endpoint": "/endpoints/get_endpoint",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "request_data", "type": "object", "description": "Request data with filters.", "required": true},
+        {"name": "request_data.filters", "type": "array", "description": "Array of filter objects for endpoint selection.", "required": false}
+      ]
+    },
+    {
+      "id": "isolate_endpoint",
+      "name": "Isolate Endpoint",
+      "description": "Isolate one or more endpoints from the network.",
+      "http_method": "POST",
+      "endpoint": "/endpoints/isolate",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "request_data", "type": "object", "description": "Request data with endpoint_ids or filters.", "required": true},
+        {"name": "request_data.endpoint_id_list", "type": "array", "description": "Array of endpoint IDs to isolate.", "required": false},
+        {"name": "request_data.filters", "type": "array", "description": "Filter criteria to select endpoints.", "required": false}
+      ]
+    },
+    {
+      "id": "unisolate_endpoint",
+      "name": "Unisolate Endpoint",
+      "description": "Remove network isolation from endpoints.",
+      "http_method": "POST",
+      "endpoint": "/endpoints/unisolate",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "request_data", "type": "object", "description": "Request data with endpoint_ids or filters.", "required": true},
+        {"name": "request_data.endpoint_id_list", "type": "array", "description": "Array of endpoint IDs to unisolate.", "required": false},
+        {"name": "request_data.filters", "type": "array", "description": "Filter criteria to select endpoints.", "required": false}
+      ]
+    },
+    {
+      "id": "scan_endpoints",
+      "name": "Scan Endpoints",
+      "description": "Initiate a scan on selected endpoints.",
+      "http_method": "POST",
+      "endpoint": "/endpoints/scan",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "request_data", "type": "object", "description": "Request data with endpoint_ids or filters.", "required": true},
+        {"name": "request_data.endpoint_id_list", "type": "array", "description": "Array of endpoint IDs to scan.", "required": false},
+        {"name": "request_data.filters", "type": "array", "description": "Filter criteria to select endpoints.", "required": false}
+      ]
+    },
+    {
+      "id": "get_policy",
+      "name": "Get Policy",
+      "description": "Retrieve endpoint security policy configuration.",
+      "http_method": "POST",
+      "endpoint": "/endpoints/get_policy",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "request_data", "type": "object", "description": "Request data with endpoint_id.", "required": true},
+        {"name": "request_data.endpoint_id", "type": "string", "description": "The endpoint ID.", "required": true}
+      ]
+    }
+  ]
+}

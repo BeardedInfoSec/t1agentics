@@ -1,0 +1,284 @@
+{
+  "name": "Suspicious Domain Investigation",
+  "slug": "domain-investigation",
+  "description": "Investigates suspicious domains by enriching with VirusTotal and WHOIS data, then applying nested decision logic. Newly registered domains with suspicious TLDs undergo deep AI-powered investigation of registration patterns, hosting infrastructure, and connections to known threat infrastructure. Confirmed threat domains are blocked on DNS/proxy, added to the blocked domains EDL, and the threat intel team is notified. Established or unconnected domains are annotated and closed.",
+  "category": "threat_intel",
+  "subcategory": "investigation",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "10 minutes",
+  "tags": ["domain", "investigation", "dns", "threat_intel", "enrichment"],
+  "alert_types": ["threat_intel", "dns"],
+  "severity_filter": ["low", "medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["threat_intel", "dns", "suspicious_domain", "domain_alert"],
+    "min_severity": "low"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "virustotal",
+      "name": "VirusTotal",
+      "category": "threat_intel",
+      "reason": "Enrich suspicious domains with reputation data, detection ratios, and WHOIS registration details"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Suspicious Domain Alert Received",
+          "config": {
+            "alert_types": ["threat_intel", "dns", "suspicious_domain", "domain_alert"],
+            "description": "Triggers when a suspicious domain alert is ingested from DNS monitoring, threat feeds, or user reports"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "label": "Enrich Domain — VT & WHOIS",
+          "config": {
+            "mode": "enrich",
+            "observable_type": "domain",
+            "data_path": "$.trigger.alert.domain",
+            "sources": ["virustotal", "whois"],
+            "description": "Enriches the suspicious domain with VirusTotal reputation data and WHOIS registration details including domain age, registrar, and registrant info"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "label": "Domain Age < 30 Days AND Suspicious TLD?",
+          "config": {
+            "condition": "{{analyze_1.outputs.enrichments[0].results.domain_age_days}} < 30 and {{analyze_1.outputs.enrichments[0].results.tld}} in ['xyz', 'top', 'buzz', 'tk', 'ml', 'ga', 'cf', 'gq', 'pw', 'cc', 'icu', 'club', 'online', 'site', 'work', 'click', 'link', 'info', 'ru', 'cn']",
+            "description": "Checks if the domain was registered within the last 30 days and uses a TLD commonly associated with malicious activity"
+          }
+        }
+      },
+      {
+        "id": "analyze_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — Deep Domain Investigation",
+          "config": {
+            "template_id": "ioc_correlation",
+            "additional_instructions": "Investigate domain registration patterns, hosting infrastructure, and any connections to known threat infrastructure. Check for domain generation algorithm patterns, fast-flux behavior, and similarities to known malicious domains.",
+            "description": "AI-powered deep investigation of the suspicious domain analyzing registration patterns, hosting infrastructure, and connections to known threat infrastructure"
+          }
+        }
+      },
+      {
+        "id": "decision_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "decision",
+          "label": "Connected to Threat Infrastructure?",
+          "config": {
+            "condition": "{{analyze_2.severity}} in ['high', 'critical'] or {{analyze_2.threat_connection}} == true",
+            "description": "Routes based on whether the AI investigation found connections to known threat infrastructure, C2 servers, or malicious campaigns"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 160, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "label": "Block Domain on DNS/Proxy",
+          "config": {
+            "integration_action": {
+              "action": "block_domain",
+              "parameters": {
+                "domain": "{{trigger_1.alert.domain}}",
+                "block_type": "dns_sinkhole",
+                "source": "domain-investigation",
+                "reason": "Confirmed connection to threat infrastructure — {{analyze_2.summary}}"
+              }
+            },
+            "description": "Blocks the malicious domain on DNS and web proxy to prevent any internal systems from resolving or connecting to it"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 160, "y": 1020 },
+        "data": {
+          "kind": "utility",
+          "label": "Add to Blocked Domains EDL",
+          "config": {
+            "action": "edl_add",
+            "parameters": {
+              "list_name": "blocked_domains",
+              "indicator": "{{trigger_1.alert.domain}}",
+              "indicator_type": "domain",
+              "source": "domain-investigation",
+              "expiry_days": 90,
+              "notes": "Auto-blocked: new domain linked to threat infrastructure"
+            },
+            "description": "Adds the blocked domain to the External Dynamic List for propagation to all perimeter security controls"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 160, "y": 1180 },
+        "data": {
+          "kind": "respond",
+          "label": "Notify Threat Intel Team on Slack",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#threat-intel",
+              "message": "SUSPICIOUS DOMAIN BLOCKED\nDomain: {{trigger_1.alert.domain}}\nDomain Age: {{analyze_1.outputs.enrichments[0].results.domain_age_days}} days\nTLD: {{analyze_1.outputs.enrichments[0].results.tld}}\n\nActions Taken:\n- Domain blocked on DNS/proxy\n- Added to blocked_domains EDL\n\nRiggs AI Investigation:\n{{analyze_2.summary}}"
+            },
+            "description": "Sends a notification to the threat intel Slack channel with domain details, investigation findings, and actions taken"
+          }
+        }
+      },
+      {
+        "id": "utility_2",
+        "type": "signal",
+        "position": { "x": 520, "y": 860 },
+        "data": {
+          "kind": "utility",
+          "label": "Note: New Domain, No Threat Connection",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "Domain {{trigger_1.alert.domain}} is newly registered ({{analyze_1.outputs.enrichments[0].results.domain_age_days}} days) with suspicious TLD, but AI investigation found no confirmed connection to threat infrastructure.\n\nRecommendation: Continue monitoring.\n\nRiggs AI Summary:\n{{analyze_2.summary}}"
+            },
+            "description": "Adds a note documenting that the domain is new but has no confirmed threat connection, recommending continued monitoring"
+          }
+        }
+      },
+      {
+        "id": "utility_3",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "utility",
+          "label": "Note: Established Domain, Low Risk",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "Domain {{trigger_1.alert.domain}} is an established domain (age > 30 days) or uses a standard TLD. Assessed as low risk.\n\nDomain Age: {{analyze_1.outputs.enrichments[0].results.domain_age_days}} days\nVirusTotal Verdict: {{analyze_1.outputs.aggregated_verdict}}\n\nNo further action required."
+            },
+            "description": "Adds a note documenting that the domain is established with a standard TLD and assessed as low risk"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1340 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "Suspicious domain investigation complete"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_enrich",
+        "source": "trigger_1",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_enrich_decision1",
+        "source": "analyze_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision1_yes",
+        "source": "decision_1",
+        "target": "analyze_2",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision1_no",
+        "source": "decision_1",
+        "target": "utility_3",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_deepinv_decision2",
+        "source": "analyze_2",
+        "target": "decision_2",
+        "type": "default"
+      },
+      {
+        "id": "e_decision2_yes",
+        "source": "decision_2",
+        "target": "respond_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision2_no",
+        "source": "decision_2",
+        "target": "utility_2",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_block_edl",
+        "source": "respond_1",
+        "target": "utility_1",
+        "type": "default"
+      },
+      {
+        "id": "e_edl_notify",
+        "source": "utility_1",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_notify_end",
+        "source": "respond_2",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_noconnection_end",
+        "source": "utility_2",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_established_end",
+        "source": "utility_3",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

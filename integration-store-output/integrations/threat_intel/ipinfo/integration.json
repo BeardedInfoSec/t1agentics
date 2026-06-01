@@ -1,0 +1,72 @@
+{
+  "id": "ipinfo",
+  "name": "IPinfo",
+  "description": "Uses ipinfo.io to lookup IP addresses and Autonomous System Numbers",
+  "version": "2.0.5",
+  "category": "threat_intel",
+  "vendor": "ipinfo.io",
+  "auth_type": "bearer_token",
+  "auth_config": {
+    "type": "bearer_token",
+    "header_name": "Authorization",
+    "location": "header",
+    "prefix": "Bearer "
+  },
+  "base_url": "https://ipinfo.io",
+  "documentation_url": "https://ipinfo.io/developers",
+  "setup_instructions": "## Get an IPinfo access token\n\nIPinfo provides IP geolocation, ASN, company, and abuse-contact data. Free tier is 50,000 requests/month with basic fields; paid plans unlock company, carrier, abuse, privacy-detection, and hosted-domain data.\n\n### 1. Create an account\n1. Open https://ipinfo.io/signup and register.\n2. Confirm the email link.\n\n### 2. Copy your access token\n1. Once logged in, you land on https://ipinfo.io/account/home or https://ipinfo.io/account/token.\n2. Copy the **Token** shown at the top — it's a short alphanumeric string (e.g. `a1b2c3d4e5f6g7`).\n\n### 3. Paste the token below\nPaste the **raw token** in the **Token** field. **Do not include `Bearer `** — T1 adds that prefix automatically.\n\nClick **Test Authentication** to confirm. The test calls `/me` and expects a 200.\n\n### Tier-gated fields\n- **Free**: country, region, city, location (lat/lon), org (ASN + name), postal, timezone.\n- **Basic / Standard / Business / Premium**: also returns `company`, `carrier`, `privacy` (vpn/proxy/tor/relay detection), `abuse` contact, `domains` hosted on the IP.\n\nT1 actions surface whatever fields your plan returns. If `privacy.vpn` is missing on a free key, that's not a bug.\n\n### Rate limits\n- **Free**: 50,000 requests/month, ~1,000/day soft cap.\n- **Paid**: per-plan; check https://ipinfo.io/account/usage.\n\nT1 surfaces a `QuotaExceededError` on 429.\n\n### Troubleshooting\n- **`401 Unauthorized` / `403`**: Token wrong, revoked, or your account was suspended for ToS violation (scraping). Regenerate from the account token page.\n- **`429 Too Many Requests`**: Monthly cap or per-second burst hit.\n- **Missing privacy/company fields on a paid key**: Plan didn't include that data product — check https://ipinfo.io/pricing.",
+
+  "actions": [
+    {
+      "id": "lookup_ip",
+      "name": "Lookup Ip",
+      "description": "Lookup the details of an IP address",
+      "http_method": "GET",
+      "endpoint": "/{ip}/json",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "IP to lookup",
+          "required": true,
+          "contains": [
+            "ip"
+          ]
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "lookup_asn",
+      "name": "Lookup Asn",
+      "description": "Lookup the details of an Autonomous System Number",
+      "http_method": "GET",
+      "endpoint": "/{asn}/json",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "asn",
+          "type": "string",
+          "description": "ASN to lookup",
+          "required": true,
+          "contains": [
+            "asn"
+          ]
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "IPinfo",
+    "original_type": "information",
+    "converted_at": "2025-12-18T16:25:28.873173",
+    "source_version": "2.0.5"
+  }
+}

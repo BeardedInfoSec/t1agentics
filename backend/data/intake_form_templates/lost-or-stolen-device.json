@@ -1,0 +1,137 @@
+{
+  "template_id": "lost-or-stolen-device",
+  "name": "Lost or Stolen Device",
+  "description": "Internal form for employees who have lost (or had stolen) a work laptop, phone, badge, or hardware token. Submissions trigger proactive access revocation by Security.",
+  "title": "Report a Lost or Stolen Device",
+  "intro": "Things happen. Reporting a missing device fast is the single best thing you can do — it lets us revoke access proactively so a lost laptop stays just a lost laptop.\n\nA lost device does not automatically mean you're compromised. We will lock things down as a precaution, not as a punishment. Takes about 3 minutes.\n\n**Important:** after you submit, if the device is a phone or laptop with active sessions, also call the IT hotline so we can begin remote wipe immediately.",
+  "submit_message": "Thanks. Security will begin revoking sessions and disabling the device within minutes. We'll reach out shortly to confirm next steps and reset what you need to keep working.",
+  "fields": [
+    {
+      "key": "reporter_email",
+      "label": "Your email",
+      "type": "email",
+      "required": true,
+      "help": "Use a personal email if you've lost the device you'd normally check work mail on.",
+      "placeholder": "you@company.com",
+      "sample_value": "marcus.weld@northwindcloud.com"
+    },
+    {
+      "key": "device_type",
+      "label": "What kind of device?",
+      "type": "select",
+      "required": true,
+      "help": "Pick the closest match.",
+      "options": [
+        "Laptop",
+        "Phone",
+        "Tablet",
+        "Badge / access card",
+        "Hardware MFA token (YubiKey, RSA, etc.)",
+        "Other"
+      ],
+      "sample_value": "Laptop"
+    },
+    {
+      "key": "device_description",
+      "label": "Describe the device",
+      "type": "text",
+      "required": true,
+      "help": "Make, model, color, serial or asset tag if you remember any of it.",
+      "placeholder": "e.g. MacBook Pro 14\" 2024, silver, asset tag NW-2241",
+      "sample_value": "MacBook Pro 14\" 2024 - silver - serial M2H3X4PQ91 - asset tag NW-2241"
+    },
+    {
+      "key": "lost_or_stolen",
+      "label": "Lost or stolen?",
+      "type": "select",
+      "required": true,
+      "help": "If you're not sure, pick 'Lost — not sure'.",
+      "options": [
+        "Lost — I think I just misplaced it",
+        "Lost — not sure",
+        "Stolen — I'm fairly sure it was taken",
+        "Stolen — witnessed or reported to police"
+      ],
+      "sample_value": "Lost — not sure"
+    },
+    {
+      "key": "last_known_location",
+      "label": "Where did you last have it?",
+      "type": "text",
+      "required": true,
+      "help": "Be as specific as you can — street, venue, time of day.",
+      "placeholder": "e.g. Cafe on 5th Ave, around 2pm yesterday",
+      "sample_value": "Coffee shop on 5th Ave near the office, around 2pm yesterday"
+    },
+    {
+      "key": "when_lost",
+      "label": "When did this happen?",
+      "type": "datetime",
+      "required": false,
+      "help": "Approximate is fine.",
+      "sample_value": "2026-05-10T14:00:00"
+    },
+    {
+      "key": "passwords_saved_on_device",
+      "label": "Were any work passwords saved on it?",
+      "type": "select",
+      "required": true,
+      "help": "Browser autosave (Chrome, Safari, Edge), saved logins in apps, a sticky note in the laptop bag — anything counts. This decides how aggressively we lock things down.",
+      "options": [
+        "No, nothing saved",
+        "Yes, browser autosave had my work password",
+        "Yes, several work logins saved in the browser",
+        "Yes, and the device stays signed in to work apps",
+        "Not sure"
+      ],
+      "sample_value": "Yes, and the device stays signed in to work apps"
+    },
+    {
+      "key": "device_locked",
+      "label": "Was the device locked / passcode-protected?",
+      "type": "select",
+      "required": false,
+      "help": "Tells us how easy it is for whoever has it to get in.",
+      "options": [
+        "Yes, locked with passcode / fingerprint / FaceID",
+        "Auto-locks but was unlocked when I last had it",
+        "No passcode set",
+        "Not sure"
+      ],
+      "sample_value": "Yes, locked with passcode / fingerprint / FaceID"
+    },
+    {
+      "key": "police_report",
+      "label": "Did you file a police report?",
+      "type": "select",
+      "required": false,
+      "help": "Only matters if it was stolen. Skip otherwise.",
+      "options": [
+        "Yes, I have a report number",
+        "Not yet, planning to",
+        "No",
+        "N/A — it was lost, not stolen"
+      ],
+      "sample_value": "N/A — it was lost, not stolen"
+    },
+    {
+      "key": "additional_notes",
+      "label": "Anything else we should know?",
+      "type": "textarea",
+      "required": false,
+      "help": "Optional. Anything sensitive that was on the device, anyone you've already told.",
+      "placeholder": "Optional context",
+      "sample_value": "Had a few customer contracts open in the browser. Already told my manager."
+    }
+  ],
+  "alert_template": {
+    "title": "Lost/stolen {{device_type}} reported by {{reporter_email}}",
+    "description": "User {{reporter_email}} reports a {{lost_or_stolen}} {{device_type}}.\n\nDevice: {{device_description}}\nLast known location: {{last_known_location}}\nWhen: {{when_lost}}\nDevice locked: {{device_locked}}\nWork credentials saved on device: {{passwords_saved_on_device}}\nPolice report: {{police_report}}\n\nAdditional context: {{additional_notes}}",
+    "severity": "high",
+    "source": "intake_form",
+    "category": "lost_device"
+  },
+  "icon": "Smartphone",
+  "category": "Identity / Access",
+  "estimated_minutes": 3
+}

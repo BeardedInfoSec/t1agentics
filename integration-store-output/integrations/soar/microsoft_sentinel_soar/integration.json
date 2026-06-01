@@ -1,0 +1,178 @@
+{
+  "id": "microsoft_sentinel_soar",
+  "name": "Microsoft Sentinel SOAR",
+  "description": "Microsoft Sentinel security orchestration and automation using Azure REST API for managing incidents, automation rules, and Logic Apps playbooks.",
+  "version": "1.0.0",
+  "category": "soar",
+  "vendor": "Microsoft",
+  "auth_type": "oauth2_client",
+  "auth_config": {
+    "type": "oauth2_client",
+    "token_url": "https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/token",
+    "scope": "https://management.azure.com/.default",
+    "header_name": "Authorization",
+    "location": "header",
+    "token_prefix": "Bearer"
+  },
+  "base_url": "https://management.azure.com/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.SecurityInsights",
+  "actions": [
+    {
+      "id": "list_incidents",
+      "name": "List Incidents",
+      "description": "Retrieve a list of security incidents from Microsoft Sentinel.",
+      "http_method": "GET",
+      "endpoint": "/workspaces/{workspaceName}/providers/Microsoft.SecurityInsights/incidents",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "workspaceName", "type": "string", "description": "Log Analytics workspace name.", "required": true},
+        {"name": "api-version", "type": "string", "description": "API version (e.g., '2024-03-01').", "required": true},
+        {"name": "$filter", "type": "string", "description": "OData filter expression.", "required": false},
+        {"name": "$orderby", "type": "string", "description": "Sort order expression.", "required": false},
+        {"name": "$top", "type": "integer", "description": "Maximum results to return.", "required": false}
+      ]
+    },
+    {
+      "id": "get_incident",
+      "name": "Get Incident",
+      "description": "Retrieve details of a specific incident.",
+      "http_method": "GET",
+      "endpoint": "/workspaces/{workspaceName}/providers/Microsoft.SecurityInsights/incidents/{incidentId}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "workspaceName", "type": "string", "description": "Log Analytics workspace name.", "required": true},
+        {"name": "incidentId", "type": "string", "description": "The incident ID.", "required": true},
+        {"name": "api-version", "type": "string", "description": "API version.", "required": true}
+      ]
+    },
+    {
+      "id": "create_incident",
+      "name": "Create Incident",
+      "description": "Create a new security incident in Sentinel.",
+      "http_method": "PUT",
+      "endpoint": "/workspaces/{workspaceName}/providers/Microsoft.SecurityInsights/incidents/{incidentId}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "workspaceName", "type": "string", "description": "Log Analytics workspace name.", "required": true},
+        {"name": "incidentId", "type": "string", "description": "Unique incident ID (GUID).", "required": true},
+        {"name": "api-version", "type": "string", "description": "API version.", "required": true},
+        {"name": "properties.title", "type": "string", "description": "Incident title.", "required": true},
+        {"name": "properties.severity", "type": "string", "description": "Severity: 'High', 'Medium', 'Low', 'Informational'.", "required": true},
+        {"name": "properties.status", "type": "string", "description": "Status: 'New', 'Active', 'Closed'.", "required": true},
+        {"name": "properties.description", "type": "string", "description": "Incident description.", "required": false},
+        {"name": "properties.owner", "type": "object", "description": "Owner object with assignedTo, email, and objectId.", "required": false}
+      ]
+    },
+    {
+      "id": "update_incident",
+      "name": "Update Incident",
+      "description": "Update an existing incident's properties.",
+      "http_method": "PUT",
+      "endpoint": "/workspaces/{workspaceName}/providers/Microsoft.SecurityInsights/incidents/{incidentId}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "workspaceName", "type": "string", "description": "Log Analytics workspace name.", "required": true},
+        {"name": "incidentId", "type": "string", "description": "The incident ID.", "required": true},
+        {"name": "api-version", "type": "string", "description": "API version.", "required": true},
+        {"name": "properties.title", "type": "string", "description": "Updated title.", "required": false},
+        {"name": "properties.severity", "type": "string", "description": "Updated severity.", "required": false},
+        {"name": "properties.status", "type": "string", "description": "Updated status.", "required": false},
+        {"name": "properties.classification", "type": "string", "description": "Classification: 'Undetermined', 'TruePositive', 'BenignPositive', 'FalsePositive'.", "required": false},
+        {"name": "properties.owner", "type": "object", "description": "Updated owner assignment.", "required": false}
+      ]
+    },
+    {
+      "id": "close_incident",
+      "name": "Close Incident",
+      "description": "Close an incident with classification and reason.",
+      "http_method": "PUT",
+      "endpoint": "/workspaces/{workspaceName}/providers/Microsoft.SecurityInsights/incidents/{incidentId}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "workspaceName", "type": "string", "description": "Log Analytics workspace name.", "required": true},
+        {"name": "incidentId", "type": "string", "description": "The incident ID.", "required": true},
+        {"name": "api-version", "type": "string", "description": "API version.", "required": true},
+        {"name": "properties.status", "type": "string", "description": "Set to 'Closed'.", "required": true},
+        {"name": "properties.classification", "type": "string", "description": "Classification: 'TruePositive', 'BenignPositive', 'FalsePositive', 'Undetermined'.", "required": true},
+        {"name": "properties.classificationReason", "type": "string", "description": "Reason: 'SuspiciousActivity', 'SuspiciousButExpected', 'IncorrectAlertLogic', 'InaccurateData'.", "required": false},
+        {"name": "properties.classificationComment", "type": "string", "description": "Classification comment.", "required": false}
+      ]
+    },
+    {
+      "id": "list_incident_comments",
+      "name": "List Incident Comments",
+      "description": "Retrieve comments for an incident.",
+      "http_method": "GET",
+      "endpoint": "/workspaces/{workspaceName}/providers/Microsoft.SecurityInsights/incidents/{incidentId}/comments",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "workspaceName", "type": "string", "description": "Log Analytics workspace name.", "required": true},
+        {"name": "incidentId", "type": "string", "description": "The incident ID.", "required": true},
+        {"name": "api-version", "type": "string", "description": "API version.", "required": true}
+      ]
+    },
+    {
+      "id": "add_incident_comment",
+      "name": "Add Incident Comment",
+      "description": "Add a comment to an incident.",
+      "http_method": "PUT",
+      "endpoint": "/workspaces/{workspaceName}/providers/Microsoft.SecurityInsights/incidents/{incidentId}/comments/{commentId}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "workspaceName", "type": "string", "description": "Log Analytics workspace name.", "required": true},
+        {"name": "incidentId", "type": "string", "description": "The incident ID.", "required": true},
+        {"name": "commentId", "type": "string", "description": "Unique comment ID (GUID).", "required": true},
+        {"name": "api-version", "type": "string", "description": "API version.", "required": true},
+        {"name": "properties.message", "type": "string", "description": "Comment message text.", "required": true}
+      ]
+    },
+    {
+      "id": "list_automation_rules",
+      "name": "List Automation Rules",
+      "description": "Retrieve all automation rules configured in the workspace.",
+      "http_method": "GET",
+      "endpoint": "/workspaces/{workspaceName}/providers/Microsoft.SecurityInsights/automationRules",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "workspaceName", "type": "string", "description": "Log Analytics workspace name.", "required": true},
+        {"name": "api-version", "type": "string", "description": "API version.", "required": true}
+      ]
+    },
+    {
+      "id": "run_playbook",
+      "name": "Run Playbook",
+      "description": "Trigger a Logic Apps playbook on an incident.",
+      "http_method": "POST",
+      "endpoint": "/workspaces/{workspaceName}/providers/Microsoft.SecurityInsights/incidents/{incidentId}/runPlaybook",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "workspaceName", "type": "string", "description": "Log Analytics workspace name.", "required": true},
+        {"name": "incidentId", "type": "string", "description": "The incident ID.", "required": true},
+        {"name": "api-version", "type": "string", "description": "API version.", "required": true},
+        {"name": "logicAppsResourceId", "type": "string", "description": "Azure Resource ID of the Logic App.", "required": true}
+      ]
+    },
+    {
+      "id": "list_incident_entities",
+      "name": "List Incident Entities",
+      "description": "Retrieve entities (artifacts) associated with an incident.",
+      "http_method": "POST",
+      "endpoint": "/workspaces/{workspaceName}/providers/Microsoft.SecurityInsights/incidents/{incidentId}/entities",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "workspaceName", "type": "string", "description": "Log Analytics workspace name.", "required": true},
+        {"name": "incidentId", "type": "string", "description": "The incident ID.", "required": true},
+        {"name": "api-version", "type": "string", "description": "API version.", "required": true}
+      ]
+    }
+  ]
+}

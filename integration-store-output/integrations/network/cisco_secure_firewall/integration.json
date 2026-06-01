@@ -1,0 +1,853 @@
+{
+  "id": "cisco_secure_firewall",
+  "name": "Cisco Secure Firewall",
+  "description": "This app interfaces with Cisco Firepower devices to add, update and delete network objects, network object groups, access policies and access rules",
+  "version": "1.0.2",
+  "category": "network",
+  "vendor": "Cisco Systems",
+  "auth_type": "basic_auth",
+  "auth_config": {
+    "type": "basic_auth",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "list_network_objects",
+      "name": "List Network Objects",
+      "description": "List network object in FMC",
+      "http_method": "GET",
+      "endpoint": "/api/fmc_config/v1/domain/{domain_id}/object/{type}",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Network object name to filter results by",
+          "required": false
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Network object type to filter results by",
+          "required": false
+        },
+        {
+          "name": "domain_name",
+          "type": "string",
+          "description": "Firepower Domain. If none is specified the default domain will be queried",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "create_network_object",
+      "name": "Create Network Object",
+      "description": "Creates a network object in FMC",
+      "http_method": "GET",
+      "endpoint": "/actions/create_network_object",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Network object name",
+          "required": true
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Network object type",
+          "required": true
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "description": "Value of the network object. If type is Range specify value in the following format: ip1-ip2",
+          "required": true
+        },
+        {
+          "name": "domain_name",
+          "type": "string",
+          "description": "Firepower Domain. If none is specified the default domain will be queried",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "update_network_object",
+      "name": "Update Network Object",
+      "description": "Updates a network object in FMC",
+      "http_method": "GET",
+      "endpoint": "/actions/update_network_object",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "object_id",
+          "type": "string",
+          "description": "Network object id",
+          "required": true
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Network object name",
+          "required": false
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Network object type. Note this cannot change and is only used to identify the network object value you'd like to update.",
+          "required": false
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "description": "Value of the network object. If type is Range specify value in the following format: ip1-ip2",
+          "required": false
+        },
+        {
+          "name": "domain_name",
+          "type": "string",
+          "description": "Firepower Domain. If none is specified the default domain will be queried",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "delete_network_object",
+      "name": "Delete Network Object",
+      "description": "Deletes a network object in FMC",
+      "http_method": "GET",
+      "endpoint": "delete",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "object_id",
+          "type": "string",
+          "description": "Network object id",
+          "required": true
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Network object type",
+          "required": true
+        },
+        {
+          "name": "domain_name",
+          "type": "string",
+          "description": "Firepower Domain. If none is specified the default domain will be queried",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_network_groups",
+      "name": "Get Network Group Objects",
+      "description": "Gets all network group objects in FMC host or a specfic network group",
+      "http_method": "GET",
+      "endpoint": "/api/fmc_config/v1/domain/{domain_id}/object/networkgroups",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "group_name",
+          "type": "string",
+          "description": "Group name to retrieve from FMC",
+          "required": false
+        },
+        {
+          "name": "domain_name",
+          "type": "string",
+          "description": "Firepower Domain. If none is specified the default domain will be queried",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "create_network_group",
+      "name": "Create Network Group Object",
+      "description": "Create a network group object",
+      "http_method": "GET",
+      "endpoint": "/actions/create_network_group",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Name of the network group",
+          "required": true
+        },
+        {
+          "name": "network_object_ids",
+          "type": "string",
+          "description": "Network objects attached to the group. Note these ids must already exist in FMC",
+          "required": false
+        },
+        {
+          "name": "overridable",
+          "type": "boolean",
+          "description": "Changes to this won't affect parent policies or configurations",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "domain_name",
+          "type": "string",
+          "description": "Firepower Domain. If none is specified the default domain will be queried",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "update_network_group",
+      "name": "Update Network Group Object",
+      "description": "Update a network group object",
+      "http_method": "GET",
+      "endpoint": "/actions/update_network_group",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "network_group_id",
+          "type": "string",
+          "description": "Network group to update",
+          "required": true
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Name of the network group",
+          "required": false
+        },
+        {
+          "name": "network_object_ids_to_add",
+          "type": "string",
+          "description": "Network objects to add to the group. Note these ids must already exist in FMC",
+          "required": false
+        },
+        {
+          "name": "network_object_ids_to_remove",
+          "type": "string",
+          "description": "Network objects to remove from the group.",
+          "required": false
+        },
+        {
+          "name": "domain_name",
+          "type": "string",
+          "description": "Firepower Domain. If none is specified the default domain will be queried",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "delete_network_group",
+      "name": "Delete Network Group Object",
+      "description": "Delete a network group object",
+      "http_method": "GET",
+      "endpoint": "delete",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "network_group_id",
+          "type": "string",
+          "description": "Network group to update",
+          "required": true
+        },
+        {
+          "name": "domain_name",
+          "type": "string",
+          "description": "Firepower Domain. If none is specified the default domain will be queried",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_access_policies",
+      "name": "Get Access Control Policies",
+      "description": "Gets all or a particular access control policy in the FMC host for a particular domain",
+      "http_method": "GET",
+      "endpoint": "get",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "policy_id",
+          "type": "string",
+          "description": "Id of the policy to retrieve",
+          "required": false
+        },
+        {
+          "name": "domain_name",
+          "type": "string",
+          "description": "Firepower Domain. If none is specified the default domain will be queried",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "create_access_policy",
+      "name": "Create Access Control Policy",
+      "description": "Create an access control policy",
+      "http_method": "GET",
+      "endpoint": "/api/fmc_config/v1/domain/{domain_id}/policy/accesspolicies",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Name of the network group",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Description of the policy",
+          "required": false
+        },
+        {
+          "name": "action",
+          "type": "string",
+          "description": "Type of action to take on matching traffic",
+          "required": true
+        },
+        {
+          "name": "domain_name",
+          "type": "string",
+          "description": "Firepower Domain. If none is specified the default domain will be queried",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "update_access_policy",
+      "name": "Update Access Control Policy",
+      "description": "Update an access control policy",
+      "http_method": "GET",
+      "endpoint": "/api/fmc_config/v1/domain/{domain_id}/policy/accesspolicies",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "policy_id",
+          "type": "string",
+          "description": "Id of the policy to update",
+          "required": true
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Name of the policy",
+          "required": false
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Description of the policy",
+          "required": false
+        },
+        {
+          "name": "action",
+          "type": "string",
+          "description": "Type of action to take on matching traffic",
+          "required": false
+        },
+        {
+          "name": "domain_name",
+          "type": "string",
+          "description": "Firepower Domain. If none is specified the default domain will be queried",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "delete_access_policy",
+      "name": "Delete Access Control Policies",
+      "description": "Deletes the specified access control policy",
+      "http_method": "GET",
+      "endpoint": "/api/fmc_config/v1/domain/{domain_id}/policy/accesspolicies",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "policy_id",
+          "type": "string",
+          "description": "Id of the policy to delete",
+          "required": true
+        },
+        {
+          "name": "domain_name",
+          "type": "string",
+          "description": "Firepower Domain. If none is specified the default domain will be queried",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_access_rules",
+      "name": "Get Access Control Rules",
+      "description": "Gets all access control rules associated with a particular access control policy",
+      "http_method": "GET",
+      "endpoint": "/api/fmc_config/v1/domain/{domain_id}/policy/accesspolicies/{policy_id}/accessrules",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "policy_id",
+          "type": "string",
+          "description": "Access control policy that the rule is apart of",
+          "required": true
+        },
+        {
+          "name": "rule_id",
+          "type": "string",
+          "description": "Id of the rules",
+          "required": false
+        },
+        {
+          "name": "domain_name",
+          "type": "string",
+          "description": "Firepower Domain. If none is specified the default domain will be queried",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "create_access_rules",
+      "name": "Create Access Control Rule",
+      "description": "Creates an access control rule associated with a particular access control policy",
+      "http_method": "GET",
+      "endpoint": "/api/fmc_config/v1/domain/{domain_id}/policy/accesspolicies/{policy_id}/accessrules",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "policy_id",
+          "type": "string",
+          "description": "Access control policy the rule will be apart of",
+          "required": true
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Name of the access control rule",
+          "required": true
+        },
+        {
+          "name": "action",
+          "type": "string",
+          "description": "Type of action to take on matching traffic",
+          "required": true
+        },
+        {
+          "name": "enabled",
+          "type": "boolean",
+          "description": "Wether the rule is enabled",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "source_networks",
+          "type": "string",
+          "description": "Network groups or objects to determine what action to take against traffic based on where it originated from",
+          "required": false
+        },
+        {
+          "name": "destination_networks",
+          "type": "string",
+          "description": "Network groups or objects to determine what action to take against traffic based on its intended destination",
+          "required": false
+        },
+        {
+          "name": "domain_name",
+          "type": "string",
+          "description": "Firepower Domain. If none is specified the default domain will be queried",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "update_access_rule",
+      "name": "Update Access Control Rule",
+      "description": "Updates an access control rule associated with a particular access control policy",
+      "http_method": "GET",
+      "endpoint": "/actions/update_access_rule",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "rule_id",
+          "type": "string",
+          "description": "Access control rule to update",
+          "required": true
+        },
+        {
+          "name": "policy_id",
+          "type": "string",
+          "description": "Access control policy that the rule is apart of",
+          "required": true
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Name of the access control rule",
+          "required": false
+        },
+        {
+          "name": "action",
+          "type": "string",
+          "description": "Type of action to take on matching traffic",
+          "required": false
+        },
+        {
+          "name": "enabled",
+          "type": "boolean",
+          "description": "Wether the rule is enabled",
+          "required": false
+        },
+        {
+          "name": "source_networks_to_add",
+          "type": "string",
+          "description": "Add these network groups or objects to the rules source networks",
+          "required": false
+        },
+        {
+          "name": "source_networks_to_remove",
+          "type": "string",
+          "description": "Remove these network groups or objects from the rules source networks",
+          "required": false
+        },
+        {
+          "name": "destination_networks_to_add",
+          "type": "string",
+          "description": "Add these network groups or objects to the rules destination networks",
+          "required": false
+        },
+        {
+          "name": "destination_networks_to_remove",
+          "type": "string",
+          "description": "Remove these network groups or objects from the rules destination networks",
+          "required": false
+        },
+        {
+          "name": "domain_name",
+          "type": "string",
+          "description": "Firepower Domain. If none is specified the default domain will be queried",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "delete_access_rule",
+      "name": "Delete Access Control Rules",
+      "description": "Deletes access control rule associated with a particular access control policy",
+      "http_method": "GET",
+      "endpoint": "delete",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "rule_id",
+          "type": "string",
+          "description": "Access control rule to delete",
+          "required": true
+        },
+        {
+          "name": "policy_id",
+          "type": "string",
+          "description": "Access control policy that the rule is apart of",
+          "required": true
+        },
+        {
+          "name": "domain_name",
+          "type": "string",
+          "description": "Firepower Domain. If none is specified the default domain will be queried",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_intrusion_policies",
+      "name": "List Intrusion Policies",
+      "description": "Gets all intrusion polcies in the FMC host for a particular domain",
+      "http_method": "GET",
+      "endpoint": "/actions/list_intrusion_policies",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "policy_id",
+          "type": "string",
+          "description": "Intrusion policy to retrieve",
+          "required": false
+        },
+        {
+          "name": "domain_name",
+          "type": "string",
+          "description": "Firepower Domain. If none is specified the default domain will be queried",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "create_intrusion_policy",
+      "name": "Create Intrusion Policy",
+      "description": "Create an intrusion policy",
+      "http_method": "GET",
+      "endpoint": "/api/fmc_config/v1/domain/{domain_id}/policy/intrusionpolicies",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Name of the intrusion policy",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Description of the intrusion policy",
+          "required": false
+        },
+        {
+          "name": "base_policy",
+          "type": "string",
+          "description": "Base intrusion policy ID. Can be found using list intrusion policies",
+          "required": true
+        },
+        {
+          "name": "inspection_mode",
+          "type": "string",
+          "description": "The inspection mode for the Snort 3 engine",
+          "required": false
+        },
+        {
+          "name": "domain_name",
+          "type": "string",
+          "description": "Firepower Domain. If none is specified the default domain will be queried",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "update_intrusion_policy",
+      "name": "Update Intrusion Policy",
+      "description": "Update an intrusion policy",
+      "http_method": "GET",
+      "endpoint": "/api/fmc_config/v1/domain/{domain_id}/policy/intrusionpolicies",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "policy_id",
+          "type": "string",
+          "description": "Id of the intrusion policy to update",
+          "required": true
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Name of the policy",
+          "required": false
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Description of the policy",
+          "required": false
+        },
+        {
+          "name": "base_policy",
+          "type": "string",
+          "description": "Base intrusion policy ID. Can be found using list intrusion policies",
+          "required": false
+        },
+        {
+          "name": "inspection_mode",
+          "type": "string",
+          "description": "The inspection mode for the Snort 3 engine",
+          "required": false
+        },
+        {
+          "name": "replicate_inspection_mode",
+          "type": "boolean",
+          "description": "Whether to replicate inspection_mode from Snort 3 to Snort ",
+          "required": false
+        },
+        {
+          "name": "domain_name",
+          "type": "string",
+          "description": "Firepower Domain. If none is specified the default domain will be queried",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "delete_intrusion_policy",
+      "name": "Delete Intrusion Policy",
+      "description": "Deletes the specified access intrusion policy",
+      "http_method": "GET",
+      "endpoint": "/api/fmc_config/v1/domain/{domain_id}/policy/intrusionpolicies",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "policy_id",
+          "type": "string",
+          "description": "Id of the policy to delete",
+          "required": true
+        },
+        {
+          "name": "domain_name",
+          "type": "string",
+          "description": "Firepower Domain. If none is specified the default domain will be queried",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_devices",
+      "name": "List Devices",
+      "description": "Lists all devices belonging to a particular domain/tenant",
+      "http_method": "GET",
+      "endpoint": "/api/fmc_config/v1/domain/{domain_id}/devices/devicerecords",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "domain_name",
+          "type": "string",
+          "description": "Firepower Domain. If none is specified the default domain will be queried",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_deployable_devices",
+      "name": "Get Deployable Devices",
+      "description": "List all devices with configuration chnges that are ready to be deployed",
+      "http_method": "GET",
+      "endpoint": "/api/fmc_config/v1/domain/{domain_id}/deployment/deployabledevices",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "domain_name",
+          "type": "string",
+          "description": "Firepower Domain. If none is specified the default domain will be queried",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "deploy_devices",
+      "name": "Deploy Devices",
+      "description": "Deploy devices that are ready to deploy",
+      "http_method": "GET",
+      "endpoint": "/api/fmc_config/v1/domain/{domain_id}/deployment/deploymentrequests",
+      "action_type": "generic",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "devices",
+          "type": "string",
+          "description": "Device IDs of devices to deploy changes to. If left empty all devices with configuration changes will deploy",
+          "required": false
+        },
+        {
+          "name": "domain_name",
+          "type": "string",
+          "description": "Firepower Domain. If none is specified the default domain will be queried",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_deployment_status",
+      "name": "Get Deployment Status",
+      "description": "Get status of a deployment",
+      "http_method": "GET",
+      "endpoint": "/api/fmc_config/v1/domain/{domain_id}/job/taskstatuses/{task_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "deployment_id",
+          "type": "string",
+          "description": "Id of the deployment",
+          "required": true
+        },
+        {
+          "name": "domain_name",
+          "type": "string",
+          "description": "Firepower Domain. If none is specified the default domain will be queried",
+          "required": false
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Cisco Secure Firewall",
+    "original_type": "firewall",
+    "converted_at": "2025-12-18T16:25:28.661152",
+    "source_version": "1.0.2"
+  }
+}

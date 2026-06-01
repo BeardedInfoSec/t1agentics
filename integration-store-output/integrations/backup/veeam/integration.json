@@ -1,0 +1,152 @@
+{
+  "id": "veeam",
+  "name": "Veeam Backup & Replication",
+  "description": "Integrates with Veeam Backup and Replication REST API for backup job management, session monitoring, protected workload inventory, and repository status across virtual, physical, and cloud environments",
+  "version": "1.0.0",
+  "category": "backup",
+  "vendor": "Veeam",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "https://{host}:9419/api/v1",
+  "actions": [
+    {
+      "id": "list_backup_jobs",
+      "name": "List Backup Jobs",
+      "description": "Retrieve all configured backup jobs including their schedules, targets, and current state",
+      "http_method": "GET",
+      "endpoint": "/jobs",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "nameFilter",
+          "type": "string",
+          "description": "Filter jobs by name pattern",
+          "required": false
+        },
+        {
+          "name": "typeFilter",
+          "type": "string",
+          "description": "Filter by job type (Backup, BackupCopy, Replication, SureBackup)",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of jobs to return",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Offset for pagination",
+          "required": false,
+          "default": 0
+        }
+      ]
+    },
+    {
+      "id": "get_job_status",
+      "name": "Get Job Status",
+      "description": "Retrieve the current status and last run details of a specific backup job",
+      "http_method": "GET",
+      "endpoint": "/jobs/{jobId}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "jobId",
+          "type": "string",
+          "description": "Unique identifier of the backup job",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_sessions",
+      "name": "List Job Sessions",
+      "description": "Retrieve backup job session history showing execution results, duration, and transferred data",
+      "http_method": "GET",
+      "endpoint": "/sessions",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "jobId",
+          "type": "string",
+          "description": "Filter sessions by specific job ID",
+          "required": false
+        },
+        {
+          "name": "result",
+          "type": "string",
+          "description": "Filter by session result (Success, Warning, Failed, None)",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of sessions to return",
+          "required": false,
+          "default": 50
+        }
+      ]
+    },
+    {
+      "id": "list_protected_workloads",
+      "name": "List Protected Workloads",
+      "description": "Retrieve all protected virtual machines, physical servers, and cloud workloads managed by Veeam agents",
+      "http_method": "GET",
+      "endpoint": "/protectedWorkloads",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "platformFilter",
+          "type": "string",
+          "description": "Filter by platform type (VMware, HyperV, Windows, Linux, Cloud)",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of workloads to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "trigger_backup",
+      "name": "Trigger Backup",
+      "description": "Start an immediate backup for a specified job",
+      "http_method": "POST",
+      "endpoint": "/jobs/{jobId}/start",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "jobId",
+          "type": "string",
+          "description": "Unique identifier of the backup job to start",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_repositories",
+      "name": "List Repositories",
+      "description": "Retrieve all backup repositories with capacity and utilization information",
+      "http_method": "GET",
+      "endpoint": "/backupInfrastructure/repositories",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    }
+  ]
+}

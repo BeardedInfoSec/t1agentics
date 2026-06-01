@@ -1,0 +1,183 @@
+{
+  "name": "EDR Alert Triage",
+  "slug": "endpoint-edr-alert-triage",
+  "description": "Performs AI-powered triage on EDR alerts from CrowdStrike or SentinelOne. Riggs analyzes the detection using the malware assessment template, then routes based on severity. High-severity detections trigger immediate host isolation and SOC notification. Lower-severity alerts are enriched with context, tagged for monitoring, and closed with a note.",
+  "category": "endpoint",
+  "subcategory": "edr_triage",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "beginner",
+  "estimated_time": "5 minutes",
+  "tags": ["edr", "triage", "ai-analysis", "endpoint", "detection", "first-response"],
+  "alert_types": ["endpoint_detection", "edr_alert"],
+  "severity_filter": ["low", "medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["endpoint_detection", "edr_alert", "malware", "behavioral_detection"],
+    "min_severity": "low"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "crowdstrike",
+      "name": "CrowdStrike Falcon",
+      "category": "edr",
+      "reason": "Retrieve detection details and isolate compromised endpoints"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "EDR Alert Received",
+          "config": {
+            "alert_types": ["endpoint_detection", "edr_alert", "malware", "behavioral_detection"],
+            "description": "Triggers when an EDR detection alert is ingested from CrowdStrike or SentinelOne"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — Malware Assessment",
+          "config": {
+            "template_id": "malware_assessment",
+            "additional_instructions": "Evaluate the EDR detection for severity, file reputation, process behavior, and whether immediate containment is warranted.",
+            "description": "AI-powered analysis of the EDR alert using the malware_assessment template to determine threat level and recommended actions"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "label": "Severity >= High?",
+          "config": {
+            "condition": "{{analyze_1.severity}} in ['high', 'critical']",
+            "description": "Routes based on whether the AI assessment determined high or critical severity"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "respond",
+          "label": "Isolate Host via EDR",
+          "config": {
+            "integration_action": {
+              "connector_id": "crowdstrike",
+              "action": "contain_host",
+              "parameters": {
+                "device_id": "{{trigger_1.alert.endpoint_id}}"
+              }
+            },
+            "description": "Immediately isolate the affected endpoint to prevent lateral movement or further compromise"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "label": "Notify SOC on Slack",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#soc-alerts",
+              "message": "HIGH SEVERITY EDR DETECTION\nHost: {{trigger_1.alert.hostname}}\nDetection: {{trigger_1.alert.detection_name}}\nProcess: {{trigger_1.alert.process_name}}\nAction Taken: Host isolated\n\nRiggs Assessment:\n{{analyze_1.summary}}"
+            },
+            "description": "Send high-priority notification to SOC Slack channel with detection details and triage results"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "utility",
+          "label": "Tag & Set Monitoring",
+          "config": {
+            "action": "update_status",
+            "parameters": {
+              "status": "monitoring",
+              "tags": ["low-severity-edr", "auto-triaged"]
+            },
+            "description": "Tag the alert as auto-triaged and set to monitoring status for continued observation"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 860 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "EDR alert triage complete"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_analyze",
+        "source": "trigger_1",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_analyze_decision",
+        "source": "analyze_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "respond_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "utility_1",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_isolate_notify",
+        "source": "respond_1",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_notify_end",
+        "source": "respond_2",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_utility_end",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

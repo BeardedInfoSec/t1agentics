@@ -1,0 +1,238 @@
+{
+  "name": "Audit Evidence Collection",
+  "slug": "compliance-audit-evidence",
+  "description": "Automated audit evidence collection workflow that gathers artifacts across systems for compliance audits. When triggered before an audit engagement, the playbook systematically collects access control evidence, change management logs, system configurations, and security scan results. Riggs AI reviews and organizes the evidence package, then routes it through compliance lead approval before packaging for the auditor.",
+  "category": "compliance",
+  "subcategory": "audit_evidence",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "30 minutes",
+  "tags": ["compliance", "audit", "evidence", "artifacts", "documentation", "audit_prep"],
+  "alert_types": [],
+  "severity_filter": [],
+  "trigger_conditions": {
+    "alert_types": [],
+    "trigger_type": "manual"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "splunk",
+      "name": "Splunk",
+      "category": "siem",
+      "reason": "Collect log evidence and security event data for audit review"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Document evidence collection and create audit package ticket"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Notify compliance team when evidence package is ready for auditor"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Audit Evidence Collection Initiated",
+          "config": {
+            "trigger_type": "manual",
+            "description": "Manually triggered to begin audit evidence collection for an upcoming audit engagement"
+          }
+        }
+      },
+      {
+        "id": "code_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "code",
+          "label": "Collect Access Control Evidence",
+          "config": {
+            "mode": "query",
+            "query": "SELECT u.user_id, u.email, u.role, u.department, u.last_login, u.mfa_enabled, p.privilege_name, p.granted_date, p.last_reviewed FROM users u JOIN user_privileges p ON u.user_id = p.user_id WHERE u.status = 'active' ORDER BY u.department, u.role",
+            "output_variable": "access_control_evidence",
+            "description": "Collect current access control matrix including user roles, privileges, MFA status, and review dates"
+          }
+        }
+      },
+      {
+        "id": "code_2",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "code",
+          "label": "Collect Change Management Logs",
+          "config": {
+            "mode": "query",
+            "query": "SELECT change_id, system_name, change_type, requestor, approver, approval_date, implementation_date, rollback_plan_exists, post_change_review FROM change_management_log WHERE implementation_date >= NOW() - INTERVAL '{{trigger_1.audit_period_days}} days' ORDER BY implementation_date DESC",
+            "output_variable": "change_management_evidence",
+            "description": "Collect change management records covering the audit period"
+          }
+        }
+      },
+      {
+        "id": "code_3",
+        "type": "signal",
+        "position": { "x": 520, "y": 540 },
+        "data": {
+          "kind": "code",
+          "label": "Collect Security Scan Results",
+          "config": {
+            "mode": "integration",
+            "integration_action": {
+              "connector_id": "splunk",
+              "action": "search",
+              "parameters": {
+                "query": "index=vulnerability_scans earliest=-{{trigger_1.audit_period_days}}d | stats count by severity, scan_type, remediation_status | sort -count",
+                "timeframe": "{{trigger_1.audit_period_days}}d"
+              }
+            },
+            "output_variable": "security_scan_evidence",
+            "description": "Collect vulnerability scan results and remediation status for the audit period"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 700 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI -- Evidence Package Review",
+          "config": {
+            "template_id": "executive_summary",
+            "additional_instructions": "Review and organize the collected audit evidence. Identify any gaps in documentation, missing artifacts, or areas where additional evidence may be needed. Compile an executive summary of the evidence package contents and completeness.",
+            "description": "AI-powered review and organization of the audit evidence package"
+          }
+        }
+      },
+      {
+        "id": "approval_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 860 },
+        "data": {
+          "kind": "approval",
+          "label": "Compliance Lead Approval",
+          "config": {
+            "approvers": ["compliance_lead"],
+            "approval_message": "Audit evidence package collected and reviewed by AI. Please verify completeness before submitting to the auditor.\n\nEvidence Summary:\n{{analyze_1.summary}}\n\nAccess Control Records: {{access_control_evidence.length}}\nChange Management Records: {{change_management_evidence.length}}\nSecurity Scan Period: {{trigger_1.audit_period_days}} days",
+            "timeout_hours": 48,
+            "description": "Compliance lead reviews and approves the evidence package before delivery to the auditor"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "label": "Create Audit Package Ticket",
+          "config": {
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_issue",
+              "parameters": {
+                "project": "COMPLIANCE",
+                "issue_type": "Task",
+                "summary": "Audit Evidence Package: {{trigger_1.audit_name}}",
+                "description": "AUDIT EVIDENCE PACKAGE -- READY FOR DELIVERY\n\nAudit: {{trigger_1.audit_name}}\nPeriod: {{trigger_1.audit_period_days}} days\nApproved by: {{approval_1.approver}}\n\nContents:\n- Access Control Evidence ({{access_control_evidence.length}} records)\n- Change Management Logs ({{change_management_evidence.length}} records)\n- Security Scan Results\n\nEvidence Summary:\n{{analyze_1.summary}}",
+                "labels": ["audit-evidence", "compliance", "audit-package"]
+              }
+            },
+            "description": "Create a Jira ticket documenting the completed evidence package for the audit"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 520, "y": 1180 },
+        "data": {
+          "kind": "respond",
+          "label": "Notify Team on Slack",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#compliance-audits",
+              "message": "AUDIT EVIDENCE PACKAGE READY\n\nAudit: {{trigger_1.audit_name}}\nApproved by: {{approval_1.approver}}\nJira: {{respond_1.ticket_url}}\n\nEvidence package has been compiled, AI-reviewed, and approved. Ready for delivery to the auditor."
+            },
+            "description": "Notify compliance team that the evidence package is ready for the auditor"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1340 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "Audit evidence collection complete -- package compiled, reviewed, approved, and documented"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_code1",
+        "source": "trigger_1",
+        "target": "code_1",
+        "type": "default"
+      },
+      {
+        "id": "e_code1_code2",
+        "source": "code_1",
+        "target": "code_2",
+        "type": "default"
+      },
+      {
+        "id": "e_code2_code3",
+        "source": "code_2",
+        "target": "code_3",
+        "type": "default"
+      },
+      {
+        "id": "e_code3_analyze",
+        "source": "code_3",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_analyze_approval",
+        "source": "analyze_1",
+        "target": "approval_1",
+        "type": "default"
+      },
+      {
+        "id": "e_approval_respond1",
+        "source": "approval_1",
+        "target": "respond_1",
+        "type": "default"
+      },
+      {
+        "id": "e_respond1_respond2",
+        "source": "respond_1",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_respond2_end",
+        "source": "respond_2",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

@@ -1,0 +1,194 @@
+{
+  "name": "Endpoint Patch Compliance Check",
+  "slug": "endpoint-patch-compliance",
+  "description": "Scans managed endpoints for missing security patches and enforces patch compliance. When a compliance scan alert fires, the playbook queries the endpoint for missing patches, assesses the risk of unpatched vulnerabilities, and routes based on criticality. Critical missing patches trigger an immediate remediation ticket with high priority and SOC notification. Non-critical gaps are logged for the next maintenance window.",
+  "category": "endpoint",
+  "subcategory": "patch_management",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "10 minutes",
+  "tags": ["patching", "compliance", "vulnerability", "endpoint", "remediation"],
+  "alert_types": ["patch_compliance", "missing_patches"],
+  "severity_filter": ["low", "medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["patch_compliance", "missing_patches", "vulnerability_scan"],
+    "min_severity": "low"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "crowdstrike",
+      "name": "CrowdStrike Falcon",
+      "category": "edr",
+      "reason": "Query endpoint for installed patches and missing updates"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create remediation tickets for missing critical patches"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Patch Compliance Alert",
+          "config": {
+            "alert_types": ["patch_compliance", "missing_patches", "vulnerability_scan"],
+            "description": "Triggers when a patch compliance scan identifies missing security patches on an endpoint"
+          }
+        }
+      },
+      {
+        "id": "code_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "code",
+          "label": "Parse Missing Patches",
+          "config": {
+            "runtime": "python3",
+            "code": "missing = alert.get('missing_patches', [])\ncritical_patches = [p for p in missing if p.get('severity') in ['critical', 'high']]\nnon_critical = [p for p in missing if p.get('severity') not in ['critical', 'high']]\nresult = {'total_missing': len(missing), 'critical_count': len(critical_patches), 'critical_patches': critical_patches, 'non_critical_count': len(non_critical), 'has_critical': len(critical_patches) > 0}",
+            "description": "Parse the list of missing patches and categorize by severity"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "label": "Critical Patches Missing?",
+          "config": {
+            "condition": "{{code_1.has_critical}} == true",
+            "description": "Routes based on whether any critical or high-severity patches are missing"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "respond",
+          "label": "Create Urgent Remediation Ticket",
+          "config": {
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_issue",
+              "parameters": {
+                "project_key": "SEC",
+                "issue_type": "Task",
+                "title": "URGENT: {{code_1.critical_count}} Critical Patches Missing — {{trigger_1.alert.hostname}}",
+                "description": "Endpoint {{trigger_1.alert.hostname}} is missing {{code_1.critical_count}} critical/high-severity patches.\n\nTotal missing: {{code_1.total_missing}}\nCritical/High: {{code_1.critical_count}}\nNon-critical: {{code_1.non_critical_count}}\n\nImmediate patching required per security policy.",
+                "priority": "high"
+              }
+            },
+            "description": "Create a high-priority remediation ticket for the missing critical patches"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "label": "Notify SOC on Slack",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#soc-alerts",
+              "message": "CRITICAL PATCH COMPLIANCE FAILURE\nHost: {{trigger_1.alert.hostname}}\nCritical/High Missing: {{code_1.critical_count}}\nTotal Missing: {{code_1.total_missing}}\nAction: Urgent remediation ticket created"
+            },
+            "description": "Alert the SOC team about the critical patch compliance failure"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "utility",
+          "label": "Log for Maintenance Window",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "Endpoint {{trigger_1.alert.hostname}} has {{code_1.non_critical_count}} non-critical missing patches. Scheduled for next maintenance window.",
+              "tags": ["patch-deferred", "maintenance-window"],
+              "close_alert": true
+            },
+            "description": "Log the non-critical missing patches for the next scheduled maintenance window"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 860 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "Endpoint patch compliance check complete"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_code",
+        "source": "trigger_1",
+        "target": "code_1",
+        "type": "default"
+      },
+      {
+        "id": "e_code_decision",
+        "source": "code_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "respond_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "utility_1",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_ticket_notify",
+        "source": "respond_1",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_notify_end",
+        "source": "respond_2",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_utility_end",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

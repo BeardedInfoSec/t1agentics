@@ -1,0 +1,297 @@
+{
+  "name": "Data Exfiltration Response",
+  "slug": "data-exfiltration-response",
+  "description": "Responds to suspected data exfiltration alerts from DLP or network monitoring systems. Riggs AI analyzes the alert using the data exfiltration template to confirm unauthorized data transfer. Confirmed exfiltration triggers immediate containment: the destination IP is blocked on the firewall and the source host is isolated via EDR. An IR lead approval gate controls the investigation scope before generating an executive summary, creating a P1 incident ticket with a full timeline, and notifying the CISO and legal team via email. False positives are annotated and closed.",
+  "category": "network",
+  "subcategory": "data_protection",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "advanced",
+  "estimated_time": "25 minutes",
+  "tags": ["data_exfiltration", "dlp", "network", "insider_threat"],
+  "alert_types": ["dlp", "data_exfiltration"],
+  "severity_filter": ["medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["dlp", "data_exfiltration", "large_upload", "unauthorized_transfer"],
+    "min_severity": "medium"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "crowdstrike",
+      "name": "CrowdStrike Falcon",
+      "category": "edr",
+      "reason": "Isolate the source host to halt ongoing data exfiltration"
+    },
+    {
+      "connector_id": "palo_alto_ngfw",
+      "name": "Palo Alto NGFW",
+      "category": "network",
+      "reason": "Block the exfiltration destination IP at the network perimeter"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create P1 incident ticket with full exfiltration timeline for compliance and legal"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Data Exfiltration Alert",
+          "config": {
+            "alert_types": ["dlp", "data_exfiltration", "large_upload", "unauthorized_transfer"],
+            "description": "Triggers on DLP policy violations, anomalous large data transfers, or network-based exfiltration detection alerts"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — Data Exfiltration Analysis",
+          "config": {
+            "template_id": "data_exfil",
+            "additional_instructions": "Evaluate transfer volume against baseline, classify destination risk, check for compression or encryption before transfer, and assess user context including role and recent behavior.",
+            "description": "AI-powered data exfiltration analysis evaluating volume anomalies, destination reputation, data sensitivity, and user context"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "label": "Exfiltration Confirmed?",
+          "config": {
+            "condition": "{{analyze_1.verdict}} in ['MALICIOUS', 'SUSPICIOUS']",
+            "description": "Routes based on whether Riggs AI confirmed unauthorized data exfiltration activity"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "respond",
+          "label": "Block Destination IP on Firewall",
+          "config": {
+            "integration_action": {
+              "connector_id": "palo_alto_ngfw",
+              "action": "block_ip",
+              "parameters": {
+                "ip_address": "{{trigger_1.alert.destination_ip}}",
+                "rule_name": "T1-Exfil-Block-{{trigger_1.alert.alert_id}}",
+                "direction": "outbound",
+                "comment": "Exfiltration destination blocked — Verdict: {{analyze_1.verdict}}, Type: {{analyze_1.threat_type}}"
+              }
+            },
+            "description": "Blocks the exfiltration destination IP on the Palo Alto NGFW to immediately halt outbound data transfer"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "label": "Isolate Source Host via EDR",
+          "config": {
+            "integration_action": {
+              "connector_id": "crowdstrike",
+              "action": "contain_host",
+              "parameters": {
+                "device_id": "{{trigger_1.alert.endpoint_id}}",
+                "comment": "Isolated due to confirmed data exfiltration — Alert: {{trigger_1.alert.alert_id}}, Destination: {{trigger_1.alert.destination_ip}}"
+              }
+            },
+            "description": "Network-isolates the source host via CrowdStrike EDR to prevent further data exfiltration or lateral movement"
+          }
+        }
+      },
+      {
+        "id": "approval_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "approval",
+          "label": "IR Lead Approves Investigation Scope",
+          "config": {
+            "approver_role": "ir_lead",
+            "timeout_minutes": 60,
+            "message": "DATA EXFILTRATION CONFIRMED\n\nSource: {{trigger_1.alert.hostname}} ({{trigger_1.alert.source_ip}})\nDestination: {{trigger_1.alert.destination_ip}}\nVolume: {{trigger_1.alert.bytes_transferred}} bytes\nUser: {{trigger_1.alert.username}}\n\nContainment Status:\n- Destination IP blocked on firewall\n- Source host isolated via EDR\n\nExfiltration Type: {{analyze_1.threat_type}}\nRiggs Assessment: {{analyze_1.summary}}\n\nApprove expanded investigation scope (executive summary, P1 ticket, CISO/legal notification)?",
+            "description": "Requires IR lead approval before escalating with executive summary generation, P1 incident creation, and CISO/legal notification"
+          }
+        }
+      },
+      {
+        "id": "analyze_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — Executive Summary",
+          "config": {
+            "template_id": "executive_summary",
+            "additional_instructions": "Summarize the data exfiltration incident for CISO and legal stakeholders. Include business impact, data sensitivity classification, containment actions taken, and recommended next steps.",
+            "description": "Generates a management-level executive summary of the data exfiltration incident with business impact, timeline, and recommended actions"
+          }
+        }
+      },
+      {
+        "id": "respond_3",
+        "type": "signal",
+        "position": { "x": 340, "y": 1180 },
+        "data": {
+          "kind": "respond",
+          "label": "Create P1 Incident with Timeline",
+          "config": {
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_issue",
+              "parameters": {
+                "project": "IR",
+                "issue_type": "Incident",
+                "priority": "P1",
+                "summary": "DATA EXFILTRATION — {{trigger_1.alert.hostname}} to {{trigger_1.alert.destination_ip}}",
+                "description": "DATA EXFILTRATION INCIDENT\n\nSource Host: {{trigger_1.alert.hostname}} ({{trigger_1.alert.source_ip}})\nUser: {{trigger_1.alert.username}}\nDestination: {{trigger_1.alert.destination_ip}}\nData Volume: {{trigger_1.alert.bytes_transferred}} bytes\nExfiltration Type: {{analyze_1.threat_type}}\n\nTimeline:\n1. Alert triggered: {{trigger_1.alert.timestamp}}\n2. AI analysis completed: {{analyze_1.timestamp}}\n3. Destination IP blocked on firewall\n4. Source host isolated via EDR\n5. IR lead approved investigation scope: {{approval_1.timestamp}}\n\nContainment Actions:\n- Destination blocked on Palo Alto NGFW\n- Source host isolated via CrowdStrike\n\nRiggs AI Assessment:\n{{analyze_1.summary}}\n\nExecutive Summary:\n{{analyze_2.summary}}\n\nApproved by: {{approval_1.approver}}",
+                "labels": ["data-exfiltration", "p1", "legal-hold"]
+              }
+            },
+            "description": "Creates a P1 incident ticket in Jira with full exfiltration timeline, containment actions, AI analysis, and executive summary for compliance and legal tracking"
+          }
+        }
+      },
+      {
+        "id": "respond_4",
+        "type": "signal",
+        "position": { "x": 340, "y": 1340 },
+        "data": {
+          "kind": "respond",
+          "label": "Notify CISO and Legal via Email",
+          "config": {
+            "notify": {
+              "channel": "email",
+              "recipients": ["ciso@company.com", "legal@company.com"],
+              "subject": "P1 DATA EXFILTRATION INCIDENT — {{trigger_1.alert.hostname}}",
+              "message": "A data exfiltration incident has been confirmed and contained.\n\n{{analyze_2.summary}}\n\nKey Details:\n- Source: {{trigger_1.alert.hostname}} / User: {{trigger_1.alert.username}}\n- Destination: {{trigger_1.alert.destination_ip}}\n- Volume: {{trigger_1.alert.bytes_transferred}} bytes\n- Exfiltration Type: {{analyze_1.threat_type}}\n\nContainment Status: ACTIVE\n- Destination IP blocked\n- Source host isolated\n\nJira Ticket: {{respond_3.ticket_key}}\n\nRecommended Actions:\n{{analyze_2.recommendations}}\n\nThis notification was generated automatically by the T1 Agentics SOC platform.",
+              "priority": "critical"
+            },
+            "description": "Sends a critical-priority email notification to the CISO and legal team with the executive summary, incident details, and Jira ticket reference"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "utility",
+          "label": "Add Note: False Positive",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "Data exfiltration analysis by Riggs AI returned verdict: {{analyze_1.verdict}}. Determined to be a false positive — normal data transfer activity. No containment actions required. Closing alert.",
+              "close_alert": true
+            },
+            "description": "Annotates the alert as a false positive (normal data transfer) based on AI analysis and closes it without containment action"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1500 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "Data exfiltration response workflow complete"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_analyze",
+        "source": "trigger_1",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_analyze_decision",
+        "source": "analyze_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "respond_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "utility_1",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_block_isolate",
+        "source": "respond_1",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_isolate_approval",
+        "source": "respond_2",
+        "target": "approval_1",
+        "type": "default"
+      },
+      {
+        "id": "e_approval_summary",
+        "source": "approval_1",
+        "target": "analyze_2",
+        "type": "default"
+      },
+      {
+        "id": "e_summary_ticket",
+        "source": "analyze_2",
+        "target": "respond_3",
+        "type": "default"
+      },
+      {
+        "id": "e_ticket_notify",
+        "source": "respond_3",
+        "target": "respond_4",
+        "type": "default"
+      },
+      {
+        "id": "e_notify_end",
+        "source": "respond_4",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_utility_end",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

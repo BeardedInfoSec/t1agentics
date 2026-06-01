@@ -1,0 +1,527 @@
+{
+  "id": "mimecast",
+  "name": "Mimecast",
+  "description": "This app integrates with an instance of Mimecast to perform generic, investigative, and containment actions",
+  "version": "3.0.2",
+  "category": "threat_intel",
+  "vendor": "Mimecast",
+  "auth_type": "oauth2",
+  "auth_config": {
+    "type": "oauth2",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "blocklist_url",
+      "name": "Blocklist Url",
+      "description": "Adds URL to a managed URL blocklist",
+      "http_method": "POST",
+      "endpoint": "/actions/blocklist_url",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "URL to block",
+          "required": true,
+          "contains": [
+            "url"
+          ]
+        },
+        {
+          "name": "match_type",
+          "type": "string",
+          "description": "Set to 'explicit' to block instances of the full URL or set to 'domain' to block any URL with the same domain",
+          "required": false,
+          "default": "explicit"
+        },
+        {
+          "name": "enable_log_click",
+          "type": "boolean",
+          "description": "Check to enable click logging",
+          "required": false
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "Comment to add to the blocked URL",
+          "required": false
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "add_member",
+      "name": "Add Member",
+      "description": "Add a sender or domain to a Mimecast group",
+      "http_method": "POST",
+      "endpoint": "/actions/add_member",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "member",
+          "type": "string",
+          "description": "Domain or Email address of a user to add to a group",
+          "required": true,
+          "contains": [
+            "email",
+            "domain"
+          ]
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "description": "The Mimecast ID of the group to add to",
+          "required": true,
+          "contains": [
+            "mimecast group id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "remove_member",
+      "name": "Remove Member",
+      "description": "Remove a sender or domain from a Mimecast group",
+      "http_method": "POST",
+      "endpoint": "/actions/remove_member",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "member",
+          "type": "string",
+          "description": "Domain or Email address of a user to remove from the group",
+          "required": true,
+          "contains": [
+            "email",
+            "domain"
+          ]
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Mimecast group ID to remove from",
+          "required": true,
+          "contains": [
+            "mimecast group id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "blocklist_sender",
+      "name": "Blocklist Sender",
+      "description": "Blocks a specific sender and recipient in Mimecast",
+      "http_method": "POST",
+      "endpoint": "/actions/blocklist_sender",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "sender",
+          "type": "string",
+          "description": "The email address of the sender to block",
+          "required": true,
+          "contains": [
+            "email"
+          ]
+        },
+        {
+          "name": "to",
+          "type": "string",
+          "description": "The email address of the recipient",
+          "required": true,
+          "contains": [
+            "email"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "allowlist_sender",
+      "name": "Allowlist Sender",
+      "description": "Allows a specific sender and recipient in Mimecast",
+      "http_method": "POST",
+      "endpoint": "/actions/allowlist_sender",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "sender",
+          "type": "string",
+          "description": "The email address of the sender to allow",
+          "required": true,
+          "contains": [
+            "email"
+          ]
+        },
+        {
+          "name": "to",
+          "type": "string",
+          "description": "The email address of the recipient",
+          "required": true,
+          "contains": [
+            "email"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "allowlist_url",
+      "name": "Allowlist Url",
+      "description": "Adds URL to a managed URL allowlist",
+      "http_method": "POST",
+      "endpoint": "/actions/allowlist_url",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "URL to allow",
+          "required": true,
+          "contains": [
+            "url"
+          ]
+        },
+        {
+          "name": "match_type",
+          "type": "string",
+          "description": "Set to 'explicit' to permit instances of the full URL or set to 'domain' to permit any URL with the same domain",
+          "required": false,
+          "default": "explicit"
+        },
+        {
+          "name": "enable_log_click",
+          "type": "boolean",
+          "description": "Check to disable click logging",
+          "required": false
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "Comment to add to the allowed URL",
+          "required": false
+        },
+        {
+          "name": "enable_rewrite",
+          "type": "boolean",
+          "description": "Check to disable domain rewrite",
+          "required": false
+        },
+        {
+          "name": "enable_user_awareness",
+          "type": "boolean",
+          "description": "Check to disable user awareness",
+          "required": false
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "unblocklist_url",
+      "name": "Unblocklist Url",
+      "description": "Removes URL from a managed URL blocklist",
+      "http_method": "POST",
+      "endpoint": "/actions/unblocklist_url",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "URL ID to unblock",
+          "required": true,
+          "contains": [
+            "mimecast url id"
+          ]
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "unallowlist_url",
+      "name": "Unallowlist Url",
+      "description": "Removes URL from a managed URL allowlist",
+      "http_method": "POST",
+      "endpoint": "/actions/unallowlist_url",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "URL ID to remove from the allowlist",
+          "required": true,
+          "contains": [
+            "mimecast url id"
+          ]
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "list_urls",
+      "name": "List Urls",
+      "description": "Lists all managed URLs from the black/white list",
+      "http_method": "GET",
+      "endpoint": "/actions/list_urls",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "max_results",
+          "type": "number",
+          "description": "Max results to return",
+          "required": false
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "list_groups",
+      "name": "List Groups",
+      "description": "Lists all Mimecast groups matching the requested search criteria",
+      "http_method": "GET",
+      "endpoint": "/actions/list_groups",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "page_size",
+          "type": "number",
+          "description": "Number of results to request",
+          "required": false
+        },
+        {
+          "name": "query",
+          "type": "string",
+          "description": "A string to query for",
+          "required": false
+        },
+        {
+          "name": "source",
+          "type": "string",
+          "description": "A group source to filter on, either 'cloud' or 'ldap'",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_members",
+      "name": "List Members",
+      "description": "Lists the members of a specified Mimecast group",
+      "http_method": "GET",
+      "endpoint": "/actions/list_members",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "page_size",
+          "type": "number",
+          "description": "Number of results to request",
+          "required": false
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Mimecast ID of the group to return",
+          "required": true,
+          "contains": [
+            "mimecast group id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "find_member",
+      "name": "Find Member",
+      "description": "Finds a member of a specified Mimecast group",
+      "http_method": "GET",
+      "endpoint": "/actions/find_member",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "member",
+          "type": "string",
+          "description": "The member to find",
+          "required": true,
+          "contains": [
+            "email",
+            "domain"
+          ]
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "The domain or email of the member to find",
+          "required": true,
+          "default": "email"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "description": "The Mimecast ID of the group to search",
+          "required": true,
+          "contains": [
+            "mimecast group id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "run_query",
+      "name": "Run Query",
+      "description": "Get emails across the Mimecast platform",
+      "http_method": "GET",
+      "endpoint": "/actions/run_query",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "start",
+          "type": "string",
+          "description": "YYYY-MM-DDTHH:MM:SS+0000 (Date and time of the earliest email to track)",
+          "required": false
+        },
+        {
+          "name": "end",
+          "type": "string",
+          "description": "YYYY-MM-DDTHH:MM:SS+0000 (Date and time of the latest email to track)",
+          "required": false
+        },
+        {
+          "name": "search_reason",
+          "type": "string",
+          "description": "Reason for tracking an email",
+          "required": false
+        },
+        {
+          "name": "message_id",
+          "type": "string",
+          "description": "The Internet message ID of the message to track",
+          "required": false
+        },
+        {
+          "name": "sender_ip",
+          "type": "string",
+          "description": "Source IP address of an email to track",
+          "required": false,
+          "contains": [
+            "ip"
+          ]
+        },
+        {
+          "name": "subject",
+          "type": "string",
+          "description": "The subject of an email to track",
+          "required": false
+        },
+        {
+          "name": "from",
+          "type": "string",
+          "description": "Sending email address or domain of the emails to track",
+          "required": false,
+          "contains": [
+            "email",
+            "domain"
+          ]
+        },
+        {
+          "name": "to",
+          "type": "string",
+          "description": "Recipient email address or domain of the emails to track",
+          "required": false,
+          "contains": [
+            "email",
+            "domain"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_email",
+      "name": "Get Email",
+      "description": "Returns message information for a tracked email",
+      "http_method": "GET",
+      "endpoint": "/actions/get_email",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "The Mimecast ID of the email to load",
+          "required": true,
+          "contains": [
+            "mimecast email id"
+          ]
+        }
+      ],
+      "observable_type": "email"
+    },
+    {
+      "id": "decode_url",
+      "name": "Decode Url",
+      "description": "Decodes URL that was rewritten by Mimecast for on-click protection",
+      "http_method": "GET",
+      "endpoint": "/actions/decode_url",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "URL to decode",
+          "required": true,
+          "contains": [
+            "url"
+          ]
+        }
+      ],
+      "observable_type": "url"
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Mimecast",
+    "original_type": "information",
+    "converted_at": "2025-12-18T16:25:28.951559",
+    "source_version": "3.0.2"
+  }
+}

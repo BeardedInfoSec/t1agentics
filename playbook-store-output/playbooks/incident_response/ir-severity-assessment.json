@@ -1,0 +1,334 @@
+{
+  "name": "Dynamic Severity Assessment",
+  "slug": "ir-severity-assessment",
+  "description": "Performs AI-based dynamic severity scoring for incoming incidents and routes them to the appropriate response track. A code node gathers contextual data including asset criticality, affected user count, and threat intelligence matches. Riggs AI then generates a severity score with weighted factors. Critical incidents are immediately escalated with a PagerDuty page and war room creation. High incidents get a P2 ticket and SOC lead notification. Medium and low incidents are logged with appropriate priority for standard handling.",
+  "category": "incident_response",
+  "subcategory": "triage",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "5 minutes",
+  "tags": ["severity", "assessment", "scoring", "triage", "routing", "ai", "dynamic"],
+  "alert_types": ["any"],
+  "severity_filter": ["low", "medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["any"],
+    "min_severity": "low"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create incident tickets with AI-assessed priority for all severity tiers"
+    },
+    {
+      "connector_id": "pagerduty",
+      "name": "PagerDuty",
+      "category": "ticketing",
+      "reason": "Page on-call engineer for critical-severity incidents"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Create war rooms for critical incidents and notify SOC leads for high incidents"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Alert Received for Severity Assessment",
+          "config": {
+            "alert_types": ["any"],
+            "description": "Triggers on any incoming alert to perform dynamic AI-based severity assessment"
+          }
+        }
+      },
+      {
+        "id": "code_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "code",
+          "label": "Gather Contextual Scoring Data",
+          "config": {
+            "mode": "query",
+            "query": "SELECT a.criticality, a.business_unit, a.data_classification FROM assets a WHERE a.hostname = '{{trigger_1.alert.hostname}}' OR a.ip_address = '{{trigger_1.alert.source_ip}}'",
+            "output_variable": "asset_context",
+            "description": "Retrieve asset criticality, business unit, and data classification to weight the severity score"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — Severity Scoring",
+          "config": {
+            "template_id": "executive_summary",
+            "additional_instructions": "Calculate a dynamic severity score considering: alert type, asset criticality, number of affected systems, threat intel matches, and time of day. Output a final severity tier: critical, high, medium, or low.",
+            "description": "AI-powered severity scoring using weighted factors including asset context, threat intel, and impact scope"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 540 },
+        "data": {
+          "kind": "decision",
+          "label": "Severity Critical?",
+          "config": {
+            "condition": "{{analyze_1.severity}} == 'critical'",
+            "description": "Check if the dynamic severity assessment resulted in a critical rating"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "label": "Page On-Call — Critical",
+          "config": {
+            "integration_action": {
+              "connector_id": "pagerduty",
+              "action": "create_incident",
+              "parameters": {
+                "service_id": "{{config.pagerduty_service_id}}",
+                "urgency": "high",
+                "title": "CRITICAL: {{trigger_1.alert.title}} (AI Score: Critical)",
+                "body": "Dynamic severity assessment rated this incident as CRITICAL.\n\nAsset Criticality: {{code_1.asset_context.criticality}}\n\n{{analyze_1.summary}}"
+              }
+            },
+            "description": "Page the on-call engineer via PagerDuty for a critical-rated incident"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "label": "Create War Room",
+          "config": {
+            "integration_action": {
+              "connector_id": "slack",
+              "action": "create_channel",
+              "parameters": {
+                "channel_name": "war-room-{{trigger_1.alert.id}}",
+                "topic": "CRITICAL Incident: {{trigger_1.alert.title}}",
+                "initial_message": "WAR ROOM — CRITICAL INCIDENT\n\nIncident: {{trigger_1.alert.title}}\nAI Severity Score: Critical\nAsset: {{trigger_1.alert.hostname}}\n\n{{analyze_1.summary}}\n\nOn-call engineer has been paged."
+              }
+            },
+            "description": "Create a dedicated war room channel for coordinated critical incident response"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "end",
+          "label": "End — Critical Path",
+          "config": {
+            "description": "Critical severity path complete — on-call paged and war room created"
+          }
+        }
+      },
+      {
+        "id": "decision_2",
+        "type": "signal",
+        "position": { "x": 700, "y": 700 },
+        "data": {
+          "kind": "decision",
+          "label": "Severity High?",
+          "config": {
+            "condition": "{{analyze_1.severity}} == 'high'",
+            "description": "Check if the dynamic severity assessment resulted in a high rating"
+          }
+        }
+      },
+      {
+        "id": "respond_3",
+        "type": "signal",
+        "position": { "x": 520, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "label": "Create P2 Ticket and Notify SOC Lead",
+          "config": {
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_issue",
+              "parameters": {
+                "project": "IR",
+                "issue_type": "Incident",
+                "priority": "P2 - High",
+                "summary": "P2 HIGH: {{trigger_1.alert.title}} (AI Scored)",
+                "description": "Dynamic severity: High\nAsset: {{trigger_1.alert.hostname}}\nAsset Criticality: {{code_1.asset_context.criticality}}\n\n{{analyze_1.summary}}"
+              }
+            },
+            "description": "Create a P2 incident ticket for a high-severity rated incident"
+          }
+        }
+      },
+      {
+        "id": "respond_4",
+        "type": "signal",
+        "position": { "x": 520, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "label": "Notify SOC Lead",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#soc-leads",
+              "message": "HIGH SEVERITY INCIDENT (AI Scored)\n\nIncident: {{trigger_1.alert.title}}\nJira: {{respond_3.issue_key}}\n\n{{analyze_1.summary}}"
+            },
+            "description": "Notify the SOC lead about the high-severity incident via Slack"
+          }
+        }
+      },
+      {
+        "id": "end_2",
+        "type": "signal",
+        "position": { "x": 520, "y": 1180 },
+        "data": {
+          "kind": "end",
+          "label": "End — High Path",
+          "config": {
+            "description": "High severity path complete — P2 ticket created and SOC lead notified"
+          }
+        }
+      },
+      {
+        "id": "respond_5",
+        "type": "signal",
+        "position": { "x": 880, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "label": "Create Standard Priority Ticket",
+          "config": {
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_issue",
+              "parameters": {
+                "project": "IR",
+                "issue_type": "Incident",
+                "priority": "P3 - Medium",
+                "summary": "P3: {{trigger_1.alert.title}} (AI Scored: {{analyze_1.severity}})",
+                "description": "Dynamic severity: {{analyze_1.severity}}\nAsset: {{trigger_1.alert.hostname}}\n\n{{analyze_1.summary}}\n\nStandard priority — handle during normal operations."
+              }
+            },
+            "description": "Create a standard priority ticket for medium or low severity incidents"
+          }
+        }
+      },
+      {
+        "id": "end_3",
+        "type": "signal",
+        "position": { "x": 880, "y": 1020 },
+        "data": {
+          "kind": "end",
+          "label": "End — Standard Path",
+          "config": {
+            "description": "Standard severity path complete — P3 ticket created for routine handling"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_code",
+        "source": "trigger_1",
+        "target": "code_1",
+        "type": "default"
+      },
+      {
+        "id": "e_code_analyze",
+        "source": "code_1",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_analyze_decision1",
+        "source": "analyze_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision1_yes",
+        "source": "decision_1",
+        "target": "respond_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision1_no",
+        "source": "decision_1",
+        "target": "decision_2",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_respond1_respond2",
+        "source": "respond_1",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_respond2_end1",
+        "source": "respond_2",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision2_yes",
+        "source": "decision_2",
+        "target": "respond_3",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision2_no",
+        "source": "decision_2",
+        "target": "respond_5",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_respond3_respond4",
+        "source": "respond_3",
+        "target": "respond_4",
+        "type": "default"
+      },
+      {
+        "id": "e_respond4_end2",
+        "source": "respond_4",
+        "target": "end_2",
+        "type": "default"
+      },
+      {
+        "id": "e_respond5_end3",
+        "source": "respond_5",
+        "target": "end_3",
+        "type": "default"
+      }
+    ]
+  }
+}

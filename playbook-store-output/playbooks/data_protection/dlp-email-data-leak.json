@@ -1,0 +1,213 @@
+{
+  "name": "Email Data Leak Prevention",
+  "slug": "dlp-email-data-leak",
+  "description": "Prevents sensitive data leakage via email. Riggs AI analyzes outbound email alerts from DLP systems to determine if attachments or body content contain sensitive data (PII, credentials, confidential documents). Confirmed violations trigger email quarantine, sender notification, and manager escalation. Designed for Tier 1/2 SOC analysts handling email-based DLP policy violations.",
+  "category": "data_protection",
+  "subcategory": "email_dlp",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "10 minutes",
+  "tags": ["dlp", "email", "data_leak", "attachments", "quarantine"],
+  "alert_types": ["dlp", "email_dlp", "outbound_email"],
+  "severity_filter": ["medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["dlp", "email_dlp", "outbound_email_violation", "sensitive_attachment"],
+    "min_severity": "medium"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "microsoft_graph",
+      "name": "Microsoft Graph",
+      "category": "email",
+      "reason": "Quarantine flagged email and retrieve attachment metadata"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Notify sender and SOC team of DLP violation"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "edl-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "title": "Email DLP Alert Received",
+          "summary": "Triggers on outbound email DLP policy violations",
+          "config": {
+            "trigger_type": "alert",
+            "alert_types": ["dlp", "email_dlp", "outbound_email_violation", "sensitive_attachment"]
+          }
+        }
+      },
+      {
+        "id": "edl-2",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "title": "AI Attachment & Content Analysis",
+          "summary": "Riggs AI analyzes email attachments and body for sensitive data patterns",
+          "config": {
+            "mode": "ai_analysis",
+            "template_id": "data_exfil",
+            "custom_instructions": "Analyze email attachments and body content for PII, credentials, financial data, or classified information. Assess whether this is intentional exfiltration or accidental.",
+            "alert_path": "$.trigger.alert",
+            "include_context": true
+          }
+        }
+      },
+      {
+        "id": "edl-3",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "title": "Contains Sensitive Data?",
+          "summary": "Branch based on whether email contains confirmed sensitive data",
+          "config": {
+            "conditions": {
+              "operator": "AND",
+              "conditions": [
+                {
+                  "field": "$.nodes.edl-2.result.verdict",
+                  "operator": "in",
+                  "value": ["MALICIOUS", "SUSPICIOUS"]
+                }
+              ],
+              "groups": []
+            },
+            "expression": "$.nodes.edl-2.result.verdict in ['MALICIOUS', 'SUSPICIOUS']",
+            "default_branch": "no"
+          }
+        }
+      },
+      {
+        "id": "edl-4",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "respond",
+          "title": "Quarantine Email",
+          "summary": "Move the flagged email to quarantine to prevent delivery",
+          "config": {
+            "response_type": "integration_action",
+            "integration_instance_id": "microsoft_graph",
+            "action_type": "quarantine_email",
+            "params": {
+              "message_id": "$.trigger.alert.message_id",
+              "reason": "DLP violation — sensitive data detected in outbound email"
+            },
+            "requires_approval": false,
+            "priority": "high"
+          }
+        }
+      },
+      {
+        "id": "edl-5",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "decision",
+          "title": "Intentional Exfiltration?",
+          "summary": "Determine if the data leak appears intentional vs accidental",
+          "config": {
+            "conditions": {
+              "operator": "AND",
+              "conditions": [
+                {
+                  "field": "$.nodes.edl-2.result.intent",
+                  "operator": "equals",
+                  "value": "intentional"
+                }
+              ],
+              "groups": []
+            },
+            "expression": "$.nodes.edl-2.result.intent == 'intentional'",
+            "default_branch": "no"
+          }
+        }
+      },
+      {
+        "id": "edl-6",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "title": "Escalate to Manager & Security",
+          "summary": "Escalate intentional data leak to user's manager and security team",
+          "config": {
+            "response_type": "notification",
+            "channel": "slack",
+            "slack_channel": "#security-escalations",
+            "message": "INTENTIONAL DATA LEAK DETECTED\n\nSender: {{$.trigger.alert.sender}}\nRecipient: {{$.trigger.alert.recipient}}\nSubject: {{$.trigger.alert.subject}}\nData Type: {{$.nodes.edl-2.result.data_classification}}\n\nEmail quarantined. This appears intentional — insider threat investigation recommended.\n\nAI Assessment: {{$.nodes.edl-2.result.summary}}",
+            "priority": "critical"
+          }
+        }
+      },
+      {
+        "id": "edl-7",
+        "type": "signal",
+        "position": { "x": 700, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "title": "Notify Sender — Policy Violation",
+          "summary": "Inform sender their email was quarantined due to DLP policy",
+          "config": {
+            "response_type": "notification",
+            "channel": "slack",
+            "recipient": "$.trigger.alert.sender",
+            "message": "Your outbound email to {{$.trigger.alert.recipient}} was quarantined because it contains sensitive data ({{$.nodes.edl-2.result.data_classification}}). Please remove sensitive content and resend, or contact your manager for an exception. Subject: {{$.trigger.alert.subject}}",
+            "priority": "medium"
+          }
+        }
+      },
+      {
+        "id": "edl-8",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "utility",
+          "title": "Close Alert — Clean Email",
+          "summary": "No sensitive data found, close alert as false positive",
+          "config": {
+            "operation": "add_note",
+            "note": "Email DLP alert reviewed by Riggs AI. Verdict: {{$.nodes.edl-2.result.verdict}}. No sensitive data confirmed in attachments or body. Closing as false positive.",
+            "close_alert": true
+          }
+        }
+      },
+      {
+        "id": "edl-9",
+        "type": "signal",
+        "position": { "x": 520, "y": 1020 },
+        "data": {
+          "kind": "end",
+          "title": "Playbook Complete",
+          "summary": "Email data leak prevention workflow finished",
+          "config": {
+            "disposition": "completed",
+            "summary": "Email data leak prevention workflow completed"
+          }
+        }
+      }
+    ],
+    "edges": [
+      { "id": "edl-e1", "source": "edl-1", "target": "edl-2", "animated": true, "type": "smoothstep" },
+      { "id": "edl-e2", "source": "edl-2", "target": "edl-3", "animated": true, "type": "smoothstep" },
+      { "id": "edl-e3", "source": "edl-3", "target": "edl-4", "sourceHandle": "yes", "label": "Yes", "animated": true, "type": "smoothstep" },
+      { "id": "edl-e4", "source": "edl-3", "target": "edl-8", "sourceHandle": "no", "label": "No", "animated": true, "type": "smoothstep" },
+      { "id": "edl-e5", "source": "edl-4", "target": "edl-5", "animated": true, "type": "smoothstep" },
+      { "id": "edl-e6", "source": "edl-5", "target": "edl-6", "sourceHandle": "yes", "label": "Yes", "animated": true, "type": "smoothstep" },
+      { "id": "edl-e7", "source": "edl-5", "target": "edl-7", "sourceHandle": "no", "label": "No", "animated": true, "type": "smoothstep" },
+      { "id": "edl-e8", "source": "edl-6", "target": "edl-9", "animated": true, "type": "smoothstep" },
+      { "id": "edl-e9", "source": "edl-7", "target": "edl-9", "animated": true, "type": "smoothstep" },
+      { "id": "edl-e10", "source": "edl-8", "target": "edl-9", "animated": true, "type": "smoothstep" }
+    ]
+  }
+}

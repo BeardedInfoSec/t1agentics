@@ -1,0 +1,296 @@
+{
+  "name": "Infrastructure Change Monitoring",
+  "slug": "itops-infrastructure-change",
+  "description": "Monitors for unauthorized infrastructure changes by comparing detected configuration changes against the approved change management window. Authorized changes are logged for audit. Unauthorized changes are analyzed by AI for risk assessment, and if deemed high-risk, an automatic revert is triggered after approval from the operations lead. All unauthorized changes generate a security incident ticket and team notification.",
+  "category": "it_operations",
+  "subcategory": "change_management",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "advanced",
+  "estimated_time": "15 minutes",
+  "tags": ["change_management", "unauthorized_changes", "configuration_drift", "revert", "compliance", "audit"],
+  "alert_types": ["configuration_change"],
+  "severity_filter": ["low", "medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["configuration_change", "infrastructure_change", "config_drift"],
+    "min_severity": "low"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "terraform",
+      "name": "Terraform Cloud",
+      "category": "infrastructure",
+      "reason": "Detect infrastructure state drift and revert unauthorized changes"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Check for approved change requests and create incident tickets for unauthorized changes"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Notify the operations team of unauthorized infrastructure changes"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Infrastructure Change Detected",
+          "config": {
+            "alert_types": ["configuration_change", "infrastructure_change", "config_drift"],
+            "description": "Triggers when an infrastructure configuration change is detected by the monitoring system"
+          }
+        }
+      },
+      {
+        "id": "code_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "code",
+          "label": "Check Change Window",
+          "config": {
+            "mode": "query",
+            "query": "SELECT cr.id, cr.status, cr.approved_by, cr.window_start, cr.window_end FROM change_requests cr WHERE cr.status = 'approved' AND cr.window_start <= NOW() AND cr.window_end >= NOW() AND cr.affected_resources LIKE '%{{trigger_1.alert.resource_id}}%'",
+            "output_variable": "change_request",
+            "description": "Check if there is an approved change request covering this infrastructure change within the current maintenance window"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "label": "Approved Change?",
+          "config": {
+            "condition": "{{code_1.change_request.length}} > 0",
+            "description": "Determine if the detected change matches an approved change request within the maintenance window"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "utility",
+          "label": "Log: Authorized Change",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "Infrastructure change on {{trigger_1.alert.resource_id}} matched approved change request {{code_1.change_request[0].id}} (approved by {{code_1.change_request[0].approved_by}}). Logged for audit."
+            },
+            "description": "Log the authorized change for compliance audit trail"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI -- Risk Assessment",
+          "config": {
+            "template_id": "cloud_security",
+            "additional_instructions": "Assess the risk of this unauthorized infrastructure change. Determine if the change introduces security vulnerabilities, compliance violations, or service disruption risk. Recommend whether an immediate revert is warranted.",
+            "description": "AI-powered risk assessment of the unauthorized infrastructure change"
+          }
+        }
+      },
+      {
+        "id": "decision_2",
+        "type": "signal",
+        "position": { "x": 700, "y": 700 },
+        "data": {
+          "kind": "decision",
+          "label": "High Risk — Revert?",
+          "config": {
+            "condition": "{{analyze_1.risk_level}} in ['high', 'critical']",
+            "description": "Determine if the unauthorized change is high-risk enough to warrant an immediate revert"
+          }
+        }
+      },
+      {
+        "id": "approval_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 860 },
+        "data": {
+          "kind": "approval",
+          "label": "Ops Lead — Approve Revert",
+          "config": {
+            "approver_role": "ops_lead",
+            "timeout_minutes": 30,
+            "message": "Unauthorized high-risk infrastructure change detected on {{trigger_1.alert.resource_id}}.\n\nRisk: {{analyze_1.risk_level}}\nAssessment: {{analyze_1.summary}}\n\nApprove automatic revert?",
+            "description": "Operations lead must approve the automatic revert of the unauthorized high-risk change"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "label": "Revert Change via Terraform",
+          "config": {
+            "integration_action": {
+              "connector_id": "terraform",
+              "action": "apply_rollback",
+              "parameters": {
+                "workspace": "{{trigger_1.alert.workspace}}",
+                "resource_id": "{{trigger_1.alert.resource_id}}",
+                "reason": "Unauthorized change reverted — Risk: {{analyze_1.risk_level}}, Approved by: {{approval_1.approver}}"
+              }
+            },
+            "description": "Revert the unauthorized infrastructure change to the last known good state via Terraform"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 700, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "label": "Create Security Incident",
+          "config": {
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_issue",
+              "parameters": {
+                "project": "SEC",
+                "issue_type": "Incident",
+                "priority": "High",
+                "summary": "Unauthorized Infrastructure Change — {{trigger_1.alert.resource_id}}",
+                "description": "Unauthorized infrastructure change detected outside approved maintenance window.\n\nResource: {{trigger_1.alert.resource_id}}\nChange Type: {{trigger_1.alert.change_type}}\nDetected At: {{trigger_1.timestamp}}\nRisk Level: {{analyze_1.risk_level}}\n\nRiggs Assessment:\n{{analyze_1.summary}}"
+              }
+            },
+            "description": "Create a security incident ticket for the unauthorized infrastructure change"
+          }
+        }
+      },
+      {
+        "id": "respond_3",
+        "type": "signal",
+        "position": { "x": 700, "y": 1180 },
+        "data": {
+          "kind": "respond",
+          "label": "Notify Ops Team",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#infra-alerts",
+              "message": "UNAUTHORIZED INFRASTRUCTURE CHANGE DETECTED\nResource: {{trigger_1.alert.resource_id}}\nRisk: {{analyze_1.risk_level}}\nTicket: {{respond_2.issue_key}}\n\n{{analyze_1.summary}}"
+            },
+            "description": "Alert the operations team about the unauthorized infrastructure change"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1340 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "Infrastructure change monitoring workflow complete"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_code",
+        "source": "trigger_1",
+        "target": "code_1",
+        "type": "default"
+      },
+      {
+        "id": "e_code_decision1",
+        "source": "code_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision1_yes",
+        "source": "decision_1",
+        "target": "utility_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision1_no",
+        "source": "decision_1",
+        "target": "analyze_1",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_analyze_decision2",
+        "source": "analyze_1",
+        "target": "decision_2",
+        "type": "default"
+      },
+      {
+        "id": "e_decision2_yes",
+        "source": "decision_2",
+        "target": "approval_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision2_no",
+        "source": "decision_2",
+        "target": "respond_2",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_approval_revert",
+        "source": "approval_1",
+        "target": "respond_1",
+        "type": "default"
+      },
+      {
+        "id": "e_revert_ticket",
+        "source": "respond_1",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_ticket_notify",
+        "source": "respond_2",
+        "target": "respond_3",
+        "type": "default"
+      },
+      {
+        "id": "e_notify_end",
+        "source": "respond_3",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_authorized_end",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

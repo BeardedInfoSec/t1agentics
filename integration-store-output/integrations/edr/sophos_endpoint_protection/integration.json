@@ -1,0 +1,575 @@
+{
+  "id": "sophos_endpoint_protection",
+  "name": "Sophos Endpoint Protection",
+  "description": "This app supports various investigative and containment actions on Sophos Endpoint Protection",
+  "version": "1.2.1",
+  "category": "edr",
+  "vendor": "Sophos",
+  "auth_type": "oauth2",
+  "auth_config": {
+    "type": "oauth2",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "list_endpoints",
+      "name": "List Endpoints",
+      "description": "List all the endpoints/sensors configured on the device",
+      "http_method": "GET",
+      "endpoint": "/endpoint/v1/endpoints",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "page_from_key",
+          "type": "string",
+          "description": "The key of the item from where to fetch a page",
+          "required": false
+        },
+        {
+          "name": "page_size",
+          "type": "string",
+          "description": "The size of the page requested",
+          "required": false,
+          "default": "50"
+        },
+        {
+          "name": "sort",
+          "type": "string",
+          "description": "Define how to sort the data (comma separated)",
+          "required": false
+        },
+        {
+          "name": "health_status",
+          "type": "string",
+          "description": "Get endpoints having any of the specified health status (comma separated)",
+          "required": false
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Get endpoints having any of the specified endpoint type (comma separated)",
+          "required": false
+        },
+        {
+          "name": "tamper_protection_enabled",
+          "type": "boolean",
+          "description": "Tamper protection status",
+          "required": false
+        },
+        {
+          "name": "lockdown_status",
+          "type": "string",
+          "description": "Get endpoints having any of the specified lockdown statuses (comma separated)",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "last_seen_before",
+          "type": "string",
+          "description": "Last seen after date and time (UTC) or duration inclusive",
+          "required": false
+        },
+        {
+          "name": "last_seen_after",
+          "type": "string",
+          "description": "Last seen before date and time (UTC) or duration exclusive",
+          "required": false
+        },
+        {
+          "name": "ids",
+          "type": "string",
+          "description": "Get endpoints having any of the specified ids (comma separated)",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "type": "string",
+          "description": "The fields to return in a partial response",
+          "required": false
+        },
+        {
+          "name": "view",
+          "type": "string",
+          "description": "Type of view to be returned in response",
+          "required": false
+        },
+        {
+          "name": "search",
+          "type": "string",
+          "description": "Term to search for in the specified search fields",
+          "required": false
+        },
+        {
+          "name": "search_fields",
+          "type": "string",
+          "description": "List of search fields for finding the given search term (comma separated). Defaults to all applicable fields",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "check_updates",
+      "name": "Check Updates",
+      "description": "Send a request to the endpoint to check for Sophos management agent software updates",
+      "http_method": "POST",
+      "endpoint": "/actions/check_updates",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "endpointid",
+          "type": "string",
+          "description": "The endpoint ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "tamper_protection_switch",
+      "name": "Tamper Protection Switch",
+      "description": "Turn Tamper Protection on or off on the endpoint",
+      "http_method": "POST",
+      "endpoint": "/actions/tamper_protection_switch",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "endpointid",
+          "type": "string",
+          "description": "The endpoint ID",
+          "required": true
+        },
+        {
+          "name": "enabled",
+          "type": "boolean",
+          "description": "Whether Tamper Protection should be turned on for the endpoint",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "regenerate_password",
+          "type": "boolean",
+          "description": "Whether a new Tamper Protection password should be generated",
+          "required": false,
+          "default": false
+        }
+      ]
+    },
+    {
+      "id": "get_tamper_protection_settings",
+      "name": "Get Tamperprotection Settings",
+      "description": "Get the Tamper Protection settings for the specified endpoint",
+      "http_method": "GET",
+      "endpoint": "/actions/get_tamper_protection_settings",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "endpointid",
+          "type": "string",
+          "description": "The endpoint ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "perform_scan",
+      "name": "Perform Scan",
+      "description": "Send a request to the specified endpoint to perform or configure a scan",
+      "http_method": "POST",
+      "endpoint": "/actions/perform_scan",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "endpointid",
+          "type": "string",
+          "description": "The endpoint ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "delete_endpoint",
+      "name": "Delete Endpoint",
+      "description": "Delete the specified endpoint",
+      "http_method": "POST",
+      "endpoint": "/actions/delete_endpoint",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "endpointid",
+          "type": "string",
+          "description": "The endpoint ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_individual_endpoint",
+      "name": "Get Individual Endpoint",
+      "description": "Get the endpoint based on ID",
+      "http_method": "GET",
+      "endpoint": "/actions/get_individual_endpoint",
+      "action_type": "contain",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "endpointid",
+          "type": "string",
+          "description": "The endpoint ID",
+          "required": true
+        },
+        {
+          "name": "fields",
+          "type": "string",
+          "description": "The fields to return in a partial response",
+          "required": false
+        },
+        {
+          "name": "view",
+          "type": "string",
+          "description": "Type of view to be returned in response",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_items",
+      "name": "List Items",
+      "description": "Get all allowed or blocked items",
+      "http_method": "GET",
+      "endpoint": "/actions/list_items",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "page",
+          "type": "number",
+          "description": "The page number to fetch, starting with 1",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "page_size",
+          "type": "number",
+          "description": "The size of the page requested",
+          "required": false,
+          "default": 50
+        },
+        {
+          "name": "items_type",
+          "type": "string",
+          "description": "Specifies the type of items to be fetched: blocked or allowed",
+          "required": true,
+          "default": "blocked"
+        }
+      ]
+    },
+    {
+      "id": "delete_item",
+      "name": "Delete Item",
+      "description": "Delete the specified blocked or allowed item",
+      "http_method": "GET",
+      "endpoint": "/actions/delete_item",
+      "action_type": "correct",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "item_id",
+          "type": "string",
+          "description": "The item ID to be deleted",
+          "required": true
+        },
+        {
+          "name": "item_type",
+          "type": "string",
+          "description": "Specifies the type of item to be deleted: blocked or allowed",
+          "required": true,
+          "default": "blocked"
+        }
+      ]
+    },
+    {
+      "id": "block_item",
+      "name": "Block Item",
+      "description": "Add item to blocked list",
+      "http_method": "GET",
+      "endpoint": "/actions/block_item",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "file_name",
+          "type": "string",
+          "description": "The file name",
+          "required": true
+        },
+        {
+          "name": "path",
+          "type": "string",
+          "description": "The path for the application",
+          "required": true
+        },
+        {
+          "name": "sha256",
+          "type": "string",
+          "description": "The SHA256 value for the application",
+          "required": true,
+          "contains": [
+            "sha256"
+          ]
+        },
+        {
+          "name": "certificate_signer",
+          "type": "string",
+          "description": "The value saved for the certificate signer",
+          "required": true
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "Comment indicating why the item should be blocked",
+          "required": true,
+          "default": "-"
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "allow_item",
+      "name": "Allow Item",
+      "description": "Add item to allowed list",
+      "http_method": "GET",
+      "endpoint": "/actions/allow_item",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "property_type",
+          "type": "string",
+          "description": "Specifies the property by which an item is allowed: path, sha256 or certificateSigner",
+          "required": true,
+          "default": "sha256"
+        },
+        {
+          "name": "file_name",
+          "type": "string",
+          "description": "The file name",
+          "required": true
+        },
+        {
+          "name": "path",
+          "type": "string",
+          "description": "The path for the application",
+          "required": true
+        },
+        {
+          "name": "sha256",
+          "type": "string",
+          "description": "The SHA256 value for the application",
+          "required": true,
+          "contains": [
+            "sha256"
+          ]
+        },
+        {
+          "name": "certificate_signer",
+          "type": "string",
+          "description": "The value saved for the certificate signer",
+          "required": true
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "Comment indicating why the item should be allowed",
+          "required": true,
+          "default": "-"
+        },
+        {
+          "name": "origin_person_id",
+          "type": "string",
+          "description": "Person associated with the endpoint where the item to be allowed was last seen",
+          "required": false
+        },
+        {
+          "name": "origin_endpoint_id",
+          "type": "string",
+          "description": "Endpoint where the item to be allowed was last seen",
+          "required": false
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "list_sites",
+      "name": "List Sites",
+      "description": "Get all local sites",
+      "http_method": "GET",
+      "endpoint": "/actions/list_sites",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "page",
+          "type": "number",
+          "description": "The page number to fetch, starting with 1",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "page_size",
+          "type": "number",
+          "description": "The size of the page requested",
+          "required": false,
+          "default": 50
+        }
+      ]
+    },
+    {
+      "id": "delete_site",
+      "name": "Delete Site",
+      "description": "Delete the specified local site",
+      "http_method": "GET",
+      "endpoint": "/actions/delete_site",
+      "action_type": "correct",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "site_id",
+          "type": "string",
+          "description": "The local site ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "add_site",
+      "name": "Add Site",
+      "description": "Add a new local site",
+      "http_method": "GET",
+      "endpoint": "/actions/add_site",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "category_id",
+          "type": "number",
+          "description": "The category Id associated with this local site",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "tags",
+          "type": "string",
+          "description": "An array of tags associated with this local site setting (comma separated)",
+          "required": false
+        },
+        {
+          "name": "url",
+          "type": "string",
+          "description": "Local site URL",
+          "required": true,
+          "contains": [
+            "url"
+          ]
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "Comment indicating why the site should be added",
+          "required": false
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "get_isolation_settings",
+      "name": "Get Isolation Settings",
+      "description": "Get isolation settings for an endpoint",
+      "http_method": "GET",
+      "endpoint": "/actions/get_isolation_settings",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "endpoint_id",
+          "type": "string",
+          "description": "The endpoint ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "isolation_switch",
+      "name": "Isolation Switch",
+      "description": "Turn on or off endpoint isolation for multiple endpoints",
+      "http_method": "POST",
+      "endpoint": "/actions/isolation_switch",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "ids",
+          "type": "string",
+          "description": "List of endpoint IDs (comma separated)",
+          "required": true
+        },
+        {
+          "name": "enabled",
+          "type": "boolean",
+          "description": "Whether the endpoints should be isolated",
+          "required": true
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "Reason the endpoints should be isolated",
+          "required": false
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Sophos Endpoint Protection",
+    "original_type": "endpoint",
+    "converted_at": "2025-12-18T16:25:29.157927",
+    "source_version": "1.2.1"
+  }
+}

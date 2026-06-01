@@ -1,0 +1,216 @@
+{
+  "id": "palo_alto_autofocus",
+  "name": "Palo Alto AutoFocus",
+  "description": "Integrate with Palo Alto Networks AutoFocus to search samples, sessions, and tags from the WildFire threat intelligence cloud",
+  "version": "1.0.0",
+  "category": "threat_intel",
+  "vendor": "Palo Alto Networks",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "apiKey",
+    "location": "body",
+    "note": "API key is sent in the JSON request body as the 'apiKey' field for POST requests"
+  },
+  "base_url": "https://autofocus.paloaltonetworks.com/api/v1.0",
+  "actions": [
+    {
+      "id": "search_samples",
+      "name": "Search Samples",
+      "description": "Search WildFire samples by hash, filename, behavior, or other criteria using AutoFocus query syntax",
+      "http_method": "POST",
+      "endpoint": "/samples/search",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "object",
+          "description": "AutoFocus search query object with field, operator, and value",
+          "required": true
+        },
+        {
+          "name": "scope",
+          "type": "string",
+          "description": "Search scope: global, unit42, private, public",
+          "required": false
+        },
+        {
+          "name": "size",
+          "type": "number",
+          "description": "Maximum number of results to return",
+          "required": false
+        },
+        {
+          "name": "sort",
+          "type": "object",
+          "description": "Sort configuration with field and order",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_sample_results",
+      "name": "Get Sample Search Results",
+      "description": "Retrieve results from a previously initiated AutoFocus sample search using the af_cookie",
+      "http_method": "POST",
+      "endpoint": "/samples/results/{af_cookie}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "af_cookie",
+          "type": "string",
+          "description": "AutoFocus cookie returned from the search request",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "search_sessions",
+      "name": "Search Sessions",
+      "description": "Search WildFire sessions (network traffic records) associated with malware samples",
+      "http_method": "POST",
+      "endpoint": "/sessions/search",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "object",
+          "description": "AutoFocus search query object",
+          "required": true
+        },
+        {
+          "name": "scope",
+          "type": "string",
+          "description": "Search scope: global, unit42, private, public",
+          "required": false
+        },
+        {
+          "name": "size",
+          "type": "number",
+          "description": "Maximum number of results",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_session_results",
+      "name": "Get Session Search Results",
+      "description": "Retrieve results from a previously initiated session search",
+      "http_method": "POST",
+      "endpoint": "/sessions/results/{af_cookie}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "af_cookie",
+          "type": "string",
+          "description": "AutoFocus cookie from the session search request",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_sample_analysis",
+      "name": "Get Sample Analysis",
+      "description": "Retrieve the WildFire analysis report for a specific sample by hash",
+      "http_method": "POST",
+      "endpoint": "/sample/{hash}/analysis",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "hash",
+          "type": "string",
+          "description": "SHA-256 hash of the sample to retrieve analysis for",
+          "required": true,
+          "contains": ["sha256", "hash"]
+        },
+        {
+          "name": "coverage",
+          "type": "boolean",
+          "description": "Include coverage information (AV signatures, DNS signatures)",
+          "required": false
+        }
+      ],
+      "observable_type": "hash"
+    },
+    {
+      "id": "search_tags",
+      "name": "Search Tags",
+      "description": "Search AutoFocus tags including Unit 42 research tags for threat actor and campaign context",
+      "http_method": "POST",
+      "endpoint": "/tags",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Tag name or keyword to search",
+          "required": true
+        },
+        {
+          "name": "scope",
+          "type": "string",
+          "description": "Tag scope: unit42, public, private",
+          "required": false
+        },
+        {
+          "name": "tagStatus",
+          "type": "string",
+          "description": "Tag status filter: enabled, disabled",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_tag_details",
+      "name": "Get Tag Details",
+      "description": "Retrieve details for a specific AutoFocus tag including description, associated indicators, and references",
+      "http_method": "POST",
+      "endpoint": "/tag/{tag_name}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "tag_name",
+          "type": "string",
+          "description": "AutoFocus tag name to retrieve",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "export_indicators",
+      "name": "Export Indicators",
+      "description": "Export AutoFocus artifacts (indicators) in STIX or JSON format for EDL or SIEM ingestion",
+      "http_method": "POST",
+      "endpoint": "/export",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "label",
+          "type": "string",
+          "description": "Export label/name for the indicator list",
+          "required": true
+        },
+        {
+          "name": "query",
+          "type": "object",
+          "description": "Filter query for indicators to export",
+          "required": false
+        },
+        {
+          "name": "output_format",
+          "type": "string",
+          "description": "Export format: stix, json",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

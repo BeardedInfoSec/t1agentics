@@ -1,0 +1,198 @@
+{
+  "id": "aqua_security_cloud_security",
+  "name": "Aqua Security",
+  "description": "Cloud native security platform providing container security, runtime protection, and vulnerability management via REST API",
+  "version": "1.0.0",
+  "category": "cloud_security",
+  "vendor": "Aqua Security",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "header_name": "Authorization",
+    "prefix": "Bearer",
+    "location": "header",
+    "token_url": "/api/v1/login",
+    "note": "POST to /api/v1/login with {id, password} to obtain Bearer token"
+  },
+  "base_url": "https://{server}.cloud.aquasec.com",
+  "actions": [
+    {
+      "id": "list_vulnerabilities",
+      "name": "List Vulnerabilities",
+      "description": "Retrieve vulnerability scan results for images, hosts, and functions",
+      "http_method": "GET",
+      "endpoint": "/api/v2/risks/vulnerabilities",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "scope",
+          "type": "string",
+          "description": "Scope of vulnerability scan (image, host, function)",
+          "required": false
+        },
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Filter by severity (critical, high, medium, low, negligible)",
+          "required": false
+        },
+        {
+          "name": "has_fix",
+          "type": "boolean",
+          "description": "Filter for vulnerabilities with available fixes",
+          "required": false
+        },
+        {
+          "name": "page",
+          "type": "number",
+          "description": "Page number for pagination",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "page_size",
+          "type": "number",
+          "description": "Number of results per page",
+          "required": false,
+          "default": 50
+        }
+      ]
+    },
+    {
+      "id": "list_images",
+      "name": "List Images",
+      "description": "List registered container images and their security status",
+      "http_method": "GET",
+      "endpoint": "/api/v2/images",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "registry",
+          "type": "string",
+          "description": "Filter by container registry name",
+          "required": false
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Filter by image name",
+          "required": false
+        },
+        {
+          "name": "page",
+          "type": "number",
+          "description": "Page number",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "page_size",
+          "type": "number",
+          "description": "Results per page",
+          "required": false,
+          "default": 50
+        }
+      ]
+    },
+    {
+      "id": "get_image_scan_results",
+      "name": "Get Image Scan Results",
+      "description": "Get detailed vulnerability scan results for a specific container image",
+      "http_method": "GET",
+      "endpoint": "/api/v2/images/{registry}/{repo}/{tag}/vulnerabilities",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "registry",
+          "type": "string",
+          "description": "Container registry name",
+          "required": true
+        },
+        {
+          "name": "repo",
+          "type": "string",
+          "description": "Image repository name",
+          "required": true
+        },
+        {
+          "name": "tag",
+          "type": "string",
+          "description": "Image tag",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_runtime_policies",
+      "name": "List Runtime Policies",
+      "description": "List runtime protection policies for containers and workloads",
+      "http_method": "GET",
+      "endpoint": "/api/v2/runtime_policies",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "list_audit_events",
+      "name": "List Audit Events",
+      "description": "Retrieve runtime audit events and security incidents",
+      "http_method": "GET",
+      "endpoint": "/api/v2/audit/events",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Event type filter (runtime, access, network)",
+          "required": false
+        },
+        {
+          "name": "from_date",
+          "type": "string",
+          "description": "Start date filter in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "to_date",
+          "type": "string",
+          "description": "End date filter in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "page",
+          "type": "number",
+          "description": "Page number",
+          "required": false,
+          "default": 1
+        }
+      ]
+    },
+    {
+      "id": "get_compliance_status",
+      "name": "Get Compliance Status",
+      "description": "Retrieve compliance assessment results for workloads and infrastructure",
+      "http_method": "GET",
+      "endpoint": "/api/v2/compliance",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "benchmark",
+          "type": "string",
+          "description": "Compliance benchmark (e.g., CIS, NIST, PCI-DSS)",
+          "required": false
+        },
+        {
+          "name": "scope",
+          "type": "string",
+          "description": "Scope of compliance check (container, host, cluster)",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

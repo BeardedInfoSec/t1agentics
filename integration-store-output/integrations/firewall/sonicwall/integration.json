@@ -1,0 +1,138 @@
+{
+  "id": "sonicwall",
+  "name": "SonicWall Firewall",
+  "description": "SonicWall SonicOS REST API for managing firewall access rules, address objects, NAT policies, and security services",
+  "version": "1.0.0",
+  "category": "firewall",
+  "vendor": "SonicWall",
+  "auth_type": "basic",
+  "auth_config": {
+    "type": "basic",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "https://{host}/api/sonicos",
+  "actions": [
+    {
+      "id": "list_access_rules",
+      "name": "List Access Rules",
+      "description": "Retrieve all IPv4 firewall access rules",
+      "http_method": "GET",
+      "endpoint": "/access-rules/ipv4",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "create_access_rule",
+      "name": "Create Access Rule",
+      "description": "Create a new IPv4 firewall access rule to allow or deny traffic",
+      "http_method": "POST",
+      "endpoint": "/access-rules/ipv4",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "body",
+          "type": "object",
+          "description": "Access rule definition including from/to zone, source/destination, service, action (allow/deny/discard)",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "delete_access_rule",
+      "name": "Delete Access Rule",
+      "description": "Delete a specific IPv4 access rule by UUID",
+      "http_method": "DELETE",
+      "endpoint": "/access-rules/ipv4/uuid/{uuid}",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "uuid",
+          "type": "string",
+          "description": "UUID of the access rule to delete",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_address_objects",
+      "name": "List Address Objects",
+      "description": "Retrieve all IPv4 address objects configured on the firewall",
+      "http_method": "GET",
+      "endpoint": "/address-objects/ipv4",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "create_address_object",
+      "name": "Create Address Object",
+      "description": "Create a new IPv4 address object (host, range, or network) for use in rules",
+      "http_method": "POST",
+      "endpoint": "/address-objects/ipv4",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "body",
+          "type": "object",
+          "description": "Address object including name, zone, address_type (host/network/range), and address value",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_address_groups",
+      "name": "List Address Groups",
+      "description": "Retrieve all IPv4 address groups",
+      "http_method": "GET",
+      "endpoint": "/address-groups/ipv4",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "list_service_objects",
+      "name": "List Service Objects",
+      "description": "Retrieve all service objects (port definitions)",
+      "http_method": "GET",
+      "endpoint": "/service-objects",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "list_nat_policies",
+      "name": "List NAT Policies",
+      "description": "Retrieve all IPv4 NAT policies",
+      "http_method": "GET",
+      "endpoint": "/nat-policies/ipv4",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "list_zones",
+      "name": "List Zones",
+      "description": "Retrieve all security zones configured on the firewall",
+      "http_method": "GET",
+      "endpoint": "/zones",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "commit_pending",
+      "name": "Commit Pending Changes",
+      "description": "Commit pending configuration changes to make them active",
+      "http_method": "POST",
+      "endpoint": "/config/pending",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": []
+    }
+  ]
+}

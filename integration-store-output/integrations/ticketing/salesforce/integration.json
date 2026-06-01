@@ -1,0 +1,493 @@
+{
+  "id": "salesforce",
+  "name": "Salesforce",
+  "description": "This app implements actions to manage objects on Salesforce",
+  "version": "2.1.4",
+  "category": "ticketing",
+  "vendor": "Salesforce",
+  "auth_type": "oauth2",
+  "auth_config": {
+    "type": "oauth2",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "run_query",
+      "name": "Run Query",
+      "description": "Run a query using the Salesforce Object Query Language (SOQL)",
+      "http_method": "GET",
+      "endpoint": "/actions/run_query",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "SOQL Query",
+          "required": true
+        },
+        {
+          "name": "endpoint",
+          "type": "string",
+          "description": "Which Query endpoint to use",
+          "required": true,
+          "default": "query"
+        }
+      ]
+    },
+    {
+      "id": "create_object",
+      "name": "Create Object",
+      "description": "Create a new Salesforce object",
+      "http_method": "GET",
+      "endpoint": "/actions/create_object",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "sobject",
+          "type": "string",
+          "description": "Name of object",
+          "required": true,
+          "default": "Case",
+          "contains": [
+            "salesforce object name"
+          ]
+        },
+        {
+          "name": "field_values",
+          "type": "string",
+          "description": "JSON Object of Key-Value pairs to update",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "create_ticket",
+      "name": "Create Ticket",
+      "description": "Create a new Case",
+      "http_method": "GET",
+      "endpoint": "/actions/create_ticket",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "parent_case_id",
+          "type": "string",
+          "description": "Object ID of Parent Case",
+          "required": false,
+          "contains": [
+            "salesforce object id"
+          ]
+        },
+        {
+          "name": "subject",
+          "type": "string",
+          "description": "Subject",
+          "required": false
+        },
+        {
+          "name": "priority",
+          "type": "string",
+          "description": "Priority",
+          "required": false
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Description",
+          "required": false
+        },
+        {
+          "name": "field_values",
+          "type": "string",
+          "description": "JSON Object of Key-Value pairs to update",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "delete_object",
+      "name": "Delete Object",
+      "description": "Delete an object",
+      "http_method": "GET",
+      "endpoint": "/actions/delete_object",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "sobject",
+          "type": "string",
+          "description": "Name of object",
+          "required": true,
+          "default": "Case",
+          "contains": [
+            "salesforce object name"
+          ]
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Salesforce Object ID",
+          "required": true,
+          "contains": [
+            "salesforce object id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "delete_ticket",
+      "name": "Delete Ticket",
+      "description": "Delete a Case",
+      "http_method": "GET",
+      "endpoint": "/actions/delete_ticket",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Object ID of the Case",
+          "required": true,
+          "contains": [
+            "salesforce object id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "update_object",
+      "name": "Update Object",
+      "description": "Update an object",
+      "http_method": "GET",
+      "endpoint": "/actions/update_object",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "sobject",
+          "type": "string",
+          "description": "Name of object",
+          "required": true,
+          "default": "Case",
+          "contains": [
+            "salesforce object name"
+          ]
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Salesforce Object ID",
+          "required": true,
+          "contains": [
+            "salesforce object id"
+          ]
+        },
+        {
+          "name": "field_values",
+          "type": "string",
+          "description": "JSON Object of Key-Value pairs to update",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "update_ticket",
+      "name": "Update Ticket",
+      "description": "Update a Case",
+      "http_method": "GET",
+      "endpoint": "/actions/update_ticket",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Object ID of the Case",
+          "required": true,
+          "contains": [
+            "salesforce object id"
+          ]
+        },
+        {
+          "name": "parent_case_id",
+          "type": "string",
+          "description": "Object ID of Parent Case",
+          "required": false,
+          "contains": [
+            "salesforce object id"
+          ]
+        },
+        {
+          "name": "subject",
+          "type": "string",
+          "description": "Subject",
+          "required": false
+        },
+        {
+          "name": "priority",
+          "type": "string",
+          "description": "Priority",
+          "required": false
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Description",
+          "required": false
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Status",
+          "required": false
+        },
+        {
+          "name": "field_values",
+          "type": "string",
+          "description": "JSON Object of Key-Value pairs to update",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_objects",
+      "name": "List Objects",
+      "description": "Get a list of objects",
+      "http_method": "GET",
+      "endpoint": "/actions/list_objects",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "sobject",
+          "type": "string",
+          "description": "Name of object",
+          "required": true,
+          "default": "Case",
+          "contains": [
+            "salesforce object name"
+          ]
+        },
+        {
+          "name": "view_name",
+          "type": "string",
+          "description": "Unique name of a list view",
+          "required": false,
+          "contains": [
+            "salesforce listview name"
+          ]
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Paging limit",
+          "required": false
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Paging offset",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_tickets",
+      "name": "List Tickets",
+      "description": "Get a list of Cases",
+      "http_method": "GET",
+      "endpoint": "/actions/list_tickets",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "view_name",
+          "type": "string",
+          "description": "Unique name of a list view",
+          "required": false,
+          "contains": [
+            "salesforce listview name"
+          ]
+        },
+        {
+          "name": "ph",
+          "type": "string",
+          "description": "",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Paging limit",
+          "required": false
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Paging offset",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_object",
+      "name": "Get Object",
+      "description": "Get info about a Salesforce object",
+      "http_method": "GET",
+      "endpoint": "/actions/get_object",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "sobject",
+          "type": "string",
+          "description": "Name of object",
+          "required": true,
+          "default": "Case",
+          "contains": [
+            "salesforce object name"
+          ]
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Salesforce Object ID",
+          "required": true,
+          "contains": [
+            "salesforce object id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_ticket",
+      "name": "Get Ticket",
+      "description": "Get info about a Case",
+      "http_method": "GET",
+      "endpoint": "/actions/get_ticket",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Object ID of the Case",
+          "required": true,
+          "contains": [
+            "salesforce object id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "post_chatter",
+      "name": "Post Chatter",
+      "description": "Post on the Chatter feed for a specified case",
+      "http_method": "GET",
+      "endpoint": "/actions/post_chatter",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Object ID of the Case",
+          "required": true,
+          "contains": [
+            "salesforce object id"
+          ]
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "description": "Title of the post",
+          "required": false
+        },
+        {
+          "name": "body",
+          "type": "string",
+          "description": "Body of the post",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "on_poll",
+      "name": "On Poll",
+      "description": "Poll for new Objects on Salesforce",
+      "http_method": "GET",
+      "endpoint": "/actions/on_poll",
+      "action_type": "ingest",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "start_time",
+          "type": "number",
+          "description": "Parameter Ignored in this app",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "number",
+          "description": "Parameter Ignored in this app",
+          "required": false
+        },
+        {
+          "name": "container_id",
+          "type": "number",
+          "description": "Parameter Ignored in this app",
+          "required": false
+        },
+        {
+          "name": "container_count",
+          "type": "number",
+          "description": "Maximum number of objects to ingest",
+          "required": true,
+          "default": 10
+        },
+        {
+          "name": "artifact_count",
+          "type": "number",
+          "description": "Parameter Ignored in this app",
+          "required": false
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Salesforce",
+    "original_type": "ticketing",
+    "converted_at": "2025-12-18T16:25:29.097654",
+    "source_version": "2.1.4"
+  }
+}

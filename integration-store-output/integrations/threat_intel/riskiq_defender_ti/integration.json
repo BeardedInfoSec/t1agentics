@@ -1,0 +1,186 @@
+{
+  "id": "riskiq_defender_ti",
+  "name": "Microsoft Defender Threat Intelligence",
+  "description": "Integrate with Microsoft Defender Threat Intelligence (formerly RiskIQ) via Microsoft Graph API to query host reputation, passive DNS, WHOIS, articles, and intelligence profiles",
+  "version": "1.0.0",
+  "category": "threat_intel",
+  "vendor": "Microsoft",
+  "auth_type": "oauth2_client",
+  "auth_config": {
+    "type": "oauth2_client",
+    "token_url": "https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/token",
+    "grant_type": "client_credentials",
+    "scope": "https://graph.microsoft.com/.default",
+    "note": "Requires Azure AD app registration with ThreatIntelligence.Read.All permission. Defender TI license required."
+  },
+  "base_url": "https://graph.microsoft.com/v1.0/security/threatIntelligence",
+  "actions": [
+    {
+      "id": "get_host_reputation",
+      "name": "Get Host Reputation",
+      "description": "Retrieve the reputation verdict for a host (domain or IP) from Microsoft Defender Threat Intelligence",
+      "http_method": "GET",
+      "endpoint": "/hosts/{hostId}/reputation",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "hostId",
+          "type": "string",
+          "description": "Host identifier (domain name or IP address)",
+          "required": true,
+          "contains": ["ip", "domain"]
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "get_passive_dns",
+      "name": "Get Passive DNS",
+      "description": "Retrieve passive DNS records for a host including historical IP-to-domain mappings",
+      "http_method": "GET",
+      "endpoint": "/hosts/{hostId}/passiveDns",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "hostId",
+          "type": "string",
+          "description": "Host identifier (domain or IP address)",
+          "required": true,
+          "contains": ["ip", "domain"]
+        }
+      ]
+    },
+    {
+      "id": "get_whois",
+      "name": "Get WHOIS Record",
+      "description": "Retrieve WHOIS registration details for a host from Microsoft Defender TI",
+      "http_method": "GET",
+      "endpoint": "/hosts/{hostId}/whois",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "hostId",
+          "type": "string",
+          "description": "Host identifier (domain or IP)",
+          "required": true,
+          "contains": ["ip", "domain"]
+        }
+      ]
+    },
+    {
+      "id": "get_host_components",
+      "name": "Get Host Components",
+      "description": "Retrieve web components (technologies, frameworks, servers) detected on a host",
+      "http_method": "GET",
+      "endpoint": "/hosts/{hostId}/components",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "hostId",
+          "type": "string",
+          "description": "Host identifier (domain or IP)",
+          "required": true,
+          "contains": ["ip", "domain"]
+        }
+      ]
+    },
+    {
+      "id": "get_host_cookies",
+      "name": "Get Host Cookies",
+      "description": "Retrieve cookies observed on a host for infrastructure correlation and tracking",
+      "http_method": "GET",
+      "endpoint": "/hosts/{hostId}/cookies",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "hostId",
+          "type": "string",
+          "description": "Host identifier (domain or IP)",
+          "required": true,
+          "contains": ["ip", "domain"]
+        }
+      ]
+    },
+    {
+      "id": "get_host_trackers",
+      "name": "Get Host Trackers",
+      "description": "Retrieve web trackers (analytics IDs, ad network IDs) observed on a host for infrastructure pivoting",
+      "http_method": "GET",
+      "endpoint": "/hosts/{hostId}/trackers",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "hostId",
+          "type": "string",
+          "description": "Host identifier (domain or IP)",
+          "required": true,
+          "contains": ["ip", "domain"]
+        }
+      ]
+    },
+    {
+      "id": "search_articles",
+      "name": "Search Articles",
+      "description": "Search Microsoft Defender TI threat intelligence articles for threat analysis and context",
+      "http_method": "GET",
+      "endpoint": "/articles",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "$search",
+          "type": "string",
+          "description": "Search query for article content",
+          "required": false
+        },
+        {
+          "name": "$filter",
+          "type": "string",
+          "description": "OData filter expression (e.g. createdDateTime ge 2024-01-01)",
+          "required": false
+        },
+        {
+          "name": "$top",
+          "type": "number",
+          "description": "Maximum number of results",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_intel_profiles",
+      "name": "List Intelligence Profiles",
+      "description": "List Microsoft Defender TI intelligence profiles for threat actors, toolkits, and vulnerabilities",
+      "http_method": "GET",
+      "endpoint": "/intelProfiles",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "$search",
+          "type": "string",
+          "description": "Search query for profile names and descriptions",
+          "required": false
+        },
+        {
+          "name": "$filter",
+          "type": "string",
+          "description": "OData filter expression",
+          "required": false
+        },
+        {
+          "name": "$top",
+          "type": "number",
+          "description": "Maximum number of results",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

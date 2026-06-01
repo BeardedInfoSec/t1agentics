@@ -1,0 +1,215 @@
+{
+  "name": "Sensitive Data Exposure Detection",
+  "slug": "dlp-sensitive-data-exposure",
+  "description": "Detects and responds to sensitive data exposure incidents. Riggs AI analyzes the alert using the data exfiltration template to classify the exposed data type and severity. Confirmed exposures trigger immediate access restriction, data owner notification, and a compliance ticket. False positives are annotated and closed. Designed for SOC analysts handling DLP policy violations involving sensitive data found in unauthorized locations.",
+  "category": "data_protection",
+  "subcategory": "sensitive_data",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "15 minutes",
+  "tags": ["dlp", "sensitive_data", "data_exposure", "classification", "compliance"],
+  "alert_types": ["dlp", "data_exposure", "sensitive_data"],
+  "severity_filter": ["medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["dlp", "data_exposure", "sensitive_data", "data_classification_violation"],
+    "min_severity": "medium"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "microsoft_graph",
+      "name": "Microsoft Graph",
+      "category": "identity",
+      "reason": "Restrict access permissions on exposed files and folders"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create compliance tracking ticket for data exposure remediation"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Notify data owner and SOC team of exposure incident"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "dse-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "title": "Sensitive Data Exposure Alert",
+          "summary": "Triggers on DLP alerts indicating sensitive data found in unauthorized locations",
+          "config": {
+            "trigger_type": "alert",
+            "alert_types": ["dlp", "data_exposure", "sensitive_data", "data_classification_violation"]
+          }
+        }
+      },
+      {
+        "id": "dse-2",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "analyze",
+          "title": "AI Data Exposure Classification",
+          "summary": "Riggs AI classifies the exposed data type, sensitivity level, and exposure scope",
+          "config": {
+            "mode": "ai_analysis",
+            "template_id": "data_exfil",
+            "custom_instructions": "Classify the data sensitivity level (PII, PHI, PCI, confidential, internal). Determine exposure scope and assess risk of unauthorized access.",
+            "alert_path": "$.trigger.alert",
+            "include_context": true
+          }
+        }
+      },
+      {
+        "id": "dse-3",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "decision",
+          "title": "Confirmed Exposure?",
+          "summary": "Branch based on whether sensitive data exposure is confirmed",
+          "config": {
+            "conditions": {
+              "operator": "AND",
+              "conditions": [
+                {
+                  "field": "$.nodes.dse-2.result.verdict",
+                  "operator": "in",
+                  "value": ["MALICIOUS", "SUSPICIOUS"]
+                }
+              ],
+              "groups": []
+            },
+            "expression": "$.nodes.dse-2.result.verdict in ['MALICIOUS', 'SUSPICIOUS']",
+            "default_branch": "no"
+          }
+        }
+      },
+      {
+        "id": "dse-4",
+        "type": "signal",
+        "position": { "x": 340, "y": 540 },
+        "data": {
+          "kind": "respond",
+          "title": "Restrict Access to Exposed Data",
+          "summary": "Revoke public/unauthorized access permissions on the exposed resource",
+          "config": {
+            "response_type": "integration_action",
+            "integration_instance_id": "microsoft_graph",
+            "action_type": "restrict_permissions",
+            "params": {
+              "resource_id": "$.trigger.alert.resource_id",
+              "action": "remove_external_access",
+              "reason": "Sensitive data exposure detected — restricting access per DLP policy"
+            },
+            "requires_approval": false,
+            "priority": "high"
+          }
+        }
+      },
+      {
+        "id": "dse-5",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "title": "Notify Data Owner",
+          "summary": "Alert the data owner about the exposure via Slack",
+          "config": {
+            "response_type": "notification",
+            "channel": "slack",
+            "slack_channel": "direct_message",
+            "recipient": "$.trigger.alert.data_owner",
+            "message": "SENSITIVE DATA EXPOSURE DETECTED\n\nResource: {{$.trigger.alert.resource_name}}\nLocation: {{$.trigger.alert.resource_path}}\nClassification: {{$.nodes.dse-2.result.data_classification}}\nExposure Type: {{$.nodes.dse-2.result.exposure_type}}\n\nAccess has been automatically restricted. Please review and confirm remediation.",
+            "priority": "high"
+          }
+        }
+      },
+      {
+        "id": "dse-6",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "title": "Create Compliance Ticket",
+          "summary": "Create a Jira ticket for compliance tracking and remediation follow-up",
+          "config": {
+            "response_type": "create_ticket",
+            "system": "jira",
+            "project_key": "COMP",
+            "issue_type": "Incident",
+            "title": "Data Exposure: {{$.trigger.alert.resource_name}} — {{$.nodes.dse-2.result.data_classification}}",
+            "description": "Sensitive data exposure detected and access restricted.\n\nResource: {{$.trigger.alert.resource_name}}\nPath: {{$.trigger.alert.resource_path}}\nData Classification: {{$.nodes.dse-2.result.data_classification}}\nExposure Scope: {{$.nodes.dse-2.result.exposure_type}}\nData Owner: {{$.trigger.alert.data_owner}}\n\nAI Analysis: {{$.nodes.dse-2.result.summary}}\n\nActions Taken:\n- Access permissions restricted\n- Data owner notified\n\nRequired Follow-up:\n- Verify no unauthorized copies exist\n- Confirm data classification labels applied\n- Document in compliance register",
+            "priority": "high",
+            "requires_approval": false
+          }
+        }
+      },
+      {
+        "id": "dse-7",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "title": "Notify SOC Team",
+          "summary": "Send containment summary to SOC alerts channel",
+          "config": {
+            "response_type": "notification",
+            "channel": "slack",
+            "slack_channel": "#soc-alerts",
+            "message": "Sensitive data exposure contained.\nResource: {{$.trigger.alert.resource_name}}\nClassification: {{$.nodes.dse-2.result.data_classification}}\nActions: access restricted, owner notified, compliance ticket created.\nJira: {{$.nodes.dse-6.ticket_key}}",
+            "priority": "high"
+          }
+        }
+      },
+      {
+        "id": "dse-8",
+        "type": "signal",
+        "position": { "x": 700, "y": 540 },
+        "data": {
+          "kind": "utility",
+          "title": "Close Alert — No Exposure",
+          "summary": "Annotate alert as false positive and close",
+          "config": {
+            "operation": "add_note",
+            "note": "Data exposure alert reviewed by Riggs AI. Verdict: {{$.nodes.dse-2.result.verdict}}. No confirmed sensitive data exposure — data is properly classified and access is within policy. Closing alert.",
+            "close_alert": true
+          }
+        }
+      },
+      {
+        "id": "dse-9",
+        "type": "signal",
+        "position": { "x": 520, "y": 1180 },
+        "data": {
+          "kind": "end",
+          "title": "Playbook Complete",
+          "summary": "Sensitive data exposure response workflow finished",
+          "config": {
+            "disposition": "completed",
+            "summary": "Sensitive data exposure detection and response completed"
+          }
+        }
+      }
+    ],
+    "edges": [
+      { "id": "dse-e1", "source": "dse-1", "target": "dse-2", "animated": true, "type": "smoothstep" },
+      { "id": "dse-e2", "source": "dse-2", "target": "dse-3", "animated": true, "type": "smoothstep" },
+      { "id": "dse-e3", "source": "dse-3", "target": "dse-4", "sourceHandle": "yes", "label": "Yes", "animated": true, "type": "smoothstep" },
+      { "id": "dse-e4", "source": "dse-3", "target": "dse-8", "sourceHandle": "no", "label": "No", "animated": true, "type": "smoothstep" },
+      { "id": "dse-e5", "source": "dse-4", "target": "dse-5", "animated": true, "type": "smoothstep" },
+      { "id": "dse-e6", "source": "dse-5", "target": "dse-6", "animated": true, "type": "smoothstep" },
+      { "id": "dse-e7", "source": "dse-6", "target": "dse-7", "animated": true, "type": "smoothstep" },
+      { "id": "dse-e8", "source": "dse-7", "target": "dse-9", "animated": true, "type": "smoothstep" },
+      { "id": "dse-e9", "source": "dse-8", "target": "dse-9", "animated": true, "type": "smoothstep" }
+    ]
+  }
+}

@@ -1,0 +1,627 @@
+{
+  "id": "domaintools_iris_investigate",
+  "name": "DomainTools Iris Investigate",
+  "description": "This app supports investigative actions to profile domain names, get risk scores, and find connected domains that share the same Whois details, web hosting profiles, SSL certificates, and more on DomainTools Iris Investigate",
+  "version": "1.7.0",
+  "category": "threat_intel",
+  "vendor": "DomainTools",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "domain_reputation",
+      "name": "Domain Reputation",
+      "description": "Evaluates the risk of a given domain",
+      "http_method": "GET",
+      "endpoint": "/actions/domain_reputation",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "domain",
+          "type": "string",
+          "description": "Domain or comma-separated list of domains to query",
+          "required": true,
+          "contains": [
+            "url",
+            "domain"
+          ]
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "pivot_action",
+      "name": "Pivot Action",
+      "description": "Find domains connected by any supported Iris Investigate search parameter",
+      "http_method": "GET",
+      "endpoint": "/actions/pivot_action",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "query_value",
+          "type": "string",
+          "description": "Value to query",
+          "required": true,
+          "contains": [
+            "url",
+            "domain",
+            "ip",
+            "email"
+          ]
+        },
+        {
+          "name": "pivot_type",
+          "type": "string",
+          "description": "Field to pivot on",
+          "required": true
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Return domains of this registration type",
+          "required": false,
+          "default": "Any"
+        },
+        {
+          "name": "data_updated_after",
+          "type": "string",
+          "description": "Iris Investigate records that were updated on or after midnight on this date, in YYYY-MM-DD format or relative options ( 'today', 'yesterday' )",
+          "required": false
+        },
+        {
+          "name": "tld",
+          "type": "string",
+          "description": "Limit results to only include domains in a specific top-level domain (i.e. \u201ctld=com\u201d or \u201ctld=ru\u201d)",
+          "required": false
+        },
+        {
+          "name": "create_date",
+          "type": "string",
+          "description": "Only include domains created on a specific date, in YYYY-MM-DD format or relative options ( 'today', 'yesterday' )",
+          "required": false
+        },
+        {
+          "name": "create_date_within",
+          "type": "string",
+          "description": "Only include domains with a whois create date within the specified number of days (e.g. specifying '1' would indicate within the past day)",
+          "required": false
+        },
+        {
+          "name": "first_seen_within",
+          "type": "string",
+          "description": "Only include domains with a current lifecycle first observed within the specified number of seconds (e.g. specifying '86400' would indicate within the past day)",
+          "required": false
+        },
+        {
+          "name": "first_seen_since",
+          "type": "string",
+          "description": "Only include domains with a current lifecycle first observed since a specified datetime. (Example: 2023-04-10T00:00:00+00:00)",
+          "required": false
+        },
+        {
+          "name": "expiration_date",
+          "type": "string",
+          "description": "Only include domains expiring on a specific date, in YYYY-MM-DD format or relative options ( 'today', 'yesterday' )",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "reverse_lookup_domain",
+      "name": "Reverse Domain",
+      "description": "Extract IPs from a single domain response for further pivoting",
+      "http_method": "GET",
+      "endpoint": "/actions/reverse_lookup_domain",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "domain",
+          "type": "string",
+          "description": "Domain or comma-separated list of domains to query",
+          "required": true,
+          "contains": [
+            "url",
+            "domain"
+          ]
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "reverse_lookup_ip",
+      "name": "Reverse Ip",
+      "description": "Find domains with web hosting IP, NS IP or MX IP",
+      "http_method": "GET",
+      "endpoint": "/actions/reverse_lookup_ip",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "IP address to query",
+          "required": true,
+          "contains": [
+            "ip"
+          ]
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Return domains of this registration type",
+          "required": false,
+          "default": "Any"
+        },
+        {
+          "name": "data_updated_after",
+          "type": "string",
+          "description": "Iris Investigate records that were updated on or after midnight on this date, in YYYY-MM-DD format or relative options ( 'today', 'yesterday' )",
+          "required": false
+        },
+        {
+          "name": "tld",
+          "type": "string",
+          "description": "Limit results to only include domains in a specific top-level domain (i.e. \u201ctld=com\u201d or \u201ctld=ru\u201d)",
+          "required": false
+        },
+        {
+          "name": "create_date",
+          "type": "string",
+          "description": "Only include domains created on a specific date, in YYYY-MM-DD format or relative options ( 'today', 'yesterday' )",
+          "required": false
+        },
+        {
+          "name": "create_date_within",
+          "type": "string",
+          "description": "Only include domains with a whois create date within the specified number of days (e.g. specifying '1' would indicate within the past day)",
+          "required": false
+        },
+        {
+          "name": "first_seen_within",
+          "type": "string",
+          "description": "Only include domains with a current lifecycle first observed within the specified number of seconds (e.g. specifying '86400' would indicate within the past day)",
+          "required": false
+        },
+        {
+          "name": "first_seen_since",
+          "type": "string",
+          "description": "Only include domains with a current lifecycle first observed since a specified datetime. (Example: 2023-04-10T00:00:00+00:00)",
+          "required": false
+        },
+        {
+          "name": "expiration_date",
+          "type": "string",
+          "description": "Only include domains expiring on a specific date, in YYYY-MM-DD format or relative options ( 'today', 'yesterday' )",
+          "required": false
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "load_hash",
+      "name": "Load Hash",
+      "description": "Load or monitor Iris Investigate search results by Iris Investigate export hash",
+      "http_method": "GET",
+      "endpoint": "/actions/load_hash",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "search_hash",
+          "type": "string",
+          "description": "Paste the \"Current Search Export\" string (Advanced -> Import/Export Search) from Iris Investigate in this field to import up to 5000 domains",
+          "required": true
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "reverse_whois_email",
+      "name": "Reverse Email",
+      "description": "Find domains with email in Whois, DNS SOA or SSL certificate",
+      "http_method": "GET",
+      "endpoint": "/actions/reverse_whois_email",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "email",
+          "type": "string",
+          "description": "Email query",
+          "required": true,
+          "contains": [
+            "email"
+          ]
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Return domains of this registration type",
+          "required": false,
+          "default": "Any"
+        },
+        {
+          "name": "data_updated_after",
+          "type": "string",
+          "description": "Iris Investigate records that were updated on or after midnight on this date, in YYYY-MM-DD format or relative options ( 'today', 'yesterday' )",
+          "required": false
+        },
+        {
+          "name": "tld",
+          "type": "string",
+          "description": "Limit results to only include domains in a specific top-level domain (i.e. \u201ctld=com\u201d or \u201ctld=ru\u201d)",
+          "required": false
+        },
+        {
+          "name": "create_date",
+          "type": "string",
+          "description": "Only include domains created on a specific date, in YYYY-MM-DD format or relative options ( 'today', 'yesterday' )",
+          "required": false
+        },
+        {
+          "name": "create_date_within",
+          "type": "string",
+          "description": "Only include domains with a whois create date within the specified number of days (e.g. specifying '1' would indicate within the past day)",
+          "required": false
+        },
+        {
+          "name": "first_seen_within",
+          "type": "string",
+          "description": "Only include domains with a current lifecycle first observed within the specified number of seconds (e.g. specifying '86400' would indicate within the past day)",
+          "required": false
+        },
+        {
+          "name": "first_seen_since",
+          "type": "string",
+          "description": "Only include domains with a current lifecycle first observed since a specified datetime. (Example: 2023-04-10T00:00:00+00:00)",
+          "required": false
+        },
+        {
+          "name": "expiration_date",
+          "type": "string",
+          "description": "Only include domains expiring on a specific date, in YYYY-MM-DD format or relative options ( 'today', 'yesterday' )",
+          "required": false
+        }
+      ],
+      "observable_type": "email"
+    },
+    {
+      "id": "domain_investigate",
+      "name": "Lookup Domain",
+      "description": "Get all Iris Investigate data for a domain using the Iris Investigate API endpoint (required)",
+      "http_method": "GET",
+      "endpoint": "/actions/domain_investigate",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "domain",
+          "type": "string",
+          "description": "Domain or comma-separated list of domains to query using the Iris Investigate API",
+          "required": true,
+          "contains": [
+            "url",
+            "domain"
+          ]
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "domain_enrich",
+      "name": "Enrich Domain",
+      "description": "Get all Iris Investigate data for a domain except counts using the high volume Iris Enrich API endpoint (if provisioned)",
+      "http_method": "GET",
+      "endpoint": "/actions/domain_enrich",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "domain",
+          "type": "string",
+          "description": "Domain or comma-separated list of domains to query using the Iris Enrich API (if provisioned)",
+          "required": true,
+          "contains": [
+            "url",
+            "domain"
+          ]
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "configure_monitoring_scheduled_playbooks",
+      "name": "Configure Scheduled Playbooks",
+      "description": "Run on initial setup to configure the optional monitoring playbooks. This action creates a custom list to manage the playbook scheduling and run status",
+      "http_method": "GET",
+      "endpoint": "/actions/configure_monitoring_scheduled_playbooks",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "on_poll",
+      "name": "On Poll",
+      "description": "Execute scheduled playbooks based on the set interval(mins) in 'domaintools_scheduled_playbooks' custom list. Smaller intervals will result in more accurate schedules",
+      "http_method": "GET",
+      "endpoint": "/actions/on_poll",
+      "action_type": "ingest",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "parsed_domain_rdap",
+      "name": "Parsed Domain Rdap",
+      "description": "The Parsed Domain RDAP API returns the most recent Domain-RDAP registration record in response to a HTTP GET query. This API compliments the Parsed Whois API as some registries and registrar are beginning to support RDAP as an alternative to Whois for providing domain registration data",
+      "http_method": "GET",
+      "endpoint": "/actions/parsed_domain_rdap",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "domain",
+          "type": "string",
+          "description": "The domain name to query (e.g., example.com)",
+          "required": false
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "nod_feed",
+      "name": "Nod Feed",
+      "description": "Apex-level domains (e.g. example.com but not www.example.com) observed for the first time by the DomainTools sensor network, and which are not present in our DNSDB historical database",
+      "http_method": "GET",
+      "endpoint": "/actions/nod_feed",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "domain",
+          "type": "string",
+          "description": "Filter for an exact domain or a substring contained within a domain by prefixing or suffixing your substring with '*'. Check the documentation for examples",
+          "required": false
+        },
+        {
+          "name": "before",
+          "type": "string",
+          "description": "The end of the query window in seconds or in ISO8601 format, relative to the current time, inclusive.",
+          "required": false
+        },
+        {
+          "name": "after",
+          "type": "string",
+          "description": "Filter for records before the given time value inclusive or time offset relative to now.",
+          "required": false
+        },
+        {
+          "name": "session_id",
+          "type": "string",
+          "description": "A custom string to distinguish between different sessions",
+          "required": false
+        },
+        {
+          "name": "top",
+          "type": "string",
+          "description": "Limit the number of results to the top N, where N is the value of this parameter",
+          "required": false
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "nad_feed",
+      "name": "Nad Feed",
+      "description": "Apex-level domains (e.g. example.com but not www.example.com) DomainTools has newly observed in our DNS sensor network. This includes domains observed in DNS for the first time as well as domains observed in DNS again after not being observed for at least 10 days",
+      "http_method": "GET",
+      "endpoint": "/actions/nad_feed",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "domain",
+          "type": "string",
+          "description": "Filter for an exact domain or a substring contained within a domain by prefixing or suffixing your substring with '*'. Check the documentation for examples",
+          "required": false
+        },
+        {
+          "name": "before",
+          "type": "string",
+          "description": "The end of the query window in seconds or in ISO8601 format, relative to the current time, inclusive.",
+          "required": false
+        },
+        {
+          "name": "after",
+          "type": "string",
+          "description": "Filter for records before the given time value inclusive or time offset relative to now.",
+          "required": false
+        },
+        {
+          "name": "session_id",
+          "type": "string",
+          "description": "A custom string to distinguish between different sessions",
+          "required": false
+        },
+        {
+          "name": "top",
+          "type": "string",
+          "description": "Limit the number of results to the top N, where N is the value of this parameter",
+          "required": false
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "noh_feed",
+      "name": "Noh Feed",
+      "description": "Contains fully qualified domain names (i.e. host names) that have never been seen before in passive DNS, emitted as soon as they are first observed. Hostname resolutions that we observe for the first time with our global DNS sensor network",
+      "http_method": "GET",
+      "endpoint": "/actions/noh_feed",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "domain",
+          "type": "string",
+          "description": "Used to filter feed results. The filter can be an exact match or a partial match when the * character is included at the beginning and/or end of the value",
+          "required": false
+        },
+        {
+          "name": "before",
+          "type": "string",
+          "description": "The end of the query window in seconds or in ISO8601 format, relative to the current time, inclusive.",
+          "required": false
+        },
+        {
+          "name": "after",
+          "type": "string",
+          "description": "The start of the query window in seconds in ISO8601 format, relative to the current time, inclusive.",
+          "required": false
+        },
+        {
+          "name": "session_id",
+          "type": "string",
+          "description": "Serves as a unique identifier for the session. This parameter ensures that data retrieval begins from the latest timestamp recorded in the previous data pull.",
+          "required": false
+        },
+        {
+          "name": "top",
+          "type": "string",
+          "description": "The number of results to return in the response payload. Primarily used for testing.",
+          "required": false
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "domain_discovery_feed",
+      "name": "Domain Discovery Feed",
+      "description": "New domains as they are either discovered in domain registration information, observed by our global sensor network, or reported by trusted third parties",
+      "http_method": "GET",
+      "endpoint": "/actions/domain_discovery_feed",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "domain",
+          "type": "string",
+          "description": "Used to filter feed results. The filter can be an exact match or a partial match when the * character is included at the beginning and/or end of the value.",
+          "required": false
+        },
+        {
+          "name": "before",
+          "type": "string",
+          "description": "The end of the query window in seconds or in ISO8601 format, relative to the current time, inclusive.",
+          "required": false
+        },
+        {
+          "name": "after",
+          "type": "string",
+          "description": "The start of the query window in seconds in ISO8601 format, relative to the current time, inclusive.",
+          "required": false
+        },
+        {
+          "name": "session_id",
+          "type": "string",
+          "description": "Serves as a unique identifier for the session. This parameter ensures that data retrieval begins from the latest timestamp recorded in the previous data pull.",
+          "required": false
+        },
+        {
+          "name": "top",
+          "type": "string",
+          "description": "The number of results to return in the response payload. Primarily used for testing.",
+          "required": false
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "parsed_domain_rdap_feed",
+      "name": "Domain Rdap Feed",
+      "description": "List of records for a given domain may be provided by a domain registry, registrar, or both. Domain registries maintain authoritative information about one or more top-level domains (e.g., .com), while domain registrars manage apex domains (e.g., domaintools.com). When domain information is present from both the registry and registrar, this API presents a record containing both sets of results, as well the original raw JSON record, from both the registry and registrar",
+      "http_method": "GET",
+      "endpoint": "/actions/parsed_domain_rdap_feed",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "domain",
+          "type": "string",
+          "description": "Used to filter feed results. The filter can be an exact match or a partial match when the * character is included at the beginning and/or end of the value.",
+          "required": false
+        },
+        {
+          "name": "before",
+          "type": "string",
+          "description": "The end of the query window in seconds or in ISO8601 format, relative to the current time, inclusive.",
+          "required": false
+        },
+        {
+          "name": "after",
+          "type": "string",
+          "description": "The start of the query window in seconds in ISO8601 format, relative to the current time, inclusive.",
+          "required": false
+        },
+        {
+          "name": "session_id",
+          "type": "string",
+          "description": "Serves as a unique identifier for the session. This parameter ensures that data retrieval begins from the latest timestamp recorded in the previous data pull.",
+          "required": false
+        },
+        {
+          "name": "top",
+          "type": "string",
+          "description": "The number of results to return in the response payload. Primarily used for testing.",
+          "required": false
+        }
+      ],
+      "observable_type": "domain"
+    }
+  ],
+  "source_metadata": {
+    "original_name": "DomainTools Iris Investigate",
+    "original_type": "information",
+    "converted_at": "2025-12-18T16:25:28.746118",
+    "source_version": "1.7.0"
+  }
+}

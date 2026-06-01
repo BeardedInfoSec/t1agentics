@@ -1,0 +1,211 @@
+{
+  "name": "Employee Offboarding Access Revocation",
+  "slug": "identity-offboarding-revoke",
+  "description": "Automates employee offboarding by revoking access across all connected systems. Loops over identity providers, SaaS applications, VPN, and cloud platforms to disable accounts, revoke sessions, remove group memberships, and transfer mailbox delegation. Generates a compliance-ready offboarding report upon completion.",
+  "category": "identity",
+  "subcategory": "offboarding",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "20 minutes",
+  "tags": ["offboarding", "access_revocation", "lifecycle", "compliance", "loop"],
+  "alert_types": ["offboarding_request", "termination"],
+  "severity_filter": ["medium", "high"],
+  "trigger_conditions": {
+    "alert_types": ["offboarding_request"],
+    "min_severity": "medium"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "microsoft_graph",
+      "name": "Microsoft Graph",
+      "category": "identity",
+      "reason": "Disable AD account, revoke sessions, remove group memberships, transfer mailbox"
+    },
+    {
+      "connector_id": "okta",
+      "name": "Okta",
+      "category": "identity",
+      "reason": "Deactivate Okta user and revoke all SSO sessions"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "ob-1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "title": "Offboarding Request",
+          "summary": "Fires on employee offboarding or termination request",
+          "config": {
+            "trigger_type": "alert",
+            "alert_filter": "offboarding_request OR termination"
+          }
+        }
+      },
+      {
+        "id": "ob-2",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "respond",
+          "title": "Disable AD Account",
+          "summary": "Disable the user account in Active Directory",
+          "config": {
+            "response_type": "integration_action",
+            "integration_instance_id": "microsoft_graph",
+            "action_type": "disable_account",
+            "params": {
+              "user_id": "$.trigger.alert.offboarded_user_id",
+              "reason": "Employee offboarding — account disabled"
+            },
+            "requires_approval": false,
+            "priority": "high"
+          }
+        }
+      },
+      {
+        "id": "ob-3",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "respond",
+          "title": "Revoke All Sessions",
+          "summary": "Terminate all active sessions and revoke refresh tokens",
+          "config": {
+            "response_type": "integration_action",
+            "integration_instance_id": "microsoft_graph",
+            "action_type": "revoke_sessions",
+            "params": {
+              "user_id": "$.trigger.alert.offboarded_user_id",
+              "reason": "Employee offboarding — all sessions revoked"
+            },
+            "requires_approval": false,
+            "priority": "high"
+          }
+        }
+      },
+      {
+        "id": "ob-4",
+        "type": "signal",
+        "position": { "x": 520, "y": 540 },
+        "data": {
+          "kind": "loop",
+          "title": "Loop Over Group Memberships",
+          "summary": "Iterate over all group memberships to remove the user",
+          "config": {
+            "collection_path": "$.trigger.alert.group_memberships",
+            "iterator_variable": "group",
+            "max_iterations": 100
+          }
+        }
+      },
+      {
+        "id": "ob-5",
+        "type": "signal",
+        "position": { "x": 520, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "title": "Remove Group Membership",
+          "summary": "Remove the offboarded user from each group",
+          "config": {
+            "response_type": "integration_action",
+            "integration_instance_id": "microsoft_graph",
+            "action_type": "remove_group_membership",
+            "params": {
+              "user_id": "$.trigger.alert.offboarded_user_id",
+              "group_id": "$.loop.group.group_id",
+              "reason": "Employee offboarding — group membership removed"
+            },
+            "requires_approval": false,
+            "priority": "medium"
+          }
+        }
+      },
+      {
+        "id": "ob-6",
+        "type": "signal",
+        "position": { "x": 520, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "title": "Deactivate Okta Account",
+          "summary": "Deactivate the user in Okta and revoke all SSO sessions",
+          "config": {
+            "response_type": "integration_action",
+            "integration_instance_id": "okta",
+            "action_type": "deactivate_user",
+            "params": {
+              "user_id": "$.trigger.alert.offboarded_user_id",
+              "reason": "Employee offboarding — Okta account deactivated"
+            },
+            "requires_approval": false,
+            "priority": "high"
+          }
+        }
+      },
+      {
+        "id": "ob-7",
+        "type": "signal",
+        "position": { "x": 520, "y": 1020 },
+        "data": {
+          "kind": "analyze",
+          "title": "Generate Offboarding Report",
+          "summary": "AI-generated compliance offboarding report summarizing all actions",
+          "config": {
+            "mode": "ai_analysis",
+            "template_id": "executive_summary",
+            "custom_instructions": "",
+            "alert_path": "$.trigger.alert",
+            "include_context": true
+          }
+        }
+      },
+      {
+        "id": "ob-8",
+        "type": "signal",
+        "position": { "x": 520, "y": 1180 },
+        "data": {
+          "kind": "respond",
+          "title": "Notify HR & Manager",
+          "summary": "Send offboarding completion report to HR and the user's manager",
+          "config": {
+            "response_type": "notification",
+            "channel": "email",
+            "email_recipients": "$.trigger.alert.manager_email, $.trigger.alert.hr_contact_email",
+            "email_subject": "Offboarding Complete: {{$.trigger.alert.offboarded_user_email}}",
+            "message": "All access has been revoked for {{$.trigger.alert.offboarded_user_email}}. AD account disabled, sessions terminated, {{$.trigger.alert.group_count}} group memberships removed, Okta deactivated. Full report attached.",
+            "requires_approval": false,
+            "priority": "medium"
+          }
+        }
+      },
+      {
+        "id": "ob-9",
+        "type": "signal",
+        "position": { "x": 520, "y": 1340 },
+        "data": {
+          "kind": "end",
+          "title": "Playbook Complete",
+          "summary": "Employee offboarding access revocation finished",
+          "config": {
+            "disposition": "completed",
+            "summary": "Employee offboarding access revocation completed across all systems"
+          }
+        }
+      }
+    ],
+    "edges": [
+      { "id": "ob-e1", "source": "ob-1", "target": "ob-2", "animated": true, "type": "smoothstep" },
+      { "id": "ob-e2", "source": "ob-2", "target": "ob-3", "animated": true, "type": "smoothstep" },
+      { "id": "ob-e3", "source": "ob-3", "target": "ob-4", "animated": true, "type": "smoothstep" },
+      { "id": "ob-e4", "source": "ob-4", "target": "ob-5", "animated": true, "type": "smoothstep" },
+      { "id": "ob-e5", "source": "ob-5", "target": "ob-4", "animated": true, "type": "smoothstep", "label": "Next" },
+      { "id": "ob-e6", "source": "ob-4", "target": "ob-6", "animated": true, "type": "smoothstep", "label": "Done" },
+      { "id": "ob-e7", "source": "ob-6", "target": "ob-7", "animated": true, "type": "smoothstep" },
+      { "id": "ob-e8", "source": "ob-7", "target": "ob-8", "animated": true, "type": "smoothstep" },
+      { "id": "ob-e9", "source": "ob-8", "target": "ob-9", "animated": true, "type": "smoothstep" }
+    ]
+  }
+}

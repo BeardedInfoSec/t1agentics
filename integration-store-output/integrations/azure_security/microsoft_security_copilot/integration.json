@@ -1,0 +1,145 @@
+{
+  "id": "microsoft_security_copilot",
+  "name": "Microsoft Security Copilot",
+  "description": "AI-powered security analysis platform that combines LLMs with Microsoft security data to accelerate incident response, threat hunting, and security operations",
+  "version": "1.0.0",
+  "category": "azure_security",
+  "vendor": "Microsoft Azure",
+  "auth_type": "oauth2_client",
+  "auth_config": {
+    "type": "oauth2_client",
+    "token_url": "https://login.microsoftonline.com/{tenantId}/oauth2/v2.0/token",
+    "scope": "https://securitycopilot.microsoft.com/.default",
+    "grant_type": "client_credentials"
+  },
+  "base_url": "https://api.securitycopilot.microsoft.com",
+  "actions": [
+    {
+      "id": "create_session",
+      "name": "Create Session",
+      "description": "Create a new Security Copilot session for interactive security analysis",
+      "http_method": "POST",
+      "endpoint": "/v1/sessions",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "title",
+          "type": "string",
+          "description": "Session title",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "run_prompt",
+      "name": "Run Prompt",
+      "description": "Execute a natural language security prompt in Security Copilot for analysis and investigation",
+      "http_method": "POST",
+      "endpoint": "/v1/sessions/{sessionId}/prompts",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "sessionId",
+          "type": "string",
+          "description": "Session ID to run the prompt in",
+          "required": true
+        },
+        {
+          "name": "content",
+          "type": "string",
+          "description": "Natural language security prompt (e.g., 'Analyze this IP address for threat indicators: 1.2.3.4')",
+          "required": true
+        },
+        {
+          "name": "plugins",
+          "type": "array",
+          "description": "Array of plugin names to use for the prompt",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_sessions",
+      "name": "List Sessions",
+      "description": "List all Security Copilot sessions",
+      "http_method": "GET",
+      "endpoint": "/v1/sessions",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "$top",
+          "type": "number",
+          "description": "Maximum sessions to return",
+          "required": false,
+          "default": 50
+        },
+        {
+          "name": "$orderby",
+          "type": "string",
+          "description": "Order by expression",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_session",
+      "name": "Get Session Details",
+      "description": "Retrieve a specific session including all prompts and responses",
+      "http_method": "GET",
+      "endpoint": "/v1/sessions/{sessionId}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "sessionId",
+          "type": "string",
+          "description": "Session ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_plugins",
+      "name": "List Plugins",
+      "description": "List available Security Copilot plugins and their capabilities",
+      "http_method": "GET",
+      "endpoint": "/v1/plugins",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "enabled",
+          "type": "boolean",
+          "description": "Filter by enabled status",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_prompt_response",
+      "name": "Get Prompt Response",
+      "description": "Retrieve the response for a specific prompt in a session",
+      "http_method": "GET",
+      "endpoint": "/v1/sessions/{sessionId}/prompts/{promptId}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "sessionId",
+          "type": "string",
+          "description": "Session ID",
+          "required": true
+        },
+        {
+          "name": "promptId",
+          "type": "string",
+          "description": "Prompt ID",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

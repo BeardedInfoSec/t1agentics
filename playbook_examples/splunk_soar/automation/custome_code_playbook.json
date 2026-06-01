@@ -1,0 +1,99 @@
+{
+    "blockly": false,
+    "blockly_xml": "<xml></xml>",
+    "category": "Uncategorized",
+    "coa": {
+        "data": {
+            "description": "",
+            "edges": [
+                {
+                    "id": "port_0_to_port_5",
+                    "sourceNode": "0",
+                    "sourcePort": "0_out",
+                    "targetNode": "5",
+                    "targetPort": "5_in"
+                }
+            ],
+            "hash": "b159f5acdd29de4e28a7fe34b9a1723fb31ab5b5",
+            "nodes": {
+                "0": {
+                    "data": {
+                        "advanced": {
+                            "join": []
+                        },
+                        "functionName": "on_start",
+                        "id": "0",
+                        "type": "start"
+                    },
+                    "errors": {},
+                    "id": "0",
+                    "type": "start",
+                    "warnings": {},
+                    "x": 1000,
+                    "y": 419.99999999999875
+                },
+                "1": {
+                    "data": {
+                        "advanced": {
+                            "join": []
+                        },
+                        "functionName": "on_finish",
+                        "id": "1",
+                        "type": "end"
+                    },
+                    "errors": {},
+                    "id": "1",
+                    "type": "end",
+                    "warnings": {},
+                    "x": 1000,
+                    "y": 1000
+                },
+                "5": {
+                    "data": {
+                        "advanced": {
+                            "join": []
+                        },
+                        "functionId": 1,
+                        "functionName": "code_1",
+                        "id": "5",
+                        "inputParameters": [
+                            "test_input_static_input",
+                            "artifact:*.cef.act"
+                        ],
+                        "outputVariables": [
+                            "test_output"
+                        ],
+                        "type": "code"
+                    },
+                    "errors": {},
+                    "id": "5",
+                    "type": "code",
+                    "userCode": "\n    # Write your custom code here...\n    \n    import json\n    from datetime import datetime\n    \n    # Normalize artifact actions\n    normalized_results = []\n    risk_score = 0\n    \n    for act in container_artifact_cef_item_0:\n        if not act:\n            continue\n    \n        act_lower = str(act).lower()\n        category = \"other\"\n        score = 10\n    \n        if \"login\" in act_lower:\n            category = \"authentication\"\n            score = 20\n        elif \"command\" in act_lower or \"execute\" in act_lower:\n            category = \"command_execution\"\n            score = 60\n        elif \"download\" in act_lower:\n            category = \"file_transfer\"\n            score = 40\n        elif \"delete\" in act_lower:\n            category = \"destructive_action\"\n            score = 70\n    \n        risk_score += score\n    \n        normalized_results.append({\n            \"activity\": act,\n            \"category\": category,\n            \"risk_score\": score,\n            \"timestamp\": datetime.utcnow().isoformat() + \"Z\"\n        })\n    \n    # Cap score for demo purposes\n    risk_score = min(risk_score, 100)\n    \n    # Final demo output\n    code_1__test_output = {\n        \"total_activities\": len(normalized_results),\n        \"overall_risk_score\": risk_score,\n        \"verdict\": (\n            \"High Risk\" if risk_score >= 70 else\n            \"Medium Risk\" if risk_score >= 40 else\n            \"Low Risk\"\n        ),\n        \"activities\": normalized_results\n    }\n    \n    \n",
+                    "warnings": {},
+                    "x": 980,
+                    "y": 584.5
+                }
+            },
+            "notes": "",
+            "origin": {
+                "playbook_id": 470,
+                "playbook_name": "testing_ES8_Notes",
+                "playbook_repo_id": 2,
+                "playbook_repo_name": "local"
+            }
+        },
+        "input_spec": null,
+        "output_spec": null,
+        "playbook_trigger": "artifact_created",
+        "playbook_type": "automation",
+        "python_version": "3.9",
+        "schema": "5.0.22",
+        "version": "7.0.0.198"
+    },
+    "create_time": "2025-12-17T11:40:22.404933+00:00",
+    "draft_mode": false,
+    "labels": [
+        "*"
+    ],
+    "tags": []
+}

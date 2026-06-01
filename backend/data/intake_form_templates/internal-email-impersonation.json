@@ -1,0 +1,100 @@
+{
+  "template_id": "internal-email-impersonation",
+  "name": "Internal Email Impersonation",
+  "description": "Internal form for employees who received an email that looks internal — same logo, similar domain, familiar names — but they suspect it's spoofed or sent from a lookalike. Distinct from BEC because the focus is on the impersonation itself rather than a fraudulent request.",
+  "title": "Report a Spoofed or Lookalike Internal Email",
+  "intro": "Got an email that looks like it's from inside the company — same branding, a name you recognize, maybe even an internal-looking signature — but something seems off? Lookalike domains (extra letter, hyphen, swapped 'rn' for 'm') and spoofed display names are common tricks. Let us know what you saw so we can investigate and warn others if needed.",
+  "submit_message": "Thanks — we've logged the report. An analyst will check the headers and let you know what we find. Don't reply to the email in the meantime.",
+  "fields": [
+    {
+      "key": "reporter_email",
+      "label": "Your email",
+      "type": "email",
+      "required": true,
+      "help": "So we can reach you with follow-up questions.",
+      "placeholder": "you@company.com",
+      "sample_value": "devon.parker@northwindcloud.com"
+    },
+    {
+      "key": "claimed_internal_person",
+      "label": "Who does the email claim to be from?",
+      "type": "text",
+      "required": true,
+      "help": "Name shown in the From field, or what the signature says.",
+      "placeholder": "e.g., Casey from IT",
+      "sample_value": "Casey Morgan, IT Support"
+    },
+    {
+      "key": "sender_email",
+      "label": "Actual sender email address",
+      "type": "email",
+      "required": true,
+      "help": "Hover or click the sender name to see the real address. Look closely at the domain.",
+      "placeholder": "sender@example.com",
+      "sample_value": "casey.morgan@northwindcl0ud.com"
+    },
+    {
+      "key": "expected_email",
+      "label": "What's the real person's email (if you know it)?",
+      "type": "email",
+      "required": false,
+      "help": "If you know the legitimate address — for example, from the directory or a previous email — paste it here.",
+      "placeholder": "real.address@northwindcloud.com",
+      "sample_value": "casey.morgan@northwindcloud.com"
+    },
+    {
+      "key": "impersonation_signals",
+      "label": "What tipped you off?",
+      "type": "multiselect",
+      "required": true,
+      "help": "Pick everything that applies.",
+      "options": [
+        "Domain looks slightly off (extra letter, hyphen, number swap)",
+        "Display name matches but address is external",
+        "Email is marked [EXTERNAL] but claims to be internal",
+        "Tone or writing style doesn't match the person",
+        "Asks for something the real person wouldn't ask for",
+        "Signature looks wrong or outdated",
+        "Branded like our company but the formatting is off",
+        "Reply-To goes to a different address"
+      ],
+      "sample_value": ["Domain looks slightly off (extra letter, hyphen, number swap)", "Email is marked [EXTERNAL] but claims to be internal", "Asks for something the real person wouldn't ask for"]
+    },
+    {
+      "key": "email_subject",
+      "label": "Subject line",
+      "type": "text",
+      "required": true,
+      "help": "What was the subject?",
+      "placeholder": "Subject of the email",
+      "sample_value": "Action Required: Mandatory password reset for all staff"
+    },
+    {
+      "key": "email_body",
+      "label": "Paste the email content",
+      "type": "textarea",
+      "required": false,
+      "help": "Copy the body of the email. Helps us see the formatting, links, and signature.",
+      "placeholder": "Paste the email here...",
+      "sample_value": "Hi team,\n\nDue to a security incident, all employees must reset their passwords by end of day. Use the link below to verify your identity and create a new password.\n\nhttps://northwindcl0ud-portal.com/reset\n\nThanks,\nCasey\nIT Support"
+    },
+    {
+      "key": "eml_attachment",
+      "label": "Attach the original email (.eml or .msg)",
+      "type": "file",
+      "required": false,
+      "help": "Optional but very helpful — the headers tell us a lot about where it really came from.",
+      "sample_value": "lookalike-it-email-2026-05-08.eml"
+    }
+  ],
+  "alert_template": {
+    "title": "Internal impersonation report from {{reporter_email}}: claims to be {{claimed_internal_person}}",
+    "description": "User {{reporter_email}} reported a suspected internal impersonation attempt.\n\nClaimed sender: {{claimed_internal_person}}\nActual sender: {{sender_email}}\nLegitimate address (if known): {{expected_email}}\nSubject: {{email_subject}}\nImpersonation signals: {{impersonation_signals}}\n\nEmail body:\n{{email_body}}\n\n.eml attached: {{eml_attachment}}",
+    "severity": "high",
+    "source": "intake_form",
+    "category": "email_impersonation"
+  },
+  "icon": "Shield",
+  "category": "Email Threats",
+  "estimated_minutes": 3
+}

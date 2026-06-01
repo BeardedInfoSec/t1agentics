@@ -1,0 +1,291 @@
+{
+  "id": "cortex_xdr",
+  "name": "Cortex XDR",
+  "description": "Integrates with Palo Alto Networks Cortex XDR API for endpoint detection, incident management, and automated response actions",
+  "version": "1.0.0",
+  "category": "edr",
+  "vendor": "Palo Alto Networks",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "x-xdr-auth-id",
+    "extra_headers": {
+      "Authorization": "{api_key}"
+    }
+  },
+  "base_url": "https://api-{fqdn}/public_api/v1",
+  "actions": [
+    {
+      "id": "get_incidents",
+      "name": "Get Incidents",
+      "description": "Retrieve a list of incidents filtered by modification time, creation time, or incident IDs",
+      "http_method": "POST",
+      "endpoint": "/incidents/get_incidents",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "search_from",
+          "type": "number",
+          "description": "Starting offset within the query result set",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "search_to",
+          "type": "number",
+          "description": "Ending offset within the query result set",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "sort",
+          "type": "string",
+          "description": "Sort field and order (e.g., creation_time ASC)",
+          "required": false
+        },
+        {
+          "name": "filters",
+          "type": "string",
+          "description": "JSON array of filter objects for incident search criteria",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_incident_extra_data",
+      "name": "Get Incident Details",
+      "description": "Retrieve extra data for a specific incident including alerts and key artifacts",
+      "http_method": "POST",
+      "endpoint": "/incidents/get_incident_extra_data",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "incident_id",
+          "type": "string",
+          "description": "The unique ID of the incident",
+          "required": true
+        },
+        {
+          "name": "alerts_limit",
+          "type": "number",
+          "description": "Maximum number of alerts to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "get_alerts",
+      "name": "Get Alerts",
+      "description": "Retrieve a list of alerts with filtering options",
+      "http_method": "POST",
+      "endpoint": "/alerts/get_alerts_multi_events",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "search_from",
+          "type": "number",
+          "description": "Starting offset within the query result set",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "search_to",
+          "type": "number",
+          "description": "Ending offset within the query result set",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "filters",
+          "type": "string",
+          "description": "JSON array of filter objects for alert search criteria",
+          "required": false
+        },
+        {
+          "name": "sort",
+          "type": "string",
+          "description": "Sort field and order",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_endpoints",
+      "name": "Get All Endpoints",
+      "description": "Retrieve a list of endpoints with filtering options such as status, platform, or hostname",
+      "http_method": "POST",
+      "endpoint": "/endpoints/get_endpoint",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "search_from",
+          "type": "number",
+          "description": "Starting offset within the query result set",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "search_to",
+          "type": "number",
+          "description": "Ending offset within the query result set",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "filters",
+          "type": "string",
+          "description": "JSON array of filter objects (endpoint_id_list, hostname, ip_list, platform, etc.)",
+          "required": false
+        },
+        {
+          "name": "sort",
+          "type": "string",
+          "description": "Sort field and order",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "isolate_endpoints",
+      "name": "Isolate Endpoints",
+      "description": "Isolate one or more endpoints from the network (max 1000 per request)",
+      "http_method": "POST",
+      "endpoint": "/endpoints/isolate",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "endpoint_id_list",
+          "type": "string",
+          "description": "JSON array of endpoint IDs to isolate",
+          "required": true
+        }
+      ],
+      "observable_type": "hostname"
+    },
+    {
+      "id": "unisolate_endpoints",
+      "name": "Unisolate Endpoints",
+      "description": "Cancel isolation on one or more endpoints to restore network access",
+      "http_method": "POST",
+      "endpoint": "/endpoints/unisolate",
+      "action_type": "correct",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "endpoint_id_list",
+          "type": "string",
+          "description": "JSON array of endpoint IDs to unisolate",
+          "required": true
+        }
+      ],
+      "observable_type": "hostname"
+    },
+    {
+      "id": "scan_endpoints",
+      "name": "Scan Endpoints",
+      "description": "Initiate a scan on one or more endpoints",
+      "http_method": "POST",
+      "endpoint": "/endpoints/scan",
+      "action_type": "correct",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "endpoint_id_list",
+          "type": "string",
+          "description": "JSON array of endpoint IDs to scan",
+          "required": false
+        },
+        {
+          "name": "filters",
+          "type": "string",
+          "description": "JSON array of filter objects to select endpoints for scanning",
+          "required": false
+        }
+      ],
+      "observable_type": "hostname"
+    },
+    {
+      "id": "quarantine_file",
+      "name": "Quarantine File",
+      "description": "Quarantine a file on selected endpoints using file hash and path",
+      "http_method": "POST",
+      "endpoint": "/endpoints/quarantine",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "endpoint_id_list",
+          "type": "string",
+          "description": "JSON array of endpoint IDs (max 1000)",
+          "required": true
+        },
+        {
+          "name": "file_path",
+          "type": "string",
+          "description": "The full path of the file to quarantine",
+          "required": true
+        },
+        {
+          "name": "file_hash",
+          "type": "string",
+          "description": "SHA256 hash of the file to quarantine",
+          "required": true
+        }
+      ],
+      "observable_type": "hash"
+    },
+    {
+      "id": "get_xql_query_results",
+      "name": "Run XQL Query",
+      "description": "Execute an XQL query for advanced threat hunting across endpoint data",
+      "http_method": "POST",
+      "endpoint": "/xql/start_xql_query",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "The XQL query string to execute",
+          "required": true
+        },
+        {
+          "name": "timeframe",
+          "type": "string",
+          "description": "JSON object with from/to timestamps for the query window",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "blocklist_files",
+      "name": "Add to Blocklist",
+      "description": "Add file hashes to the blocklist to prevent execution across all endpoints",
+      "http_method": "POST",
+      "endpoint": "/hash_exceptions/blocklist",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "hash_list",
+          "type": "string",
+          "description": "JSON array of SHA256 hashes to block",
+          "required": true
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "Comment explaining why the hashes were blocked",
+          "required": false
+        }
+      ],
+      "observable_type": "hash"
+    }
+  ]
+}

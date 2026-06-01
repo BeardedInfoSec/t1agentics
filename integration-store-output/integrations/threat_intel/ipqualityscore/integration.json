@@ -1,0 +1,244 @@
+{
+  "id": "ipqualityscore",
+  "name": "IPQualityScore",
+  "description": "This app implements IP, URL and Email investigative capabilities utilizing IPQualityScore",
+  "version": "1.2.1",
+  "category": "threat_intel",
+  "vendor": "IPQualityScore",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "email_validation",
+      "name": "Email Validation",
+      "description": "Queries IPQualityScore's Email Validation API",
+      "http_method": "GET",
+      "endpoint": "/actions/email_validation",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "email",
+          "type": "string",
+          "description": "Email to query for reputation information",
+          "required": true,
+          "contains": [
+            "email"
+          ]
+        },
+        {
+          "name": "fast",
+          "type": "boolean",
+          "description": "Enables or disables SMTP check with the mail service provider",
+          "required": false
+        },
+        {
+          "name": "suggest_domain",
+          "type": "boolean",
+          "description": "Force analyze if the email address's domain has a typo and should be corrected to a popular mail service",
+          "required": false
+        },
+        {
+          "name": "timeout",
+          "type": "number",
+          "description": "Maximum number of seconds to wait for a reply from a mail service provider",
+          "required": false
+        },
+        {
+          "name": "strictness",
+          "type": "number",
+          "description": "Sets how strictly spam traps and honeypots are detected by system (Possible Values: 0, 1 and 2)",
+          "required": false
+        },
+        {
+          "name": "abuse_strictness",
+          "type": "number",
+          "description": "Set the strictness level for machine learning pattern recognition of abusive email addresses",
+          "required": false
+        }
+      ],
+      "observable_type": "email"
+    },
+    {
+      "id": "check_url",
+      "name": "Url Checker",
+      "description": "Queries IPQualityScore's malicious URL scanner API",
+      "http_method": "GET",
+      "endpoint": "/actions/check_url",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "URL to query for reputation information",
+          "required": true,
+          "contains": [
+            "url",
+            "domain"
+          ]
+        },
+        {
+          "name": "strictness",
+          "type": "number",
+          "description": "How strict should we scan this URL? (Possible Values: 0, 1 and 2)",
+          "required": false
+        },
+        {
+          "name": "fast",
+          "type": "boolean",
+          "description": "The API will provide quicker response times using lighter checks and analysis when enabled. This setting defaults to \"false\"",
+          "required": false,
+          "default": false
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "ip_reputation",
+      "name": "Ip Reputation",
+      "description": "Queries IPQualityScore's Proxy and VPN detection API",
+      "http_method": "GET",
+      "endpoint": "/actions/ip_reputation",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "IP to query for reputation information",
+          "required": true,
+          "contains": [
+            "ip"
+          ]
+        },
+        {
+          "name": "strictness",
+          "type": "number",
+          "description": "How in depth (strict) do you want this query to be? (Possible Values: 0, 1 and 2)",
+          "required": false
+        },
+        {
+          "name": "user_agent",
+          "type": "string",
+          "description": "Additional checks against bots",
+          "required": false
+        },
+        {
+          "name": "user_language",
+          "type": "string",
+          "description": "Additional risk evaluation",
+          "required": false
+        },
+        {
+          "name": "fast",
+          "type": "boolean",
+          "description": "Certain forensic checks are skipped",
+          "required": false
+        },
+        {
+          "name": "mobile",
+          "type": "boolean",
+          "description": "Specifies if this lookup should be treated as a mobile device",
+          "required": false
+        },
+        {
+          "name": "allow_public_access_points",
+          "type": "boolean",
+          "description": "Specifies if this lookup should be treated as a mobile device",
+          "required": false
+        },
+        {
+          "name": "lighter_penalties",
+          "type": "boolean",
+          "description": "Enable this setting to lower detection rates and Fraud Scores for mixed quality IP addresses",
+          "required": false
+        },
+        {
+          "name": "transaction_strictness",
+          "type": "number",
+          "description": "Adjusts the weights for penalties applied due to irregularities",
+          "required": false
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "phone_validation",
+      "name": "Phone Validation",
+      "description": "Queries IPQualityScore's Phone Validation API",
+      "http_method": "GET",
+      "endpoint": "/actions/phone_validation",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "phone",
+          "type": "number",
+          "description": "Phone Number you want to fetch reputation data",
+          "required": true,
+          "contains": [
+            "phone number",
+            "phone"
+          ]
+        },
+        {
+          "name": "strictness",
+          "type": "number",
+          "description": "How in depth (strict) do you want this reputation check to be? Stricter checks may provide a higher false-positive rate. We recommend starting at \"0\", the lowest strictness setting, and increasing to \"1\" or \"2\" depending on your levels of fraud",
+          "required": false
+        },
+        {
+          "name": "country",
+          "type": "string",
+          "description": "You can optionally provide us with the default country or countries(comma separated) this phone number is suspected to be associated with. Our system will prefer to use a country on this list for verification or will require a country to be specified in the event the phone number is less than 10 digits",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "darkwebleak",
+      "name": "Dark Web Leak",
+      "description": "Queries IPQualityScore's Dark Web Leak API",
+      "http_method": "GET",
+      "endpoint": "/actions/darkwebleak",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Type of data you are submitting",
+          "required": true
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "description": "Indicator Value of the type",
+          "required": true
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "IPQualityScore",
+    "original_type": "investigative",
+    "converted_at": "2025-12-18T16:25:28.874671",
+    "source_version": "1.2.1"
+  }
+}

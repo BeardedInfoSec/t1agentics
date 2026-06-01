@@ -1,0 +1,232 @@
+{
+  "id": "withsecure_elements",
+  "name": "WithSecure Elements EDR",
+  "description": "Integrates with WithSecure Elements API for endpoint security event monitoring, EDR incident management, device isolation, and threat detection",
+  "version": "1.0.0",
+  "category": "edr",
+  "vendor": "WithSecure",
+  "auth_type": "oauth2_client",
+  "auth_config": {
+    "type": "oauth2_client",
+    "token_url": "https://connect.withsecure.com/as/token.oauth2"
+  },
+  "base_url": "https://connect.withsecure.com/api",
+  "actions": [
+    {
+      "id": "list_security_events",
+      "name": "List Security Events",
+      "description": "Retrieve security events from all managed organizations including EDR incidents",
+      "http_method": "GET",
+      "endpoint": "/security-events/v1/security-events",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "persistenceTimestampStart",
+          "type": "string",
+          "description": "Start time for the event query (ISO 8601)",
+          "required": false
+        },
+        {
+          "name": "persistenceTimestampEnd",
+          "type": "string",
+          "description": "End time for the event query (ISO 8601)",
+          "required": false
+        },
+        {
+          "name": "engine",
+          "type": "string",
+          "description": "Filter by detection engine (e.g., edr, deepGuard, reputationAndHeuristics)",
+          "required": false
+        },
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Filter by severity (critical, warning, informational)",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of events to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "list_incidents",
+      "name": "List EDR Incidents",
+      "description": "Retrieve EDR incidents with filtering by time and status",
+      "http_method": "GET",
+      "endpoint": "/incidents/v1/incidents",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "updatedTimestampStart",
+          "type": "string",
+          "description": "Start time for incident updated filter (ISO 8601)",
+          "required": false
+        },
+        {
+          "name": "updatedTimestampEnd",
+          "type": "string",
+          "description": "End time for incident updated filter (ISO 8601)",
+          "required": false
+        },
+        {
+          "name": "exclusiveStart",
+          "type": "boolean",
+          "description": "Use exclusive start to avoid duplicate polling results",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of incidents to return",
+          "required": false,
+          "default": 50
+        }
+      ]
+    },
+    {
+      "id": "get_incident",
+      "name": "Get Incident Details",
+      "description": "Retrieve detailed information about a specific EDR incident",
+      "http_method": "GET",
+      "endpoint": "/incidents/v1/incidents/{incident_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "incident_id",
+          "type": "string",
+          "description": "The unique identifier of the incident",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "update_incident",
+      "name": "Update Incident",
+      "description": "Update an EDR incident status or add analyst notes",
+      "http_method": "PATCH",
+      "endpoint": "/incidents/v1/incidents/{incident_id}",
+      "action_type": "correct",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "incident_id",
+          "type": "string",
+          "description": "The unique identifier of the incident",
+          "required": true
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "New status (open, inProgress, resolved, falsePositive)",
+          "required": false
+        },
+        {
+          "name": "resolution",
+          "type": "string",
+          "description": "Resolution type for the incident",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_devices",
+      "name": "List Devices",
+      "description": "Retrieve managed devices (endpoints) with filtering options",
+      "http_method": "GET",
+      "endpoint": "/devices/v1/devices",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "protectionStatusOverview",
+          "type": "string",
+          "description": "Filter by protection status",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of devices to return",
+          "required": false,
+          "default": 50
+        }
+      ],
+      "observable_type": "hostname"
+    },
+    {
+      "id": "isolate_device",
+      "name": "Isolate Device",
+      "description": "Isolate a device from the network to contain a potential threat",
+      "http_method": "POST",
+      "endpoint": "/devices/v1/devices/{device_id}/isolate",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "device_id",
+          "type": "string",
+          "description": "The unique identifier of the device to isolate",
+          "required": true
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "Reason for isolating the device",
+          "required": false
+        }
+      ],
+      "observable_type": "hostname"
+    },
+    {
+      "id": "release_device",
+      "name": "Release Device from Isolation",
+      "description": "Release a previously isolated device and restore network connectivity",
+      "http_method": "POST",
+      "endpoint": "/devices/v1/devices/{device_id}/release",
+      "action_type": "correct",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "device_id",
+          "type": "string",
+          "description": "The unique identifier of the device to release",
+          "required": true
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "Reason for releasing the device",
+          "required": false
+        }
+      ],
+      "observable_type": "hostname"
+    },
+    {
+      "id": "list_organizations",
+      "name": "List Organizations",
+      "description": "List all organizations (companies) accessible with current API credentials",
+      "http_method": "GET",
+      "endpoint": "/organizations/v1/organizations",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of organizations to return",
+          "required": false,
+          "default": 50
+        }
+      ]
+    }
+  ]
+}

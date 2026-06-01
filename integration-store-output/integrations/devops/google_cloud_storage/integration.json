@@ -1,0 +1,231 @@
+{
+  "id": "google_cloud_storage",
+  "name": "Google Cloud Storage",
+  "description": "This app integrates with Google Cloud Storage API to support various investigative and generic actions",
+  "version": "1.0.6",
+  "category": "devops",
+  "vendor": "Google",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "delete_object",
+      "name": "Delete Object",
+      "description": "Deletes object from a bucket",
+      "http_method": "GET",
+      "endpoint": "/actions/delete_object",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "bucket",
+          "type": "string",
+          "description": "Name of the bucket",
+          "required": true,
+          "contains": [
+            "gcloud storage bucket"
+          ]
+        },
+        {
+          "name": "object",
+          "type": "string",
+          "description": "Name of the object",
+          "required": true,
+          "contains": [
+            "gcloud storage object"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_objects",
+      "name": "List Objects",
+      "description": "Retrieves a list of objects matching the criteria from the bucket",
+      "http_method": "GET",
+      "endpoint": "/actions/list_objects",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "bucket",
+          "type": "string",
+          "description": "Name of the bucket",
+          "required": true,
+          "contains": [
+            "gcloud storage bucket"
+          ]
+        },
+        {
+          "name": "prefix",
+          "type": "string",
+          "description": "Filter objects returned by prefix",
+          "required": false
+        },
+        {
+          "name": "max_objects",
+          "type": "number",
+          "description": "Maximum number of objects to list",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_object",
+      "name": "Get Object",
+      "description": "Retrieves object metadata and optionally downloads contents to vault",
+      "http_method": "GET",
+      "endpoint": "/actions/get_object",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "object",
+          "type": "string",
+          "description": "Name of the object",
+          "required": true,
+          "contains": [
+            "gcloud storage object"
+          ]
+        },
+        {
+          "name": "bucket",
+          "type": "string",
+          "description": "Name of the bucket",
+          "required": true,
+          "contains": [
+            "gcloud storage bucket"
+          ]
+        },
+        {
+          "name": "download_file",
+          "type": "boolean",
+          "description": "Whether or not to download the file contents to vault",
+          "required": false,
+          "default": false
+        }
+      ]
+    },
+    {
+      "id": "create_object",
+      "name": "Create Object",
+      "description": "Creates object in a given bucket",
+      "http_method": "GET",
+      "endpoint": "/actions/create_object",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "bucket",
+          "type": "string",
+          "description": "Name of the bucket",
+          "required": true,
+          "contains": [
+            "gcloud storage bucket"
+          ]
+        },
+        {
+          "name": "vault_id",
+          "type": "string",
+          "description": "Vault ID of the file to upload",
+          "required": true,
+          "contains": [
+            "vault id"
+          ]
+        },
+        {
+          "name": "path",
+          "type": "string",
+          "description": "Path in the bucket where to place the object",
+          "required": false,
+          "contains": [
+            "file path"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "describe_bucket",
+      "name": "Describe Bucket",
+      "description": "Get information about a bucket",
+      "http_method": "GET",
+      "endpoint": "/actions/describe_bucket",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "bucket",
+          "type": "string",
+          "description": "Name of the bucket",
+          "required": true,
+          "contains": [
+            "gcloud storage bucket"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_buckets",
+      "name": "List Buckets",
+      "description": "Retrieves a list of buckets for the configured project",
+      "http_method": "GET",
+      "endpoint": "/actions/list_buckets",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "create_bucket",
+      "name": "Create Bucket",
+      "description": "Create a new bucket",
+      "http_method": "GET",
+      "endpoint": "/actions/create_bucket",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "bucket",
+          "type": "string",
+          "description": "Name of the bucket",
+          "required": true,
+          "contains": [
+            "gcloud storage bucket"
+          ]
+        },
+        {
+          "name": "location",
+          "type": "string",
+          "description": "Location where to create the bucket",
+          "required": true,
+          "contains": [
+            "gcloud storage location"
+          ]
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Google Cloud Storage",
+    "original_type": "devops",
+    "converted_at": "2025-12-18T16:25:28.820154",
+    "source_version": "1.0.6"
+  }
+}

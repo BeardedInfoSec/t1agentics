@@ -1,0 +1,224 @@
+{
+  "name": "Living-off-the-Land Binary Detection",
+  "slug": "endpoint-lolbin-detection",
+  "description": "Detects and investigates the abuse of legitimate Windows binaries (LOLBins) such as certutil, mshta, regsvr32, rundll32, and bitsadmin for malicious purposes. When a LOLBin execution with suspicious parameters is detected, Riggs AI analyzes the command line and process context to distinguish attacker abuse from legitimate usage. Confirmed abuse triggers process termination, host isolation, and an executive summary for incident tracking.",
+  "category": "endpoint",
+  "subcategory": "lolbin_detection",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "advanced",
+  "estimated_time": "10 minutes",
+  "tags": ["lolbin", "living-off-the-land", "certutil", "mshta", "regsvr32", "rundll32", "endpoint", "evasion"],
+  "alert_types": ["lolbin_abuse", "suspicious_process"],
+  "severity_filter": ["medium", "high", "critical"],
+  "trigger_conditions": {
+    "alert_types": ["lolbin_abuse", "suspicious_process", "certutil", "mshta", "regsvr32", "bitsadmin"],
+    "min_severity": "medium"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "crowdstrike",
+      "name": "CrowdStrike Falcon",
+      "category": "edr",
+      "reason": "Kill malicious processes, retrieve process tree, and isolate endpoint"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "LOLBin Execution Detected",
+          "config": {
+            "alert_types": ["lolbin_abuse", "suspicious_process", "certutil", "mshta", "regsvr32", "bitsadmin"],
+            "description": "Triggers when a living-off-the-land binary is executed with suspicious parameters"
+          }
+        }
+      },
+      {
+        "id": "code_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "code",
+          "label": "Classify LOLBin Technique",
+          "config": {
+            "runtime": "python3",
+            "code": "binary = alert.get('process_name', '').lower()\ncmd_line = alert.get('command_line', '').lower()\ntechnique = 'unknown'\nif 'certutil' in binary:\n    if '-urlcache' in cmd_line or '-decode' in cmd_line:\n        technique = 'file_download_or_decode'\n    else:\n        technique = 'certutil_legitimate'\nelif 'mshta' in binary:\n    technique = 'hta_execution'\nelif 'regsvr32' in binary:\n    if '/s /n /u /i:' in cmd_line or 'scrobj' in cmd_line:\n        technique = 'squiblydoo'\n    else:\n        technique = 'dll_registration'\nelif 'rundll32' in binary:\n    technique = 'dll_proxy_execution'\nelif 'bitsadmin' in binary:\n    if '/transfer' in cmd_line:\n        technique = 'bits_download'\n    else:\n        technique = 'bits_job'\nelif 'wmic' in binary:\n    technique = 'wmi_execution'\nresult = {'binary': binary, 'technique': technique, 'command_preview': cmd_line[:300], 'parent_process': alert.get('parent_process', 'unknown')}",
+            "description": "Classify the LOLBin technique based on the binary and command line parameters"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI — LOLBin Analysis",
+          "config": {
+            "template_id": "malware_assessment",
+            "additional_instructions": "Analyze this living-off-the-land binary execution for malicious intent. Consider the parent process chain, command line arguments, and whether the binary is being abused for download, execution, or defense evasion. Map to MITRE ATT&CK techniques.",
+            "description": "AI-powered analysis of the LOLBin execution to determine if it represents attacker abuse or legitimate usage"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 540 },
+        "data": {
+          "kind": "decision",
+          "label": "Malicious LOLBin Abuse?",
+          "config": {
+            "condition": "{{analyze_1.verdict}} in ['MALICIOUS', 'SUSPICIOUS']",
+            "description": "Routes based on whether the AI determined the LOLBin execution is malicious"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "respond",
+          "label": "Kill Process & Isolate",
+          "config": {
+            "integration_action": {
+              "connector_id": "crowdstrike",
+              "action": "contain_host",
+              "parameters": {
+                "device_id": "{{trigger_1.alert.endpoint_id}}",
+                "kill_process": "{{trigger_1.alert.process_id}}"
+              }
+            },
+            "description": "Terminate the malicious LOLBin process and isolate the endpoint"
+          }
+        }
+      },
+      {
+        "id": "analyze_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "analyze",
+          "label": "Generate Executive Summary",
+          "config": {
+            "template_id": "executive_summary",
+            "additional_instructions": "Summarize the LOLBin abuse incident including the technique used, MITRE ATT&CK mapping, indicators of compromise, and containment actions taken.",
+            "description": "Generate an executive summary of the LOLBin abuse incident for leadership reporting"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "label": "Notify SOC on Slack",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#soc-alerts",
+              "message": "LOLBIN ABUSE DETECTED\nHost: {{trigger_1.alert.hostname}}\nBinary: {{code_1.binary}}\nTechnique: {{code_1.technique}}\nParent: {{code_1.parent_process}}\nCommand: {{code_1.command_preview}}\nAction Taken: Process killed, host isolated\n\n{{analyze_2.summary}}"
+            },
+            "description": "Alert the SOC with LOLBin abuse details and executive summary"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 700, "y": 700 },
+        "data": {
+          "kind": "utility",
+          "label": "Log: Legitimate Usage",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "LOLBin execution of {{code_1.binary}} on {{trigger_1.alert.hostname}} reviewed. Technique: {{code_1.technique}}. Determined to be legitimate administrative usage.",
+              "close_alert": true
+            },
+            "description": "Document that the LOLBin execution was legitimate and close the alert"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1180 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "LOLBin detection workflow complete"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_code",
+        "source": "trigger_1",
+        "target": "code_1",
+        "type": "default"
+      },
+      {
+        "id": "e_code_analyze",
+        "source": "code_1",
+        "target": "analyze_1",
+        "type": "default"
+      },
+      {
+        "id": "e_analyze_decision",
+        "source": "analyze_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "respond_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "utility_1",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_kill_summary",
+        "source": "respond_1",
+        "target": "analyze_2",
+        "type": "default"
+      },
+      {
+        "id": "e_summary_notify",
+        "source": "analyze_2",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_notify_end",
+        "source": "respond_2",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_utility_end",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

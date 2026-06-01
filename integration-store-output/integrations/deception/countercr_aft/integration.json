@@ -1,0 +1,183 @@
+{
+  "id": "countercr_aft",
+  "name": "CounterCraft",
+  "description": "Deception-driven threat intelligence platform using campaigns, decoys, and digital twins for active defense and adversary engagement",
+  "version": "1.0.0",
+  "category": "deception",
+  "vendor": "CounterCraft",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "prefix": "Bearer ",
+    "location": "header",
+    "description": "API token from the CounterCraft Deception Director console"
+  },
+  "base_url": "https://{host}/api/v1",
+  "actions": [
+    {
+      "id": "list_campaigns",
+      "name": "List Campaigns",
+      "description": "List all deception campaigns including their status and type",
+      "http_method": "GET",
+      "endpoint": "/campaigns",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Filter by campaign status: active, inactive, draft",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Filter by campaign type: external, internal, spearphishing",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "description": "Max results per page",
+          "required": false,
+          "location": "query"
+        }
+      ]
+    },
+    {
+      "id": "list_alerts",
+      "name": "List Alerts",
+      "description": "List all alerts generated from adversary interactions with deception assets",
+      "http_method": "GET",
+      "endpoint": "/alerts",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "campaignId",
+          "type": "string",
+          "description": "Filter alerts by campaign ID",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Filter by severity: critical, high, medium, low",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "startTime",
+          "type": "string",
+          "description": "Start time filter (ISO 8601)",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "endTime",
+          "type": "string",
+          "description": "End time filter (ISO 8601)",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "description": "Max results per page",
+          "required": false,
+          "location": "query"
+        }
+      ]
+    },
+    {
+      "id": "get_alert_details",
+      "name": "Get Alert Details",
+      "description": "Retrieve detailed alert information including MITRE ATT&CK TTPs and IOCs",
+      "http_method": "GET",
+      "endpoint": "/alerts/{alert_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "alert_id",
+          "type": "string",
+          "description": "Alert ID",
+          "required": true,
+          "location": "path"
+        }
+      ]
+    },
+    {
+      "id": "list_decoys",
+      "name": "List Deception Assets",
+      "description": "List all deployed deception assets including decoys, API endpoints, and digital twins",
+      "http_method": "GET",
+      "endpoint": "/assets",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "campaignId",
+          "type": "string",
+          "description": "Filter by campaign ID",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Filter by asset type: web, api, network, endpoint",
+          "required": false,
+          "location": "query"
+        }
+      ]
+    },
+    {
+      "id": "get_threat_intelligence",
+      "name": "Get Threat Intelligence",
+      "description": "Retrieve aggregated threat intelligence from deception interactions including IOCs, TTPs, and MITRE ATT&CK mappings",
+      "http_method": "GET",
+      "endpoint": "/threatintel",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "campaignId",
+          "type": "string",
+          "description": "Filter by campaign ID",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "format",
+          "type": "string",
+          "description": "Output format: json, stix, misp",
+          "required": false,
+          "location": "query"
+        }
+      ]
+    },
+    {
+      "id": "list_operations",
+      "name": "List Operations",
+      "description": "List all deception operations and their real-time activity status",
+      "http_method": "GET",
+      "endpoint": "/operations",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Filter by operation status: running, paused, completed",
+          "required": false,
+          "location": "query"
+        }
+      ]
+    }
+  ]
+}

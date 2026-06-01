@@ -1,0 +1,174 @@
+{
+  "id": "lacework",
+  "name": "Lacework FortiCNAPP",
+  "description": "Cloud-native application protection platform providing runtime threat detection, vulnerability management, and compliance via REST API v2",
+  "version": "1.0.0",
+  "category": "cloud_security",
+  "vendor": "Fortinet (Lacework)",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "prefix": "Bearer",
+    "location": "header",
+    "token_url": "https://{account}.lacework.net/api/v2/access/tokens",
+    "note": "POST to /api/v2/access/tokens with {keyId, expiryTime} and X-LW-UAKS header to obtain Bearer token"
+  },
+  "base_url": "https://{account}.lacework.net",
+  "actions": [
+    {
+      "id": "list_alerts",
+      "name": "List Alerts",
+      "description": "Retrieve security alerts with optional time range and severity filters",
+      "http_method": "GET",
+      "endpoint": "/api/v2/Alerts",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "startTime",
+          "type": "string",
+          "description": "Start of the time range in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "endTime",
+          "type": "string",
+          "description": "End of the time range in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Filter by severity (Critical, High, Medium, Low, Info)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_alert_details",
+      "name": "Get Alert Details",
+      "description": "Retrieve detailed information about a specific alert by ID",
+      "http_method": "GET",
+      "endpoint": "/api/v2/Alerts/{alertId}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "alertId",
+          "type": "string",
+          "description": "The unique identifier of the alert",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_vulnerabilities",
+      "name": "List Vulnerabilities",
+      "description": "List host or container vulnerability assessments",
+      "http_method": "POST",
+      "endpoint": "/api/v2/Vulnerabilities/{type}/search",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Vulnerability type (Hosts or Containers)",
+          "required": true
+        },
+        {
+          "name": "filters",
+          "type": "array",
+          "description": "Array of filter objects for querying vulnerabilities",
+          "required": false
+        },
+        {
+          "name": "timeFilter",
+          "type": "object",
+          "description": "Time range filter object",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_compliance_report",
+      "name": "Get Compliance Report",
+      "description": "Retrieve the latest compliance assessment report for a specific cloud account",
+      "http_method": "GET",
+      "endpoint": "/api/v2/Configs/compliance/latest",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "reportType",
+          "type": "string",
+          "description": "Report type (e.g., AWS_CIS_14, AZURE_CIS_131, GCP_CIS_13)",
+          "required": true
+        },
+        {
+          "name": "accountId",
+          "type": "string",
+          "description": "Cloud account ID for the compliance report",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_datasources",
+      "name": "List Datasources",
+      "description": "List all available datasources for querying cloud activity and configuration data",
+      "http_method": "GET",
+      "endpoint": "/api/v2/Datasources",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "run_query",
+      "name": "Run Query",
+      "description": "Execute a custom query against Lacework datasources for cloud activity and configuration analysis",
+      "http_method": "POST",
+      "endpoint": "/api/v2/Queries/execute",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "queryText",
+          "type": "string",
+          "description": "LQL query text to execute",
+          "required": true
+        },
+        {
+          "name": "arguments",
+          "type": "object",
+          "description": "Query arguments including StartTimeRange and EndTimeRange",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_policies",
+      "name": "List Policies",
+      "description": "Retrieve all security policies and their current enabled/disabled status",
+      "http_method": "GET",
+      "endpoint": "/api/v2/Policies",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Filter by severity (critical, high, medium, low, info)",
+          "required": false
+        },
+        {
+          "name": "enabled",
+          "type": "boolean",
+          "description": "Filter by enabled status",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,337 @@
+{
+  "id": "microsoft_sentinel",
+  "name": "Microsoft Sentinel",
+  "description": "Integrates with Microsoft Sentinel via the Azure REST API for incident management, alert triage, threat hunting, and analytics rule configuration",
+  "version": "1.0.0",
+  "category": "siem",
+  "vendor": "Microsoft",
+  "auth_type": "oauth2_client",
+  "auth_config": {
+    "type": "oauth2_client",
+    "token_url": "https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/token",
+    "scope": "https://management.azure.com/.default",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "https://management.azure.com",
+  "actions": [
+    {
+      "id": "list_incidents",
+      "name": "List Incidents",
+      "description": "Retrieve all incidents from Microsoft Sentinel workspace",
+      "http_method": "GET",
+      "endpoint": "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.OperationalInsights/workspaces/{workspaceName}/providers/Microsoft.SecurityInsights/incidents",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "subscriptionId",
+          "type": "string",
+          "description": "Azure subscription ID",
+          "required": true
+        },
+        {
+          "name": "resourceGroupName",
+          "type": "string",
+          "description": "Azure resource group name containing the workspace",
+          "required": true
+        },
+        {
+          "name": "workspaceName",
+          "type": "string",
+          "description": "Log Analytics workspace name",
+          "required": true
+        },
+        {
+          "name": "api-version",
+          "type": "string",
+          "description": "API version",
+          "required": true,
+          "default": "2025-09-01"
+        },
+        {
+          "name": "$filter",
+          "type": "string",
+          "description": "OData filter expression (e.g., properties/severity eq 'High')",
+          "required": false
+        },
+        {
+          "name": "$orderby",
+          "type": "string",
+          "description": "OData orderby expression",
+          "required": false
+        },
+        {
+          "name": "$top",
+          "type": "number",
+          "description": "Maximum number of incidents to return",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_incident",
+      "name": "Get Incident",
+      "description": "Retrieve details for a specific incident by ID",
+      "http_method": "GET",
+      "endpoint": "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.OperationalInsights/workspaces/{workspaceName}/providers/Microsoft.SecurityInsights/incidents/{incidentId}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "subscriptionId",
+          "type": "string",
+          "description": "Azure subscription ID",
+          "required": true
+        },
+        {
+          "name": "resourceGroupName",
+          "type": "string",
+          "description": "Azure resource group name",
+          "required": true
+        },
+        {
+          "name": "workspaceName",
+          "type": "string",
+          "description": "Log Analytics workspace name",
+          "required": true
+        },
+        {
+          "name": "incidentId",
+          "type": "string",
+          "description": "Incident ID to retrieve",
+          "required": true
+        },
+        {
+          "name": "api-version",
+          "type": "string",
+          "description": "API version",
+          "required": true,
+          "default": "2025-09-01"
+        }
+      ]
+    },
+    {
+      "id": "update_incident",
+      "name": "Update Incident",
+      "description": "Create or update a Sentinel incident (change status, severity, owner, etc.)",
+      "http_method": "PUT",
+      "endpoint": "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.OperationalInsights/workspaces/{workspaceName}/providers/Microsoft.SecurityInsights/incidents/{incidentId}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "subscriptionId",
+          "type": "string",
+          "description": "Azure subscription ID",
+          "required": true
+        },
+        {
+          "name": "resourceGroupName",
+          "type": "string",
+          "description": "Azure resource group name",
+          "required": true
+        },
+        {
+          "name": "workspaceName",
+          "type": "string",
+          "description": "Log Analytics workspace name",
+          "required": true
+        },
+        {
+          "name": "incidentId",
+          "type": "string",
+          "description": "Incident ID to update",
+          "required": true
+        },
+        {
+          "name": "api-version",
+          "type": "string",
+          "description": "API version",
+          "required": true,
+          "default": "2025-09-01"
+        },
+        {
+          "name": "body",
+          "type": "object",
+          "description": "Incident properties to update (title, severity, status, owner, etc.)",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_incident_alerts",
+      "name": "List Incident Alerts",
+      "description": "Retrieve all alerts associated with a specific incident",
+      "http_method": "POST",
+      "endpoint": "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.OperationalInsights/workspaces/{workspaceName}/providers/Microsoft.SecurityInsights/incidents/{incidentId}/alerts",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "subscriptionId",
+          "type": "string",
+          "description": "Azure subscription ID",
+          "required": true
+        },
+        {
+          "name": "resourceGroupName",
+          "type": "string",
+          "description": "Azure resource group name",
+          "required": true
+        },
+        {
+          "name": "workspaceName",
+          "type": "string",
+          "description": "Log Analytics workspace name",
+          "required": true
+        },
+        {
+          "name": "incidentId",
+          "type": "string",
+          "description": "Incident ID to list alerts for",
+          "required": true
+        },
+        {
+          "name": "api-version",
+          "type": "string",
+          "description": "API version",
+          "required": true,
+          "default": "2025-09-01"
+        }
+      ]
+    },
+    {
+      "id": "list_incident_entities",
+      "name": "List Incident Entities",
+      "description": "Retrieve all entities (IPs, accounts, hosts, etc.) associated with an incident",
+      "http_method": "POST",
+      "endpoint": "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.OperationalInsights/workspaces/{workspaceName}/providers/Microsoft.SecurityInsights/incidents/{incidentId}/entities",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "subscriptionId",
+          "type": "string",
+          "description": "Azure subscription ID",
+          "required": true
+        },
+        {
+          "name": "resourceGroupName",
+          "type": "string",
+          "description": "Azure resource group name",
+          "required": true
+        },
+        {
+          "name": "workspaceName",
+          "type": "string",
+          "description": "Log Analytics workspace name",
+          "required": true
+        },
+        {
+          "name": "incidentId",
+          "type": "string",
+          "description": "Incident ID to list entities for",
+          "required": true
+        },
+        {
+          "name": "api-version",
+          "type": "string",
+          "description": "API version",
+          "required": true,
+          "default": "2025-09-01"
+        }
+      ]
+    },
+    {
+      "id": "list_alert_rules",
+      "name": "List Alert Rules",
+      "description": "Retrieve all analytics (alert) rules configured in Sentinel",
+      "http_method": "GET",
+      "endpoint": "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.OperationalInsights/workspaces/{workspaceName}/providers/Microsoft.SecurityInsights/alertRules",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "subscriptionId",
+          "type": "string",
+          "description": "Azure subscription ID",
+          "required": true
+        },
+        {
+          "name": "resourceGroupName",
+          "type": "string",
+          "description": "Azure resource group name",
+          "required": true
+        },
+        {
+          "name": "workspaceName",
+          "type": "string",
+          "description": "Log Analytics workspace name",
+          "required": true
+        },
+        {
+          "name": "api-version",
+          "type": "string",
+          "description": "API version",
+          "required": true,
+          "default": "2025-09-01"
+        }
+      ]
+    },
+    {
+      "id": "add_incident_comment",
+      "name": "Add Incident Comment",
+      "description": "Add a comment to an existing incident",
+      "http_method": "PUT",
+      "endpoint": "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.OperationalInsights/workspaces/{workspaceName}/providers/Microsoft.SecurityInsights/incidents/{incidentId}/comments/{commentId}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "subscriptionId",
+          "type": "string",
+          "description": "Azure subscription ID",
+          "required": true
+        },
+        {
+          "name": "resourceGroupName",
+          "type": "string",
+          "description": "Azure resource group name",
+          "required": true
+        },
+        {
+          "name": "workspaceName",
+          "type": "string",
+          "description": "Log Analytics workspace name",
+          "required": true
+        },
+        {
+          "name": "incidentId",
+          "type": "string",
+          "description": "Incident ID to add comment to",
+          "required": true
+        },
+        {
+          "name": "commentId",
+          "type": "string",
+          "description": "Unique ID for the comment",
+          "required": true
+        },
+        {
+          "name": "api-version",
+          "type": "string",
+          "description": "API version",
+          "required": true,
+          "default": "2025-09-01"
+        },
+        {
+          "name": "message",
+          "type": "string",
+          "description": "Comment message text",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,85 @@
+{
+  "id": "google_chat_app",
+  "name": "Google Chat App",
+  "description": "This app integrate services with Google Chat and manage Chat resources such as i.e messages. Remmeber that user will need authentication code, check Github or SplunkBase for information on how to obtain it",
+  "version": "1.0.1",
+  "category": "utility",
+  "vendor": "Google Cloud",
+  "auth_type": "oauth2",
+  "auth_config": {
+    "type": "oauth2",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "https://chat.googleapis.com",
+  "actions": [
+    {
+      "id": "create_message",
+      "name": "Create Message",
+      "description": "Creates a message in a Google Chat space",
+      "http_method": "GET",
+      "endpoint": "/actions/create_message",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "parent_space",
+          "type": "string",
+          "description": "The resource name of the space in which to create a message. Remember parent has match pattern: /^spaces/[^/]+$/",
+          "required": true
+        },
+        {
+          "name": "text_message",
+          "type": "string",
+          "description": "Message content",
+          "required": true
+        },
+        {
+          "name": "requestid",
+          "type": "string",
+          "description": "A unique request ID for this message. Specifying an existing request ID returns the message created with that ID instead of creating a new message",
+          "required": false
+        },
+        {
+          "name": "messagereplyoption",
+          "type": "string",
+          "description": "Specifies whether a message starts a thread or replies to one. Only supported in named spaces",
+          "required": false
+        },
+        {
+          "name": "messageid",
+          "type": "string",
+          "description": "A custom ID for a message",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "read_message",
+      "name": "Read Message",
+      "description": "Returns details about a message",
+      "http_method": "GET",
+      "endpoint": "/actions/read_message",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Resource name of the message. Remember name has match pattern: /^spaces/[^/]+/messages/[^/]+$/. Example: spaces/koB0FMAAAAE/messages/dd0BuBH2QzM.dd0BuBH2QzM",
+          "required": true
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Google Chat App",
+    "original_type": "network device",
+    "converted_at": "2025-12-18T16:25:28.815654",
+    "source_version": "1.0.1"
+  }
+}

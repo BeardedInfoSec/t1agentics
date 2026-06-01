@@ -1,0 +1,251 @@
+{
+  "name": "DNS Health Monitoring",
+  "slug": "itops-dns-monitoring",
+  "description": "Scheduled DNS health monitoring that checks resolution for critical domains, validates response times, and detects DNS poisoning or hijacking. Failed resolutions or anomalous responses trigger AI analysis to assess the scope of impact, followed by an incident ticket and multi-channel alerting. Healthy results are logged for compliance.",
+  "category": "it_operations",
+  "subcategory": "dns",
+  "author": "T1 Agentics",
+  "version": "1.0.0",
+  "difficulty": "intermediate",
+  "estimated_time": "10 minutes",
+  "tags": ["dns", "monitoring", "resolution", "health_check", "scheduled", "availability"],
+  "alert_types": [],
+  "severity_filter": [],
+  "trigger_conditions": {
+    "alert_types": [],
+    "trigger_type": "schedule",
+    "schedule": "*/15 * * * *"
+  },
+  "required_integrations": [
+    {
+      "connector_id": "dns_monitor",
+      "name": "DNS Monitor",
+      "category": "monitoring",
+      "reason": "Perform DNS resolution checks and response time measurement for critical domains"
+    },
+    {
+      "connector_id": "jira",
+      "name": "Jira",
+      "category": "ticketing",
+      "reason": "Create incident tickets for DNS resolution failures or anomalies"
+    },
+    {
+      "connector_id": "slack",
+      "name": "Slack",
+      "category": "communication",
+      "reason": "Alert the infrastructure team of DNS health issues"
+    }
+  ],
+  "canvas_data": {
+    "nodes": [
+      {
+        "id": "trigger_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 60 },
+        "data": {
+          "kind": "trigger",
+          "label": "Scheduled DNS Check",
+          "config": {
+            "trigger_type": "schedule",
+            "schedule": "*/15 * * * *",
+            "description": "Runs every 15 minutes to perform DNS resolution checks against all critical domains"
+          }
+        }
+      },
+      {
+        "id": "code_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 220 },
+        "data": {
+          "kind": "code",
+          "label": "Fetch Critical Domains",
+          "config": {
+            "mode": "query",
+            "query": "SELECT domain, expected_ip, record_type, max_response_ms FROM dns_monitors WHERE active = true ORDER BY priority ASC",
+            "output_variable": "domains",
+            "description": "Retrieve the list of critical domains to check along with their expected resolution values"
+          }
+        }
+      },
+      {
+        "id": "loop_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 380 },
+        "data": {
+          "kind": "loop",
+          "label": "Loop: Check Each Domain",
+          "config": {
+            "collection": "{{code_1.domains}}",
+            "item_variable": "domain",
+            "action": {
+              "connector_id": "dns_monitor",
+              "action": "resolve",
+              "parameters": {
+                "domain": "{{domain.domain}}",
+                "record_type": "{{domain.record_type}}",
+                "expected_ip": "{{domain.expected_ip}}"
+              }
+            },
+            "output_variable": "dns_results",
+            "description": "Iterate over each critical domain and perform DNS resolution check comparing against expected values"
+          }
+        }
+      },
+      {
+        "id": "decision_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 540 },
+        "data": {
+          "kind": "decision",
+          "label": "Any Failures or Anomalies?",
+          "config": {
+            "condition": "{{loop_1.dns_results}} | any(status != 'ok')",
+            "description": "Check if any DNS resolution checks returned failures, timeouts, or unexpected responses"
+          }
+        }
+      },
+      {
+        "id": "analyze_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 700 },
+        "data": {
+          "kind": "analyze",
+          "label": "Riggs AI -- DNS Impact Assessment",
+          "config": {
+            "template_id": "executive_summary",
+            "additional_instructions": "Assess the impact of DNS failures or anomalies. Determine if this indicates DNS poisoning, upstream resolver issues, or configuration drift. Provide severity assessment and recommended remediation steps.",
+            "description": "AI-powered analysis of DNS anomalies to determine root cause and impact scope"
+          }
+        }
+      },
+      {
+        "id": "respond_1",
+        "type": "signal",
+        "position": { "x": 340, "y": 860 },
+        "data": {
+          "kind": "respond",
+          "label": "Create DNS Incident Ticket",
+          "config": {
+            "integration_action": {
+              "connector_id": "jira",
+              "action": "create_issue",
+              "parameters": {
+                "project": "OPS",
+                "issue_type": "Incident",
+                "priority": "High",
+                "summary": "DNS Resolution Issue — {{loop_1.dns_results | filter(status != 'ok') | length}} domain(s) affected",
+                "description": "DNS health check detected resolution issues.\n\nAffected Domains:\n{{loop_1.dns_results | filter(status != 'ok') | map(domain + ' — Status: ' + status + ' — Response: ' + resolved_ip)}}\n\nRiggs Assessment:\n{{analyze_1.summary}}"
+              }
+            },
+            "description": "Create an incident ticket for the DNS resolution failures with AI-powered impact analysis"
+          }
+        }
+      },
+      {
+        "id": "respond_2",
+        "type": "signal",
+        "position": { "x": 340, "y": 1020 },
+        "data": {
+          "kind": "respond",
+          "label": "Alert Infra Team on Slack",
+          "config": {
+            "notify": {
+              "channel": "slack",
+              "target": "#infra-alerts",
+              "message": "DNS HEALTH CHECK — FAILURES DETECTED\nTime: {{trigger_1.timestamp}}\n\nAffected Domains:\n{{loop_1.dns_results | filter(status != 'ok') | map(domain + ' — ' + status)}}\n\n{{analyze_1.summary}}\n\nTicket: {{respond_1.issue_key}}"
+            },
+            "description": "Send urgent Slack notification about DNS resolution failures to the infrastructure team"
+          }
+        }
+      },
+      {
+        "id": "utility_1",
+        "type": "signal",
+        "position": { "x": 700, "y": 700 },
+        "data": {
+          "kind": "utility",
+          "label": "Log: All DNS Healthy",
+          "config": {
+            "action": "add_note",
+            "parameters": {
+              "note": "DNS health check completed at {{trigger_1.timestamp}}. All {{code_1.domains.length}} critical domains resolving correctly."
+            },
+            "description": "Log that all DNS resolution checks passed successfully"
+          }
+        }
+      },
+      {
+        "id": "end_1",
+        "type": "signal",
+        "position": { "x": 520, "y": 1180 },
+        "data": {
+          "kind": "end",
+          "label": "End",
+          "config": {
+            "description": "DNS health monitoring workflow complete"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_trigger_code",
+        "source": "trigger_1",
+        "target": "code_1",
+        "type": "default"
+      },
+      {
+        "id": "e_code_loop",
+        "source": "code_1",
+        "target": "loop_1",
+        "type": "default"
+      },
+      {
+        "id": "e_loop_decision",
+        "source": "loop_1",
+        "target": "decision_1",
+        "type": "default"
+      },
+      {
+        "id": "e_decision_yes",
+        "source": "decision_1",
+        "target": "analyze_1",
+        "type": "default",
+        "sourceHandle": "yes",
+        "label": "Yes"
+      },
+      {
+        "id": "e_decision_no",
+        "source": "decision_1",
+        "target": "utility_1",
+        "type": "default",
+        "sourceHandle": "no",
+        "label": "No"
+      },
+      {
+        "id": "e_analyze_ticket",
+        "source": "analyze_1",
+        "target": "respond_1",
+        "type": "default"
+      },
+      {
+        "id": "e_ticket_notify",
+        "source": "respond_1",
+        "target": "respond_2",
+        "type": "default"
+      },
+      {
+        "id": "e_notify_end",
+        "source": "respond_2",
+        "target": "end_1",
+        "type": "default"
+      },
+      {
+        "id": "e_healthy_end",
+        "source": "utility_1",
+        "target": "end_1",
+        "type": "default"
+      }
+    ]
+  }
+}

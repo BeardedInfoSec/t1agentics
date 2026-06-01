@@ -1,0 +1,185 @@
+{
+  "id": "axonius",
+  "name": "Axonius",
+  "description": "Cyber asset attack surface management platform aggregating data from multiple sources to provide comprehensive asset inventory, security gap identification, and policy enforcement",
+  "version": "1.0.0",
+  "category": "asm",
+  "vendor": "Axonius",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "api-key",
+    "additional_headers": {
+      "api-secret": "{api_secret}"
+    },
+    "location": "header"
+  },
+  "base_url": "https://{host}/api",
+  "actions": [
+    {
+      "id": "list_devices",
+      "name": "List Device Assets",
+      "description": "Retrieve device assets from the aggregated inventory with optional filtering",
+      "http_method": "POST",
+      "endpoint": "/V4.0/assets/devices",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "AQL (Axonius Query Language) filter expression",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "type": "array",
+          "description": "Specific fields to include in the response",
+          "required": false
+        },
+        {
+          "name": "page",
+          "type": "object",
+          "description": "Pagination configuration with limit and offset",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_users",
+      "name": "List User Assets",
+      "description": "Retrieve user assets from the aggregated inventory",
+      "http_method": "POST",
+      "endpoint": "/V4.0/assets/users",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "AQL filter expression for user search",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "type": "array",
+          "description": "Specific fields to include in the response",
+          "required": false
+        },
+        {
+          "name": "page",
+          "type": "object",
+          "description": "Pagination configuration",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_device",
+      "name": "Get Device Details",
+      "description": "Retrieve detailed information about a specific device asset by internal ID",
+      "http_method": "GET",
+      "endpoint": "/V4.0/assets/devices/{internal_axon_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "internal_axon_id",
+          "type": "string",
+          "description": "The internal Axonius ID of the device",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_saved_queries",
+      "name": "List Saved Queries",
+      "description": "Retrieve saved queries for devices and users",
+      "http_method": "GET",
+      "endpoint": "/V4.0/assets/saved_queries",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "asset_type",
+          "type": "string",
+          "description": "Asset type for saved queries (devices, users)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "run_saved_query",
+      "name": "Run Saved Query",
+      "description": "Execute a saved query and retrieve matching assets",
+      "http_method": "POST",
+      "endpoint": "/V4.0/assets/devices/saved_queries/{query_id}/run",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "query_id",
+          "type": "string",
+          "description": "The unique identifier of the saved query",
+          "required": true
+        },
+        {
+          "name": "page",
+          "type": "object",
+          "description": "Pagination configuration",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "count_devices",
+      "name": "Count Devices",
+      "description": "Get the total count of device assets matching a query",
+      "http_method": "POST",
+      "endpoint": "/V4.0/assets/devices/count",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "AQL filter expression for counting devices",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_tags",
+      "name": "List Tags",
+      "description": "Retrieve all tags used for categorizing assets",
+      "http_method": "GET",
+      "endpoint": "/V4.0/assets/tags",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "add_tag",
+      "name": "Add Tag to Assets",
+      "description": "Apply a tag to one or more assets for categorization",
+      "http_method": "POST",
+      "endpoint": "/V4.0/assets/devices/tags/{tag_name}",
+      "action_type": "action",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "tag_name",
+          "type": "string",
+          "description": "Name of the tag to apply",
+          "required": true
+        },
+        {
+          "name": "ids",
+          "type": "array",
+          "description": "List of asset IDs to tag",
+          "required": true
+        }
+      ]
+    }
+  ]
+}
