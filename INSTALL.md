@@ -15,32 +15,25 @@ Recap from the README — install fails fast if these are not met:
 
 ---
 
-## Option A: one-command install
+## Option A: guided installer
 
-On a fresh host:
+On a fresh Linux host (Ubuntu 22.04+ recommended) with Docker and the Compose plugin already installed:
 
 ```bash
-curl -fsSL https://get.t1agentics.ai/install.sh | bash
+git clone https://github.com/BeardedInfoSec/t1agentics
+cd t1agentics
+./install.sh
 ```
 
 What it does, in order:
 
-1. Detects OS and verifies RAM, disk, and CPU minimums
-2. Installs Docker and Docker Compose plugin if they are missing
-3. Adds the current user to the `docker` group (you may need to log out and back in)
-4. Clones the repo to `/opt/t1agentics`
-5. Generates random values for every required secret and writes `.env`
-6. Pulls the published images
-7. Brings the stack up with `docker compose up -d`
-8. Prints the URL, default admin credentials, and next-step pointers
+1. Runs preflight checks (OS is Linux, Docker daemon reachable, required ports free)
+2. Prompts for your domain and an optional LLM provider API key
+3. Generates random values for every required secret and writes `.env`
+4. Builds the images and brings the stack up with `docker compose up -d`
+5. Prints the URL and next-step pointers
 
-**Safety note.** Piping a script from the internet into bash is convenient but you should know what is running. The full script is at `scripts/install.sh` in this repo. Read it first, or download it and run it locally:
-
-```bash
-curl -fsSL https://get.t1agentics.ai/install.sh -o install.sh
-less install.sh
-bash install.sh
-```
+The installer is Linux-only — on Windows or macOS, run it inside WSL2 or a Linux VM. It expects Docker already installed (it will not install Docker for you). Read `install.sh` in the repo first if you want to see exactly what runs.
 
 ---
 

@@ -12,15 +12,17 @@ T1 Agentics is a security operations platform you run on your own infrastructure
 
 ## Quick install
 
-On a fresh Linux host that meets the requirements below:
+On a fresh Linux host (Ubuntu 22.04+ recommended) with Docker installed:
 
 ```bash
-curl -fsSL https://get.t1agentics.ai/install.sh | bash
+git clone https://github.com/BeardedInfoSec/t1agentics
+cd t1agentics
+./install.sh
 ```
 
-The installer checks system requirements, installs Docker if missing, generates secrets, writes a `.env`, pulls images, and starts the stack. Default web UI lands on port 443 once DNS resolves.
+`install.sh` runs preflight checks, prompts for your domain and an optional LLM provider key, generates secrets, writes a `.env`, builds the images, and starts the stack. The web UI comes up on port 443 once DNS resolves.
 
-Prefer to see what runs first? Read [INSTALL.md](INSTALL.md) for the manual flow.
+Not on Linux? Run it under WSL2 or a Linux VM — the installer does not support Windows. See [INSTALL.md](INSTALL.md) for the step-by-step flow.
 
 ---
 
