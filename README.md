@@ -32,11 +32,11 @@ cd t1agentics
 
 ## Screenshots
 
-<p align="center"><img src="docs/screenshots/platform.png" alt="T1 Agentics" width="960"></p>
+<p align="center"><img src="docs/screenshots/investigation-riggs.png" alt="T1 Agentics — AI-assisted investigation with the Riggs assistant" width="960"></p>
 
 <table>
   <tr>
-    <td width="50%"><img src="docs/screenshots/investigation-riggs.png" alt="AI deep-dive analysis with the Riggs assistant"><br><sub><b>AI deep-dive analysis</b> — Riggs runs a deep analysis (threat assessment, MITRE ATT&CK mapping, root cause) and proposes concrete actions you approve or dismiss.</sub></td>
+    <td width="50%"><img src="docs/screenshots/platform.png" alt="Unified triage queue"><br><sub><b>Unified triage queue</b> — every alert and investigation in one place, with severity heat-strips and SLA tracking.</sub></td>
     <td width="50%"><img src="docs/screenshots/alert-triage-preview.png" alt="Inline alert triage drawer"><br><sub><b>Triage at a glance</b> — an alert's verdict, key findings, and IOCs surface in the queue drawer before you open the case.</sub></td>
   </tr>
   <tr>
