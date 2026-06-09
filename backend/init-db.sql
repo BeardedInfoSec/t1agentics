@@ -5046,7 +5046,8 @@ CREATE TABLE IF NOT EXISTS knowledge_base (
     content TEXT NOT NULL,
     content_type VARCHAR(50) DEFAULT 'sop' CHECK (content_type IN (
         'sop', 'playbook', 'escalation', 'compliance', 'permission',
-        'approval_rule', 'handling_rule', 'runbook', 'policy', 'procedure'
+        'approval_rule', 'handling_rule', 'runbook', 'policy', 'procedure',
+        'guide', 'checklist'
     )),
 
     -- Categorization

@@ -389,6 +389,14 @@ bring_up() {
     fi
   done
 
+  # The base schema (init-db.sql) already creates the current schema, so the
+  # historical migrations conflict with it and the runner warns about them on
+  # every connect. Mark them applied now so the steps below (and future
+  # restarts) are quiet. Harmless if it no-ops.
+  log "Reconciling migration tracking..."
+  compose exec -T backend python scripts/fix_migration_tracking.py 2>/dev/null || \
+    warn "Could not reconcile migration tracking (non-fatal)."
+
   log "Bootstrapping first platform admin..."
   if ! compose exec -T backend python scripts/bootstrap_platform_admin.py; then
     warn "bootstrap_platform_admin.py exited non-zero. You may need to run it manually:"
