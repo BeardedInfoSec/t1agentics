@@ -7,7 +7,7 @@ This is the full install reference. For the short version, see the Quick start s
 Recap from the README — install fails fast if these are not met:
 
 - 8 GB RAM minimum (16 GB recommended)
-- 20 GB disk minimum
+- 120 GB disk minimum
 - Docker 20.10+ and Docker Compose v2
 - A Docker host on Linux, macOS (Docker Desktop), or Windows (Docker Desktop + WSL2). Linux is recommended for production.
 - A domain name with DNS pointing to your host (for automatic TLS in production)
@@ -33,7 +33,7 @@ Per-OS prerequisites:
 
 What it does, in order:
 
-1. Runs preflight checks (supported OS, Docker daemon reachable, RAM ≥ 8 GB, disk ≥ 20 GB, ports 80/443 free)
+1. Runs preflight checks (supported OS, Docker daemon reachable, RAM ≥ 8 GB, disk ≥ 120 GB, ports 80/443 free)
 2. Prompts for your domain, admin email + password, an optional AI provider, organization name/slug, license tier, and optional SMTP
 3. Generates random values for every required secret and writes **`.env`** (mode 600)
 4. Writes **`t1.config.yaml`** from your answers — the single-file app config the backend applies on startup (see [CONFIGURATION.md](CONFIGURATION.md))

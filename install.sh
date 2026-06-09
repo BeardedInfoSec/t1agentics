@@ -76,8 +76,8 @@ preflight() {
   if command -v df >/dev/null 2>&1; then
     local disk_gb
     disk_gb=$(df -BG --output=avail . | tail -1 | tr -dc '0-9')
-    if [[ "${disk_gb:-0}" -lt 20 ]]; then
-      fail "Need >= 20 GB free at $REPO_DIR. Detected ${disk_gb} GB."
+    if [[ "${disk_gb:-0}" -lt 120 ]]; then
+      fail "Need >= 120 GB free at $REPO_DIR. Detected ${disk_gb} GB."
     fi
     log "Disk ok: ${disk_gb} GB free"
   fi

@@ -50,7 +50,7 @@ cd t1agentics
 ## Requirements
 
 - **8 GB RAM** minimum (16 GB recommended for multi-tenant workloads)
-- **~20 GB disk** minimum (event history, raw alert payloads, and the KB index grow over time)
+- **~120 GB disk** minimum (event history, raw alert payloads, and the KB index grow over time)
 - **Docker 20.10+** and **Docker Compose v2**
 - Docker host on **Linux** (recommended for production; Ubuntu 22.04 LTS+ is the tested baseline), macOS (Docker Desktop), or Windows (Docker Desktop + WSL2; run the install inside the WSL2 shell)
 - A domain name with DNS pointing to your host (required for automatic TLS)
