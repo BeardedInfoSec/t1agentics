@@ -31,6 +31,76 @@ def _parse_jsonb(val, default=None):
             return default if default is not None else {}
     return val
 
+
+def _row_get(row, key, default=None):
+    """Safely read a column from an asyncpg Record that may not contain it."""
+    try:
+        return row[key]
+    except (KeyError, IndexError):
+        return default
+
+
+def _build_source_type_response(row):
+    """Build a LogSourceTypeResponse from a log_source_types row.
+
+    The live schema is leaner than the response model (no default_index_id,
+    supported_platforms, parser_config, default_config, vendor, product,
+    icon_name, created_by), so absent columns are defaulted.
+    """
+    return LogSourceTypeResponse(
+        id=str(row["id"]),
+        source_type=row["source_type"],
+        display_name=row["display_name"],
+        description=row["description"],
+        category=row["category"],
+        supported_platforms=_row_get(row, "supported_platforms") or [],
+        default_index_id=None,
+        default_index_name=_row_get(row, "default_index_name"),
+        parser_type=row["parser_type"],
+        parser_config=_parse_jsonb(_row_get(row, "parser_config"), {}),
+        default_config=_parse_jsonb(_row_get(row, "default_config"), {}),
+        vendor=_row_get(row, "vendor"),
+        product=_row_get(row, "product"),
+        icon_name=_row_get(row, "icon_name"),
+        is_builtin=row["is_builtin"],
+        is_enabled=_row_get(row, "enabled", _row_get(row, "is_enabled", True)),
+        created_at=row["created_at"],
+        updated_at=row["updated_at"],
+        created_by=_row_get(row, "created_by"),
+    )
+
+
+def _build_assignment_response(row):
+    """Build a SourceAssignmentResponse from a joined
+    collector_source_assignments + log_source_types row.
+
+    The live collector_source_assignments table has no source_type,
+    agent_hostname, target_index_id/name, include/exclude_filters,
+    events_collected, last_event_at, error_message, updated_at or created_by
+    columns, so those are derived from the join or defaulted.
+    """
+    return SourceAssignmentResponse(
+        id=str(row["id"]),
+        agent_id=str(row["agent_id"]),
+        agent_hostname=_row_get(row, "agent_hostname") or "",
+        source_type=_row_get(row, "source_type") or "",
+        source_type_id=str(row["source_type_id"]),
+        target_index_id=None,
+        target_index_name=_row_get(row, "default_index_name"),
+        config_overrides=_parse_jsonb(_row_get(row, "config_overrides"), {}),
+        include_filters=[],
+        exclude_filters=[],
+        is_enabled=_row_get(row, "enabled", True),
+        status=row["status"],
+        last_event_at=None,
+        events_collected=0,
+        error_message=None,
+        created_at=row["created_at"],
+        updated_at=_row_get(row, "created_at"),
+        created_by=None,
+    )
+
+
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1/collectors", tags=["Collectors"], dependencies=[Depends(get_current_user)])
@@ -224,12 +294,12 @@ async def list_source_types(
                 params.append(category)
                 query += f" AND category = ${len(params)}"
 
-            if platform:
-                params.append(platform)
-                query += f" AND ${len(params)} = ANY(supported_platforms)"
+            # NOTE: the live log_source_types schema has no supported_platforms
+            # column, so the platform filter is accepted for API compatibility
+            # but not applied.
 
             if enabled_only:
-                query += " AND is_enabled = true"
+                query += " AND enabled = true"
 
             if not include_builtin:
                 query += " AND is_builtin = false"
@@ -238,30 +308,7 @@ async def list_source_types(
 
             rows = await conn.fetch(query, *params)
 
-            return [
-                LogSourceTypeResponse(
-                    id=str(row["id"]),
-                    source_type=row["source_type"],
-                    display_name=row["display_name"],
-                    description=row["description"],
-                    category=row["category"],
-                    supported_platforms=row["supported_platforms"] or [],
-                    default_index_id=str(row["default_index_id"]) if row["default_index_id"] else None,
-                    default_index_name=row["default_index_name"],
-                    parser_type=row["parser_type"],
-                    parser_config=row["parser_config"] or {},
-                    default_config=row["default_config"] or {},
-                    vendor=row["vendor"],
-                    product=row["product"],
-                    icon_name=row["icon_name"],
-                    is_builtin=row["is_builtin"],
-                    is_enabled=row["is_enabled"],
-                    created_at=row["created_at"],
-                    updated_at=row["updated_at"],
-                    created_by=row["created_by"]
-                )
-                for row in rows
-            ]
+            return [_build_source_type_response(row) for row in rows]
     except HTTPException:
         raise
     except Exception as e:
@@ -282,60 +329,25 @@ async def create_source_type(request: CreateSourceTypeRequest):
             raise HTTPException(status_code=400, detail=f"Invalid category. Must be one of: {valid_categories}")
 
         async with postgres_db.tenant_acquire() as conn:
-            # Look up default index ID if name provided
-            default_index_id = None
-            if request.default_index_name:
-                index_row = await conn.fetchrow(
-                    "SELECT id FROM log_indexes WHERE name = $1",
-                    request.default_index_name
-                )
-                if index_row:
-                    default_index_id = index_row["id"]
-
+            # Live log_source_types schema is lean: only the columns below
+            # exist. supported_platforms/parser_config/default_config/vendor/
+            # product/icon_name/default_index_id have no column and are dropped.
             row = await conn.fetchrow("""
                 INSERT INTO log_source_types (
-                    source_type, display_name, description, category, supported_platforms,
-                    default_index_id, default_index_name, parser_type, parser_config,
-                    default_config, vendor, product, icon_name, is_builtin, is_enabled
-                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, false, true)
+                    source_type, display_name, description, category,
+                    default_index_name, parser_type, is_builtin, enabled
+                ) VALUES ($1, $2, $3, $4, $5, $6, false, true)
                 RETURNING *
             """,
                 request.source_type,
                 request.display_name,
                 request.description,
                 request.category,
-                request.supported_platforms,
-                default_index_id,
                 request.default_index_name,
-                request.parser_type,
-                request.parser_config,
-                request.default_config,
-                request.vendor,
-                request.product,
-                request.icon_name
+                request.parser_type
             )
 
-            return LogSourceTypeResponse(
-                id=str(row["id"]),
-                source_type=row["source_type"],
-                display_name=row["display_name"],
-                description=row["description"],
-                category=row["category"],
-                supported_platforms=row["supported_platforms"] or [],
-                default_index_id=str(row["default_index_id"]) if row["default_index_id"] else None,
-                default_index_name=row["default_index_name"],
-                parser_type=row["parser_type"],
-                parser_config=row["parser_config"] or {},
-                default_config=row["default_config"] or {},
-                vendor=row["vendor"],
-                product=row["product"],
-                icon_name=row["icon_name"],
-                is_builtin=row["is_builtin"],
-                is_enabled=row["is_enabled"],
-                created_at=row["created_at"],
-                updated_at=row["updated_at"],
-                created_by=row["created_by"]
-            )
+            return _build_source_type_response(row)
     except HTTPException:
         raise
     except Exception as e:
@@ -361,27 +373,7 @@ async def get_source_type(source_type: str):
             if not row:
                 raise HTTPException(status_code=404, detail=f"Source type '{source_type}' not found")
 
-            return LogSourceTypeResponse(
-                id=str(row["id"]),
-                source_type=row["source_type"],
-                display_name=row["display_name"],
-                description=row["description"],
-                category=row["category"],
-                supported_platforms=row["supported_platforms"] or [],
-                default_index_id=str(row["default_index_id"]) if row["default_index_id"] else None,
-                default_index_name=row["default_index_name"],
-                parser_type=row["parser_type"],
-                parser_config=row["parser_config"] or {},
-                default_config=row["default_config"] or {},
-                vendor=row["vendor"],
-                product=row["product"],
-                icon_name=row["icon_name"],
-                is_builtin=row["is_builtin"],
-                is_enabled=row["is_enabled"],
-                created_at=row["created_at"],
-                updated_at=row["updated_at"],
-                created_by=row["created_by"]
-            )
+            return _build_source_type_response(row)
     except HTTPException:
         raise
     except Exception as e:
@@ -406,36 +398,32 @@ async def update_source_type(source_type: str, request: UpdateSourceTypeRequest)
             if not existing:
                 raise HTTPException(status_code=404, detail=f"Source type '{source_type}' not found")
 
-            # Build dynamic update
+            # Build dynamic update. Only columns that exist in the live
+            # log_source_types schema are writable; request fields without a
+            # matching column (supported_platforms, parser_config,
+            # default_config, vendor, product, icon_name) are ignored.
+            # is_enabled maps to the live column `enabled`.
             updates = []
             params = []
             param_idx = 1
 
             update_fields = request.model_dump(exclude_unset=True)
-
-            # Handle index name to ID conversion
-            if "default_index_name" in update_fields:
-                if update_fields["default_index_name"]:
-                    index_row = await conn.fetchrow(
-                        "SELECT id FROM log_indexes WHERE name = $1",
-                        update_fields["default_index_name"]
-                    )
-                    if index_row:
-                        updates.append(f"default_index_id = ${param_idx}")
-                        params.append(index_row["id"])
-                        param_idx += 1
-                else:
-                    updates.append(f"default_index_id = NULL")
+            column_map = {
+                "display_name": "display_name",
+                "description": "description",
+                "category": "category",
+                "default_index_name": "default_index_name",
+                "parser_type": "parser_type",
+                "is_enabled": "enabled",
+            }
 
             for field, value in update_fields.items():
-                if field == "default_index_name":
-                    updates.append(f"{field} = ${param_idx}")
-                    params.append(value)
-                    param_idx += 1
-                elif value is not None:
-                    updates.append(f"{field} = ${param_idx}")
-                    params.append(value)
-                    param_idx += 1
+                column = column_map.get(field)
+                if not column:
+                    continue
+                updates.append(f"{column} = ${param_idx}")
+                params.append(value)
+                param_idx += 1
 
             if not updates:
                 raise HTTPException(status_code=400, detail="No fields to update")
@@ -452,27 +440,7 @@ async def update_source_type(source_type: str, request: UpdateSourceTypeRequest)
 
             row = await conn.fetchrow(query, *params)
 
-            return LogSourceTypeResponse(
-                id=str(row["id"]),
-                source_type=row["source_type"],
-                display_name=row["display_name"],
-                description=row["description"],
-                category=row["category"],
-                supported_platforms=row["supported_platforms"] or [],
-                default_index_id=str(row["default_index_id"]) if row["default_index_id"] else None,
-                default_index_name=row["default_index_name"],
-                parser_type=row["parser_type"],
-                parser_config=row["parser_config"] or {},
-                default_config=row["default_config"] or {},
-                vendor=row["vendor"],
-                product=row["product"],
-                icon_name=row["icon_name"],
-                is_builtin=row["is_builtin"],
-                is_enabled=row["is_enabled"],
-                created_at=row["created_at"],
-                updated_at=row["updated_at"],
-                created_by=row["created_by"]
-            )
+            return _build_source_type_response(row)
     except HTTPException:
         raise
     except Exception as e:
@@ -554,7 +522,9 @@ async def list_collectors(
                 assignments = []
                 if include_assignments:
                     assignment_rows = await conn.fetch("""
-                        SELECT csa.*, lst.display_name as source_display_name
+                        SELECT csa.*, lst.source_type as source_type,
+                               lst.display_name as source_display_name,
+                               lst.default_index_name as default_index_name
                         FROM collector_source_assignments csa
                         JOIN log_source_types lst ON csa.source_type_id = lst.id
                         WHERE csa.agent_id = $1
@@ -566,11 +536,11 @@ async def list_collectors(
                             "id": str(a["id"]),
                             "source_type": a["source_type"],
                             "source_display_name": a["source_display_name"],
-                            "target_index_name": a["target_index_name"],
-                            "is_enabled": a["is_enabled"],
+                            "target_index_name": a["default_index_name"],
+                            "is_enabled": a["enabled"],
                             "status": a["status"],
-                            "events_collected": a["events_collected"],
-                            "last_event_at": a["last_event_at"].isoformat() if a["last_event_at"] else None
+                            "events_collected": 0,
+                            "last_event_at": None
                         }
                         for a in assignment_rows
                     ]
@@ -599,77 +569,6 @@ async def list_collectors(
         raise
     except Exception as e:
         logger.error(f"Error listing collectors: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.get("/{collector_id}", response_model=CollectorResponse)
-async def get_collector(collector_id: str):
-    """Get a specific collector with its source assignments"""
-    if not postgres_db.connected or postgres_db.pool is None:
-        raise HTTPException(status_code=503, detail="Database not connected")
-
-    try:
-        async with postgres_db.tenant_acquire() as conn:
-            row = await conn.fetchrow(
-                "SELECT * FROM log_agents WHERE id = $1 OR agent_id = $1",
-                collector_id if len(collector_id) == 36 else None,
-            )
-
-            # Try by agent_id if UUID lookup failed
-            if not row:
-                row = await conn.fetchrow(
-                    "SELECT * FROM log_agents WHERE agent_id = $1",
-                    collector_id
-                )
-
-            if not row:
-                raise HTTPException(status_code=404, detail=f"Collector '{collector_id}' not found")
-
-            # Get assignments
-            assignment_rows = await conn.fetch("""
-                SELECT csa.*, lst.display_name as source_display_name
-                FROM collector_source_assignments csa
-                JOIN log_source_types lst ON csa.source_type_id = lst.id
-                WHERE csa.agent_id = $1
-                ORDER BY lst.category, lst.display_name
-            """, row["id"])
-
-            assignments = [
-                {
-                    "id": str(a["id"]),
-                    "source_type": a["source_type"],
-                    "source_display_name": a["source_display_name"],
-                    "target_index_name": a["target_index_name"],
-                    "is_enabled": a["is_enabled"],
-                    "status": a["status"],
-                    "events_collected": a["events_collected"],
-                    "last_event_at": a["last_event_at"].isoformat() if a["last_event_at"] else None
-                }
-                for a in assignment_rows
-            ]
-
-            return CollectorResponse(
-                id=str(row["id"]),
-                agent_id=row["agent_id"],
-                hostname=row["hostname"],
-                os_type=row["os_type"],
-                os_version=row["os_version"],
-                ip_address=str(row["ip_address"]) if row["ip_address"] else None,
-                agent_version=row["agent_version"],
-                status=row["status"],
-                last_heartbeat=row["last_heartbeat"],
-                last_event_received=row["last_event_received"],
-                events_received_total=row["events_received_total"] or 0,
-                tags=row["tags"] or [],
-                metadata=_parse_jsonb(row["metadata"], {}),
-                registered_at=row["registered_at"],
-                registered_by=row["registered_by"],
-                source_assignments=assignments
-            )
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Error getting collector: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -862,68 +761,47 @@ async def assign_source_to_collector(collector_id: str, request: CreateAssignmen
 
             # Get source type
             source_type = await conn.fetchrow(
-                "SELECT id, default_index_id, default_index_name FROM log_source_types WHERE source_type = $1 AND is_enabled = true",
+                "SELECT id, default_index_name FROM log_source_types WHERE source_type = $1 AND enabled = true",
                 request.source_type
             )
 
             if not source_type:
                 raise HTTPException(status_code=404, detail=f"Source type '{request.source_type}' not found or disabled")
 
-            # Determine target index
-            target_index_id = None
-            target_index_name = request.target_index_name
-
-            if target_index_name:
-                index_row = await conn.fetchrow(
-                    "SELECT id FROM log_indexes WHERE name = $1",
-                    target_index_name
-                )
-                if index_row:
-                    target_index_id = index_row["id"]
-            else:
-                target_index_id = source_type["default_index_id"]
-                target_index_name = source_type["default_index_name"]
-
-            # Create assignment
+            # Create assignment. The live collector_source_assignments schema
+            # routes via source_type_id only; target index, hostname and
+            # filters are not stored on this table.
             row = await conn.fetchrow("""
                 INSERT INTO collector_source_assignments (
-                    agent_id, agent_hostname, source_type_id, source_type,
-                    target_index_id, target_index_name, config_overrides,
-                    include_filters, exclude_filters, is_enabled
-                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+                    agent_id, source_type_id, config_overrides, enabled
+                ) VALUES ($1, $2, $3, $4)
                 RETURNING *
             """,
                 collector["id"],
-                collector["hostname"],
                 source_type["id"],
-                request.source_type,
-                target_index_id,
-                target_index_name,
                 request.config_overrides,
-                request.include_filters,
-                request.exclude_filters,
                 request.is_enabled
             )
 
             return SourceAssignmentResponse(
                 id=str(row["id"]),
                 agent_id=str(row["agent_id"]),
-                agent_hostname=row["agent_hostname"],
-                source_type=row["source_type"],
+                agent_hostname=collector["hostname"],
+                source_type=request.source_type,
                 source_type_id=str(row["source_type_id"]),
-                target_index_id=str(row["target_index_id"]) if row["target_index_id"] else None,
-                target_index_name=row["target_index_name"],
-                config_overrides=row["config_overrides"] or {},
-                include_filters=row["include_filters"] or [],
-                exclude_filters=row["exclude_filters"] or [],
-                is_enabled=row["is_enabled"],
+                target_index_id=None,
+                target_index_name=source_type["default_index_name"],
+                config_overrides=_parse_jsonb(row["config_overrides"], {}),
+                include_filters=[],
+                exclude_filters=[],
+                is_enabled=row["enabled"],
                 status=row["status"],
-                last_event_at=row["last_event_at"],
-                events_collected=row["events_collected"] or 0,
-                error_message=row["error_message"],
+                last_event_at=None,
+                events_collected=0,
+                error_message=None,
                 created_at=row["created_at"],
-                updated_at=row["updated_at"],
-                created_by=row["created_by"]
+                updated_at=row["created_at"],
+                created_by=None
             )
     except HTTPException:
         raise
@@ -981,34 +859,15 @@ async def list_collector_sources(collector_id: str):
                 raise HTTPException(status_code=404, detail=f"Collector '{collector_id}' not found")
 
             rows = await conn.fetch("""
-                SELECT * FROM collector_source_assignments
-                WHERE agent_id = $1
-                ORDER BY source_type
+                SELECT csa.*, lst.source_type as source_type,
+                       lst.default_index_name as default_index_name
+                FROM collector_source_assignments csa
+                JOIN log_source_types lst ON csa.source_type_id = lst.id
+                WHERE csa.agent_id = $1
+                ORDER BY lst.source_type
             """, collector["id"])
 
-            return [
-                SourceAssignmentResponse(
-                    id=str(row["id"]),
-                    agent_id=str(row["agent_id"]),
-                    agent_hostname=row["agent_hostname"],
-                    source_type=row["source_type"],
-                    source_type_id=str(row["source_type_id"]),
-                    target_index_id=str(row["target_index_id"]) if row["target_index_id"] else None,
-                    target_index_name=row["target_index_name"],
-                    config_overrides=row["config_overrides"] or {},
-                    include_filters=row["include_filters"] or [],
-                    exclude_filters=row["exclude_filters"] or [],
-                    is_enabled=row["is_enabled"],
-                    status=row["status"],
-                    last_event_at=row["last_event_at"],
-                    events_collected=row["events_collected"] or 0,
-                    error_message=row["error_message"],
-                    created_at=row["created_at"],
-                    updated_at=row["updated_at"],
-                    created_by=row["created_by"]
-                )
-                for row in rows
-            ]
+            return [_build_assignment_response(row) for row in rows]
     except HTTPException:
         raise
     except Exception as e:
@@ -1038,42 +897,44 @@ async def update_source_assignment(collector_id: str, source_type: str, request:
             if not collector:
                 raise HTTPException(status_code=404, detail=f"Collector '{collector_id}' not found")
 
-            # Build update
+            # Resolve the source type name to its id (the assignment table
+            # routes by source_type_id, not by a source_type name column).
+            src = await conn.fetchrow(
+                "SELECT id FROM log_source_types WHERE source_type = $1",
+                source_type
+            )
+            if not src:
+                raise HTTPException(status_code=404, detail=f"Source type '{source_type}' not found")
+
+            # Build update. Only enabled and config_overrides are writable on
+            # the live collector_source_assignments schema; target index and
+            # filter fields are not stored on this table and are ignored.
             updates = []
             params = []
             param_idx = 1
 
             update_fields = request.model_dump(exclude_unset=True)
-
-            # Handle index name to ID conversion
-            if "target_index_name" in update_fields:
-                if update_fields["target_index_name"]:
-                    index_row = await conn.fetchrow(
-                        "SELECT id FROM log_indexes WHERE name = $1",
-                        update_fields["target_index_name"]
-                    )
-                    if index_row:
-                        updates.append(f"target_index_id = ${param_idx}")
-                        params.append(index_row["id"])
-                        param_idx += 1
-                else:
-                    updates.append("target_index_id = NULL")
+            column_map = {
+                "is_enabled": "enabled",
+                "config_overrides": "config_overrides",
+            }
 
             for field, value in update_fields.items():
-                updates.append(f"{field} = ${param_idx}")
+                column = column_map.get(field)
+                if not column:
+                    continue
+                updates.append(f"{column} = ${param_idx}")
                 params.append(value)
                 param_idx += 1
 
             if not updates:
                 raise HTTPException(status_code=400, detail="No fields to update")
 
-            updates.append("updated_at = CURRENT_TIMESTAMP")
-
-            params.extend([collector["id"], source_type])
+            params.extend([collector["id"], src["id"]])
             query = f"""
                 UPDATE collector_source_assignments
                 SET {', '.join(updates)}
-                WHERE agent_id = ${param_idx} AND source_type = ${param_idx + 1}
+                WHERE agent_id = ${param_idx} AND source_type_id = ${param_idx + 1}
                 RETURNING *
             """
 
@@ -1082,26 +943,17 @@ async def update_source_assignment(collector_id: str, source_type: str, request:
             if not row:
                 raise HTTPException(status_code=404, detail=f"Source assignment for '{source_type}' not found")
 
-            return SourceAssignmentResponse(
-                id=str(row["id"]),
-                agent_id=str(row["agent_id"]),
-                agent_hostname=row["agent_hostname"],
-                source_type=row["source_type"],
-                source_type_id=str(row["source_type_id"]),
-                target_index_id=str(row["target_index_id"]) if row["target_index_id"] else None,
-                target_index_name=row["target_index_name"],
-                config_overrides=row["config_overrides"] or {},
-                include_filters=row["include_filters"] or [],
-                exclude_filters=row["exclude_filters"] or [],
-                is_enabled=row["is_enabled"],
-                status=row["status"],
-                last_event_at=row["last_event_at"],
-                events_collected=row["events_collected"] or 0,
-                error_message=row["error_message"],
-                created_at=row["created_at"],
-                updated_at=row["updated_at"],
-                created_by=row["created_by"]
-            )
+            # Re-fetch with the join so the response carries source_type and
+            # default_index_name.
+            joined = await conn.fetchrow("""
+                SELECT csa.*, lst.source_type as source_type,
+                       lst.default_index_name as default_index_name
+                FROM collector_source_assignments csa
+                JOIN log_source_types lst ON csa.source_type_id = lst.id
+                WHERE csa.id = $1
+            """, row["id"])
+
+            return _build_assignment_response(joined)
     except HTTPException:
         raise
     except Exception as e:
@@ -1131,10 +983,17 @@ async def remove_source_assignment(collector_id: str, source_type: str):
             if not collector:
                 raise HTTPException(status_code=404, detail=f"Collector '{collector_id}' not found")
 
+            src = await conn.fetchrow(
+                "SELECT id FROM log_source_types WHERE source_type = $1",
+                source_type
+            )
+            if not src:
+                raise HTTPException(status_code=404, detail=f"Source assignment for '{source_type}' not found")
+
             result = await conn.execute("""
                 DELETE FROM collector_source_assignments
-                WHERE agent_id = $1 AND source_type = $2
-            """, collector["id"], source_type)
+                WHERE agent_id = $1 AND source_type_id = $2
+            """, collector["id"], src["id"])
 
             if result == "DELETE 0":
                 raise HTTPException(status_code=404, detail=f"Source assignment for '{source_type}' not found")
@@ -1348,15 +1207,16 @@ async def assign_source_to_group(group_name: str, request: GroupSourceAssignment
 
             # Get source type
             source_type = await conn.fetchrow(
-                "SELECT id, default_index_id, default_index_name FROM log_source_types WHERE source_type = $1 AND is_enabled = true",
+                "SELECT id, default_index_name FROM log_source_types WHERE source_type = $1 AND enabled = true",
                 request.source_type
             )
             if not source_type:
                 raise HTTPException(status_code=404, detail=f"Source type '{request.source_type}' not found or disabled")
 
-            # Determine target index
+            # Determine target index (group_source_assignments stores both the
+            # index id and name; log_source_types only has a default name).
             target_index_id = None
-            target_index_name = request.target_index_name
+            target_index_name = request.target_index_name or source_type["default_index_name"]
 
             if target_index_name:
                 index_row = await conn.fetchrow(
@@ -1365,9 +1225,6 @@ async def assign_source_to_group(group_name: str, request: GroupSourceAssignment
                 )
                 if index_row:
                     target_index_id = index_row["id"]
-            else:
-                target_index_id = source_type["default_index_id"]
-                target_index_name = source_type["default_index_name"]
 
             row = await conn.fetchrow("""
                 INSERT INTO group_source_assignments (
@@ -1435,7 +1292,7 @@ async def get_collector_summary():
             source_stats = await conn.fetchrow("""
                 SELECT
                     COUNT(*) as total,
-                    COUNT(*) FILTER (WHERE is_enabled = true) as enabled,
+                    COUNT(*) FILTER (WHERE enabled = true) as enabled,
                     COUNT(*) FILTER (WHERE is_builtin = true) as builtin,
                     COUNT(*) FILTER (WHERE is_builtin = false) as custom
                 FROM log_source_types
@@ -1445,10 +1302,10 @@ async def get_collector_summary():
             assignment_stats = await conn.fetchrow("""
                 SELECT
                     COUNT(*) as total,
-                    COUNT(*) FILTER (WHERE is_enabled = true) as enabled,
+                    COUNT(*) FILTER (WHERE enabled = true) as enabled,
                     COUNT(*) FILTER (WHERE status = 'active') as active,
                     COUNT(*) FILTER (WHERE status = 'error') as error,
-                    COALESCE(SUM(events_collected), 0) as total_events
+                    0 as total_events
                 FROM collector_source_assignments
             """)
 
@@ -1460,11 +1317,13 @@ async def get_collector_summary():
                 FROM collector_groups
             """)
 
-            # Top sources by event count
+            # Top sources by assignment count (per-source event metrics are
+            # not tracked on collector_source_assignments in the live schema)
             top_sources = await conn.fetch("""
-                SELECT source_type, SUM(events_collected) as events
-                FROM collector_source_assignments
-                GROUP BY source_type
+                SELECT lst.source_type as source_type, COUNT(*) as events
+                FROM collector_source_assignments csa
+                JOIN log_source_types lst ON csa.source_type_id = lst.id
+                GROUP BY lst.source_type
                 ORDER BY events DESC
                 LIMIT 10
             """)
@@ -1519,7 +1378,7 @@ async def preview_log_routing(
         async with postgres_db.tenant_acquire() as conn:
             # Get source type default
             source = await conn.fetchrow("""
-                SELECT source_type, display_name, default_index_name, default_index_id
+                SELECT id, source_type, display_name, default_index_name
                 FROM log_source_types
                 WHERE source_type = $1
             """, source_type)
@@ -1549,16 +1408,16 @@ async def preview_log_routing(
 
                 if collector:
                     assignment = await conn.fetchrow("""
-                        SELECT target_index_name, is_enabled
-                        FROM collector_source_assignments
-                        WHERE agent_id = $1 AND source_type = $2
-                    """, collector["id"], source_type)
+                        SELECT csa.enabled
+                        FROM collector_source_assignments csa
+                        WHERE csa.agent_id = $1 AND csa.source_type_id = $2
+                    """, collector["id"], source["id"])
 
                     if assignment:
                         result["collector_specific"] = {
                             "collector": collector["hostname"],
-                            "target_index": assignment["target_index_name"] or source["default_index_name"],
-                            "is_enabled": assignment["is_enabled"]
+                            "target_index": source["default_index_name"],
+                            "is_enabled": assignment["enabled"]
                         }
 
             # Check group assignments
@@ -1583,4 +1442,82 @@ async def preview_log_routing(
         raise
     except Exception as e:
         logger.error(f"Error previewing log routing: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============================================================================
+# Single-collector lookup (registered LAST so literal-path GET routes like
+# /groups, /summary, /routing-preview are not shadowed by this catch-all)
+# ============================================================================
+
+@router.get("/{collector_id}", response_model=CollectorResponse)
+async def get_collector(collector_id: str):
+    """Get a specific collector with its source assignments"""
+    if not postgres_db.connected or postgres_db.pool is None:
+        raise HTTPException(status_code=503, detail="Database not connected")
+
+    try:
+        async with postgres_db.tenant_acquire() as conn:
+            row = await conn.fetchrow(
+                "SELECT * FROM log_agents WHERE id::text = $1 OR agent_id = $1",
+                collector_id,
+            )
+
+            # Try by agent_id if UUID lookup failed
+            if not row:
+                row = await conn.fetchrow(
+                    "SELECT * FROM log_agents WHERE agent_id = $1",
+                    collector_id
+                )
+
+            if not row:
+                raise HTTPException(status_code=404, detail=f"Collector '{collector_id}' not found")
+
+            # Get assignments
+            assignment_rows = await conn.fetch("""
+                SELECT csa.*, lst.source_type as source_type,
+                       lst.display_name as source_display_name,
+                       lst.default_index_name as default_index_name
+                FROM collector_source_assignments csa
+                JOIN log_source_types lst ON csa.source_type_id = lst.id
+                WHERE csa.agent_id = $1
+                ORDER BY lst.category, lst.display_name
+            """, row["id"])
+
+            assignments = [
+                {
+                    "id": str(a["id"]),
+                    "source_type": a["source_type"],
+                    "source_display_name": a["source_display_name"],
+                    "target_index_name": a["default_index_name"],
+                    "is_enabled": a["enabled"],
+                    "status": a["status"],
+                    "events_collected": 0,
+                    "last_event_at": None
+                }
+                for a in assignment_rows
+            ]
+
+            return CollectorResponse(
+                id=str(row["id"]),
+                agent_id=row["agent_id"],
+                hostname=row["hostname"],
+                os_type=row["os_type"],
+                os_version=row["os_version"],
+                ip_address=str(row["ip_address"]) if row["ip_address"] else None,
+                agent_version=row["agent_version"],
+                status=row["status"],
+                last_heartbeat=row["last_heartbeat"],
+                last_event_received=row["last_event_received"],
+                events_received_total=row["events_received_total"] or 0,
+                tags=row["tags"] or [],
+                metadata=_parse_jsonb(row["metadata"], {}),
+                registered_at=row["registered_at"],
+                registered_by=row["registered_by"],
+                source_assignments=assignments
+            )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting collector: {e}")
         raise HTTPException(status_code=500, detail=str(e))
