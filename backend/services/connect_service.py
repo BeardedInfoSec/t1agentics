@@ -156,10 +156,16 @@ class ConnectService:
         at = (auth_type or "").lower()
 
         if at == "api_key":
-            key_value = secret_data.get("api_key", "")
-            header_name = (auth_config or {}).get("header_name", "X-API-Key")
-            if key_value:
-                headers[header_name] = key_value
+            key_value = (secret_data.get("api_key") or secret_data.get("token")
+                         or secret_data.get("bearer_token") or "")
+            ac = auth_config or {}
+            # location == "query" means the key rides in the URL query string,
+            # which headers can't carry; the execution engine handles that
+            # separately (query-param connectors: enrichment support pending).
+            if key_value and ac.get("location") != "query":
+                header_name = ac.get("header_name", "X-API-Key")
+                prefix = ac.get("prefix", "")
+                headers[header_name] = f"{prefix}{key_value}"
 
         elif at == "bearer":
             token = secret_data.get("token", "") or secret_data.get("bearer_token", "")

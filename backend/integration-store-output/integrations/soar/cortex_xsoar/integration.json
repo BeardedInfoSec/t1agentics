@@ -8,8 +8,9 @@
   "auth_type": "api_key",
   "auth_config": {
     "type": "api_key",
+    "location": "header",
     "header_name": "Authorization",
-    "location": "header"
+    "prefix": "Bearer "
   },
   "base_url": "https://{host}/xsoar/api",
   "actions": [
@@ -22,15 +23,60 @@
       "action_type": "generic",
       "read_only": false,
       "parameters": [
-        {"name": "name", "type": "string", "description": "Incident name/title.", "required": true},
-        {"name": "type", "type": "string", "description": "Incident type (e.g., 'Phishing', 'Malware', 'Access').", "required": true},
-        {"name": "severity", "type": "integer", "description": "Severity level: 0 (Unknown), 1 (Low), 2 (Medium), 3 (High), 4 (Critical).", "required": false},
-        {"name": "owner", "type": "string", "description": "Username of the incident owner.", "required": false},
-        {"name": "labels", "type": "array", "description": "Array of label objects with 'type' and 'value' fields.", "required": false},
-        {"name": "details", "type": "string", "description": "Incident details/description.", "required": false},
-        {"name": "customFields", "type": "object", "description": "Object with custom field key-value pairs.", "required": false},
-        {"name": "phase", "type": "string", "description": "Investigation phase.", "required": false},
-        {"name": "playbookId", "type": "string", "description": "Playbook ID to auto-run on creation.", "required": false}
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Incident name/title.",
+          "required": true
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Incident type (e.g., 'Phishing', 'Malware', 'Access').",
+          "required": true
+        },
+        {
+          "name": "severity",
+          "type": "integer",
+          "description": "Severity level: 0 (Unknown), 1 (Low), 2 (Medium), 3 (High), 4 (Critical).",
+          "required": false
+        },
+        {
+          "name": "owner",
+          "type": "string",
+          "description": "Username of the incident owner.",
+          "required": false
+        },
+        {
+          "name": "labels",
+          "type": "array",
+          "description": "Array of label objects with 'type' and 'value' fields.",
+          "required": false
+        },
+        {
+          "name": "details",
+          "type": "string",
+          "description": "Incident details/description.",
+          "required": false
+        },
+        {
+          "name": "customFields",
+          "type": "object",
+          "description": "Object with custom field key-value pairs.",
+          "required": false
+        },
+        {
+          "name": "phase",
+          "type": "string",
+          "description": "Investigation phase.",
+          "required": false
+        },
+        {
+          "name": "playbookId",
+          "type": "string",
+          "description": "Playbook ID to auto-run on creation.",
+          "required": false
+        }
       ]
     },
     {
@@ -42,10 +88,30 @@
       "action_type": "investigate",
       "read_only": true,
       "parameters": [
-        {"name": "filter", "type": "object", "description": "Filter object with query conditions.", "required": false},
-        {"name": "page", "type": "integer", "description": "Page number (0-based).", "required": false},
-        {"name": "size", "type": "integer", "description": "Number of results per page.", "required": false},
-        {"name": "sort", "type": "array", "description": "Array of sort objects with 'field' and 'asc' properties.", "required": false}
+        {
+          "name": "filter",
+          "type": "object",
+          "description": "Filter object with query conditions.",
+          "required": false
+        },
+        {
+          "name": "page",
+          "type": "integer",
+          "description": "Page number (0-based).",
+          "required": false
+        },
+        {
+          "name": "size",
+          "type": "integer",
+          "description": "Number of results per page.",
+          "required": false
+        },
+        {
+          "name": "sort",
+          "type": "array",
+          "description": "Array of sort objects with 'field' and 'asc' properties.",
+          "required": false
+        }
       ]
     },
     {
@@ -57,7 +123,12 @@
       "action_type": "investigate",
       "read_only": true,
       "parameters": [
-        {"name": "id", "type": "string", "description": "The incident ID.", "required": true}
+        {
+          "name": "id",
+          "type": "string",
+          "description": "The incident ID.",
+          "required": true
+        }
       ]
     },
     {
@@ -69,14 +140,54 @@
       "action_type": "generic",
       "read_only": false,
       "parameters": [
-        {"name": "id", "type": "string", "description": "Incident ID to update.", "required": true},
-        {"name": "name", "type": "string", "description": "Updated incident name.", "required": false},
-        {"name": "severity", "type": "integer", "description": "Updated severity level.", "required": false},
-        {"name": "status", "type": "integer", "description": "Status: 0 (Active), 1 (Done), 2 (Archive).", "required": false},
-        {"name": "owner", "type": "string", "description": "Updated incident owner.", "required": false},
-        {"name": "closeReason", "type": "string", "description": "Reason for closing (e.g., 'Resolved', 'False Positive', 'Duplicate').", "required": false},
-        {"name": "closeNotes", "type": "string", "description": "Notes explaining closure.", "required": false},
-        {"name": "customFields", "type": "object", "description": "Updated custom fields.", "required": false}
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Incident ID to update.",
+          "required": true
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Updated incident name.",
+          "required": false
+        },
+        {
+          "name": "severity",
+          "type": "integer",
+          "description": "Updated severity level.",
+          "required": false
+        },
+        {
+          "name": "status",
+          "type": "integer",
+          "description": "Status: 0 (Active), 1 (Done), 2 (Archive).",
+          "required": false
+        },
+        {
+          "name": "owner",
+          "type": "string",
+          "description": "Updated incident owner.",
+          "required": false
+        },
+        {
+          "name": "closeReason",
+          "type": "string",
+          "description": "Reason for closing (e.g., 'Resolved', 'False Positive', 'Duplicate').",
+          "required": false
+        },
+        {
+          "name": "closeNotes",
+          "type": "string",
+          "description": "Notes explaining closure.",
+          "required": false
+        },
+        {
+          "name": "customFields",
+          "type": "object",
+          "description": "Updated custom fields.",
+          "required": false
+        }
       ]
     },
     {
@@ -88,10 +199,30 @@
       "action_type": "generic",
       "read_only": false,
       "parameters": [
-        {"name": "id", "type": "string", "description": "Incident ID to close.", "required": true},
-        {"name": "status", "type": "integer", "description": "Set to 1 (Done) to close.", "required": true},
-        {"name": "closeReason", "type": "string", "description": "Close reason: 'Resolved', 'False Positive', 'Duplicate', 'Other'.", "required": true},
-        {"name": "closeNotes", "type": "string", "description": "Notes explaining the closure.", "required": false}
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Incident ID to close.",
+          "required": true
+        },
+        {
+          "name": "status",
+          "type": "integer",
+          "description": "Set to 1 (Done) to close.",
+          "required": true
+        },
+        {
+          "name": "closeReason",
+          "type": "string",
+          "description": "Close reason: 'Resolved', 'False Positive', 'Duplicate', 'Other'.",
+          "required": true
+        },
+        {
+          "name": "closeNotes",
+          "type": "string",
+          "description": "Notes explaining the closure.",
+          "required": false
+        }
       ]
     },
     {
@@ -103,8 +234,18 @@
       "action_type": "generic",
       "read_only": false,
       "parameters": [
-        {"name": "id", "type": "string", "description": "The incident ID.", "required": true},
-        {"name": "playbookId", "type": "string", "description": "The playbook ID to execute.", "required": true}
+        {
+          "name": "id",
+          "type": "string",
+          "description": "The incident ID.",
+          "required": true
+        },
+        {
+          "name": "playbookId",
+          "type": "string",
+          "description": "The playbook ID to execute.",
+          "required": true
+        }
       ]
     },
     {
@@ -116,7 +257,12 @@
       "action_type": "investigate",
       "read_only": true,
       "parameters": [
-        {"name": "investigationId", "type": "string", "description": "The investigation (incident) ID.", "required": true}
+        {
+          "name": "investigationId",
+          "type": "string",
+          "description": "The investigation (incident) ID.",
+          "required": true
+        }
       ]
     },
     {
@@ -128,8 +274,18 @@
       "action_type": "generic",
       "read_only": false,
       "parameters": [
-        {"name": "investigationId", "type": "string", "description": "Investigation ID to execute in.", "required": true},
-        {"name": "data", "type": "string", "description": "The command to execute (e.g., '!ip ip=8.8.8.8').", "required": true}
+        {
+          "name": "investigationId",
+          "type": "string",
+          "description": "Investigation ID to execute in.",
+          "required": true
+        },
+        {
+          "name": "data",
+          "type": "string",
+          "description": "The command to execute (e.g., '!ip ip=8.8.8.8').",
+          "required": true
+        }
       ]
     },
     {
@@ -141,8 +297,18 @@
       "action_type": "generic",
       "read_only": false,
       "parameters": [
-        {"name": "investigationId", "type": "string", "description": "Investigation ID to add entry to.", "required": true},
-        {"name": "data", "type": "string", "description": "Markdown content for the entry.", "required": true}
+        {
+          "name": "investigationId",
+          "type": "string",
+          "description": "Investigation ID to add entry to.",
+          "required": true
+        },
+        {
+          "name": "data",
+          "type": "string",
+          "description": "Markdown content for the entry.",
+          "required": true
+        }
       ]
     },
     {
@@ -154,10 +320,30 @@
       "action_type": "generic",
       "read_only": false,
       "parameters": [
-        {"name": "incidentId", "type": "string", "description": "Incident ID to add evidence to.", "required": true},
-        {"name": "description", "type": "string", "description": "Description of the evidence.", "required": true},
-        {"name": "data", "type": "string", "description": "Evidence data content.", "required": true},
-        {"name": "tags", "type": "array", "description": "Tags for the evidence.", "required": false}
+        {
+          "name": "incidentId",
+          "type": "string",
+          "description": "Incident ID to add evidence to.",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Description of the evidence.",
+          "required": true
+        },
+        {
+          "name": "data",
+          "type": "string",
+          "description": "Evidence data content.",
+          "required": true
+        },
+        {
+          "name": "tags",
+          "type": "array",
+          "description": "Tags for the evidence.",
+          "required": false
+        }
       ]
     },
     {
@@ -169,9 +355,24 @@
       "action_type": "investigate",
       "read_only": true,
       "parameters": [
-        {"name": "filter", "type": "object", "description": "Filter object with query conditions.", "required": false},
-        {"name": "page", "type": "integer", "description": "Page number (0-based).", "required": false},
-        {"name": "size", "type": "integer", "description": "Number of results per page.", "required": false}
+        {
+          "name": "filter",
+          "type": "object",
+          "description": "Filter object with query conditions.",
+          "required": false
+        },
+        {
+          "name": "page",
+          "type": "integer",
+          "description": "Page number (0-based).",
+          "required": false
+        },
+        {
+          "name": "size",
+          "type": "integer",
+          "description": "Number of results per page.",
+          "required": false
+        }
       ]
     },
     {
@@ -183,8 +384,18 @@
       "action_type": "investigate",
       "read_only": true,
       "parameters": [
-        {"name": "page", "type": "integer", "description": "Page number.", "required": false},
-        {"name": "size", "type": "integer", "description": "Results per page.", "required": false}
+        {
+          "name": "page",
+          "type": "integer",
+          "description": "Page number.",
+          "required": false
+        },
+        {
+          "name": "size",
+          "type": "integer",
+          "description": "Results per page.",
+          "required": false
+        }
       ]
     }
   ]
