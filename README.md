@@ -60,7 +60,7 @@ It creates a virtualenv, installs dependencies, builds the frontend, starts a lo
 ## Requirements
 
 - 8 GB RAM minimum (16 GB recommended for multi-tenant workloads)
-- 500 GB disk (event history, alert raw payloads, and knowledge-base index grow over time)
+- 20 GB disk minimum (event history, alert raw payloads, and knowledge-base index grow over time)
 - Docker 20.10+ and Docker Compose v2
 - Docker host: Linux (Ubuntu 22.04 LTS+ is the tested baseline; recent Debian, Fedora, RHEL work), macOS (Docker Desktop), or Windows (Docker Desktop + WSL2). Linux is recommended for production.
 - A domain name with DNS pointing to your host (required for automatic TLS)

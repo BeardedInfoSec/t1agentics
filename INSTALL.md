@@ -7,7 +7,7 @@ This is the full install reference. For the short version, see the Quick install
 Recap from the README — install fails fast if these are not met:
 
 - 8 GB RAM minimum (16 GB recommended)
-- 500 GB disk
+- 20 GB disk minimum
 - Docker 20.10+ and Docker Compose v2
 - A Docker host on Linux, macOS (Docker Desktop), or Windows (Docker Desktop + WSL2). Linux is recommended for production.
 - A domain name with DNS pointing to your host (for automatic TLS in production)
