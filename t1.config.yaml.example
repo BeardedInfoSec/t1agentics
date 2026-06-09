@@ -1,0 +1,116 @@
+# =============================================================================
+# t1.config.yaml — single-file configuration for self-hosted T1 Agentics
+# =============================================================================
+#
+# Copy this file to `t1.config.yaml` at the repo root, edit it, and restart the
+# backend:  `docker compose up -d backend`
+#
+# On every startup the backend reads this file (mounted read-only at
+# /app/t1.config.yaml) and IDEMPOTENTLY applies each section to the database.
+# You configure the whole app here — no UI clicking, no manual SQL.
+#
+# Rules of the road:
+#   * The file is OPTIONAL. If it is absent, startup is a clean no-op.
+#   * Sections are independent. Omit a whole section to leave it untouched.
+#   * Re-applying the same file does nothing (upserts only — never duplicates).
+#   * Secrets NEVER live in this file. Reference them from .env with
+#     ${ENV_VAR} — the backend expands these from its environment at load time.
+#     Example:  api_key: "${OLLAMA_API_KEY}"
+#   * The admin PASSWORD is never written here. It is read from ${ADMIN_PASSWORD}
+#     in .env, exactly like scripts/bootstrap_platform_admin.py.
+# =============================================================================
+
+# --- Organization identity --------------------------------------------------
+# Applied to the platform-owner tenant (tenants.name / tenants.slug).
+org:
+  name: "Acme Security"          # display name
+  slug: "acme-security"          # lowercase url-safe identifier
+
+# --- License tier -----------------------------------------------------------
+# Sets tenants.plan + an active tenant_licenses row. Self-hosted installs use
+# `platform` (unlimited). Accepted values and how they map to the DB:
+#   free | community      -> community
+#   starter               -> starter
+#   pro | professional    -> professional
+#   enterprise            -> enterprise
+#   enterprise_plus       -> enterprise_plus
+#   platform | unlimited  -> platform   (recommended for self-host)
+license:
+  tier: "platform"
+
+# --- AI providers -----------------------------------------------------------
+# Applied to BOTH:
+#   * ai_providers      (the default inference endpoint for the agent executor
+#                        and Riggs; base_url is stored WITHOUT a trailing /v1)
+#   * tenant_ai_config  (the claude_service BYO path; api keys are encrypted at
+#                        rest with the CredentialsVault before being stored)
+ai:
+  chat:
+    # provider: self_hosted | anthropic | openai
+    provider: "self_hosted"
+    # api_style: openai | anthropic  (how the endpoint speaks)
+    api_style: "openai"
+    # For Ollama / LM Studio / vLLM etc. point at the OpenAI-compatible server.
+    # Use http://host.docker.internal:11434 to reach a host Ollama from Docker.
+    base_url: "http://host.docker.internal:11434"
+    model: "qwen2.5:7b-instruct"
+    # Secret — reference from .env. Leave blank for keyless local servers.
+    api_key: "${AI_CHAT_API_KEY}"
+    max_tokens: 4096
+
+  embeddings:
+    # provider: openai | self_hosted | disabled
+    provider: "disabled"
+    base_url: ""
+    model: ""
+    api_key: "${AI_EMBED_API_KEY}"
+
+# --- Platform admin ---------------------------------------------------------
+# Upserts the first admin into users + platform_admins (mirrors
+# scripts/bootstrap_platform_admin.py). The PASSWORD is NOT here — set
+# ADMIN_PASSWORD in .env. Re-running with a new ADMIN_PASSWORD rotates it.
+admin:
+  username: "admin"
+  email: "admin@acme-security.example"
+  name: "Platform Admin"
+
+# --- Triage taxonomy --------------------------------------------------------
+# Dispositions / severity levels / priorities surfaced by /api/v1/config.
+# Built-in values (MALICIOUS, BENIGN, critical/high/medium/low, P1-P4, ...) are
+# always present; entries here are added as CUSTOM (or, for priorities matching
+# a built-in value, used to override that priority's sla_hours).
+triage:
+  dispositions:
+    - value: "ESCALATED"
+      label: "Escalated to IR"
+      color: "#9333ea"
+      description: "Handed off to incident response"
+  severity_levels:
+    - value: "informational"
+      label: "Informational"
+      color: "#3b82f6"
+      threshold: 0
+  priorities:
+    - value: "P1"            # built-in -> overrides its SLA
+      label: "P1 - Critical"
+      sla_hours: 2
+      color: "#dc2626"
+    - value: "P5"            # new -> added as custom
+      label: "P5 - Deferred"
+      sla_hours: 336
+      color: "#6b7280"
+
+# --- SMTP / notifications ---------------------------------------------------
+# Applied to the email_config table (id='smtp'), the DB-first source that
+# email_service reads before falling back to SMTP_* environment variables.
+# Omit this section entirely to leave SMTP env-driven (compose SMTP_* vars).
+smtp:
+  host: "smtp.example.com"
+  port: 587
+  username: "${SMTP_USERNAME}"
+  password: "${SMTP_PASSWORD}"
+  from_email: "soc@acme-security.example"
+  from_name: "Acme SOC"
+  use_tls: true
+  use_ssl: false
+  enabled: true

@@ -14,6 +14,16 @@ import './Settings.css';
 export { default as AIProvidersSettings } from './AIProvidersSettings';
 export { default as NotificationSettings } from './NotificationSettings';
 
+// Normalize a config taxonomy value into a flat array of items, tolerating the
+// several shapes the /api/v1/config endpoint can return: a plain array, an
+// { enabled, custom } object, or any other object (use its values).
+function toConfigItems(x) {
+  if (Array.isArray(x)) return x;
+  if (x && (x.enabled || x.custom)) return [...(x.enabled || []), ...(x.custom || [])];
+  if (x && typeof x === 'object') return Object.values(x);
+  return [];
+}
+
 function Settings({ user }) {
   const toast = useToast();
   const [config, setConfig] = useState(null);
@@ -2027,7 +2037,7 @@ function DispositionsSection({ config, newDisposition, setNewDisposition, addDis
       <h3 className="settings-card-title">Disposition Types</h3>
       <p className="settings-card-desc" style={{ marginBottom: '1.25rem' }}>Configure the disposition options for investigations</p>
       <div className="settings-chip-row">
-        {config?.dispositions?.map(d => (<span key={d.value} className="settings-chip" style={{ background: `${d.color}20`, color: d.color }}>{d.label}</span>))}
+        {toConfigItems(config?.dispositions).map(d => (<span key={d.value} className="settings-chip" style={{ background: `${d.color}20`, color: d.color }}>{d.label}</span>))}
       </div>
       <div style={{ padding: '1.25rem', background: 'var(--bg-tertiary)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)' }}>
         <h4 style={{ fontSize: '0.9rem', fontWeight: '600', marginBottom: '1rem' }}>Add New Disposition</h4>
@@ -2050,7 +2060,7 @@ function SeveritiesSection({ config, newSeverity, setNewSeverity, addSeverity })
       <h3 className="settings-card-title">Severity Levels</h3>
       <p className="settings-card-desc" style={{ marginBottom: '1.25rem' }}>Configure severity levels for alerts and investigations</p>
       <div className="settings-chip-row">
-        {config?.severities?.map(s => (<span key={s.value} className="settings-chip" style={{ background: `${s.color}20`, color: s.color }}>{s.label}</span>))}
+        {toConfigItems(config?.severity_levels).map(s => (<span key={s.value} className="settings-chip" style={{ background: `${s.color}20`, color: s.color }}>{s.label}</span>))}
       </div>
       <div style={{ padding: '1.25rem', background: 'var(--bg-tertiary)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)' }}>
         <h4 style={{ fontSize: '0.9rem', fontWeight: '600', marginBottom: '1rem' }}>Add New Severity</h4>
