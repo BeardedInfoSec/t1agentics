@@ -7,19 +7,18 @@ import { usePreferences } from '../../hooks/usePreferences';
 import AIProvidersSettings from './AIProvidersSettings';
 import NotificationSettings from './NotificationSettings';
 import { API_BASE_URL, getAuthHeaders, getAuthHeader, inputStyle, getActionButtonStyle, authFetch } from './settingsUtils';
+import { PLATFORM_OWNER_TENANT_ID } from '../../config/platform';
 import './Settings.css';
 
 // Re-export for backwards compatibility
 export { default as AIProvidersSettings } from './AIProvidersSettings';
 export { default as NotificationSettings } from './NotificationSettings';
 
-const T1_TENANT_ID = '00000000-0000-0000-0000-000000000001';
-
 function Settings({ user }) {
   const toast = useToast();
   const [config, setConfig] = useState(null);
   const [loading, setLoading] = useState(true);
-  const isPlatformTenant = user?.tenant_id === T1_TENANT_ID;
+  const isPlatformTenant = user?.tenant_id === PLATFORM_OWNER_TENANT_ID;
   const [activeTab, setActiveTab] = useState('general');
 
   const { preferences, updatePreference, saving: savingPrefs } = usePreferences();

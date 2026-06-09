@@ -5433,19 +5433,19 @@ async def get_statistics(time_range: str = "7d"):
             # the dashboard can show whichever is least misleading.
             mttr_result = await conn.fetchrow(f"""
                 WITH non_batch AS (
-                    SELECT a.created_at, a.closed_at
+                    SELECT a.created_at, COALESCE(a.closed_at, a.resolved_at) AS closed_at
                     FROM alerts a
                     JOIN (
-                        SELECT closed_at
+                        SELECT COALESCE(closed_at, resolved_at) AS closed_at
                         FROM alerts
                         WHERE status IN ('resolved', 'closed', 'false_positive', 'confirmed')
-                          AND closed_at IS NOT NULL
-                        GROUP BY closed_at
+                          AND COALESCE(closed_at, resolved_at) IS NOT NULL
+                        GROUP BY COALESCE(closed_at, resolved_at)
                         HAVING COUNT(*) <= 5
-                    ) g ON g.closed_at = a.closed_at
+                    ) g ON g.closed_at = COALESCE(a.closed_at, a.resolved_at)
                     WHERE a.status IN ('resolved', 'closed', 'false_positive', 'confirmed')
-                      AND a.closed_at IS NOT NULL
-                      AND a.closed_at >= NOW() - INTERVAL '{interval}'
+                      AND COALESCE(a.closed_at, a.resolved_at) IS NOT NULL
+                      AND COALESCE(a.closed_at, a.resolved_at) >= NOW() - INTERVAL '{interval}'
                 )
                 SELECT
                     AVG(EXTRACT(EPOCH FROM (closed_at - created_at)))                          AS avg_seconds,
@@ -5470,13 +5470,13 @@ async def get_statistics(time_range: str = "7d"):
             # T1 Processing Time - alerts auto-closed without investigation
             t1_time_result = await conn.fetchrow(f"""
                 SELECT
-                    AVG(EXTRACT(EPOCH FROM (closed_at - created_at))) as avg_seconds,
+                    AVG(EXTRACT(EPOCH FROM (COALESCE(closed_at, resolved_at) - created_at))) as avg_seconds,
                     COUNT(*) as count
                 FROM alerts
                 WHERE status IN ('resolved', 'closed', 'false_positive', 'confirmed')
-                AND closed_at IS NOT NULL
+                AND COALESCE(closed_at, resolved_at) IS NOT NULL
                 AND investigation_id IS NULL
-                AND closed_at >= NOW() - INTERVAL '{interval}'
+                AND COALESCE(closed_at, resolved_at) >= NOW() - INTERVAL '{interval}'
             """)
             t1_avg_seconds = t1_time_result['avg_seconds'] if t1_time_result and t1_time_result['avg_seconds'] else 0
             t1_count = t1_time_result['count'] if t1_time_result else 0
@@ -5484,13 +5484,13 @@ async def get_statistics(time_range: str = "7d"):
             # T2 Processing Time - alerts that went through investigation
             t2_time_result = await conn.fetchrow(f"""
                 SELECT
-                    AVG(EXTRACT(EPOCH FROM (a.closed_at - a.created_at))) as avg_seconds,
+                    AVG(EXTRACT(EPOCH FROM (COALESCE(a.closed_at, a.resolved_at) - a.created_at))) as avg_seconds,
                     COUNT(*) as count
                 FROM alerts a
                 WHERE a.status IN ('resolved', 'closed', 'false_positive', 'confirmed')
-                AND a.closed_at IS NOT NULL
+                AND COALESCE(a.closed_at, a.resolved_at) IS NOT NULL
                 AND a.investigation_id IS NOT NULL
-                AND a.closed_at >= NOW() - INTERVAL '{interval}'
+                AND COALESCE(a.closed_at, a.resolved_at) >= NOW() - INTERVAL '{interval}'
             """)
             t2_avg_seconds = t2_time_result['avg_seconds'] if t2_time_result and t2_time_result['avg_seconds'] else 0
             t2_count = t2_time_result['count'] if t2_time_result else 0
@@ -5617,16 +5617,16 @@ async def get_statistics(time_range: str = "7d"):
             # ============================================
             automation_rows = await conn.fetch(f"""
                 SELECT
-                    DATE(closed_at) as day,
+                    DATE(COALESCE(closed_at, resolved_at)) as day,
                     COUNT(CASE WHEN closed_by LIKE 'Agent:%' OR closed_by LIKE 'Riggs%' THEN 1 END) as automated,
                     COUNT(CASE WHEN closed_by IS NULL
                             OR (closed_by NOT LIKE 'Agent:%' AND closed_by NOT LIKE 'Riggs%')
                           THEN 1 END) as manual
                 FROM alerts
-                WHERE closed_at >= NOW() - INTERVAL '{interval}'
+                WHERE COALESCE(closed_at, resolved_at) >= NOW() - INTERVAL '{interval}'
                 AND status IN ('resolved', 'closed', 'false_positive', 'confirmed')
-                AND closed_at IS NOT NULL
-                GROUP BY DATE(closed_at)
+                AND COALESCE(closed_at, resolved_at) IS NOT NULL
+                GROUP BY DATE(COALESCE(closed_at, resolved_at))
                 ORDER BY day
             """)
             automation_trend = [
