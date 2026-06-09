@@ -94,7 +94,7 @@ It creates a virtualenv, installs dependencies, builds the frontend, starts a lo
 The installer seeds two content libraries so the app is populated on first login:
 
 - **Playbook marketplace** — 200 builtin playbook templates across 13 SOC domains.
-- **Knowledge base** — ~349 articles (a few use a content type the schema does not yet allow and are skipped, so roughly 300 load).
+- **Knowledge base** — 349 articles across 13 SOC domains.
 
 Seeding is idempotent — the playbook loader upserts and the KB loader skips articles that already exist by title, so it is safe to rerun. If you ran a manual `docker compose up -d` install instead of `install.sh`, or you want to re-seed, run:
 
