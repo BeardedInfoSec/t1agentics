@@ -2027,9 +2027,6 @@ class AITriageService:
                 from services.claude_service import get_claude_service, QuotaExceededError
 
                 service = await get_claude_service()
-                if not service.is_configured:
-                    logger.error(f"[{purpose}] Claude selected but ANTHROPIC_API_KEY not set")
-                    return None
 
                 # Resolve tenant_id — use default if not provided
                 resolved_tenant_id = tenant_id
@@ -2040,6 +2037,23 @@ class AITriageService:
                 import uuid as _uuid
                 if isinstance(resolved_tenant_id, str):
                     resolved_tenant_id = _uuid.UUID(resolved_tenant_id)
+
+                # NOTE: Do NOT gate on service.is_configured (env ANTHROPIC_API_KEY)
+                # alone. A tenant may be running BYO / self-hosted (e.g. Ollama),
+                # in which case claude_service.complete() resolves the per-tenant
+                # provider+endpoint and succeeds without any platform env key.
+                # Only fail fast when there is neither an env key NOR an effective
+                # BYO provider for this tenant.
+                if not service.is_configured:
+                    try:
+                        from services import ai_provider_resolver
+                        _ctx = await ai_provider_resolver.resolve_chat(str(resolved_tenant_id))
+                        if _ctx.mode != "byo":
+                            logger.error(f"[{purpose}] Claude selected but ANTHROPIC_API_KEY not set and tenant has no BYO provider")
+                            return None
+                    except Exception as _re:
+                        logger.error(f"[{purpose}] Claude selected but ANTHROPIC_API_KEY not set (BYO resolve failed: {_re})")
+                        return None
 
                 if max_tokens is None:
                     if 'riggs' in purpose.lower():
@@ -4549,8 +4563,19 @@ Classify per the decision criteria. Respond with the JSON format from the system
                 return {"error": "Database not connected"}
 
             service = await get_claude_service()
+            # BYO/self-hosted tenants (e.g. Ollama) have no platform env key but
+            # claude_service.complete() resolves their own provider+endpoint.
+            # Only fail when there is no env key AND no effective BYO provider.
+            _dd_byo = False
             if not service.is_configured:
-                return {"error": "AI service not configured"}
+                try:
+                    from services import ai_provider_resolver as _dd_apr
+                    _dd_ctx = await _dd_apr.resolve_chat(str(tenant_id))
+                    _dd_byo = (_dd_ctx.mode == "byo")
+                except Exception:
+                    _dd_byo = False
+                if not _dd_byo:
+                    return {"error": "AI service not configured"}
 
             # Load investigation + all linked alerts
             async with _admin_conn() as conn:
@@ -4595,8 +4620,11 @@ Classify per the decision criteria. Respond with the JSON format from the system
             # Build the deep dive prompt
             prompt = self._build_deep_dive_prompt(investigation, alerts)
 
-            # Use Haiku for Deep Dive — fast enough for real-time UX (~10-15s vs ~70s with Sonnet)
-            deep_dive_model = "claude-haiku-4-5-20251001"
+            # Use Haiku for Deep Dive — fast enough for real-time UX (~10-15s vs ~70s with Sonnet).
+            # For BYO/self-hosted tenants, pass model=None so complete() uses the
+            # tenant's own configured model (e.g. the local Ollama model). Forcing an
+            # Anthropic model id at a self-hosted endpoint would 404.
+            deep_dive_model = None if _dd_byo else "claude-haiku-4-5-20251001"
 
             resolved_tenant = _uuid.UUID(tenant_id) if isinstance(tenant_id, str) else tenant_id
 
