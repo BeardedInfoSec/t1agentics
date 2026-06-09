@@ -274,8 +274,55 @@ bring_up() {
     warn "  docker compose exec backend python scripts/bootstrap_platform_admin.py"
   fi
 
+  seed_content
+
   log "Giving Caddy 20s to negotiate a Let's Encrypt certificate..."
   sleep 20
+}
+
+# ---------------------------------------------------------------------------
+# Content seeding (playbook marketplace + knowledge base)
+# ---------------------------------------------------------------------------
+# The catalog and KB content live at the repo root, but the backend image is
+# built from ./backend, so neither the seed scripts nor the content ship inside
+# the container. Copy them in, then run the seeders. Best-effort and idempotent:
+# the playbook loader upserts (ON CONFLICT) and the KB loader skips existing
+# rows by title, so reruns are safe. Failures here never abort the install -
+# the app is usable without seed content and you can rerun the commands below.
+seed_content() {
+  log "Seeding playbook marketplace + knowledge base..."
+
+  # Stage the root-level seed scripts and content inside the backend container.
+  if ! compose cp scripts/load-playbook-catalog.py backend:/app/scripts/load-playbook-catalog.py \
+     || ! compose cp scripts/load-kb-direct.py backend:/app/scripts/load-kb-direct.py \
+     || ! compose cp playbook-store-output backend:/app/playbook-store-output \
+     || ! compose cp kb-content-output backend:/app/kb-content-output; then
+    warn "Could not copy seed scripts/content into the backend container. Skipping seeding."
+    warn "Seed manually later (see INSTALL.md > Seeding built-in content)."
+    return 0
+  fi
+
+  # Playbook marketplace: 200 builtin templates (tenant-NULL, visible to all).
+  if compose exec -T backend python scripts/load-playbook-catalog.py; then
+    log "Playbook marketplace seeded."
+  else
+    warn "Playbook catalog loader exited non-zero. Rerun manually:"
+    warn "  docker compose exec -T backend python scripts/load-playbook-catalog.py"
+  fi
+
+  # Knowledge base: ~349 articles. A handful (~49) use content_type values
+  # ('guide'/'checklist') that the DB CHECK constraint rejects; those rows are
+  # skipped individually and the rest (~300) load fine. This is expected and
+  # not fatal.
+  if compose exec -T backend python scripts/load-kb-direct.py kb-content-output/articles; then
+    log "Knowledge base seeded (a few articles with unsupported content_type may be skipped)."
+  else
+    warn "KB loader exited non-zero. Rerun manually:"
+    warn "  docker compose exec -T backend python scripts/load-kb-direct.py kb-content-output/articles"
+  fi
+
+  log "Content seeding done. Intake-form templates are built in (served from"
+  log "the API) and need no seeding."
 }
 
 # ---------------------------------------------------------------------------

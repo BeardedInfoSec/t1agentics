@@ -11,6 +11,7 @@ import {
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { authFetch, getCsrfToken } from '../utils/api';
+import { PLATFORM_OWNER_TENANT_ID } from '../config/platform';
 import './KnowledgeBase.css';
 
 // Content type icons (using Lucide)
@@ -350,7 +351,6 @@ function PaginationControls({ currentPage, totalCount, pageSize, onPageChange })
 // ============================================================================
 // MAIN KNOWLEDGE BASE COMPONENT
 // ============================================================================
-const PLATFORM_OWNER_TENANT_ID = '00000000-0000-0000-0000-000000000001';
 
 function KnowledgeBase({ user }) {
   const isPlatformOwner = user?.tenant_id === PLATFORM_OWNER_TENANT_ID;

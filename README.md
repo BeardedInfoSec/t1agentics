@@ -24,7 +24,7 @@ cd t1agentics
 - **macOS** — Docker Desktop for Mac.
 - **Windows** — Docker Desktop with the WSL2 backend; run the commands inside your WSL2 (Ubuntu) shell.
 
-`install.sh` runs preflight checks, prompts for your domain and an optional LLM provider key, generates secrets, writes a `.env`, builds the images, and starts the stack. The web UI comes up on port 443 once DNS resolves. For a production deployment with automatic TLS, use a Linux host with a public domain. See [INSTALL.md](INSTALL.md) for the step-by-step flow.
+`install.sh` runs preflight checks, prompts for your domain and an optional LLM provider key, generates secrets, writes a `.env`, builds the images, starts the stack, bootstraps the first platform admin, and seeds the built-in content libraries (playbook marketplace + knowledge base). The web UI comes up on port 443 once DNS resolves. For a production deployment with automatic TLS, use a Linux host with a public domain. See [INSTALL.md](INSTALL.md) for the step-by-step flow.
 
 ---
 
@@ -70,25 +70,52 @@ The installer enforces the RAM and disk checks and prints a clear error if your 
 
 ---
 
-## Bring your own API key
+## Built-in content
 
-T1 Agentics does not ship with a default LLM provider key. You supply your own.
+The installer seeds two content libraries so the app is populated on first login:
 
-- If no key is configured, the AI triage, investigation assistant, and recommended-actions features are disabled. Everything else (ingestion, queue, manual investigation, playbook execution, connectors) works fine.
-- To enable AI features, set your key in `.env` and bring the stack up:
+- **Playbook marketplace** — 200 builtin playbook templates across 13 SOC domains.
+- **Knowledge base** — ~349 articles (a few use a content type the schema does not yet allow and are skipped, so roughly 300 load).
 
-  ```bash
-  # Edit .env, set the provider key for your chosen provider
-  nano .env
+Seeding is idempotent — the playbook loader upserts and the KB loader skips articles that already exist by title, so it is safe to rerun. If you ran a manual `docker compose up -d` install instead of `install.sh`, or you want to re-seed, run:
 
-  # Apply
-  docker compose up -d
-  ```
+```bash
+# Built-in content lives at the repo root; the backend image is built from
+# ./backend, so copy the seed scripts and content into the container first.
+docker compose cp scripts/load-playbook-catalog.py backend:/app/scripts/load-playbook-catalog.py
+docker compose cp scripts/load-kb-direct.py        backend:/app/scripts/load-kb-direct.py
+docker compose cp playbook-store-output            backend:/app/playbook-store-output
+docker compose cp kb-content-output                backend:/app/kb-content-output
 
-- To rotate a key: edit `.env`, run `docker compose up -d` (a `restart` alone will not reload env vars).
-- Per-tenant keys can be configured from the admin UI under **Settings to AI Provider** if you want each tenant to bill against its own account.
+# Seed
+docker compose exec -T backend python scripts/load-playbook-catalog.py
+docker compose exec -T backend python scripts/load-kb-direct.py kb-content-output/articles
+```
 
-The provider you choose is up to you. The platform speaks to several common providers through a vendor-neutral wrapper; pick the one your organization is comfortable with.
+**Intake-form templates** (20 of them) are built into the backend and served live from the API — they need no seeding. The `intake_forms` table stays empty until a tenant instantiates a form.
+
+---
+
+## Configure AI / bring your own model
+
+T1 Agentics ships with no AI provider configured. Until you set one, AI-assisted triage, the Riggs investigation assistant, and recommended actions are disabled. Everything else (ingestion, queue, manual investigation, playbook execution, connectors) works fine.
+
+You bring the model. Two providers are supported:
+
+**Local, OpenAI-compatible model (Ollama, vLLM, LM Studio).** The simplest self-hosted path — no API costs, no data leaving your host. Run your server, then point T1 Agentics at its OpenAI-compatible endpoint. For Ollama running on the Docker host:
+
+- Endpoint: `http://host.docker.internal:11434/v1`
+- Model: whatever you pulled (e.g. `llama3.1`)
+- API key: any non-empty placeholder (local servers ignore it)
+
+**Anthropic.** Set `AI_PROVIDER=claude`, `ANTHROPIC_API_KEY`, and `CLAUDE_DEFAULT_MODEL` in `.env`, then `docker compose up -d`.
+
+There are two configuration layers:
+
+1. **Per-tenant (recommended).** Configure the provider, endpoint, model, and key from the admin UI under **Settings to AI Provider**. This drives the chat/triage service and lets each tenant bill against its own account. This is the layer to use for a local model.
+2. **Agent executor (Riggs).** Backed by the `ai_providers` table. Configuring a provider in the UI populates what the agent executor needs; if your build does not expose the local-model option in the UI yet, set the provider in `.env` as a fallback.
+
+To rotate or change a model later: edit `.env` or the tenant setting, then run `docker compose up -d` — a bare `restart` will not reload env vars.
 
 ---
 

@@ -63,6 +63,24 @@ $$;
 
 
 --
+-- Name: alerts_stamp_lifecycle(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE OR REPLACE FUNCTION public.alerts_stamp_lifecycle() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  IF NEW.status = 'resolved' AND NEW.resolved_at IS NULL THEN NEW.resolved_at := now(); END IF;
+  IF NEW.status = 'closed' THEN
+    IF NEW.closed_at  IS NULL THEN NEW.closed_at  := now(); END IF;
+    IF NEW.resolved_at IS NULL THEN NEW.resolved_at := now(); END IF;
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+
+--
 -- Name: audit_verdict_change(); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -1449,7 +1467,7 @@ CREATE TABLE public.investigations (
     CONSTRAINT investigations_priority_check CHECK (((priority)::text = ANY ((ARRAY['P1'::character varying, 'P2'::character varying, 'P3'::character varying, 'P4'::character varying])::text[]))),
     CONSTRAINT investigations_resolution_type_check CHECK (((resolution_type)::text = ANY ((ARRAY['verified_malicious'::character varying, 'false_positive'::character varying, 'benign_activity'::character varying, 'inconclusive'::character varying, 'duplicate'::character varying, 'escalated'::character varying, 'auto_closed'::character varying])::text[]))),
     CONSTRAINT investigations_severity_check CHECK (((severity)::text = ANY ((ARRAY['low'::character varying, 'medium'::character varying, 'high'::character varying, 'critical'::character varying])::text[]))),
-    CONSTRAINT investigations_state_check CHECK (((state)::text = ANY ((ARRAY['NEW'::character varying, 'TRIAGE_RUNNING'::character varying, 'TRIAGE_PROVISIONAL'::character varying, 'ENRICHMENT_RUNNING'::character varying, 'MERGE_PENDING'::character varying, 'ANALYZING'::character varying, 'CONFIRMED'::character varying, 'NEEDS_REVIEW'::character varying, 'RIGGS_REVIEW'::character varying, 'ESCALATED'::character varying, 'IN_PROGRESS'::character varying, 'CLOSED'::character varying])::text[])))
+    CONSTRAINT investigations_state_check CHECK (((state)::text = ANY ((ARRAY['NEW'::character varying, 'TRIAGE_RUNNING'::character varying, 'TRIAGE_PROVISIONAL'::character varying, 'ENRICHMENT_RUNNING'::character varying, 'MERGE_PENDING'::character varying, 'ANALYZING'::character varying, 'CONFIRMED'::character varying, 'NEEDS_REVIEW'::character varying, 'RIGGS_REVIEW'::character varying, 'ESCALATED'::character varying, 'IN_PROGRESS'::character varying, 'CLOSED'::character varying, 'OPEN'::character varying, 'AWAITING_HUMAN'::character varying, 'RESOLVED'::character varying])::text[])))
 );
 
 ALTER TABLE ONLY public.investigations FORCE ROW LEVEL SECURITY;
@@ -14428,6 +14446,14 @@ CREATE TRIGGER agent_definitions_system_name BEFORE INSERT OR UPDATE ON public.a
 --
 
 CREATE TRIGGER alerts_search_vector_update BEFORE INSERT OR UPDATE ON public.alerts FOR EACH ROW EXECUTE FUNCTION tsvector_update_trigger('search_vector', 'pg_catalog.english', 'title', 'description');
+
+
+--
+-- Name: alerts trg_alerts_stamp_lifecycle; Type: TRIGGER; Schema: public; Owner: -
+--
+
+DROP TRIGGER IF EXISTS trg_alerts_stamp_lifecycle ON public.alerts;
+CREATE TRIGGER trg_alerts_stamp_lifecycle BEFORE INSERT OR UPDATE OF status, resolved_at, closed_at ON public.alerts FOR EACH ROW EXECUTE FUNCTION public.alerts_stamp_lifecycle();
 
 
 --
