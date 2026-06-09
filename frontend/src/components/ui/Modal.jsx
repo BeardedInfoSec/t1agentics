@@ -23,6 +23,17 @@ const Modal = ({
   const modalRef = useRef(null);
   const previousActiveElement = useRef(null);
 
+  // Keep latest callbacks in refs so the focus-trap effect below does NOT list
+  // them in its deps. Callers commonly pass an inline `onClose` (a fresh
+  // function every render); if it were a dep, the effect would tear down and
+  // re-run on every parent re-render, and its cleanup restores focus away from
+  // the field being typed in — making typing in modal forms lose focus each
+  // keystroke.
+  const onCloseRef = useRef(onClose);
+  const closeOnEscapeRef = useRef(closeOnEscape);
+  onCloseRef.current = onClose;
+  closeOnEscapeRef.current = closeOnEscape;
+
   // Get all focusable elements within the modal
   const getFocusableElements = useCallback(() => {
     if (!modalRef.current) return [];
@@ -45,9 +56,9 @@ const Modal = ({
 
     const handleKeyDown = (e) => {
       // Close on Escape
-      if (e.key === 'Escape' && closeOnEscape) {
+      if (e.key === 'Escape' && closeOnEscapeRef.current) {
         e.preventDefault();
-        onClose();
+        onCloseRef.current();
         return;
       }
 
@@ -89,7 +100,7 @@ const Modal = ({
       // Restore focus to the previously focused element
       previousActiveElement.current?.focus();
     };
-  }, [isOpen, onClose, closeOnEscape, getFocusableElements]);
+  }, [isOpen, getFocusableElements]);
 
   // Handle overlay click
   const handleOverlayClick = (e) => {

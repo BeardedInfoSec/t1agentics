@@ -7,7 +7,7 @@ This is the full install reference. For the short version, see the Quick install
 Recap from the README — install fails fast if these are not met:
 
 - 8 GB RAM minimum (16 GB recommended)
-- 500 GB disk
+- 20 GB disk minimum
 - Docker 20.10+ and Docker Compose v2
 - A Docker host on Linux, macOS (Docker Desktop), or Windows (Docker Desktop + WSL2). Linux is recommended for production.
 - A domain name with DNS pointing to your host (for automatic TLS in production)
@@ -37,7 +37,9 @@ What it does, in order:
 2. Prompts for your domain and an optional LLM provider API key
 3. Generates random values for every required secret and writes `.env`
 4. Builds the images and brings the stack up with `docker compose up -d`
-5. Prints the URL and next-step pointers
+5. Bootstraps the first platform admin
+6. Seeds the built-in content libraries — playbook marketplace and knowledge base (best-effort; see [Seeding built-in content](#seeding-built-in-content))
+7. Prints the URL and next-step pointers
 
 It expects Docker already installed (it will not install Docker for you). Read `install.sh` in the repo first if you want to see exactly what runs.
 
@@ -75,6 +77,42 @@ docker compose logs -f backend
 ```
 
 The backend is ready when you see `Application startup complete`.
+
+A manual install does **not** seed the content libraries or bootstrap the admin. After the backend is up, run:
+
+```bash
+docker compose exec -T backend python scripts/bootstrap_platform_admin.py
+```
+
+then seed content as described in [Seeding built-in content](#seeding-built-in-content) below.
+
+---
+
+## Seeding built-in content
+
+The repo ships two content libraries: a 200-template **playbook marketplace** and a ~349-article **knowledge base**. The guided installer seeds both automatically (step 6). They come up empty if you ran a manual `docker compose up -d`, and you can always re-seed.
+
+Both seeders are idempotent — the playbook loader upserts on conflict, and the KB loader skips articles that already exist by title.
+
+The content and seed scripts live at the **repo root** (`playbook-store-output/`, `kb-content-output/`, `scripts/`), but the backend image is built from `./backend`, so they are not inside the container by default. Copy them in first, then run the loaders:
+
+```bash
+# Stage the seed scripts and content inside the backend container
+docker compose cp scripts/load-playbook-catalog.py backend:/app/scripts/load-playbook-catalog.py
+docker compose cp scripts/load-kb-direct.py        backend:/app/scripts/load-kb-direct.py
+docker compose cp playbook-store-output            backend:/app/playbook-store-output
+docker compose cp kb-content-output                backend:/app/kb-content-output
+
+# Playbook marketplace: 200 builtin templates (visible to every tenant)
+docker compose exec -T backend python scripts/load-playbook-catalog.py
+
+# Knowledge base: loads from kb-content-output/articles
+docker compose exec -T backend python scripts/load-kb-direct.py kb-content-output/articles
+```
+
+**Expected KB caveat.** Roughly 49 of the 349 articles use a `content_type` (`guide` or `checklist`) that the current database CHECK constraint does not allow. Those rows are skipped individually — the loader reports them as `FAIL` and continues — so about 300 articles load. This is expected and harmless; the playbook marketplace is unaffected.
+
+**Intake forms are built in.** The 20 intake-form templates are bundled in the backend (`backend/data/intake_form_templates/*.json`) and served live from the API. They need no seeding; the `intake_forms` table stays empty until a tenant instantiates a form.
 
 ---
 
@@ -118,21 +156,42 @@ For internal-only deployments (no public DNS), use your own reverse proxy with a
 
 ---
 
-## Setting your API key after install
+## Configure AI / bring your own model
 
-The platform comes up without an LLM provider key. To enable AI features:
+The platform comes up with no AI provider configured. Until you set one, AI-assisted triage, the Riggs investigation assistant, and recommended actions are disabled. Everything else works without it.
+
+You choose the model. Two providers are supported.
+
+### Option 1: local, OpenAI-compatible model (Ollama / vLLM / LM Studio)
+
+The simplest self-hosted path — no API costs, no data leaving your host. Start your model server, then point T1 Agentics at its OpenAI-compatible endpoint. For Ollama on the Docker host:
+
+- **Endpoint:** `http://host.docker.internal:11434/v1`
+- **Model:** whatever you pulled (e.g. `llama3.1`)
+- **API key:** any non-empty placeholder (local servers ignore it)
+
+vLLM and LM Studio expose the same OpenAI-compatible shape — point at their `/v1` base URL and set the model name.
+
+### Option 2: Anthropic
+
+Edit `.env`:
 
 ```bash
-# Edit .env, set the provider key for your chosen provider
 nano .env
+# AI_PROVIDER=claude
+# ANTHROPIC_API_KEY=<your key>
+# CLAUDE_DEFAULT_MODEL=<a model id from your account>
 
 # Apply (compose restart does NOT reload env vars)
 docker compose up -d
 ```
 
-To rotate a key later, edit `.env` and run `docker compose up -d` again.
+### Where to set it: two layers
 
-If different tenants should bill against different accounts, configure per-tenant keys from the admin UI under **Settings to AI Provider** instead of the global key.
+1. **Per-tenant (recommended).** Configure the provider, endpoint, model, and key from the admin UI under **Settings to AI Provider**. This drives the chat/triage service and lets each tenant bill against its own account. Use this layer for a local model.
+2. **Agent executor (Riggs).** Backed by the `ai_providers` table. Configuring a provider in the UI populates what the agent executor needs. If your build does not yet expose the local-model option in the UI, set `AI_PROVIDER` / endpoint / model in `.env` as a fallback and `docker compose up -d`.
+
+To rotate or change the model later, edit `.env` or the tenant setting and run `docker compose up -d` again.
 
 ---
 

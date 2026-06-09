@@ -33,6 +33,7 @@ import { ToastProvider } from './components/ui/Toast';
 import { clearLicenseCache } from './utils/licenseCache';
 import { telemetry } from './utils/telemetry';
 import { TourProvider } from './components/tours/TourContext';
+import { PLATFORM_OWNER_TENANT_ID } from './config/platform';
 import './App.css';
 
 const OnboardingWizard = React.lazy(() => import('./components/onboarding/OnboardingWizard'));
@@ -255,7 +256,7 @@ function App() {
                 <Route path="/select-org" element={<Navigate to="/dashboard" replace />} />
 
                 {/* Platform admin - admin/platform_owner role + platform owner tenant required */}
-                {(user?.role === 'admin' || user?.role === 'platform_owner') && user?.tenant_id === '00000000-0000-0000-0000-000000000001' ? (
+                {(user?.role === 'admin' || user?.role === 'platform_owner') && user?.tenant_id === PLATFORM_OWNER_TENANT_ID ? (
                   <Route path="/platform-admin" element={<PlatformAdminDashboard />} />
                 ) : (
                   <Route path="/platform-admin" element={<Navigate to="/dashboard" replace />} />

@@ -596,17 +596,15 @@ class InboundEmailService:
             total_messages = int(select_data[0]) if select_data else 0
             logger.info(f"[IMAP] Selected folder '{folder}' - {total_messages} total messages")
 
-            # Triple search strategy:
-            # 1. UID watermark — catches anything newer than last sync
-            # 2. UNSEEN — catches moved/relabeled messages below watermark
-            # 3. SINCE date — catches emails Gmail marks as SEEN via filters/tabs
-            #    (Gmail category tabs + auto-filters can set \Seen flag)
+            # Dual search strategy (UNSEEN-only — never re-ingest already-read mail):
+            # 1. UID watermark, UNSEEN — catches unread messages newer than last sync
+            # 2. UNSEEN — catches moved/relabeled unread messages below watermark
             last_uid = mailbox.get('last_uid_synced') or 0
             uid_set = set()
 
             if last_uid > 0:
-                # 1. Search by UID watermark
-                search_criteria = f'UID {last_uid + 1}:*'
+                # 1. Search by UID watermark, unread only
+                search_criteria = f'UID {last_uid + 1}:* UNSEEN'
                 status, messages = imap.uid('search', None, search_criteria)
                 if status == 'OK' and messages[0]:
                     for u in messages[0].split():
@@ -619,19 +617,8 @@ class InboundEmailService:
                     for u in messages2[0].split():
                         uid_set.add(u)
 
-                # 3. Search by date (last 1 day) to catch Gmail-auto-read emails
-                #    Include ALL recent messages — duplicate check in process_email
-                #    prevents reprocessing (checks message_id in DB)
-                from datetime import datetime, timedelta
-                since_date = (datetime.utcnow() - timedelta(days=1)).strftime('%d-%b-%Y')
-                status3, messages3 = imap.uid('search', None, f'SINCE {since_date}')
-                if status3 == 'OK' and messages3[0]:
-                    for u in messages3[0].split():
-                        uid_set.add(u)
-
-                logger.info(f"[IMAP] Search results — UID>{last_uid}: {len(messages[0].split()) if messages[0] else 0}, "
-                           f"UNSEEN: {len(messages2[0].split()) if messages2[0] else 0}, "
-                           f"SINCE {since_date}: {len(messages3[0].split()) if messages3[0] else 0}")
+                logger.info(f"[IMAP] Search results — UID>{last_uid} UNSEEN: {len(messages[0].split()) if messages[0] else 0}, "
+                           f"UNSEEN: {len(messages2[0].split()) if messages2[0] else 0}")
             else:
                 # First poll or no UID tracked — UNSEEN only
                 status, messages = imap.uid('search', None, 'UNSEEN')
@@ -643,7 +630,7 @@ class InboundEmailService:
                     uid_set = set(messages[0].split())
 
             message_uids = sorted(uid_set, key=lambda u: int(u))
-            logger.info(f"[IMAP] Found {len(message_uids)} candidate messages (merged UID+UNSEEN+SINCE)")
+            logger.info(f"[IMAP] Found {len(message_uids)} candidate messages (merged UID+UNSEEN)")
 
             highest_uid = last_uid
             total_to_fetch = min(len(message_uids), 50)
