@@ -44,6 +44,42 @@ What it does, in order:
 
 It expects Docker already installed (it will not install Docker for you). Re-running is safe: it reuses an existing `.env`/`t1.config.yaml` unless you pass `--reset`. Read `install.sh` in the repo first if you want to see exactly what runs.
 
+### Unattended / scripted install
+
+For a hands-off, repeatable install (a fresh VM, CI, fleet provisioning), set `T1_UNATTENDED=1` and pass every answer as a `T1_*` environment variable. The installer skips all prompts. Only three values are required; everything else falls back to a self-hosted default (local Ollama, platform tier):
+
+```bash
+git clone https://github.com/BeardedInfoSec/t1agentics
+cd t1agentics
+
+T1_UNATTENDED=1 \
+T1_DOMAIN=soc.example.com \
+T1_ADMIN_EMAIL=admin@example.com \
+T1_ADMIN_PASSWORD='change-this-strong-password' \
+./install.sh
+```
+
+With the defaults, that single command builds the stack, **installs Ollama and pulls the model**, bootstraps the admin, and seeds the content libraries — a true no-questions turnkey install.
+
+| Variable | Required | Default | Notes |
+|---|---|---|---|
+| `T1_UNATTENDED` | **yes** | — | Set to `1` to enable unattended mode. |
+| `T1_DOMAIN` | **yes** | — | FQDN Caddy serves and requests a TLS cert for. |
+| `T1_ADMIN_EMAIL` | **yes** | — | First platform admin and Let's Encrypt contact. |
+| `T1_ADMIN_PASSWORD` | **yes** | — | Min 12 chars. Stored only in `.env`. |
+| `T1_ORG_NAME` | no | `T1 Agentics` | Organization display name. |
+| `T1_ORG_SLUG` | no | `t1-agentics` | Tenant slug — this is the **Organization** you type at login. |
+| `T1_LICENSE_TIER` | no | `platform` | `platform` is unlimited; recommended for self-host. |
+| `T1_AI_CHAT_PROVIDER` | no | `self_hosted` | `self_hosted` \| `anthropic` \| `openai`. `self_hosted` triggers the turnkey Ollama setup. |
+| `T1_AI_CHAT_API_STYLE` | no | `openai` | API dialect for the provider. |
+| `T1_AI_CHAT_BASE_URL` | no | `http://host.docker.internal:11434` | Local Ollama by default. |
+| `T1_AI_CHAT_MODEL` | no | `qwen2.5:7b-instruct` | Auto-pulled when the provider is local. |
+| `T1_AI_CHAT_API_KEY` | no | empty | For a cloud provider; local Ollama ignores it. |
+| `T1_ANTHROPIC_API_KEY` | no | empty | Shortcut to wire Anthropic directly. |
+| `T1_SMTP_HOST` | no | empty | Optional outbound email (with `T1_SMTP_PORT` default `587`, `T1_SMTP_USERNAME`, `T1_SMTP_PASSWORD`, `T1_SMTP_FROM_EMAIL`). |
+
+Answers are written to `.env` and `t1.config.yaml`. To change anything later, edit those files and run `docker compose up -d backend`.
+
 ---
 
 ## Option B: manual install

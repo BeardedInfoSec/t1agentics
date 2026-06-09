@@ -26,7 +26,9 @@ cd t1agentics
 ./install.sh
 ```
 
-`install.sh` runs preflight checks, prompts for your domain and an optional AI provider, generates secrets, writes `.env` and `t1.config.yaml`, builds the images, starts the stack, bootstraps the first platform admin, and seeds the built-in content libraries (playbook marketplace + knowledge base). The web UI comes up on port 443 once DNS resolves. See [INSTALL.md](INSTALL.md) for the manual and native paths.
+`install.sh` runs preflight checks, prompts for your domain and an optional AI provider, generates secrets, writes `.env` and `t1.config.yaml`, builds the images, starts the stack, bootstraps the first platform admin, and seeds the built-in content libraries (playbook marketplace + knowledge base). The web UI comes up on port 443 once DNS resolves.
+
+Prefer a hands-off install? Pass `T1_UNATTENDED=1` plus a few `T1_*` variables and it runs with zero prompts — see [Unattended / scripted install](INSTALL.md#unattended--scripted-install). See [INSTALL.md](INSTALL.md) for the manual and native paths too.
 
 ---
 

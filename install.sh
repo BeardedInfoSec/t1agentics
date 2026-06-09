@@ -354,8 +354,11 @@ CFG
 compose() { docker compose --env-file "$REPO_DIR/.env" "$@"; }
 
 bring_up() {
-  log "Pulling base images (build-only images may not exist yet; that is ok)..."
-  compose pull --ignore-pull-failures || true
+  log "Pulling base images..."
+  # --ignore-buildable skips backend/frontend (built locally from ./), so we
+  # don't try to pull t1agentics/*:local from a registry that has no such image.
+  # --ignore-pull-failures keeps a flaky base-image mirror from aborting install.
+  compose pull --ignore-buildable --ignore-pull-failures || true
 
   log "Building backend + frontend images (this may take several minutes)..."
   compose build backend frontend
