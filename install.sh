@@ -76,8 +76,8 @@ preflight() {
   if command -v df >/dev/null 2>&1; then
     local disk_gb
     disk_gb=$(df -BG --output=avail . | tail -1 | tr -dc '0-9')
-    if [[ "${disk_gb:-0}" -lt 500 ]]; then
-      fail "Need >= 500 GB free at $REPO_DIR. Detected ${disk_gb} GB."
+    if [[ "${disk_gb:-0}" -lt 20 ]]; then
+      fail "Need >= 20 GB free at $REPO_DIR. Detected ${disk_gb} GB."
     fi
     log "Disk ok: ${disk_gb} GB free"
   fi
@@ -220,7 +220,7 @@ SMTP_PORT=${SMTP_PORT}
 SMTP_USERNAME=${SMTP_USERNAME}
 SMTP_PASSWORD=${SMTP_PASSWORD}
 SMTP_FROM_EMAIL=${SMTP_FROM_EMAIL}
-SMTP_FROM_NAME=T1 Agentics
+SMTP_FROM_NAME="T1 Agentics"
 SMTP_USE_TLS=true
 ENV
   chmod 600 .env

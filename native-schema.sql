@@ -2,7 +2,6 @@
 -- PostgreSQL database dump
 --
 
-\restrict M559rbxaLV38Dss3md1uCcqTaRODIbtFP0GniFm0KSQeIwDTkNxB2zmW86xpJ3g
 
 -- Dumped from database version 15.17 (Debian 15.17-1.pgdg12+1)
 -- Dumped by pg_dump version 15.17 (Debian 15.17-1.pgdg12+1)
@@ -17439,5 +17438,4 @@ ALTER TABLE public.webhooks ENABLE ROW LEVEL SECURITY;
 -- PostgreSQL database dump complete
 --
 
-\unrestrict M559rbxaLV38Dss3md1uCcqTaRODIbtFP0GniFm0KSQeIwDTkNxB2zmW86xpJ3g
 

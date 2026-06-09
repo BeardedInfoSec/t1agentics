@@ -14,7 +14,7 @@ services:
       POSTGRES_INITDB_ARGS: "--encoding=UTF8"
     volumes:
       - pg_data:/var/lib/postgresql/data
-      - ./backend/init-db.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./native-schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-agentcore} -d ${POSTGRES_DB:-agentcore}"]
       interval: 10s
@@ -62,7 +62,7 @@ services:
         soft: 262144
         hard: 262144
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8123/ping"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:8123/ping"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -110,6 +110,7 @@ services:
       # Public URLs
       DOMAIN: ${DOMAIN}
       BASE_URL: https://${DOMAIN}
+      PUBLIC_URL: https://${DOMAIN}
       ALLOWED_ORIGINS: https://${DOMAIN}
       # AI provider (BYO API key - empty disables AI features)
       AI_PROVIDER: ${AI_PROVIDER:-claude}
