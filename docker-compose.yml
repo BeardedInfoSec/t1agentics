@@ -84,6 +84,9 @@ services:
     environment:
       ENVIRONMENT: ${ENVIRONMENT:-production}
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      # Trust X-Forwarded-* from the Caddy reverse proxy so the app builds
+      # https:// URLs (fixes mixed-content behind TLS termination).
+      FORWARDED_ALLOW_IPS: "*"
       # Database
       POSTGRES_HOST: postgres
       POSTGRES_PORT: 5432
@@ -125,6 +128,10 @@ services:
       SMTP_FROM_EMAIL: ${SMTP_FROM_EMAIL:-}
       SMTP_FROM_NAME: ${SMTP_FROM_NAME:-T1 Agentics}
       SMTP_USE_TLS: ${SMTP_USE_TLS:-true}
+    volumes:
+      # Optional single-file app config, applied idempotently on startup.
+      # Absent file = clean no-op. Copy t1.config.yaml.example to get started.
+      - ./t1.config.yaml:/app/t1.config.yaml:ro
     depends_on:
       postgres:
         condition: service_healthy

@@ -669,6 +669,21 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.warning(f"[WARN] ai_providers encryption backfill failed: {e}")
 
+    # Apply the single-file configuration (t1.config.yaml), if present. This
+    # idempotently upserts org/license/AI/admin/triage/SMTP from one YAML file
+    # so a self-hoster configures the whole app by editing that file + restart.
+    # Absent file is a clean no-op; never raises out to wedge startup.
+    try:
+        from services.config_file_loader import apply_config_file
+        cfg_result = await apply_config_file()
+        applied = cfg_result.get("applied", [])
+        if applied:
+            logger.info(f"[OK] t1.config.yaml applied {len(applied)} section(s)")
+        elif "file-absent" in cfg_result.get("skipped", []):
+            logger.info("[OK] t1.config.yaml not present - config-file loader skipped")
+    except Exception as e:
+        logger.warning(f"[WARN] config-file loader failed: {e}")
+
     yield
 
     # Cleanup
