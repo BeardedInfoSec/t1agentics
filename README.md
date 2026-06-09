@@ -6,13 +6,15 @@
 [![Version](https://img.shields.io/badge/version-0.1.0-informational.svg)](#)
 [![GitHub](https://img.shields.io/badge/GitHub-t1agentics-181717.svg)](https://github.com/BeardedInfoSec/t1agentics)
 
-T1 Agentics is a security operations platform you run on your own infrastructure. It ingests alerts from your existing tools, triages them with an AI assistant of your choice, walks investigations through a structured workbench, and runs remediation through 700+ pre-built connectors. It is multi-tenant from the database up, which makes it useful for MSPs, security consultancies, and in-house teams that operate more than one environment.
+T1 Agentics is a self-hosted, multi-tenant SOC platform: it ingests alerts from your existing tools, triages them with an AI assistant of your choice, walks investigations through a structured workbench, and runs remediation through 700+ pre-built connectors. Tenants are isolated at the database layer with Row-Level Security, which makes it useful for MSPs, consultancies, and in-house teams running more than one environment.
+
+**Docs:** [INSTALL.md](INSTALL.md) · [CONFIGURATION.md](CONFIGURATION.md) · [TROUBLESHOOTING.md](TROUBLESHOOTING.md) · [OVERVIEW.md](OVERVIEW.md) · [SECURITY.md](SECURITY.md) · [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ---
 
-## Quick install
+## Quick start
 
-Runs on **Linux, macOS, or Windows** — anywhere Docker runs. With Docker installed:
+With Docker installed:
 
 ```bash
 git clone https://github.com/BeardedInfoSec/t1agentics
@@ -20,11 +22,20 @@ cd t1agentics
 ./install.sh
 ```
 
-- **Linux** — Docker Engine 20.10+ and the Compose plugin.
-- **macOS** — Docker Desktop for Mac.
-- **Windows** — Docker Desktop with the WSL2 backend; run the commands inside your WSL2 (Ubuntu) shell.
+`install.sh` runs preflight checks, prompts for your domain and an optional AI provider, generates secrets, writes `.env` and `t1.config.yaml`, builds the images, starts the stack, bootstraps the first platform admin, and seeds the built-in content libraries (playbook marketplace + knowledge base). The web UI comes up on port 443 once DNS resolves. See [INSTALL.md](INSTALL.md) for the manual and native paths.
 
-`install.sh` runs preflight checks, prompts for your domain and an optional LLM provider key, generates secrets, writes a `.env`, builds the images, starts the stack, bootstraps the first platform admin, and seeds the built-in content libraries (playbook marketplace + knowledge base). The web UI comes up on port 443 once DNS resolves. For a production deployment with automatic TLS, use a Linux host with a public domain. See [INSTALL.md](INSTALL.md) for the step-by-step flow.
+---
+
+## Requirements
+
+- **8 GB RAM** minimum (16 GB recommended for multi-tenant workloads)
+- **~20 GB disk** minimum (event history, raw alert payloads, and the KB index grow over time)
+- **Docker 20.10+** and **Docker Compose v2**
+- Docker host on **Linux** (recommended for production; Ubuntu 22.04 LTS+ is the tested baseline), macOS (Docker Desktop), or Windows (Docker Desktop + WSL2; run the install inside the WSL2 shell)
+- A domain name with DNS pointing to your host (required for automatic TLS)
+- Optional: an AI provider — a cloud key (Anthropic / OpenAI) or a local OpenAI-compatible server (Ollama / vLLM / LM Studio). An **NVIDIA GPU** is optional but speeds up local models. AI features are off until one is configured.
+
+The installer enforces the RAM and disk checks and prints a clear error if your host is under-provisioned.
 
 ---
 
@@ -57,19 +68,6 @@ It creates a virtualenv, installs dependencies, builds the frontend, starts a lo
 
 ---
 
-## Requirements
-
-- 8 GB RAM minimum (16 GB recommended for multi-tenant workloads)
-- 20 GB disk minimum (event history, alert raw payloads, and knowledge-base index grow over time)
-- Docker 20.10+ and Docker Compose v2
-- Docker host: Linux (Ubuntu 22.04 LTS+ is the tested baseline; recent Debian, Fedora, RHEL work), macOS (Docker Desktop), or Windows (Docker Desktop + WSL2). Linux is recommended for production.
-- A domain name with DNS pointing to your host (required for automatic TLS)
-- An LLM provider API key (optional but strongly recommended — AI features are off without one)
-
-The installer enforces the RAM and disk checks and prints a clear error if your host is under-provisioned.
-
----
-
 ## Built-in content
 
 The installer seeds two content libraries so the app is populated on first login:
@@ -93,29 +91,6 @@ docker compose exec -T backend python scripts/load-kb-direct.py kb-content-outpu
 ```
 
 **Intake-form templates** (20 of them) are built into the backend and served live from the API — they need no seeding. The `intake_forms` table stays empty until a tenant instantiates a form.
-
----
-
-## Configure AI / bring your own model
-
-T1 Agentics ships with no AI provider configured. Until you set one, AI-assisted triage, the Riggs investigation assistant, and recommended actions are disabled. Everything else (ingestion, queue, manual investigation, playbook execution, connectors) works fine.
-
-You bring the model. Two providers are supported:
-
-**Local, OpenAI-compatible model (Ollama, vLLM, LM Studio).** The simplest self-hosted path — no API costs, no data leaving your host. Run your server, then point T1 Agentics at its OpenAI-compatible endpoint. For Ollama running on the Docker host:
-
-- Endpoint: `http://host.docker.internal:11434/v1`
-- Model: whatever you pulled (e.g. `llama3.1`)
-- API key: any non-empty placeholder (local servers ignore it)
-
-**Anthropic.** Set `AI_PROVIDER=claude`, `ANTHROPIC_API_KEY`, and `CLAUDE_DEFAULT_MODEL` in `.env`, then `docker compose up -d`.
-
-There are two configuration layers:
-
-1. **Per-tenant (recommended).** Configure the provider, endpoint, model, and key from the admin UI under **Settings to AI Provider**. This drives the chat/triage service and lets each tenant bill against its own account. This is the layer to use for a local model.
-2. **Agent executor (Riggs).** Backed by the `ai_providers` table. Configuring a provider in the UI populates what the agent executor needs; if your build does not expose the local-model option in the UI yet, set the provider in `.env` as a fallback.
-
-To rotate or change a model later: edit `.env` or the tenant setting, then run `docker compose up -d` — a bare `restart` will not reload env vars.
 
 ---
 
@@ -148,22 +123,42 @@ For a deeper tour, see [OVERVIEW.md](OVERVIEW.md) and the engineering docs under
 
 ## Configuration
 
-All configuration is driven by environment variables in `.env` at the repo root. Copy `.env.example` and edit:
+The app is configured by a single file at the repo root, **`t1.config.yaml`**, read by the backend on every startup and applied idempotently to the database. Secrets stay in `.env` and are referenced with `${ENV_VAR}`; the admin password comes from `ADMIN_PASSWORD`. The installer writes both files for you.
 
-```bash
-cp .env.example .env
-nano .env
+The smallest useful config — name your org and point the AI at a local Ollama:
+
+```yaml
+org:
+  name: "Acme Security"
+  slug: "acme-security"
+
+license:
+  tier: "platform"          # unlimited; self-host recommended
+
+ai:
+  chat:
+    provider: "self_hosted" # self_hosted | anthropic | openai
+    api_style: "openai"
+    base_url: "http://host.docker.internal:11434"
+    model: "qwen2.5:7b-instruct"
+    api_key: "${AI_CHAT_API_KEY}"
 ```
 
-The most important variables:
+Edit it, then apply: `docker compose up -d backend`. Full reference (every section, plus worked Anthropic / Ollama / vLLM examples) is in **[CONFIGURATION.md](CONFIGURATION.md)**.
 
-- `JWT_SECRET_KEY` — required, generate with `openssl rand -hex 32`
-- `INTEGRATION_ENCRYPTION_KEY` — required, encrypts tenant credentials at rest
-- `POSTGRES_PASSWORD` — required, set a strong value
-- `BASE_URL` — required, the public URL of your install
-- LLM provider key — optional but recommended for AI features
+---
 
-Full reference and post-install tuning live in [INSTALL.md](INSTALL.md).
+## Troubleshooting
+
+A few of the most common issues — full guide in **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)**.
+
+- **"No AI provider configured or available."** AI ships off. Set `ai.chat` in `t1.config.yaml` (or **Settings → AI**) and `docker compose up -d backend`.
+- **Mixed-content errors / `http://` redirects behind a proxy.** Your proxy must send `X-Forwarded-Proto`; keep `FORWARDED_ALLOW_IPS=*` on the backend (the shipped compose already sets it).
+- **Marketplace / Knowledge Base empty.** Content wasn't seeded — `install.sh` seeds it, or run the seed scripts (see [INSTALL.md](INSTALL.md#seeding-built-in-content)).
+- **Deep analysis / Recommended Actions missing.** Premium features — set a paid `license.tier` and confirm the AI provider works.
+- **Login asks for an "Organization."** Enter your tenant slug (`org.slug`, set at install).
+
+Get logs with `docker compose logs -f backend` (or `./bin/t1 logs backend`).
 
 ---
 
