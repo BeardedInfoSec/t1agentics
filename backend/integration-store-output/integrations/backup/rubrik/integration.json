@@ -1,0 +1,169 @@
+{
+  "id": "rubrik",
+  "name": "Rubrik Cloud Data Management",
+  "description": "Integrates with Rubrik CDM REST API for backup management, SLA domain policy enforcement, snapshot monitoring, and recovery operations across hybrid cloud environments",
+  "version": "1.0.0",
+  "category": "backup",
+  "vendor": "Rubrik",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "https://{host}/api/v1",
+  "actions": [
+    {
+      "id": "list_sla_domains",
+      "name": "List SLA Domains",
+      "description": "Retrieve all SLA domain policies that define backup frequency, retention, replication, and archival rules",
+      "http_method": "GET",
+      "endpoint": "/sla_domain",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Filter SLA domains by name pattern",
+          "required": false
+        },
+        {
+          "name": "primary_cluster_id",
+          "type": "string",
+          "description": "Filter by primary cluster ID",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_vms",
+      "name": "List Protected VMs",
+      "description": "Retrieve all virtual machines managed by Rubrik with their protection status and SLA domain assignments",
+      "http_method": "GET",
+      "endpoint": "/vmware/vm",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Filter VMs by name pattern",
+          "required": false
+        },
+        {
+          "name": "effective_sla_domain_id",
+          "type": "string",
+          "description": "Filter by assigned SLA domain ID",
+          "required": false
+        },
+        {
+          "name": "is_relic",
+          "type": "boolean",
+          "description": "Filter by relic (orphaned) status",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of VMs to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "list_filesets",
+      "name": "List Filesets",
+      "description": "Retrieve all fileset configurations for physical server backup",
+      "http_method": "GET",
+      "endpoint": "/fileset",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "host_id",
+          "type": "string",
+          "description": "Filter filesets by host ID",
+          "required": false
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Filter filesets by name pattern",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_job_status",
+      "name": "Get Job Status",
+      "description": "Retrieve the status of a specific backup or recovery job by event ID",
+      "http_method": "GET",
+      "endpoint": "/event/{eventId}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "eventId",
+          "type": "string",
+          "description": "Unique identifier of the event/job",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "trigger_snapshot",
+      "name": "Trigger On-Demand Snapshot",
+      "description": "Initiate an on-demand backup snapshot for a protected object",
+      "http_method": "POST",
+      "endpoint": "/vmware/vm/{vmId}/snapshot",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "vmId",
+          "type": "string",
+          "description": "Unique identifier of the VM to snapshot",
+          "required": true
+        },
+        {
+          "name": "slaId",
+          "type": "string",
+          "description": "SLA domain ID to apply for this snapshot (determines retention)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_events",
+      "name": "List Events",
+      "description": "Retrieve system events including backup jobs, recovery operations, and system alerts",
+      "http_method": "GET",
+      "endpoint": "/event/latest",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "event_type",
+          "type": "string",
+          "description": "Filter by event type (Backup, Recovery, Replication, Archive, System)",
+          "required": false
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Filter by event status (Success, Failure, Running, Queued)",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of events to return",
+          "required": false,
+          "default": 50
+        }
+      ]
+    }
+  ]
+}

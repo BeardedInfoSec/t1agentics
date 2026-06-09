@@ -1,0 +1,188 @@
+{
+  "id": "zscaler_zpa",
+  "name": "Zscaler Private Access (ZPA)",
+  "description": "Zscaler Private Access API for managing application segments, access policies, server groups, and connector monitoring for zero trust private access",
+  "version": "1.0.0",
+  "category": "network",
+  "vendor": "Zscaler",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "header_name": "Authorization",
+    "location": "header",
+    "token_prefix": "Bearer",
+    "note": "OAuth 2.0 client credentials flow via /signin endpoint"
+  },
+  "base_url": "https://config.private.zscaler.com/mgmtconfig/v1/admin/customers/{customer_id}",
+  "actions": [
+    {
+      "id": "authenticate",
+      "name": "Authenticate",
+      "description": "Obtain an OAuth 2.0 access token for ZPA API access",
+      "http_method": "POST",
+      "endpoint": "/signin",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "client_id",
+          "type": "string",
+          "description": "OAuth 2.0 client ID",
+          "required": true
+        },
+        {
+          "name": "client_secret",
+          "type": "string",
+          "description": "OAuth 2.0 client secret",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_application_segments",
+      "name": "List Application Segments",
+      "description": "Retrieve all application segments (private apps) configured in ZPA",
+      "http_method": "GET",
+      "endpoint": "/application",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "page",
+          "type": "integer",
+          "description": "Page number for pagination",
+          "required": false
+        },
+        {
+          "name": "pagesize",
+          "type": "integer",
+          "description": "Number of items per page",
+          "required": false
+        },
+        {
+          "name": "search",
+          "type": "string",
+          "description": "Search filter for application name",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_application_segment",
+      "name": "Get Application Segment",
+      "description": "Retrieve details of a specific application segment",
+      "http_method": "GET",
+      "endpoint": "/application/{application_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "application_id",
+          "type": "string",
+          "description": "ID of the application segment",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "create_application_segment",
+      "name": "Create Application Segment",
+      "description": "Create a new application segment for zero trust private access",
+      "http_method": "POST",
+      "endpoint": "/application",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "body",
+          "type": "object",
+          "description": "Application segment definition including name, domainNames, segmentGroupId, serverGroups, tcpPortRanges, and udpPortRanges",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_access_policies",
+      "name": "List Access Policies",
+      "description": "Retrieve all access policies that control which users can reach which applications",
+      "http_method": "GET",
+      "endpoint": "/policySet/rules/policyType/ACCESS_POLICY",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "create_access_policy_rule",
+      "name": "Create Access Policy Rule",
+      "description": "Create a new access policy rule to allow or deny access to application segments",
+      "http_method": "POST",
+      "endpoint": "/policySet/rules",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "body",
+          "type": "object",
+          "description": "Policy rule including name, action (ALLOW/DENY), conditions (applications, user groups, posture profiles), and policyType",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_server_groups",
+      "name": "List Server Groups",
+      "description": "Retrieve all server groups (backend server collections) in ZPA",
+      "http_method": "GET",
+      "endpoint": "/serverGroup",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "page",
+          "type": "integer",
+          "description": "Page number for pagination",
+          "required": false
+        },
+        {
+          "name": "pagesize",
+          "type": "integer",
+          "description": "Number of items per page",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_connectors",
+      "name": "List App Connectors",
+      "description": "Retrieve all App Connectors and their status (healthy/unhealthy)",
+      "http_method": "GET",
+      "endpoint": "/connector",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "page",
+          "type": "integer",
+          "description": "Page number for pagination",
+          "required": false
+        },
+        {
+          "name": "pagesize",
+          "type": "integer",
+          "description": "Number of items per page",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_segment_groups",
+      "name": "List Segment Groups",
+      "description": "Retrieve all segment groups used for policy assignment",
+      "http_method": "GET",
+      "endpoint": "/segmentGroup",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    }
+  ]
+}

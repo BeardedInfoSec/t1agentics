@@ -1,0 +1,151 @@
+{
+  "id": "kubescape",
+  "name": "Kubescape",
+  "description": "Kubernetes security posture management platform for compliance scanning, vulnerability detection, and misconfiguration identification (CNCF project)",
+  "version": "1.0.0",
+  "category": "container_security",
+  "vendor": "ARMO",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "prefix": "Bearer ",
+    "location": "header",
+    "description": "API key from ARMO Platform account"
+  },
+  "base_url": "https://api.armosec.io/api/v1",
+  "actions": [
+    {
+      "id": "list_clusters",
+      "name": "List Clusters",
+      "description": "List all Kubernetes clusters connected to the ARMO platform",
+      "http_method": "GET",
+      "endpoint": "/cluster",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "customerGUID",
+          "type": "string",
+          "description": "Customer/tenant GUID",
+          "required": true,
+          "location": "query"
+        }
+      ]
+    },
+    {
+      "id": "get_posture_summary",
+      "name": "Get Posture Summary",
+      "description": "Retrieve security posture summary for a cluster including compliance scores",
+      "http_method": "GET",
+      "endpoint": "/posture/clustersOvertime",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "customerGUID",
+          "type": "string",
+          "description": "Customer/tenant GUID",
+          "required": true,
+          "location": "query"
+        },
+        {
+          "name": "cluster",
+          "type": "string",
+          "description": "Cluster name",
+          "required": false,
+          "location": "query"
+        }
+      ]
+    },
+    {
+      "id": "list_vulnerabilities",
+      "name": "List Vulnerabilities",
+      "description": "List vulnerability scan results for workloads in a cluster",
+      "http_method": "POST",
+      "endpoint": "/vulnerability/scanResultsSumSummary",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "customerGUID",
+          "type": "string",
+          "description": "Customer/tenant GUID",
+          "required": true,
+          "location": "query"
+        },
+        {
+          "name": "cluster",
+          "type": "string",
+          "description": "Cluster name filter",
+          "required": false,
+          "location": "body"
+        },
+        {
+          "name": "namespace",
+          "type": "string",
+          "description": "Namespace filter",
+          "required": false,
+          "location": "body"
+        }
+      ]
+    },
+    {
+      "id": "get_compliance_results",
+      "name": "Get Compliance Results",
+      "description": "Get compliance framework scan results (NSA, MITRE, CIS benchmarks)",
+      "http_method": "POST",
+      "endpoint": "/posture/controls",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "customerGUID",
+          "type": "string",
+          "description": "Customer/tenant GUID",
+          "required": true,
+          "location": "query"
+        },
+        {
+          "name": "frameworkName",
+          "type": "string",
+          "description": "Framework name: NSA, MITRE, ArmoBest, CIS, DevOpsBest",
+          "required": false,
+          "location": "body"
+        },
+        {
+          "name": "clusterName",
+          "type": "string",
+          "description": "Cluster name to filter results",
+          "required": false,
+          "location": "body"
+        }
+      ]
+    },
+    {
+      "id": "trigger_scan",
+      "name": "Trigger Cluster Scan",
+      "description": "Trigger a new posture or vulnerability scan for a cluster",
+      "http_method": "POST",
+      "endpoint": "/cluster/{cluster_name}/scan",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "cluster_name",
+          "type": "string",
+          "description": "Name of the cluster to scan",
+          "required": true,
+          "location": "path"
+        },
+        {
+          "name": "customerGUID",
+          "type": "string",
+          "description": "Customer/tenant GUID",
+          "required": true,
+          "location": "query"
+        }
+      ]
+    }
+  ]
+}

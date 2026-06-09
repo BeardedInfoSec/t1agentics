@@ -1,0 +1,161 @@
+{
+  "id": "d3_smart_soar",
+  "name": "D3 Smart SOAR",
+  "description": "D3 Security vendor-agnostic SOAR platform with codeless integrations, automated playbooks, and incident lifecycle management via the D3 Command API.",
+  "version": "1.0.0",
+  "category": "soar",
+  "vendor": "D3 Security",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "header_name": "Authorization",
+    "location": "header",
+    "token_prefix": "Bearer"
+  },
+  "base_url": "https://{host}/api/v1",
+  "actions": [
+    {
+      "id": "list_incidents",
+      "name": "List Incidents",
+      "description": "Retrieve a list of incidents with optional filtering.",
+      "http_method": "POST",
+      "endpoint": "/incidents/list",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "page", "type": "integer", "description": "Page number.", "required": false},
+        {"name": "pageSize", "type": "integer", "description": "Results per page.", "required": false},
+        {"name": "status", "type": "string", "description": "Filter by incident status.", "required": false},
+        {"name": "severity", "type": "string", "description": "Filter by severity.", "required": false},
+        {"name": "startDate", "type": "string", "description": "Start date filter in ISO 8601.", "required": false},
+        {"name": "endDate", "type": "string", "description": "End date filter in ISO 8601.", "required": false}
+      ]
+    },
+    {
+      "id": "get_incident",
+      "name": "Get Incident",
+      "description": "Retrieve full details of a specific incident.",
+      "http_method": "POST",
+      "endpoint": "/incidents/get",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "incidentId", "type": "string", "description": "The incident ID.", "required": true}
+      ]
+    },
+    {
+      "id": "create_incident",
+      "name": "Create Incident",
+      "description": "Create a new incident in D3 Smart SOAR.",
+      "http_method": "POST",
+      "endpoint": "/incidents/create",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "title", "type": "string", "description": "Incident title.", "required": true},
+        {"name": "description", "type": "string", "description": "Incident description.", "required": false},
+        {"name": "severity", "type": "string", "description": "Severity level: 'Low', 'Medium', 'High', 'Critical'.", "required": false},
+        {"name": "type", "type": "string", "description": "Incident type.", "required": false},
+        {"name": "assignee", "type": "string", "description": "Assigned analyst.", "required": false},
+        {"name": "source", "type": "string", "description": "Source of the incident.", "required": false}
+      ]
+    },
+    {
+      "id": "update_incident",
+      "name": "Update Incident",
+      "description": "Update properties of an existing incident.",
+      "http_method": "POST",
+      "endpoint": "/incidents/update",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "incidentId", "type": "string", "description": "The incident ID to update.", "required": true},
+        {"name": "title", "type": "string", "description": "Updated title.", "required": false},
+        {"name": "severity", "type": "string", "description": "Updated severity.", "required": false},
+        {"name": "status", "type": "string", "description": "Updated status.", "required": false},
+        {"name": "assignee", "type": "string", "description": "Updated assignee.", "required": false}
+      ]
+    },
+    {
+      "id": "close_incident",
+      "name": "Close Incident",
+      "description": "Close an incident with a resolution.",
+      "http_method": "POST",
+      "endpoint": "/incidents/close",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "incidentId", "type": "string", "description": "The incident ID to close.", "required": true},
+        {"name": "resolution", "type": "string", "description": "Resolution summary.", "required": true},
+        {"name": "closureReason", "type": "string", "description": "Reason for closure.", "required": false}
+      ]
+    },
+    {
+      "id": "run_playbook",
+      "name": "Run Playbook",
+      "description": "Execute a playbook on an incident.",
+      "http_method": "POST",
+      "endpoint": "/playbooks/run",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "playbookId", "type": "string", "description": "The playbook ID to execute.", "required": true},
+        {"name": "incidentId", "type": "string", "description": "Target incident ID.", "required": true},
+        {"name": "parameters", "type": "object", "description": "Input parameters for the playbook.", "required": false}
+      ]
+    },
+    {
+      "id": "get_playbook_status",
+      "name": "Get Playbook Status",
+      "description": "Retrieve the execution status of a playbook run.",
+      "http_method": "POST",
+      "endpoint": "/playbooks/status",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "executionId", "type": "string", "description": "The playbook execution ID.", "required": true}
+      ]
+    },
+    {
+      "id": "add_artifact",
+      "name": "Add Artifact",
+      "description": "Add an artifact or observable to an incident.",
+      "http_method": "POST",
+      "endpoint": "/incidents/artifacts/add",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "incidentId", "type": "string", "description": "The incident ID.", "required": true},
+        {"name": "type", "type": "string", "description": "Artifact type (e.g., 'IP', 'Domain', 'Hash', 'URL').", "required": true},
+        {"name": "value", "type": "string", "description": "Artifact value.", "required": true},
+        {"name": "description", "type": "string", "description": "Artifact description.", "required": false}
+      ]
+    },
+    {
+      "id": "list_playbooks",
+      "name": "List Playbooks",
+      "description": "Retrieve a list of available playbooks.",
+      "http_method": "POST",
+      "endpoint": "/playbooks/list",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "page", "type": "integer", "description": "Page number.", "required": false},
+        {"name": "pageSize", "type": "integer", "description": "Results per page.", "required": false}
+      ]
+    },
+    {
+      "id": "add_comment",
+      "name": "Add Comment",
+      "description": "Add a comment or note to an incident.",
+      "http_method": "POST",
+      "endpoint": "/incidents/comments/add",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "incidentId", "type": "string", "description": "The incident ID.", "required": true},
+        {"name": "comment", "type": "string", "description": "Comment text.", "required": true}
+      ]
+    }
+  ]
+}

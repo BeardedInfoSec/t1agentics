@@ -1,0 +1,400 @@
+{
+  "id": "azure_ad_graph_ag",
+  "name": "Azure AD Graph AG",
+  "description": "Connects to Azure AD Graph REST API services",
+  "version": "2.5.0",
+  "category": "identity",
+  "vendor": "Microsoft",
+  "auth_type": "oauth2",
+  "auth_config": {
+    "type": "oauth2",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "{phantom_base_url}rest",
+  "actions": [
+    {
+      "id": "list_users",
+      "name": "List Users",
+      "description": "List users in a tenant",
+      "http_method": "GET",
+      "endpoint": "/actions/list_users",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "filter_string",
+          "type": "string",
+          "description": "Filter string to apply to user listing",
+          "required": false
+        },
+        {
+          "name": "expand_string",
+          "type": "string",
+          "description": "Expand string to get a resource or collection referenced by a single relationship",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "reset_password",
+      "name": "Reset Password",
+      "description": "Reset or set a user's password in an Azure AD environment",
+      "http_method": "POST",
+      "endpoint": "/actions/reset_password",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "user_id",
+          "type": "string",
+          "description": "User ID to change password - can be user principal name or object ID",
+          "required": true,
+          "contains": [
+            "azure user principal name",
+            "azure object id",
+            "email"
+          ]
+        },
+        {
+          "name": "force_change",
+          "type": "boolean",
+          "description": "Force user to change password on next login",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "temp_password",
+          "type": "string",
+          "description": "Temporary password for user",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "invalidate_tokens",
+      "name": "Disable Tokens",
+      "description": "Invalidate all active refresh tokens for a user in an Azure AD environment",
+      "http_method": "POST",
+      "endpoint": "/actions/invalidate_tokens",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "user_id",
+          "type": "string",
+          "description": "User ID to disable tokens of - can be user principal name or object ID",
+          "required": true,
+          "contains": [
+            "azure user principal name",
+            "azure object id",
+            "email"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "enable_user",
+      "name": "Enable User",
+      "description": "Enable a user",
+      "http_method": "GET",
+      "endpoint": "/actions/enable_user",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "user_id",
+          "type": "string",
+          "description": "User ID to enable tokens of - can be user principal name or object ID",
+          "required": true,
+          "contains": [
+            "azure user principal name",
+            "azure object id",
+            "email"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "disable_user",
+      "name": "Disable User",
+      "description": "Disable a user",
+      "http_method": "GET",
+      "endpoint": "/actions/disable_user",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "user_id",
+          "type": "string",
+          "description": "User ID to change password - can be user principal name or object ID",
+          "required": true,
+          "contains": [
+            "azure user principal name",
+            "azure object id",
+            "email"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_user_attributes",
+      "name": "List User Attributes",
+      "description": "List attributes for all or a specified user",
+      "http_method": "GET",
+      "endpoint": "/actions/list_user_attributes",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "user_id",
+          "type": "string",
+          "description": "User ID - can be user principal name or object ID",
+          "required": false,
+          "contains": [
+            "azure user principal name",
+            "azure object id",
+            "email"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "set_user_attribute",
+      "name": "Set User Attribute",
+      "description": "Set an attribute for a user",
+      "http_method": "GET",
+      "endpoint": "/actions/set_user_attribute",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "user_id",
+          "type": "string",
+          "description": "User ID - can be user principal name or object ID",
+          "required": true,
+          "contains": [
+            "azure user principal name",
+            "azure object id",
+            "email"
+          ]
+        },
+        {
+          "name": "ph_0",
+          "type": "string",
+          "description": "Placeholder",
+          "required": false
+        },
+        {
+          "name": "attribute",
+          "type": "string",
+          "description": "Attribute to set",
+          "required": true
+        },
+        {
+          "name": "attribute_value",
+          "type": "string",
+          "description": "Value of attribute to set",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "remove_user",
+      "name": "Remove User",
+      "description": "Remove a user from a specified group",
+      "http_method": "GET",
+      "endpoint": "/actions/remove_user",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "group_object_id",
+          "type": "string",
+          "description": "Object ID of group",
+          "required": true,
+          "contains": [
+            "azure group object id"
+          ]
+        },
+        {
+          "name": "user_id",
+          "type": "string",
+          "description": "User ID to remove from group",
+          "required": true,
+          "contains": [
+            "azure user principal name",
+            "azure object id",
+            "email"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "add_user",
+      "name": "Add User",
+      "description": "Add a user to the tenant by creating an organizational account",
+      "http_method": "GET",
+      "endpoint": "/actions/add_user",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "group_object_id",
+          "type": "string",
+          "description": "Object ID of group",
+          "required": true,
+          "contains": [
+            "azure group object id"
+          ]
+        },
+        {
+          "name": "user_id",
+          "type": "string",
+          "description": "User ID to add to group",
+          "required": true,
+          "contains": [
+            "azure object id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_groups",
+      "name": "List Groups",
+      "description": "List groups in the organization",
+      "http_method": "GET",
+      "endpoint": "/actions/list_groups",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "get_group",
+      "name": "Get Group",
+      "description": "Get information about a group",
+      "http_method": "GET",
+      "endpoint": "/actions/get_group",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "object_id",
+          "type": "string",
+          "description": "Object ID of group",
+          "required": true,
+          "contains": [
+            "azure object id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_group_members",
+      "name": "List Group Members",
+      "description": "List the members in a group",
+      "http_method": "GET",
+      "endpoint": "/actions/list_group_members",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "group_object_id",
+          "type": "string",
+          "description": "Object ID of group",
+          "required": true,
+          "contains": [
+            "azure object id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "validate_group",
+      "name": "Validate Group",
+      "description": "Returns true if a user is in a group; otherwise, false",
+      "http_method": "GET",
+      "endpoint": "/actions/validate_group",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "group_object_id",
+          "type": "string",
+          "description": "Object ID of group",
+          "required": true,
+          "contains": [
+            "azure group object id"
+          ]
+        },
+        {
+          "name": "user_id",
+          "type": "string",
+          "description": "User ID to validate",
+          "required": true,
+          "contains": [
+            "azure user principal name",
+            "azure object id",
+            "email"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_directory_roles",
+      "name": "List Directory Roles",
+      "description": "List the directory roles in a tenant",
+      "http_method": "GET",
+      "endpoint": "/actions/list_directory_roles",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "generate_token",
+      "name": "Generate Token",
+      "description": "Generate a token or regenerates token when the token expires",
+      "http_method": "GET",
+      "endpoint": "/actions/generate_token",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": []
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Azure AD Graph AG",
+    "original_type": "identity management",
+    "converted_at": "2025-12-18T16:25:28.600910",
+    "source_version": "2.5.0"
+  }
+}

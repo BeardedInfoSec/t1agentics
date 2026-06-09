@@ -1,0 +1,281 @@
+{
+  "id": "intsights",
+  "name": "IntSights",
+  "description": "This app integrates with IntSights Cyber Intelligence",
+  "version": "4.2.1",
+  "category": "utility",
+  "vendor": "IntSights",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "https://api.ti.insight.rapid7.com/public/v1",
+  "actions": [
+    {
+      "id": "hunt_ioc",
+      "name": "Hunt Ioc",
+      "description": "Look for information about an ioc in the Intsights database",
+      "http_method": "GET",
+      "endpoint": "/actions/hunt_ioc",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "hunting",
+          "type": "string",
+          "description": "Look for information about an ioc in the Intsights database",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "enrich_ioc",
+      "name": "Enrich Ioc",
+      "description": "Get enrichment information on IOC using the (paid) enrich API endpoint",
+      "http_method": "GET",
+      "endpoint": "/actions/enrich_ioc",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "ioc",
+          "type": "string",
+          "description": "The IOC to enrich",
+          "required": true
+        },
+        {
+          "name": "max_poll_cycles",
+          "type": "number",
+          "description": "The maximum amount of poll cycles to wait before erroring out",
+          "required": true,
+          "default": 15
+        },
+        {
+          "name": "sleep_seconds",
+          "type": "number",
+          "description": "The amount of seconds to sleep before trying to poll the endpoint again for results",
+          "required": true,
+          "default": 2
+        }
+      ]
+    },
+    {
+      "id": "hunt_file",
+      "name": "Hunt File",
+      "description": "Look for information about a file hash in the Intsights database",
+      "http_method": "GET",
+      "endpoint": "/actions/hunt_file",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "hash",
+          "type": "string",
+          "description": "Hash of the binary to hunt",
+          "required": true,
+          "contains": [
+            "hash",
+            "sha256",
+            "sha1",
+            "md5"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "hunt_domain",
+      "name": "Hunt Domain",
+      "description": "Look for information about a domain in the Intsights database",
+      "http_method": "GET",
+      "endpoint": "/actions/hunt_domain",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "domain",
+          "type": "string",
+          "description": "Domain to hunt",
+          "required": true,
+          "contains": [
+            "domain"
+          ]
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "hunt_ip",
+      "name": "Hunt Ip",
+      "description": "Look for information about an IP in the Intsights database",
+      "http_method": "GET",
+      "endpoint": "/actions/hunt_ip",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "IP to hunt",
+          "required": true,
+          "contains": [
+            "ip"
+          ]
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "hunt_url",
+      "name": "Hunt Url",
+      "description": "Look for information about a URL in the Intsights database",
+      "http_method": "GET",
+      "endpoint": "/actions/hunt_url",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "URL to hunt",
+          "required": true,
+          "contains": [
+            "url"
+          ]
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "on_poll",
+      "name": "On Poll",
+      "description": "Callback action for the on_poll ingest functionality",
+      "http_method": "GET",
+      "endpoint": "/actions/on_poll",
+      "action_type": "ingest",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "container_id",
+          "type": "string",
+          "description": "Parameter ignored in this app",
+          "required": false
+        },
+        {
+          "name": "start_time",
+          "type": "number",
+          "description": "Start of time range, in epoch time (milliseconds). Default: 10 days",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "number",
+          "description": "End of time range, in epoch time (milliseconds). Default: Now",
+          "required": false
+        },
+        {
+          "name": "container_count",
+          "type": "number",
+          "description": "Maximum number of containers to ingest",
+          "required": false
+        },
+        {
+          "name": "artifact_count",
+          "type": "number",
+          "description": "Parameter ignored in this app",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "close_alert",
+      "name": "Close Alert",
+      "description": "Close an alert in the IntSights dashboard",
+      "http_method": "GET",
+      "endpoint": "/actions/close_alert",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "alert_id",
+          "type": "string",
+          "description": "IntSights alert ID to close",
+          "required": true,
+          "contains": [
+            "intsights alert id"
+          ]
+        },
+        {
+          "name": "reason",
+          "type": "string",
+          "description": "IntSights alert's closure reason",
+          "required": true
+        },
+        {
+          "name": "free_text",
+          "type": "string",
+          "description": "IntSights alert's comments",
+          "required": false
+        },
+        {
+          "name": "rate",
+          "type": "number",
+          "description": "IntSights Alert's rate (0-5)",
+          "required": false
+        },
+        {
+          "name": "is_hidden",
+          "type": "boolean",
+          "description": "Alert's hidden status (Delete alert from the account instance - only when reason is FalsePositive)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "takedown_request",
+      "name": "Takedown Request",
+      "description": "Initiate a takedown request of an alert from the IntSights dashboard",
+      "http_method": "GET",
+      "endpoint": "/actions/takedown_request",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "alert_id",
+          "type": "string",
+          "description": "IntSights alert ID to takedown",
+          "required": true,
+          "contains": [
+            "intsights alert id"
+          ]
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "IntSights",
+    "original_type": "threat intel",
+    "converted_at": "2025-12-18T16:25:28.870671",
+    "source_version": "4.2.1"
+  }
+}

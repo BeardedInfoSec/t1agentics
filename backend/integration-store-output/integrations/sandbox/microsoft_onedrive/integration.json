@@ -1,0 +1,314 @@
+{
+  "id": "microsoft_onedrive",
+  "name": "Microsoft OneDrive",
+  "description": "This app integrates with Microsoft OneDrive to execute various generic actions",
+  "version": "2.4.0",
+  "category": "sandbox",
+  "vendor": "Microsoft",
+  "auth_type": "oauth2",
+  "auth_config": {
+    "type": "oauth2",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "https://login.microsoftonline.com",
+  "actions": [
+    {
+      "id": "get_file",
+      "name": "Get File",
+      "description": "Download a file from server and add it to the vault",
+      "http_method": "GET",
+      "endpoint": "/actions/get_file",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "file_id",
+          "type": "string",
+          "description": "ID of file",
+          "required": false,
+          "contains": [
+            "msonedrive file id"
+          ]
+        },
+        {
+          "name": "drive_id",
+          "type": "string",
+          "description": "Drive ID",
+          "required": false,
+          "contains": [
+            "msonedrive drive id"
+          ]
+        },
+        {
+          "name": "file_path",
+          "type": "string",
+          "description": "Path of file",
+          "required": false,
+          "contains": [
+            "file path"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "list_items",
+      "name": "List Items",
+      "description": "List of items",
+      "http_method": "GET",
+      "endpoint": "/me/drive/root/children",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "drive_id",
+          "type": "string",
+          "description": "Parent drive ID",
+          "required": false,
+          "contains": [
+            "msonedrive drive id"
+          ]
+        },
+        {
+          "name": "ph_0",
+          "type": "string",
+          "description": "Placeholder",
+          "required": false
+        },
+        {
+          "name": "folder_id",
+          "type": "string",
+          "description": "Parent folder ID",
+          "required": false,
+          "contains": [
+            "msonedrive folder id"
+          ]
+        },
+        {
+          "name": "folder_path",
+          "type": "string",
+          "description": "Parent folder path",
+          "required": false,
+          "contains": [
+            "msonedrive folder path"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_drive",
+      "name": "List Drive",
+      "description": "List of Drives",
+      "http_method": "GET",
+      "endpoint": "/me/drives",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "upload_file",
+      "name": "Upload File",
+      "description": "Upload file",
+      "http_method": "GET",
+      "endpoint": "/actions/upload_file",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "drive_id",
+          "type": "string",
+          "description": "Parent drive ID",
+          "required": false,
+          "contains": [
+            "msonedrive drive id"
+          ]
+        },
+        {
+          "name": "vault_id",
+          "type": "string",
+          "description": "Vault ID",
+          "required": true,
+          "contains": [
+            "vault id",
+            "sha1"
+          ]
+        },
+        {
+          "name": "file_path",
+          "type": "string",
+          "description": "File path with file name",
+          "required": true,
+          "contains": [
+            "file path"
+          ]
+        },
+        {
+          "name": "auto_rename",
+          "type": "boolean",
+          "description": "Auto rename file",
+          "required": false,
+          "default": true
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "delete_file",
+      "name": "Delete File",
+      "description": "Delete file",
+      "http_method": "GET",
+      "endpoint": "/me/drive/items/{file_id}",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "file_id",
+          "type": "string",
+          "description": "File id",
+          "required": false,
+          "contains": [
+            "msonedrive file id"
+          ]
+        },
+        {
+          "name": "drive_id",
+          "type": "string",
+          "description": "Drive id",
+          "required": false,
+          "contains": [
+            "msonedrive drive id"
+          ]
+        },
+        {
+          "name": "file_path",
+          "type": "string",
+          "description": "Path of file",
+          "required": false,
+          "contains": [
+            "file path"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "delete_folder",
+      "name": "Delete Folder",
+      "description": "Delete a folder",
+      "http_method": "GET",
+      "endpoint": "/actions/delete_folder",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "drive_id",
+          "type": "string",
+          "description": "Parent drive ID",
+          "required": false,
+          "contains": [
+            "msonedrive drive id"
+          ]
+        },
+        {
+          "name": "ph_0",
+          "type": "string",
+          "description": "Placeholder",
+          "required": false
+        },
+        {
+          "name": "folder_id",
+          "type": "string",
+          "description": "Folder ID",
+          "required": false,
+          "contains": [
+            "msonedrive folder id"
+          ]
+        },
+        {
+          "name": "folder_path",
+          "type": "string",
+          "description": "Folder path",
+          "required": false,
+          "contains": [
+            "msonedrive folder path"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "create_folder",
+      "name": "Create Folder",
+      "description": "Create a folder",
+      "http_method": "GET",
+      "endpoint": "/actions/create_folder",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "drive_id",
+          "type": "string",
+          "description": "Parent drive ID",
+          "required": false,
+          "contains": [
+            "msonedrive drive id"
+          ]
+        },
+        {
+          "name": "folder_id",
+          "type": "string",
+          "description": "Parent folder ID",
+          "required": false,
+          "contains": [
+            "msonedrive folder id"
+          ]
+        },
+        {
+          "name": "folder_path",
+          "type": "string",
+          "description": "Parent folder path",
+          "required": false,
+          "contains": [
+            "msonedrive folder path"
+          ]
+        },
+        {
+          "name": "folder_name",
+          "type": "string",
+          "description": "Folder name",
+          "required": true,
+          "contains": [
+            "msonedrive folder name"
+          ]
+        },
+        {
+          "name": "auto_rename",
+          "type": "boolean",
+          "description": "Auto rename folder",
+          "required": false,
+          "default": true
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Microsoft OneDrive",
+    "original_type": "sandbox",
+    "converted_at": "2025-12-18T16:25:28.942059",
+    "source_version": "2.4.0"
+  }
+}

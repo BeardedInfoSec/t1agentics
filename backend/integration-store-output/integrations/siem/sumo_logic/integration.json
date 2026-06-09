@@ -1,0 +1,159 @@
+{
+  "id": "sumo_logic",
+  "name": "Sumo Logic",
+  "description": "This app integrates with the Sumo Logic cloud platform to implement investigative actions",
+  "version": "3.0.1",
+  "category": "siem",
+  "vendor": "Sumo Logic",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "on_poll",
+      "name": "On Poll",
+      "description": "Run a query on Sumo Logic and ingest the results",
+      "http_method": "GET",
+      "endpoint": "/actions/on_poll",
+      "action_type": "ingest",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "start_time",
+          "type": "number",
+          "description": "Parameter Ignored in this app",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "number",
+          "description": "Parameter Ignored in this app",
+          "required": false
+        },
+        {
+          "name": "container_id",
+          "type": "string",
+          "description": "Parameter Ignored in this app",
+          "required": false
+        },
+        {
+          "name": "container_count",
+          "type": "number",
+          "description": "Parameter ignored in this app",
+          "required": false
+        },
+        {
+          "name": "artifact_count",
+          "type": "number",
+          "description": "Maximum number of messages to check",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "get_results",
+      "name": "Get Results",
+      "description": "Retrieves the result of a search job",
+      "http_method": "GET",
+      "endpoint": "/actions/get_results",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "search_id",
+          "type": "string",
+          "description": "Search id",
+          "required": true,
+          "contains": [
+            "search id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "run_query",
+      "name": "Run Query",
+      "description": "Runs a search query on the Sumo Logic platform",
+      "http_method": "GET",
+      "endpoint": "/actions/run_query",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Query to run",
+          "required": true,
+          "contains": [
+            "sumo logic query"
+          ]
+        },
+        {
+          "name": "from_time",
+          "type": "number",
+          "description": "UNIX start time for search",
+          "required": false
+        },
+        {
+          "name": "to_time",
+          "type": "number",
+          "description": "UNIX end time for search",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Upper limit of message response results",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Type of response to receive",
+          "required": false,
+          "default": "messages"
+        }
+      ]
+    },
+    {
+      "id": "delete_job",
+      "name": "Delete Job",
+      "description": "Delete a search job",
+      "http_method": "GET",
+      "endpoint": "/actions/delete_job",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "search_id",
+          "type": "string",
+          "description": "Search id",
+          "required": true,
+          "contains": [
+            "search id"
+          ]
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Sumo Logic",
+    "original_type": "siem",
+    "converted_at": "2025-12-18T16:25:29.180434",
+    "source_version": "3.0.1"
+  }
+}

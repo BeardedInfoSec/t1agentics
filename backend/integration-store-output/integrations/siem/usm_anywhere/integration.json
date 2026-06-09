@@ -1,0 +1,237 @@
+{
+  "id": "usm_anywhere",
+  "name": "USM Anywhere",
+  "description": "Integrates with AT&T Cybersecurity USM Anywhere (AlienVault) for alarm management, event retrieval, and vulnerability monitoring via the USM Anywhere REST API v2.0",
+  "version": "1.0.0",
+  "category": "siem",
+  "vendor": "AT&T Cybersecurity (LevelBlue)",
+  "auth_type": "oauth2_client",
+  "auth_config": {
+    "type": "oauth2_client",
+    "token_url": "https://{subdomain}.alienvault.cloud/api/2.0/oauth/token",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "https://{subdomain}.alienvault.cloud/api/2.0",
+  "actions": [
+    {
+      "id": "list_alarms",
+      "name": "List Alarms",
+      "description": "Retrieve alarms from USM Anywhere with filtering by status, priority, and time",
+      "http_method": "GET",
+      "endpoint": "/alarms",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Filter by alarm status (open, closed, in_review)",
+          "required": false
+        },
+        {
+          "name": "priority_label",
+          "type": "string",
+          "description": "Filter by priority label (low, medium, high, critical)",
+          "required": false
+        },
+        {
+          "name": "timestamp_occured_gte",
+          "type": "string",
+          "description": "Filter alarms occurring after this timestamp (ISO 8601)",
+          "required": false
+        },
+        {
+          "name": "timestamp_occured_lte",
+          "type": "string",
+          "description": "Filter alarms occurring before this timestamp",
+          "required": false
+        },
+        {
+          "name": "page",
+          "type": "number",
+          "description": "Page number for pagination",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "size",
+          "type": "number",
+          "description": "Number of results per page",
+          "required": false,
+          "default": 50
+        }
+      ]
+    },
+    {
+      "id": "get_alarm",
+      "name": "Get Alarm Details",
+      "description": "Retrieve details for a specific alarm by ID",
+      "http_method": "GET",
+      "endpoint": "/alarms/{alarmId}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "alarmId",
+          "type": "string",
+          "description": "Alarm ID to retrieve",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_alarm_events",
+      "name": "Get Alarm Events",
+      "description": "Retrieve events associated with a specific alarm",
+      "http_method": "GET",
+      "endpoint": "/alarms/{alarmId}/events",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "alarmId",
+          "type": "string",
+          "description": "Alarm ID to retrieve events for",
+          "required": true
+        },
+        {
+          "name": "page",
+          "type": "number",
+          "description": "Page number",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "size",
+          "type": "number",
+          "description": "Results per page",
+          "required": false,
+          "default": 50
+        }
+      ]
+    },
+    {
+      "id": "list_events",
+      "name": "List Events",
+      "description": "Retrieve security events with optional filtering",
+      "http_method": "GET",
+      "endpoint": "/events",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "timestamp_occured_gte",
+          "type": "string",
+          "description": "Events occurring after this timestamp",
+          "required": false
+        },
+        {
+          "name": "timestamp_occured_lte",
+          "type": "string",
+          "description": "Events occurring before this timestamp",
+          "required": false
+        },
+        {
+          "name": "event_name",
+          "type": "string",
+          "description": "Filter by event name",
+          "required": false
+        },
+        {
+          "name": "source_name",
+          "type": "string",
+          "description": "Filter by source name",
+          "required": false
+        },
+        {
+          "name": "page",
+          "type": "number",
+          "description": "Page number",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "size",
+          "type": "number",
+          "description": "Results per page",
+          "required": false,
+          "default": 50
+        }
+      ]
+    },
+    {
+      "id": "update_alarm",
+      "name": "Update Alarm",
+      "description": "Update alarm status or add labels",
+      "http_method": "PATCH",
+      "endpoint": "/alarms/{alarmId}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "alarmId",
+          "type": "string",
+          "description": "Alarm ID to update",
+          "required": true
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "New status (open, closed, in_review)",
+          "required": false
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "description": "Label to apply to the alarm",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "search_events",
+      "name": "Search Events",
+      "description": "Search for events by IP, hostname, or other criteria",
+      "http_method": "GET",
+      "endpoint": "/events",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "source_name",
+          "type": "string",
+          "description": "Source name or IP to search for",
+          "required": false
+        },
+        {
+          "name": "destination_name",
+          "type": "string",
+          "description": "Destination name or IP",
+          "required": false
+        },
+        {
+          "name": "timestamp_occured_gte",
+          "type": "string",
+          "description": "Events after this time",
+          "required": false
+        },
+        {
+          "name": "page",
+          "type": "number",
+          "description": "Page number",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "size",
+          "type": "number",
+          "description": "Results per page",
+          "required": false,
+          "default": 50
+        }
+      ],
+      "observable_type": "ip"
+    }
+  ]
+}

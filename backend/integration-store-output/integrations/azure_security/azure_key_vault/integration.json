@@ -1,0 +1,185 @@
+{
+  "id": "azure_key_vault_azure_security",
+  "name": "Azure Key Vault",
+  "description": "Azure service for safeguarding cryptographic keys, secrets, and certificates used by cloud applications and services",
+  "version": "1.0.0",
+  "category": "azure_security",
+  "vendor": "Microsoft Azure",
+  "auth_type": "oauth2_client",
+  "auth_config": {
+    "type": "oauth2_client",
+    "token_url": "https://login.microsoftonline.com/{tenantId}/oauth2/v2.0/token",
+    "scope": "https://vault.azure.net/.default",
+    "grant_type": "client_credentials"
+  },
+  "base_url": "https://{vaultName}.vault.azure.net",
+  "actions": [
+    {
+      "id": "list_secrets",
+      "name": "List Secrets",
+      "description": "List all secrets in the key vault (returns metadata only, not values)",
+      "http_method": "GET",
+      "endpoint": "/secrets",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "maxresults",
+          "type": "number",
+          "description": "Maximum secrets to return (1-25)",
+          "required": false,
+          "default": 25
+        },
+        {
+          "name": "api-version",
+          "type": "string",
+          "description": "API version",
+          "required": true,
+          "default": "7.4"
+        }
+      ]
+    },
+    {
+      "id": "get_secret",
+      "name": "Get Secret",
+      "description": "Retrieve a specific secret value from the key vault",
+      "http_method": "GET",
+      "endpoint": "/secrets/{secretName}/{secretVersion}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "secretName",
+          "type": "string",
+          "description": "Name of the secret",
+          "required": true
+        },
+        {
+          "name": "secretVersion",
+          "type": "string",
+          "description": "Version of the secret (empty for latest)",
+          "required": false
+        },
+        {
+          "name": "api-version",
+          "type": "string",
+          "description": "API version",
+          "required": true,
+          "default": "7.4"
+        }
+      ]
+    },
+    {
+      "id": "list_keys",
+      "name": "List Keys",
+      "description": "List all cryptographic keys in the key vault",
+      "http_method": "GET",
+      "endpoint": "/keys",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "maxresults",
+          "type": "number",
+          "description": "Maximum keys to return",
+          "required": false,
+          "default": 25
+        },
+        {
+          "name": "api-version",
+          "type": "string",
+          "description": "API version",
+          "required": true,
+          "default": "7.4"
+        }
+      ]
+    },
+    {
+      "id": "list_certificates",
+      "name": "List Certificates",
+      "description": "List all certificates in the key vault",
+      "http_method": "GET",
+      "endpoint": "/certificates",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "maxresults",
+          "type": "number",
+          "description": "Maximum certificates to return",
+          "required": false,
+          "default": 25
+        },
+        {
+          "name": "includePending",
+          "type": "boolean",
+          "description": "Include certificates with pending status",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "api-version",
+          "type": "string",
+          "description": "API version",
+          "required": true,
+          "default": "7.4"
+        }
+      ]
+    },
+    {
+      "id": "get_certificate",
+      "name": "Get Certificate",
+      "description": "Retrieve details of a specific certificate including its policy and attributes",
+      "http_method": "GET",
+      "endpoint": "/certificates/{certificateName}/{certificateVersion}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "certificateName",
+          "type": "string",
+          "description": "Certificate name",
+          "required": true
+        },
+        {
+          "name": "certificateVersion",
+          "type": "string",
+          "description": "Certificate version (empty for latest)",
+          "required": false
+        },
+        {
+          "name": "api-version",
+          "type": "string",
+          "description": "API version",
+          "required": true,
+          "default": "7.4"
+        }
+      ]
+    },
+    {
+      "id": "list_deleted_secrets",
+      "name": "List Deleted Secrets",
+      "description": "List deleted secrets in the key vault that can still be recovered (soft delete)",
+      "http_method": "GET",
+      "endpoint": "/deletedsecrets",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "maxresults",
+          "type": "number",
+          "description": "Maximum results to return",
+          "required": false,
+          "default": 25
+        },
+        {
+          "name": "api-version",
+          "type": "string",
+          "description": "API version",
+          "required": true,
+          "default": "7.4"
+        }
+      ]
+    }
+  ]
+}

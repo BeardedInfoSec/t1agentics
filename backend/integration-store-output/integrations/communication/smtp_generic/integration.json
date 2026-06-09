@@ -1,0 +1,52 @@
+{
+  "id": "smtp_generic",
+  "name": "SMTP Email",
+  "description": "Generic SMTP connector for sending emails from playbooks. Works with Gmail, Outlook, Microsoft 365, Exchange, and any SMTP server. Use to send alert notifications, escalation emails, and automated reports.",
+  "version": "1.0.0",
+  "category": "communication",
+  "vendor": "Generic",
+  "auth_type": "basic",
+  "auth_config": {
+    "type": "basic",
+    "username_field": "username",
+    "password_field": "password"
+  },
+  "base_url": "smtp://smtp.yourserver.com:587",
+  "setup_doc": "SMTP EMAIL — SETUP GUIDE\n========================\n\nCREDENTIALS NEEDED\n  Username   Your sender email address (e.g., alerts@yourcompany.com)\n  Password   Your account password or app-specific password\n\nBASE URL FORMAT\n  smtp://host:port    STARTTLS on port 587  (recommended)\n  smtps://host:port   SSL/TLS on port 465\n\nCOMMON SMTP SERVERS\n  Gmail           smtp://smtp.gmail.com:587\n  Outlook / M365  smtp://smtp.office365.com:587\n  Yahoo Mail      smtp://smtp.mail.yahoo.com:587\n  Exchange        smtp://mail.yourcompany.com:587\n  SendGrid        smtp://smtp.sendgrid.net:587\n\nGMAIL SETUP\n  1. Enable 2-Step Verification on your Google Account\n  2. Go to Google Account > Security > App Passwords\n  3. Select app: Mail / device: Other\n  4. Use your Gmail address as username\n  5. Use the generated app password (not your login password)\n\nOUTLOOK / MICROSOFT 365\n  1. Log into https://account.microsoft.com\n  2. Go to Security > Advanced Security Options\n  3. Enable two-step verification if not already on\n  4. Under App Passwords, generate a new password\n  5. Use your full email address as username\n\nEXCHANGE ON-PREMISES\n  1. Ask your Exchange admin for the SMTP relay host\n  2. Use your Windows/AD username and password\n  3. Port is typically 587 (STARTTLS) or 465 (SSL)\n\nTROUBLESHOOTING\n  - 'Authentication failed': Check username/password. If MFA is\n    enabled, you need an App Password, not your login password.\n  - 'Connection refused': Verify host and port. Try 465 if 587 fails.\n  - 'Certificate error': Use smtps:// for SSL or smtp:// for STARTTLS.",
+  "actions": [
+    {
+      "id": "send_email",
+      "name": "Send Email",
+      "description": "Send an email to one or more recipients",
+      "http_method": "POST",
+      "endpoint": "/send",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        { "name": "to", "type": "string", "description": "Recipient email address(es), comma-separated", "required": true },
+        { "name": "subject", "type": "string", "description": "Email subject line", "required": true },
+        { "name": "body", "type": "string", "description": "Email body (plain text or HTML)", "required": true },
+        { "name": "from_address", "type": "string", "description": "Sender address (defaults to credential username)", "required": false },
+        { "name": "cc", "type": "string", "description": "CC recipients, comma-separated", "required": false },
+        { "name": "bcc", "type": "string", "description": "BCC recipients, comma-separated", "required": false },
+        { "name": "html", "type": "boolean", "description": "Send body as HTML (default: false)", "required": false }
+      ]
+    },
+    {
+      "id": "send_alert_notification",
+      "name": "Send Alert Notification",
+      "description": "Send a formatted security alert notification email with alert details",
+      "http_method": "POST",
+      "endpoint": "/send",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        { "name": "to", "type": "string", "description": "Recipient email address", "required": true },
+        { "name": "alert_title", "type": "string", "description": "Alert title", "required": false },
+        { "name": "severity", "type": "string", "description": "Alert severity (low/medium/high/critical)", "required": false },
+        { "name": "alert_id", "type": "string", "description": "Alert ID for reference", "required": false },
+        { "name": "message", "type": "string", "description": "Additional context or notes to include", "required": false }
+      ]
+    }
+  ]
+}

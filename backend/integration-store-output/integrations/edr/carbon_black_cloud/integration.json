@@ -1,0 +1,1295 @@
+{
+  "id": "carbon_black_cloud",
+  "name": "Carbon Black Cloud",
+  "description": "Carbon Black Cloud App for Splunk SOAR",
+  "version": "2.0.1",
+  "category": "edr",
+  "vendor": "VMware",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "on_poll",
+      "name": "On Poll",
+      "description": "Callback action for the on_poll ingest functionality",
+      "http_method": "GET",
+      "endpoint": "/actions/on_poll",
+      "action_type": "ingest",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "container_id",
+          "type": "string",
+          "description": "Container IDs to limit the ingestion to",
+          "required": false
+        },
+        {
+          "name": "start_time",
+          "type": "number",
+          "description": "Start of time range, in epoch time (milliseconds)",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "number",
+          "description": "End of time range, in epoch time (milliseconds)",
+          "required": false
+        },
+        {
+          "name": "container_count",
+          "type": "number",
+          "description": "Maximum number of container records to query for.",
+          "required": false
+        },
+        {
+          "name": "artifact_count",
+          "type": "number",
+          "description": "Maximum number of artifact records to query for.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "normalize_artifact",
+      "name": "Normalize Artifact",
+      "description": "Normalize artifact ingested by Splunk App for Splunk Phantom",
+      "http_method": "GET",
+      "endpoint": "/actions/normalize_artifact",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "raw",
+          "type": "string",
+          "description": "Artifact _raw data",
+          "required": false,
+          "contains": [
+            "cbc alert"
+          ]
+        },
+        {
+          "name": "artifact_id",
+          "type": "number",
+          "description": "Artifact ID to process",
+          "required": false,
+          "contains": [
+            "phantom artifact id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "dismiss_alert",
+      "name": "Dismiss Alert",
+      "description": "Dismiss Carbon Black Cloud alert",
+      "http_method": "POST",
+      "endpoint": "/actions/dismiss_alert",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "alert_id",
+          "type": "string",
+          "description": "Carbon Black Cloud Alert ID",
+          "required": true,
+          "default": "",
+          "contains": [
+            "cbc alert id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "dismiss_future_alerts",
+      "name": "Dismiss Future Alerts",
+      "description": "Dismiss Carbon Black Cloud all future alerts",
+      "http_method": "POST",
+      "endpoint": "/actions/dismiss_future_alerts",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "alert_id",
+          "type": "string",
+          "description": "Carbon Black Cloud Alert ID",
+          "required": true,
+          "default": "",
+          "contains": [
+            "cbc alert id"
+          ]
+        },
+        {
+          "name": "remediation_status",
+          "type": "string",
+          "description": "Carbon Black Cloud remediation status to set for the alert",
+          "required": false,
+          "default": ""
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "Carbon Black Cloud comment to set for the alert",
+          "required": false,
+          "default": ""
+        }
+      ]
+    },
+    {
+      "id": "get_enriched_event",
+      "name": "Get Enriched Event",
+      "description": "Get Enriched Event",
+      "http_method": "GET",
+      "endpoint": "/actions/get_enriched_event",
+      "action_type": "investigate",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "alert_id",
+          "type": "string",
+          "description": "CBC Alert ID",
+          "required": true,
+          "default": "",
+          "contains": [
+            "cbc alert id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_observations",
+      "name": "Get Observations",
+      "description": "Get Observations",
+      "http_method": "GET",
+      "endpoint": "/actions/get_observations",
+      "action_type": "investigate",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "alert_id",
+          "type": "string",
+          "description": "CBC Alert ID",
+          "required": true,
+          "default": "",
+          "contains": [
+            "cbc alert id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_file",
+      "name": "Get File",
+      "description": "Get File",
+      "http_method": "GET",
+      "endpoint": "/actions/get_file",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "device_id",
+          "type": "string",
+          "description": "CBC Device ID",
+          "required": true,
+          "default": "",
+          "contains": [
+            "cbc device id"
+          ]
+        },
+        {
+          "name": "file_name",
+          "type": "string",
+          "description": "File Name",
+          "required": true,
+          "default": ""
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "delete_file",
+      "name": "Delete File",
+      "description": "Delete File",
+      "http_method": "GET",
+      "endpoint": "/actions/delete_file",
+      "action_type": "contain",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "device_id",
+          "type": "string",
+          "description": "CBC Device ID",
+          "required": true,
+          "default": "",
+          "contains": [
+            "cbc device id"
+          ]
+        },
+        {
+          "name": "file_name",
+          "type": "string",
+          "description": "File Name",
+          "required": true,
+          "default": ""
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "get_binary_file",
+      "name": "Get Binary File",
+      "description": "Get Binary File",
+      "http_method": "GET",
+      "endpoint": "/actions/get_binary_file",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "file_hash",
+          "type": "string",
+          "description": "Binary file sha256 hash",
+          "required": true,
+          "default": "",
+          "contains": [
+            "cbc process hash"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "kill_process",
+      "name": "Kill Process",
+      "description": "Kill process on Carbon Black Cloud endpoint",
+      "http_method": "POST",
+      "endpoint": "/actions/kill_process",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "device_id",
+          "type": "string",
+          "description": "CBC Device ID",
+          "required": true,
+          "default": "",
+          "contains": [
+            "cbc device id"
+          ]
+        },
+        {
+          "name": "process_pid",
+          "type": "number",
+          "description": "Process PID",
+          "required": false,
+          "default": "",
+          "contains": [
+            "pid"
+          ]
+        },
+        {
+          "name": "process_name",
+          "type": "string",
+          "description": "Process Name",
+          "required": false,
+          "default": "",
+          "contains": [
+            "process name"
+          ]
+        },
+        {
+          "name": "process_hash",
+          "type": "string",
+          "description": "Process Hash",
+          "required": false,
+          "default": "",
+          "contains": [
+            "cbc process hash"
+          ]
+        },
+        {
+          "name": "process_guid",
+          "type": "string",
+          "description": "Process GUID",
+          "required": false,
+          "default": "",
+          "contains": [
+            "cbc process guid"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_binary_metadata",
+      "name": "Get Binary Metadata",
+      "description": "Get binary metadata from Carbon Black Cloud",
+      "http_method": "GET",
+      "endpoint": "/actions/get_binary_metadata",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "file_hash",
+          "type": "string",
+          "description": "Binary file sha256 hash",
+          "required": true,
+          "default": "",
+          "contains": [
+            "cbc process hash"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "get_process_metadata",
+      "name": "Get Process Metadata",
+      "description": "Get Process Metadata",
+      "http_method": "GET",
+      "endpoint": "/actions/get_process_metadata",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "process_guid",
+          "type": "string",
+          "description": "Process GUID",
+          "required": true,
+          "default": "",
+          "contains": [
+            "cbc process guid"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "quarantine_device",
+      "name": "Quarantine Device",
+      "description": "Quarantine device in Carbon Black Cloud",
+      "http_method": "POST",
+      "endpoint": "/actions/quarantine_device",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "device_id",
+          "type": "string",
+          "description": "CBC Device ID",
+          "required": true,
+          "default": "",
+          "contains": [
+            "cbc device id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "unquarantine_device",
+      "name": "Unquarantine Device",
+      "description": "Unquarantine device in Carbon Black Cloud",
+      "http_method": "POST",
+      "endpoint": "/actions/unquarantine_device",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "device_id",
+          "type": "string",
+          "description": "CBC Device ID",
+          "required": true,
+          "default": "",
+          "contains": [
+            "cbc device id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ban_hash",
+      "name": "Ban Hash",
+      "description": "Ban process by hash in Carbon Black Cloud",
+      "http_method": "POST",
+      "endpoint": "/actions/ban_hash",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "process_hash",
+          "type": "string",
+          "description": "CBC Process Hash",
+          "required": true,
+          "default": "",
+          "contains": [
+            "cbc process hash"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "unban_hash",
+      "name": "Unban Hash",
+      "description": "Unban process by hash in Carbon Black Cloud",
+      "http_method": "POST",
+      "endpoint": "/actions/unban_hash",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "process_hash",
+          "type": "string",
+          "description": "CBC Process Hash",
+          "required": true,
+          "default": "",
+          "contains": [
+            "cbc process hash"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "list_policies",
+      "name": "List Policies",
+      "description": "List device policies in Carbon Black Cloud",
+      "http_method": "GET",
+      "endpoint": "/actions/list_policies",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "set_device_policy",
+      "name": "Set Device Policy",
+      "description": "Set device policy of a Carbon Black Cloud endpoint",
+      "http_method": "GET",
+      "endpoint": "/actions/set_device_policy",
+      "action_type": "contain",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "device_id",
+          "type": "string",
+          "description": "CBC Device ID",
+          "required": true,
+          "default": "",
+          "contains": [
+            "cbc device id"
+          ]
+        },
+        {
+          "name": "policy_id",
+          "type": "string",
+          "description": "Policy ID",
+          "required": false,
+          "default": ""
+        },
+        {
+          "name": "policy_name",
+          "type": "string",
+          "description": "Policy Name",
+          "required": false,
+          "default": ""
+        }
+      ]
+    },
+    {
+      "id": "add_ioc",
+      "name": "Add Ioc",
+      "description": "Add IOC to feed/watchlist in Carbon Black Cloud",
+      "http_method": "GET",
+      "endpoint": "/actions/add_ioc",
+      "action_type": "contain",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "feed_id",
+          "type": "string",
+          "description": "Feed ID",
+          "required": false,
+          "default": ""
+        },
+        {
+          "name": "watchlist_id",
+          "type": "string",
+          "description": "Watchlist ID",
+          "required": false,
+          "default": ""
+        },
+        {
+          "name": "report_id",
+          "type": "string",
+          "description": "Report ID",
+          "required": true,
+          "default": ""
+        },
+        {
+          "name": "ioc_id",
+          "type": "string",
+          "description": "IOC ID",
+          "required": false,
+          "default": ""
+        },
+        {
+          "name": "cbc_field",
+          "type": "string",
+          "description": "CBC IOC Field",
+          "required": true,
+          "default": ""
+        },
+        {
+          "name": "ioc_value",
+          "type": "string",
+          "description": "CBC IOC Value",
+          "required": true,
+          "default": ""
+        }
+      ]
+    },
+    {
+      "id": "remove_ioc_watchlist",
+      "name": "Remove Watchlist Ioc",
+      "description": "Remove IOC from watchlist in Carbon Black Cloud",
+      "http_method": "GET",
+      "endpoint": "/actions/remove_ioc_watchlist",
+      "action_type": "contain",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "watchlist_id",
+          "type": "string",
+          "description": "Watchlist ID",
+          "required": true,
+          "default": ""
+        },
+        {
+          "name": "report_id",
+          "type": "string",
+          "description": "Report ID",
+          "required": true,
+          "default": ""
+        },
+        {
+          "name": "ioc_id",
+          "type": "string",
+          "description": "IOC ID",
+          "required": false,
+          "default": ""
+        },
+        {
+          "name": "ioc_value",
+          "type": "string",
+          "description": "IOC Value",
+          "required": false,
+          "default": ""
+        }
+      ]
+    },
+    {
+      "id": "remove_ioc_feed",
+      "name": "Remove Feed Ioc",
+      "description": "Remove IOC from feed in Carbon Black Cloud",
+      "http_method": "GET",
+      "endpoint": "/actions/remove_ioc_feed",
+      "action_type": "contain",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "feed_id",
+          "type": "string",
+          "description": "Feed ID",
+          "required": true,
+          "default": ""
+        },
+        {
+          "name": "report_id",
+          "type": "string",
+          "description": "Report ID",
+          "required": true,
+          "default": ""
+        },
+        {
+          "name": "ioc_id",
+          "type": "string",
+          "description": "IOC ID",
+          "required": false,
+          "default": ""
+        },
+        {
+          "name": "ioc_value",
+          "type": "string",
+          "description": "IOC Value",
+          "required": false,
+          "default": ""
+        }
+      ]
+    },
+    {
+      "id": "list_processes",
+      "name": "List Processes",
+      "description": "List processes on a device in Carbon Black Cloud",
+      "http_method": "GET",
+      "endpoint": "/actions/list_processes",
+      "action_type": "investigate",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "device_id",
+          "type": "string",
+          "description": "CBC Device ID",
+          "required": true,
+          "default": "",
+          "contains": [
+            "cbc device id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "execute_command",
+      "name": "Execute Command",
+      "description": "Execute command on a device in Carbon Black Cloud",
+      "http_method": "GET",
+      "endpoint": "/actions/execute_command",
+      "action_type": "contain",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "device_id",
+          "type": "string",
+          "description": "CBC Device ID",
+          "required": true,
+          "default": "",
+          "contains": [
+            "cbc device id"
+          ]
+        },
+        {
+          "name": "command_line",
+          "type": "string",
+          "description": "Command Line",
+          "required": true,
+          "default": ""
+        },
+        {
+          "name": "timeout",
+          "type": "number",
+          "description": "Execution timeout (seconds)",
+          "required": false,
+          "default": ""
+        },
+        {
+          "name": "work_dir",
+          "type": "string",
+          "description": "Working directory",
+          "required": false,
+          "default": ""
+        }
+      ]
+    },
+    {
+      "id": "create_report",
+      "name": "Create Report",
+      "description": "Create a report in Carbon Black Cloud",
+      "http_method": "GET",
+      "endpoint": "/actions/create_report",
+      "action_type": "contain",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "feed_id",
+          "type": "string",
+          "description": "Feed ID",
+          "required": false,
+          "default": ""
+        },
+        {
+          "name": "report_save_as_watchlist",
+          "type": "boolean",
+          "description": "Save as a Watchlist Report",
+          "required": false,
+          "default": ""
+        },
+        {
+          "name": "report_name",
+          "type": "string",
+          "description": "Report Name",
+          "required": true,
+          "default": ""
+        },
+        {
+          "name": "report_severity",
+          "type": "number",
+          "description": "Report Severity",
+          "required": true,
+          "default": ""
+        },
+        {
+          "name": "report_summary",
+          "type": "string",
+          "description": "Report Summary",
+          "required": true,
+          "default": ""
+        },
+        {
+          "name": "report_tags",
+          "type": "string",
+          "description": "Comma Separated Report Tags",
+          "required": false,
+          "default": ""
+        }
+      ]
+    },
+    {
+      "id": "delete_report",
+      "name": "Delete Report",
+      "description": "Delete a report in Carbon Black Cloud feed or watchlist",
+      "http_method": "GET",
+      "endpoint": "/actions/delete_report",
+      "action_type": "correct",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "report_id",
+          "type": "string",
+          "description": "Report ID",
+          "required": true,
+          "default": ""
+        }
+      ]
+    },
+    {
+      "id": "create_feed",
+      "name": "Create Feed",
+      "description": "Create a feed in Carbon Black Cloud",
+      "http_method": "GET",
+      "endpoint": "/actions/create_feed",
+      "action_type": "contain",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "feed_name",
+          "type": "string",
+          "description": "Feed Name",
+          "required": true,
+          "default": ""
+        },
+        {
+          "name": "feed_provider_url",
+          "type": "string",
+          "description": "Feed Provider URL",
+          "required": true,
+          "default": ""
+        },
+        {
+          "name": "feed_summary",
+          "type": "string",
+          "description": "Feed Summary",
+          "required": true,
+          "default": ""
+        },
+        {
+          "name": "feed_category",
+          "type": "string",
+          "description": "Feed Category",
+          "required": true,
+          "default": ""
+        }
+      ]
+    },
+    {
+      "id": "create_watchlist",
+      "name": "Create Watchlist",
+      "description": "Create a watchlist in Carbon Black Cloud",
+      "http_method": "GET",
+      "endpoint": "/actions/create_watchlist",
+      "action_type": "contain",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "watchlist_name",
+          "type": "string",
+          "description": "Watchlist Name",
+          "required": true,
+          "default": ""
+        },
+        {
+          "name": "watchlist_description",
+          "type": "string",
+          "description": "Description",
+          "required": false,
+          "default": ""
+        },
+        {
+          "name": "watchlist_tags_enabled",
+          "type": "boolean",
+          "description": "Enable Tags",
+          "required": false,
+          "default": ""
+        },
+        {
+          "name": "watchlist_alerts_enabled",
+          "type": "boolean",
+          "description": "Enable Alerts",
+          "required": false,
+          "default": ""
+        },
+        {
+          "name": "watchlist_report_ids",
+          "type": "string",
+          "description": "Report IDs (CSV)",
+          "required": false,
+          "default": ""
+        }
+      ]
+    },
+    {
+      "id": "delete_feed",
+      "name": "Delete Feed",
+      "description": "Delete a feed in Carbon Black Cloud",
+      "http_method": "GET",
+      "endpoint": "/actions/delete_feed",
+      "action_type": "contain",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "feed_id",
+          "type": "string",
+          "description": "Feed ID",
+          "required": true,
+          "default": ""
+        }
+      ]
+    },
+    {
+      "id": "delete_watchlist",
+      "name": "Delete Watchlist",
+      "description": "Delete a watchlist in Carbon Black Cloud",
+      "http_method": "GET",
+      "endpoint": "/actions/delete_watchlist",
+      "action_type": "contain",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "watchlist_id",
+          "type": "string",
+          "description": "Watchlist ID",
+          "required": true,
+          "default": ""
+        }
+      ]
+    },
+    {
+      "id": "retrieve_watchlist",
+      "name": "Retrieve Watchlist",
+      "description": "Retrieve a watchlist in Carbon Black Cloud",
+      "http_method": "GET",
+      "endpoint": "/actions/retrieve_watchlist",
+      "action_type": "contain",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "watchlist_id",
+          "type": "string",
+          "description": "Watchlist ID",
+          "required": true,
+          "default": ""
+        }
+      ]
+    },
+    {
+      "id": "retrieve_feed",
+      "name": "Retrieve Feed",
+      "description": "Retrieve a feed in Carbon Black Cloud",
+      "http_method": "GET",
+      "endpoint": "/actions/retrieve_feed",
+      "action_type": "contain",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "feed_id",
+          "type": "string",
+          "description": "Feed ID",
+          "required": true,
+          "default": ""
+        }
+      ]
+    },
+    {
+      "id": "retrieve_report_iocs",
+      "name": "Retrieve Iocs",
+      "description": "Retrieve IOCs for a given report in Carbon Black Cloud",
+      "http_method": "GET",
+      "endpoint": "/actions/retrieve_report_iocs",
+      "action_type": "contain",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "watchlist_id",
+          "type": "string",
+          "description": "Watchlist ID",
+          "required": false,
+          "default": ""
+        },
+        {
+          "name": "feed_id",
+          "type": "string",
+          "description": "Feed ID",
+          "required": false,
+          "default": ""
+        },
+        {
+          "name": "report_id",
+          "type": "string",
+          "description": "Report ID",
+          "required": true,
+          "default": ""
+        }
+      ]
+    },
+    {
+      "id": "update_feed",
+      "name": "Update Feed",
+      "description": "Update a feed in Carbon Black Cloud",
+      "http_method": "GET",
+      "endpoint": "/actions/update_feed",
+      "action_type": "contain",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "feed_id",
+          "type": "string",
+          "description": "Feed ID",
+          "required": true,
+          "default": ""
+        },
+        {
+          "name": "feed_name",
+          "type": "string",
+          "description": "Feed Name",
+          "required": true,
+          "default": ""
+        },
+        {
+          "name": "feed_provider_url",
+          "type": "string",
+          "description": "Feed Provider URL",
+          "required": true,
+          "default": ""
+        },
+        {
+          "name": "feed_summary",
+          "type": "string",
+          "description": "Feed Summary",
+          "required": true,
+          "default": ""
+        },
+        {
+          "name": "feed_category",
+          "type": "string",
+          "description": "Feed Category",
+          "required": true,
+          "default": ""
+        }
+      ]
+    },
+    {
+      "id": "update_watchlist",
+      "name": "Update Watchlist",
+      "description": "Update a watchlist in Carbon Black Cloud",
+      "http_method": "GET",
+      "endpoint": "/actions/update_watchlist",
+      "action_type": "contain",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "watchlist_id",
+          "type": "string",
+          "description": "Watchlist ID",
+          "required": true,
+          "default": ""
+        },
+        {
+          "name": "watchlist_name",
+          "type": "string",
+          "description": "Watchlist Name",
+          "required": true,
+          "default": ""
+        },
+        {
+          "name": "watchlist_description",
+          "type": "string",
+          "description": "Description",
+          "required": false,
+          "default": ""
+        },
+        {
+          "name": "watchlist_tags_enabled",
+          "type": "boolean",
+          "description": "Enable Tags",
+          "required": false,
+          "default": ""
+        },
+        {
+          "name": "watchlist_alerts_enabled",
+          "type": "boolean",
+          "description": "Enable Alerts",
+          "required": false,
+          "default": ""
+        },
+        {
+          "name": "add_report_ids",
+          "type": "string",
+          "description": "Comma Separated Report IDs",
+          "required": false,
+          "default": ""
+        },
+        {
+          "name": "remove_report_ids",
+          "type": "string",
+          "description": "Comma Separated Report IDs",
+          "required": false,
+          "default": ""
+        }
+      ]
+    },
+    {
+      "id": "get_scheduled_task",
+      "name": "Get Scheduled Task",
+      "description": "Get Scheduled Task Created in Carbon Black Cloud",
+      "http_method": "GET",
+      "endpoint": "/actions/get_scheduled_task",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "device_id",
+          "type": "string",
+          "description": "CBC Device ID",
+          "required": true,
+          "default": "",
+          "contains": [
+            "cbc device id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_cron_jobs",
+      "name": "Get Cron Jobs",
+      "description": "Get Cron Jobs in Carbon Black Cloud",
+      "http_method": "GET",
+      "endpoint": "/actions/get_cron_jobs",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "device_id",
+          "type": "string",
+          "description": "CBC Device ID",
+          "required": true,
+          "default": "",
+          "contains": [
+            "cbc device id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_asset_info",
+      "name": "Get Asset Info",
+      "description": "Get Asset Info",
+      "http_method": "GET",
+      "endpoint": "/actions/get_asset_info",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "device_id",
+          "type": "string",
+          "description": "CBC Device ID",
+          "required": true,
+          "default": "",
+          "contains": [
+            "cbc device id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_cleared_eventlogs",
+      "name": "Get Cleared Eventlogs",
+      "description": "Get Cleared Event Logs",
+      "http_method": "GET",
+      "endpoint": "/actions/get_cleared_eventlogs",
+      "action_type": "investigate",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "device_id",
+          "type": "string",
+          "description": "Device ID",
+          "required": true,
+          "default": "",
+          "contains": [
+            "cbc device id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_windows_persistence_locations",
+      "name": "List Persistence Locations",
+      "description": "List Windows Persistence Locations",
+      "http_method": "GET",
+      "endpoint": "/actions/list_windows_persistence_locations",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "device_id",
+          "type": "string",
+          "description": "CBC Device ID",
+          "required": true,
+          "default": "",
+          "contains": [
+            "cbc device id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_rdp_info",
+      "name": "Get Rdp Info",
+      "description": "Get RDP Connection Information",
+      "http_method": "GET",
+      "endpoint": "/actions/get_rdp_info",
+      "action_type": "investigate",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "device_id",
+          "type": "string",
+          "description": "Device ID",
+          "required": true,
+          "default": "",
+          "contains": [
+            "cbc device id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_logged_users",
+      "name": "List Logged Users",
+      "description": "List Logged In Users",
+      "http_method": "GET",
+      "endpoint": "/actions/list_logged_users",
+      "action_type": "investigate",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "device_id",
+          "type": "string",
+          "description": "Device ID",
+          "required": true,
+          "default": "",
+          "contains": [
+            "cbc device id"
+          ]
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Carbon Black Cloud",
+    "original_type": "endpoint",
+    "converted_at": "2025-12-18T16:25:28.623915",
+    "source_version": "2.0.1"
+  }
+}

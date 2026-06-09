@@ -1,0 +1,219 @@
+{
+  "id": "wallarm",
+  "name": "Wallarm WAF",
+  "description": "Wallarm API Security Platform REST API for managing WAF nodes, rules, attack detection, vulnerability scanning, and API discovery",
+  "version": "1.0.0",
+  "category": "waf",
+  "vendor": "Wallarm",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "header_name": "X-WallarmApi-Token",
+    "location": "header"
+  },
+  "base_url": "https://api.wallarm.com/v2",
+  "actions": [
+    {
+      "id": "list_nodes",
+      "name": "List Filtering Nodes",
+      "description": "Retrieve all Wallarm filtering nodes deployed in the environment",
+      "http_method": "POST",
+      "endpoint": "/node",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "filter",
+          "type": "object",
+          "description": "Filter criteria for nodes",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "description": "Maximum number of nodes to return",
+          "required": false
+        },
+        {
+          "name": "offset",
+          "type": "integer",
+          "description": "Offset for pagination",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "search_attacks",
+      "name": "Search Attacks",
+      "description": "Search and retrieve detected attacks matching specified criteria",
+      "http_method": "POST",
+      "endpoint": "/search/attacks",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "filter",
+          "type": "object",
+          "description": "Filter criteria including time range, attack type, severity, source IP",
+          "required": true
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "description": "Maximum number of attacks to return",
+          "required": false
+        },
+        {
+          "name": "offset",
+          "type": "integer",
+          "description": "Offset for pagination",
+          "required": false
+        },
+        {
+          "name": "order_by",
+          "type": "string",
+          "description": "Field to sort results by",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "search_hits",
+      "name": "Search Hits",
+      "description": "Search and retrieve individual malicious request hits",
+      "http_method": "POST",
+      "endpoint": "/search/hits",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "filter",
+          "type": "object",
+          "description": "Filter criteria including attack type, time range, and response codes",
+          "required": true
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "description": "Maximum number of hits to return",
+          "required": false
+        },
+        {
+          "name": "offset",
+          "type": "integer",
+          "description": "Offset for pagination",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "search_vulnerabilities",
+      "name": "Search Vulnerabilities",
+      "description": "Search and retrieve detected API and application vulnerabilities",
+      "http_method": "POST",
+      "endpoint": "/search/vulns",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "filter",
+          "type": "object",
+          "description": "Filter criteria including vulnerability type, severity, and status",
+          "required": true
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "description": "Maximum number of vulnerabilities to return",
+          "required": false
+        },
+        {
+          "name": "offset",
+          "type": "integer",
+          "description": "Offset for pagination",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "create_rule",
+      "name": "Create WAF Rule",
+      "description": "Create a new WAF rule for custom traffic handling (block, virtual patch, or modify)",
+      "http_method": "POST",
+      "endpoint": "/rules/create",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "body",
+          "type": "object",
+          "description": "Rule definition including action (block, virtual_patch, regex), conditions (URI, headers, parameters), and point (request element to match)",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_rules",
+      "name": "List WAF Rules",
+      "description": "Retrieve all custom WAF rules configured in the system",
+      "http_method": "POST",
+      "endpoint": "/rules/search",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "filter",
+          "type": "object",
+          "description": "Filter criteria for rules",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "description": "Maximum number of rules to return",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "block_ip",
+      "name": "Block IP Address",
+      "description": "Add an IP address to the denylist for blocking at the WAF level",
+      "http_method": "POST",
+      "endpoint": "/ip_rules",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "body",
+          "type": "object",
+          "description": "IP rule including ip address, action (block), reason, and expiration time",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_api_discovery",
+      "name": "Get API Discovery",
+      "description": "Retrieve discovered API endpoints and their security risk scores",
+      "http_method": "POST",
+      "endpoint": "/search/api_endpoints",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "filter",
+          "type": "object",
+          "description": "Filter criteria including host, method, path, and risk score",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "description": "Maximum number of endpoints to return",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

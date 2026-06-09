@@ -1,0 +1,105 @@
+{
+  "id": "xmatters",
+  "name": "xMatters",
+  "description": "Integrates with xMatters REST API for intelligent event management, on-call alerting, and incident communication workflows",
+  "version": "1.0.0",
+  "category": "ticketing",
+  "vendor": "Everbridge",
+  "auth_type": "basic",
+  "auth_config": {
+    "type": "basic",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "https://{host}/api/xm/1",
+  "actions": [
+    {
+      "id": "create_event",
+      "name": "Create Event",
+      "description": "Trigger a new event/alert in xMatters",
+      "http_method": "POST",
+      "endpoint": "/events",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "subject", "type": "string", "description": "Subject line of the event", "required": true},
+        {"name": "recipients", "type": "string", "description": "JSON array of target recipients (users, groups, devices)", "required": true},
+        {"name": "priority", "type": "string", "description": "Event priority (LOW, MEDIUM, HIGH)", "required": false, "default": "MEDIUM"},
+        {"name": "body", "type": "string", "description": "Body/description of the event", "required": false},
+        {"name": "plan_id", "type": "string", "description": "Communication plan ID", "required": false},
+        {"name": "form_id", "type": "string", "description": "Form ID within the communication plan", "required": false}
+      ]
+    },
+    {
+      "id": "get_event",
+      "name": "Get Event",
+      "description": "Retrieve details of a specific xMatters event",
+      "http_method": "GET",
+      "endpoint": "/events/{event_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "event_id", "type": "string", "description": "Event ID", "required": true},
+        {"name": "embed", "type": "string", "description": "Embed additional data (properties, targetStatus, responseOptions)", "required": false}
+      ]
+    },
+    {
+      "id": "list_events",
+      "name": "List Events",
+      "description": "List and filter xMatters events",
+      "http_method": "GET",
+      "endpoint": "/events",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "status", "type": "string", "description": "Filter by status (ACTIVE, SUSPENDED, TERMINATED)", "required": false},
+        {"name": "priority", "type": "string", "description": "Filter by priority (LOW, MEDIUM, HIGH)", "required": false},
+        {"name": "from", "type": "string", "description": "Start date filter (ISO 8601)", "required": false},
+        {"name": "to", "type": "string", "description": "End date filter (ISO 8601)", "required": false},
+        {"name": "offset", "type": "number", "description": "Pagination offset", "required": false, "default": 0},
+        {"name": "limit", "type": "number", "description": "Results per page (max 100)", "required": false, "default": 100}
+      ]
+    },
+    {
+      "id": "terminate_event",
+      "name": "Terminate Event",
+      "description": "Terminate an active xMatters event",
+      "http_method": "POST",
+      "endpoint": "/events",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "event_id", "type": "string", "description": "Event ID to terminate", "required": true},
+        {"name": "status", "type": "string", "description": "Set to TERMINATED", "required": true, "default": "TERMINATED"}
+      ]
+    },
+    {
+      "id": "get_oncall",
+      "name": "Get On-Call",
+      "description": "Get current on-call members for a group",
+      "http_method": "GET",
+      "endpoint": "/on-call",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "groups", "type": "string", "description": "Comma-separated group target names", "required": true},
+        {"name": "from", "type": "string", "description": "Start time (ISO 8601)", "required": false},
+        {"name": "to", "type": "string", "description": "End time (ISO 8601)", "required": false}
+      ]
+    },
+    {
+      "id": "add_comment",
+      "name": "Add Comment",
+      "description": "Add a comment to an existing xMatters event",
+      "http_method": "POST",
+      "endpoint": "/events/{event_id}/annotations",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "event_id", "type": "string", "description": "Event ID", "required": true},
+        {"name": "comment", "type": "string", "description": "Comment text", "required": true},
+        {"name": "author", "type": "string", "description": "Author of the comment", "required": false}
+      ]
+    }
+  ]
+}

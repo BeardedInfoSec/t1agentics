@@ -1,0 +1,404 @@
+{
+  "id": "microsoft_defender_endpoint",
+  "name": "Microsoft Defender for Endpoint",
+  "description": "Integrates with Microsoft Defender for Endpoint APIs for advanced endpoint detection, investigation, and automated response across Windows, macOS, and Linux devices",
+  "version": "1.0.0",
+  "category": "edr",
+  "vendor": "Microsoft",
+  "auth_type": "oauth2_client",
+  "auth_config": {
+    "type": "oauth2_client",
+    "token_url": "https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/token",
+    "scope": "https://api.securitycenter.microsoft.com/.default"
+  },
+  "base_url": "https://api.securitycenter.microsoft.com/api",
+  "actions": [
+    {
+      "id": "list_alerts",
+      "name": "List Alerts",
+      "description": "Retrieve a collection of recent alerts from Microsoft Defender for Endpoint",
+      "http_method": "GET",
+      "endpoint": "/alerts",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "$top",
+          "type": "number",
+          "description": "Maximum number of alerts to return",
+          "required": false,
+          "default": 50
+        },
+        {
+          "name": "$filter",
+          "type": "string",
+          "description": "OData filter expression (e.g., severity eq 'High')",
+          "required": false
+        },
+        {
+          "name": "$orderby",
+          "type": "string",
+          "description": "OData orderby expression (e.g., alertCreationTime desc)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_alert",
+      "name": "Get Alert",
+      "description": "Retrieve a specific alert by its ID",
+      "http_method": "GET",
+      "endpoint": "/alerts/{alert_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "alert_id",
+          "type": "string",
+          "description": "The unique identifier of the alert",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_machines",
+      "name": "List Machines",
+      "description": "Retrieve a collection of machines that have communicated with Microsoft Defender for Endpoint",
+      "http_method": "GET",
+      "endpoint": "/machines",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "$top",
+          "type": "number",
+          "description": "Maximum number of machines to return",
+          "required": false,
+          "default": 50
+        },
+        {
+          "name": "$filter",
+          "type": "string",
+          "description": "OData filter expression (e.g., healthStatus eq 'Active')",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_machine",
+      "name": "Get Machine",
+      "description": "Retrieve details of a specific machine by its ID",
+      "http_method": "GET",
+      "endpoint": "/machines/{machine_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "machine_id",
+          "type": "string",
+          "description": "The unique identifier of the machine",
+          "required": true
+        }
+      ],
+      "observable_type": "hostname"
+    },
+    {
+      "id": "find_machines_by_ip",
+      "name": "Find Machines by IP",
+      "description": "Find machines that were seen with a specific internal IP address at a given timestamp",
+      "http_method": "GET",
+      "endpoint": "/machines/findbyip(ip='{ip}',timestamp={timestamp})",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "The IP address to search for",
+          "required": true
+        },
+        {
+          "name": "timestamp",
+          "type": "string",
+          "description": "Timestamp in ISO 8601 format for the lookup time",
+          "required": true
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "isolate_machine",
+      "name": "Isolate Machine",
+      "description": "Isolate a machine from accessing external network while retaining connectivity to Defender for Endpoint service",
+      "http_method": "POST",
+      "endpoint": "/machines/{machine_id}/isolate",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "machine_id",
+          "type": "string",
+          "description": "The unique identifier of the machine to isolate",
+          "required": true
+        },
+        {
+          "name": "Comment",
+          "type": "string",
+          "description": "Comment to associate with the isolation action",
+          "required": true
+        },
+        {
+          "name": "IsolationType",
+          "type": "string",
+          "description": "Type of isolation: Full (complete isolation) or Selective (restrict limited set of apps)",
+          "required": true
+        }
+      ],
+      "observable_type": "hostname"
+    },
+    {
+      "id": "unisolate_machine",
+      "name": "Release Machine from Isolation",
+      "description": "Undo isolation of a machine and restore full network access",
+      "http_method": "POST",
+      "endpoint": "/machines/{machine_id}/unisolate",
+      "action_type": "correct",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "machine_id",
+          "type": "string",
+          "description": "The unique identifier of the machine to release",
+          "required": true
+        },
+        {
+          "name": "Comment",
+          "type": "string",
+          "description": "Comment to associate with the action",
+          "required": true
+        }
+      ],
+      "observable_type": "hostname"
+    },
+    {
+      "id": "stop_and_quarantine_file",
+      "name": "Stop and Quarantine File",
+      "description": "Stop execution of a file on a machine and quarantine it",
+      "http_method": "POST",
+      "endpoint": "/machines/{machine_id}/StopAndQuarantineFile",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "machine_id",
+          "type": "string",
+          "description": "The unique identifier of the machine",
+          "required": true
+        },
+        {
+          "name": "Comment",
+          "type": "string",
+          "description": "Comment to associate with the action",
+          "required": true
+        },
+        {
+          "name": "Sha1",
+          "type": "string",
+          "description": "SHA1 hash of the file to quarantine",
+          "required": true
+        }
+      ],
+      "observable_type": "hash"
+    },
+    {
+      "id": "run_antivirus_scan",
+      "name": "Run Antivirus Scan",
+      "description": "Initiate a Microsoft Defender Antivirus scan on the machine",
+      "http_method": "POST",
+      "endpoint": "/machines/{machine_id}/runAntiVirusScan",
+      "action_type": "correct",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "machine_id",
+          "type": "string",
+          "description": "The unique identifier of the machine to scan",
+          "required": true
+        },
+        {
+          "name": "Comment",
+          "type": "string",
+          "description": "Comment to associate with the action",
+          "required": true
+        },
+        {
+          "name": "ScanType",
+          "type": "string",
+          "description": "Type of scan: Quick or Full",
+          "required": true
+        }
+      ],
+      "observable_type": "hostname"
+    },
+    {
+      "id": "collect_investigation_package",
+      "name": "Collect Investigation Package",
+      "description": "Collect a forensic investigation package from a machine",
+      "http_method": "POST",
+      "endpoint": "/machines/{machine_id}/collectInvestigationPackage",
+      "action_type": "investigate",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "machine_id",
+          "type": "string",
+          "description": "The unique identifier of the machine",
+          "required": true
+        },
+        {
+          "name": "Comment",
+          "type": "string",
+          "description": "Comment to associate with the action",
+          "required": true
+        }
+      ],
+      "observable_type": "hostname"
+    },
+    {
+      "id": "get_file_info",
+      "name": "Get File Information",
+      "description": "Retrieve file information by SHA1 hash or SHA256 hash",
+      "http_method": "GET",
+      "endpoint": "/files/{file_hash}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "file_hash",
+          "type": "string",
+          "description": "SHA1 or SHA256 hash of the file",
+          "required": true
+        }
+      ],
+      "observable_type": "hash"
+    },
+    {
+      "id": "create_indicator",
+      "name": "Create Indicator",
+      "description": "Submit or update a new indicator (IoC) for detection and blocking",
+      "http_method": "POST",
+      "endpoint": "/indicators",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "indicatorValue",
+          "type": "string",
+          "description": "The indicator value (IP, URL, domain, or file hash)",
+          "required": true
+        },
+        {
+          "name": "indicatorType",
+          "type": "string",
+          "description": "Type of indicator: FileSha1, FileSha256, IpAddress, DomainName, or Url",
+          "required": true
+        },
+        {
+          "name": "action",
+          "type": "string",
+          "description": "Action to take: Alert, AlertAndBlock, or Allowed",
+          "required": true
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "description": "Title for the indicator alert",
+          "required": true
+        },
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Severity of the indicator: Informational, Low, Medium, or High",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Description of the indicator",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "advanced_hunting",
+      "name": "Advanced Hunting",
+      "description": "Run an advanced hunting query using Kusto Query Language (KQL)",
+      "http_method": "POST",
+      "endpoint": "/advancedqueries/run",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "Query",
+          "type": "string",
+          "description": "The KQL hunting query to execute",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_machine_actions",
+      "name": "Get Machine Actions",
+      "description": "Retrieve the collection of machine actions (response actions history)",
+      "http_method": "GET",
+      "endpoint": "/machineactions",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "$top",
+          "type": "number",
+          "description": "Maximum number of results to return",
+          "required": false,
+          "default": 50
+        },
+        {
+          "name": "$filter",
+          "type": "string",
+          "description": "OData filter expression",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "run_live_response",
+      "name": "Run Live Response",
+      "description": "Run a live response command on a specific device",
+      "http_method": "POST",
+      "endpoint": "/machines/{machine_id}/runliveresponse",
+      "action_type": "investigate",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "machine_id",
+          "type": "string",
+          "description": "The unique identifier of the target machine",
+          "required": true
+        },
+        {
+          "name": "Commands",
+          "type": "string",
+          "description": "JSON array of commands to run in the live response session",
+          "required": true
+        },
+        {
+          "name": "Comment",
+          "type": "string",
+          "description": "Comment to associate with the live response action",
+          "required": true
+        }
+      ],
+      "observable_type": "hostname"
+    }
+  ]
+}

@@ -1,0 +1,175 @@
+{
+  "id": "hackerone",
+  "name": "HackerOne",
+  "description": "This app integrates with HackerOne to support various generic and investigative actions",
+  "version": "2.0.1",
+  "category": "utility",
+  "vendor": "HackerOne",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "get_report",
+      "name": "Get Report",
+      "description": "Get a report by ID",
+      "http_method": "GET",
+      "endpoint": "/actions/get_report",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "report_id",
+          "type": "string",
+          "description": "ID of report to get",
+          "required": true,
+          "contains": [
+            "hackerone report id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_reports",
+      "name": "Get Reports",
+      "description": "Get HackerOne reports",
+      "http_method": "GET",
+      "endpoint": "/actions/get_reports",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "state_filter",
+          "type": "string",
+          "description": "Report State Filter",
+          "required": false
+        },
+        {
+          "name": "assignment_filter",
+          "type": "string",
+          "description": "Report Assignment Filter",
+          "required": false
+        },
+        {
+          "name": "full_comments",
+          "type": "boolean",
+          "description": "Collect comments for reports (much slower)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_updated_reports",
+      "name": "Get Updated Reports",
+      "description": "Get updated HackerOne reports",
+      "http_method": "GET",
+      "endpoint": "/actions/get_updated_reports",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "state_filter",
+          "type": "string",
+          "description": "Report State Filter",
+          "required": false
+        },
+        {
+          "name": "assignment_filter",
+          "type": "string",
+          "description": "Report Assignment Filter",
+          "required": false
+        },
+        {
+          "name": "full_comments",
+          "type": "boolean",
+          "description": "Collect comments for reports (much slower)",
+          "required": false
+        },
+        {
+          "name": "range",
+          "type": "number",
+          "description": "How many minutes back to get changed reports from",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "update_id",
+      "name": "Update Tracking Id",
+      "description": "Update HackerOne report with tracking ID",
+      "http_method": "GET",
+      "endpoint": "/actions/update_id",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "report_id",
+          "type": "string",
+          "description": "ID of report to update",
+          "required": true,
+          "contains": [
+            "hackerone report id"
+          ]
+        },
+        {
+          "name": "tracking_id",
+          "type": "string",
+          "description": "ID of tracking ticket",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "unassign",
+      "name": "Unassign Report",
+      "description": "Unassign HackerOne report with tracking ID",
+      "http_method": "GET",
+      "endpoint": "/actions/unassign",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "report_id",
+          "type": "string",
+          "description": "ID of report to unassign",
+          "required": true,
+          "contains": [
+            "hackerone report id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "on_poll",
+      "name": "On Poll",
+      "description": "Consume HackerOne reports and generate containers for them",
+      "http_method": "GET",
+      "endpoint": "/actions/on_poll",
+      "action_type": "ingest",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    }
+  ],
+  "source_metadata": {
+    "original_name": "HackerOne",
+    "original_type": "generic",
+    "converted_at": "2025-12-18T16:25:28.844156",
+    "source_version": "2.0.1"
+  }
+}

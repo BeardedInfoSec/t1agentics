@@ -1,0 +1,164 @@
+{
+  "id": "aws_macie",
+  "name": "AWS Macie",
+  "description": "AWS data security service that discovers sensitive data using machine learning and pattern matching, providing visibility into data security risks in S3",
+  "version": "1.0.0",
+  "category": "aws_security",
+  "vendor": "Amazon Web Services",
+  "auth_type": "aws",
+  "auth_config": {
+    "type": "aws",
+    "service": "macie2",
+    "signing_version": "v4"
+  },
+  "base_url": "https://macie2.{region}.amazonaws.com",
+  "actions": [
+    {
+      "id": "list_findings",
+      "name": "List Findings",
+      "description": "List Macie findings with optional filter criteria for sensitive data discoveries and policy violations",
+      "http_method": "POST",
+      "endpoint": "/findings",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "findingCriteria",
+          "type": "object",
+          "description": "Filter criteria (e.g., {\"criterion\": {\"severity.description\": {\"eq\": [\"High\"]}}})",
+          "required": false
+        },
+        {
+          "name": "sortCriteria",
+          "type": "object",
+          "description": "Sort criteria (e.g., {\"attributeName\": \"severity.score\", \"orderBy\": \"DESC\"})",
+          "required": false
+        },
+        {
+          "name": "maxResults",
+          "type": "number",
+          "description": "Maximum findings to return",
+          "required": false,
+          "default": 50
+        }
+      ]
+    },
+    {
+      "id": "get_finding_details",
+      "name": "Get Finding Details",
+      "description": "Retrieve detailed information for one or more Macie findings",
+      "http_method": "POST",
+      "endpoint": "/findings/describe",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "findingIds",
+          "type": "array",
+          "description": "Array of finding IDs to retrieve details for",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_findings_statistics",
+      "name": "Get Findings Statistics",
+      "description": "Retrieve aggregated statistics for Macie findings grouped by specified criteria",
+      "http_method": "POST",
+      "endpoint": "/findings/statistics",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "groupBy",
+          "type": "string",
+          "description": "Group by field (classificationDetails.jobId, resourcesAffected.s3Bucket.name, severity.description, type)",
+          "required": true
+        },
+        {
+          "name": "findingCriteria",
+          "type": "object",
+          "description": "Filter criteria for statistics",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "describe_buckets",
+      "name": "Describe Buckets",
+      "description": "Retrieve information about S3 buckets including their sensitivity and public access status",
+      "http_method": "POST",
+      "endpoint": "/datasources/s3",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "criteria",
+          "type": "object",
+          "description": "Filter criteria for bucket search",
+          "required": false
+        },
+        {
+          "name": "sortCriteria",
+          "type": "object",
+          "description": "Sort criteria for results",
+          "required": false
+        },
+        {
+          "name": "maxResults",
+          "type": "number",
+          "description": "Maximum results to return",
+          "required": false,
+          "default": 50
+        }
+      ]
+    },
+    {
+      "id": "list_classification_jobs",
+      "name": "List Classification Jobs",
+      "description": "List sensitive data discovery jobs and their status",
+      "http_method": "POST",
+      "endpoint": "/jobs/list",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "filterCriteria",
+          "type": "object",
+          "description": "Filter criteria for jobs",
+          "required": false
+        },
+        {
+          "name": "sortCriteria",
+          "type": "object",
+          "description": "Sort criteria",
+          "required": false
+        },
+        {
+          "name": "maxResults",
+          "type": "number",
+          "description": "Maximum results to return",
+          "required": false,
+          "default": 25
+        }
+      ]
+    },
+    {
+      "id": "get_bucket_statistics",
+      "name": "Get Bucket Statistics",
+      "description": "Retrieve aggregated statistics about S3 buckets monitored by Macie",
+      "http_method": "POST",
+      "endpoint": "/datasources/s3/statistics",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "accountId",
+          "type": "string",
+          "description": "AWS account ID to get statistics for",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

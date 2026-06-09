@@ -1,0 +1,566 @@
+{
+  "id": "mcafee_web_gateway",
+  "name": "McAfee Web Gateway",
+  "description": "This app integrates with McAfee Web Gateway to perform contain and correct actions for maintaining lists",
+  "version": "1.0.1",
+  "category": "network",
+  "vendor": "McAfee",
+  "auth_type": "basic_auth",
+  "auth_config": {
+    "type": "basic_auth",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "block_url",
+      "name": "Block Url",
+      "description": "Add URL to a list",
+      "http_method": "POST",
+      "endpoint": "/actions/block_url",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "URL to block",
+          "required": true,
+          "contains": [
+            "url"
+          ]
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Description to add to the entry",
+          "required": false,
+          "default": "Added by Splunk> Phantom"
+        },
+        {
+          "name": "list_title",
+          "type": "string",
+          "description": "List Title (either 'list_title' or 'list_id' are required)",
+          "required": false,
+          "contains": [
+            "mcafee web gateway list title"
+          ]
+        },
+        {
+          "name": "list_id",
+          "type": "string",
+          "description": "List ID (either 'list_title' or 'list_id' are required)",
+          "required": false,
+          "contains": [
+            "mcafee web gateway list id"
+          ]
+        },
+        {
+          "name": "entry_position",
+          "type": "number",
+          "description": "Position of the list to add the block entry",
+          "required": false,
+          "contains": [
+            "mcafee web gateway entry position"
+          ]
+        },
+        {
+          "name": "complex",
+          "type": "boolean",
+          "description": "Complex entry, to include a category and specify a protocol",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "category",
+          "type": "string",
+          "description": "Category (complex entry only)",
+          "required": false
+        },
+        {
+          "name": "protocol",
+          "type": "string",
+          "description": "Protocol (complex entry only)",
+          "required": false,
+          "default": "any"
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "unblock_url",
+      "name": "Unblock Url",
+      "description": "Remove URL from a list",
+      "http_method": "POST",
+      "endpoint": "/actions/unblock_url",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "URL to unblock (either 'url' or 'entry_position' are required)",
+          "required": false,
+          "contains": [
+            "url"
+          ]
+        },
+        {
+          "name": "entry_position",
+          "type": "number",
+          "description": "Position of the list entry to remove from the list",
+          "required": false,
+          "contains": [
+            "mcafee web gateway entry position"
+          ]
+        },
+        {
+          "name": "list_title",
+          "type": "string",
+          "description": "List Title (either 'list_title' or 'list_id' are required)",
+          "required": false,
+          "contains": [
+            "mcafee web gateway list title"
+          ]
+        },
+        {
+          "name": "list_id",
+          "type": "string",
+          "description": "List ID (either 'list_title' or 'list_id' are required)",
+          "required": false,
+          "contains": [
+            "mcafee web gateway list id"
+          ]
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "block_ip",
+      "name": "Block Ip",
+      "description": "Add IP to a list",
+      "http_method": "POST",
+      "endpoint": "/actions/block_ip",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "IP to block",
+          "required": true,
+          "contains": [
+            "ip"
+          ]
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Description to add to the entry",
+          "required": false,
+          "default": "Added by Splunk> Phantom"
+        },
+        {
+          "name": "list_title",
+          "type": "string",
+          "description": "List Title (either 'list_title' or 'list_id' are required)",
+          "required": false,
+          "contains": [
+            "mcafee web gateway list title"
+          ]
+        },
+        {
+          "name": "list_id",
+          "type": "string",
+          "description": "List ID (either 'list_title' or 'list_id' are required)",
+          "required": false,
+          "contains": [
+            "mcafee web gateway list id"
+          ]
+        },
+        {
+          "name": "entry_position",
+          "type": "number",
+          "description": "Position of the list to add the block entry",
+          "required": false,
+          "contains": [
+            "mcafee web gateway entry position"
+          ]
+        },
+        {
+          "name": "complex",
+          "type": "boolean",
+          "description": "Complex entry, to include a category and specify a protocol",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "category",
+          "type": "string",
+          "description": "Category (complex entry only)",
+          "required": false
+        },
+        {
+          "name": "protocol",
+          "type": "string",
+          "description": "Protocol (complex entry only)",
+          "required": false,
+          "default": "any"
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "unblock_ip",
+      "name": "Unblock Ip",
+      "description": "Remove IP from a list",
+      "http_method": "POST",
+      "endpoint": "/actions/unblock_ip",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "IP to unblock (either 'ip' or 'entry_position' are required)",
+          "required": false,
+          "contains": [
+            "ip"
+          ]
+        },
+        {
+          "name": "entry_position",
+          "type": "number",
+          "description": "Position of the list entry to remove from the list",
+          "required": false,
+          "contains": [
+            "mcafee web gateway entry position"
+          ]
+        },
+        {
+          "name": "list_title",
+          "type": "string",
+          "description": "List Title (either 'list_title' or 'list_id' are required)",
+          "required": false,
+          "contains": [
+            "mcafee web gateway list title"
+          ]
+        },
+        {
+          "name": "list_id",
+          "type": "string",
+          "description": "List ID (either 'list_title' or 'list_id' are required)",
+          "required": false,
+          "contains": [
+            "mcafee web gateway list id"
+          ]
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "block_domain",
+      "name": "Block Domain",
+      "description": "Add domain to a list",
+      "http_method": "POST",
+      "endpoint": "/actions/block_domain",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "domain",
+          "type": "string",
+          "description": "Domain to block",
+          "required": true,
+          "contains": [
+            "domain"
+          ]
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Description to add to the entry",
+          "required": false,
+          "default": "Added by Splunk> Phantom"
+        },
+        {
+          "name": "list_title",
+          "type": "string",
+          "description": "List Title (either 'list_title' or 'list_id' are required)",
+          "required": false,
+          "contains": [
+            "mcafee web gateway list title"
+          ]
+        },
+        {
+          "name": "list_id",
+          "type": "string",
+          "description": "List ID (either 'list_title' or 'list_id' are required)",
+          "required": false,
+          "contains": [
+            "mcafee web gateway list id"
+          ]
+        },
+        {
+          "name": "entry_position",
+          "type": "number",
+          "description": "Position of the list to add the block entry",
+          "required": false,
+          "contains": [
+            "mcafee web gateway entry position"
+          ]
+        },
+        {
+          "name": "complex",
+          "type": "boolean",
+          "description": "Complex entry, to include a category and specify a protocol",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "category",
+          "type": "string",
+          "description": "Category (complex entry only)",
+          "required": false
+        },
+        {
+          "name": "protocol",
+          "type": "string",
+          "description": "Protocol (complex entry only)",
+          "required": false,
+          "default": "any"
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "unblock_domain",
+      "name": "Unblock Domain",
+      "description": "Remove a domain from a list",
+      "http_method": "POST",
+      "endpoint": "/actions/unblock_domain",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "domain",
+          "type": "string",
+          "description": "Domain to unblock (either 'domain' or 'entry_position' are required)",
+          "required": false,
+          "contains": [
+            "domain"
+          ]
+        },
+        {
+          "name": "entry_position",
+          "type": "number",
+          "description": "Position of the list entry to remove from the list",
+          "required": false,
+          "contains": [
+            "mcafee web gateway entry position"
+          ]
+        },
+        {
+          "name": "list_title",
+          "type": "string",
+          "description": "List Title (either 'list_title' or 'list_id' are required)",
+          "required": false,
+          "contains": [
+            "mcafee web gateway list title"
+          ]
+        },
+        {
+          "name": "list_id",
+          "type": "string",
+          "description": "List ID (either 'list_title' or 'list_id' are required)",
+          "required": false,
+          "contains": [
+            "mcafee web gateway list id"
+          ]
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "add_entry",
+      "name": "Add Entry",
+      "description": "Add an entry to a list",
+      "http_method": "POST",
+      "endpoint": "/actions/add_entry",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "entry",
+          "type": "string",
+          "description": "Entry to add",
+          "required": true,
+          "contains": [
+            "url",
+            "domain",
+            "ip",
+            "ip range"
+          ]
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Description to add to the entry",
+          "required": false,
+          "default": "Added by Splunk> Phantom"
+        },
+        {
+          "name": "list_title",
+          "type": "string",
+          "description": "List Title (either 'list_title' or 'list_id' are required)",
+          "required": false,
+          "contains": [
+            "mcafee web gateway list title"
+          ]
+        },
+        {
+          "name": "list_id",
+          "type": "string",
+          "description": "List ID (either 'list_title' or 'list_id' are required)",
+          "required": false,
+          "contains": [
+            "mcafee web gateway list id"
+          ]
+        },
+        {
+          "name": "entry_position",
+          "type": "number",
+          "description": "Position of the list to add the block entry",
+          "required": false,
+          "contains": [
+            "mcafee web gateway entry position"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "remove_entry",
+      "name": "Remove Entry",
+      "description": "Remove an entry from a list",
+      "http_method": "POST",
+      "endpoint": "/actions/remove_entry",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "entry",
+          "type": "string",
+          "description": "Entry to remove (either 'entry' or 'entry_position' are required)",
+          "required": false,
+          "contains": [
+            "url",
+            "domain",
+            "ip",
+            "ip range"
+          ]
+        },
+        {
+          "name": "entry_position",
+          "type": "number",
+          "description": "Position of the list entry to remove from the list",
+          "required": false,
+          "contains": [
+            "mcafee web gateway entry position"
+          ]
+        },
+        {
+          "name": "list_title",
+          "type": "string",
+          "description": "List Title (either 'list_title' or 'list_id' are required)",
+          "required": false,
+          "contains": [
+            "mcafee web gateway list title"
+          ]
+        },
+        {
+          "name": "list_id",
+          "type": "string",
+          "description": "List ID (either 'list_title' or 'list_id' are required)",
+          "required": false,
+          "contains": [
+            "mcafee web gateway list id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_lists",
+      "name": "List Lists",
+      "description": "Returns the available lists",
+      "http_method": "GET",
+      "endpoint": "list",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "type",
+          "type": "string",
+          "description": "List Type",
+          "required": false,
+          "default": "any"
+        }
+      ]
+    },
+    {
+      "id": "get_list",
+      "name": "Get List",
+      "description": "Returns contents of a list",
+      "http_method": "GET",
+      "endpoint": "list",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "list_title",
+          "type": "string",
+          "description": "List Title",
+          "required": false,
+          "contains": [
+            "mcafee web gateway list title"
+          ]
+        },
+        {
+          "name": "list_id",
+          "type": "string",
+          "description": "List ID",
+          "required": false,
+          "contains": [
+            "mcafee web gateway list id"
+          ]
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "McAfee Web Gateway",
+    "original_type": "network security",
+    "converted_at": "2025-12-18T16:25:28.919534",
+    "source_version": "1.0.1"
+  }
+}

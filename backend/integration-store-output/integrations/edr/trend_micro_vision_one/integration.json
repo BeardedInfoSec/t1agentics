@@ -1,0 +1,304 @@
+{
+  "id": "trend_micro_vision_one",
+  "name": "Trend Micro Vision One",
+  "description": "Integrates with Trend Vision One XDR platform API v3.0 for workbench alerts, endpoint activity data, detection and response actions, and threat hunting",
+  "version": "1.0.0",
+  "category": "edr",
+  "vendor": "Trend Micro",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "header_name": "Authorization",
+    "prefix": "Bearer"
+  },
+  "base_url": "https://api.xdr.trendmicro.com/v3.0",
+  "actions": [
+    {
+      "id": "list_alerts",
+      "name": "List Workbench Alerts",
+      "description": "Retrieve workbench alerts from the Trend Vision One platform with filtering options",
+      "http_method": "GET",
+      "endpoint": "/workbench/alerts",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "startDateTime",
+          "type": "string",
+          "description": "Start date-time for alert query (ISO 8601 format)",
+          "required": false
+        },
+        {
+          "name": "endDateTime",
+          "type": "string",
+          "description": "End date-time for alert query (ISO 8601 format)",
+          "required": false
+        },
+        {
+          "name": "top",
+          "type": "number",
+          "description": "Maximum number of alerts to return",
+          "required": false,
+          "default": 50
+        },
+        {
+          "name": "orderBy",
+          "type": "string",
+          "description": "Sort order (e.g., createdDateTime desc)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_alert",
+      "name": "Get Alert Details",
+      "description": "Retrieve detailed information about a specific workbench alert",
+      "http_method": "GET",
+      "endpoint": "/workbench/alerts/{alert_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "alert_id",
+          "type": "string",
+          "description": "The unique identifier of the workbench alert",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "update_alert_status",
+      "name": "Update Alert Status",
+      "description": "Update the status of a workbench alert (new, in progress, resolved, etc.)",
+      "http_method": "PATCH",
+      "endpoint": "/workbench/alerts/{alert_id}",
+      "action_type": "correct",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "alert_id",
+          "type": "string",
+          "description": "The unique identifier of the alert to update",
+          "required": true
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "New status for the alert (new, inProgress, truePositive, falsePositive)",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_observed_attack_techniques",
+      "name": "List Observed Attack Techniques",
+      "description": "Retrieve observed attack techniques events matching specified criteria",
+      "http_method": "GET",
+      "endpoint": "/oat/detections",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "detectedStartDateTime",
+          "type": "string",
+          "description": "Start of the detection time range (ISO 8601)",
+          "required": true
+        },
+        {
+          "name": "detectedEndDateTime",
+          "type": "string",
+          "description": "End of the detection time range (ISO 8601)",
+          "required": true
+        },
+        {
+          "name": "top",
+          "type": "number",
+          "description": "Maximum number of results",
+          "required": false,
+          "default": 50
+        }
+      ]
+    },
+    {
+      "id": "search_endpoint_data",
+      "name": "Search Endpoint Activity Data",
+      "description": "Search endpoint activity data for threat hunting using query expressions",
+      "http_method": "POST",
+      "endpoint": "/search/endpointActivities",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Search query expression for endpoint activity data",
+          "required": true
+        },
+        {
+          "name": "start",
+          "type": "string",
+          "description": "Start of the search time range (ISO 8601)",
+          "required": false
+        },
+        {
+          "name": "end",
+          "type": "string",
+          "description": "End of the search time range (ISO 8601)",
+          "required": false
+        },
+        {
+          "name": "top",
+          "type": "number",
+          "description": "Maximum number of results to return",
+          "required": false,
+          "default": 50
+        }
+      ]
+    },
+    {
+      "id": "isolate_endpoint",
+      "name": "Isolate Endpoint",
+      "description": "Isolate an endpoint from the network for containment during incident response",
+      "http_method": "POST",
+      "endpoint": "/response/endpoints/isolate",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "endpointName",
+          "type": "string",
+          "description": "Hostname of the endpoint to isolate",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Description of why the endpoint is being isolated",
+          "required": false
+        }
+      ],
+      "observable_type": "hostname"
+    },
+    {
+      "id": "restore_endpoint",
+      "name": "Restore Endpoint Connection",
+      "description": "Restore network connectivity to a previously isolated endpoint",
+      "http_method": "POST",
+      "endpoint": "/response/endpoints/restore",
+      "action_type": "correct",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "endpointName",
+          "type": "string",
+          "description": "Hostname of the endpoint to restore",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Description of why the endpoint is being restored",
+          "required": false
+        }
+      ],
+      "observable_type": "hostname"
+    },
+    {
+      "id": "terminate_process",
+      "name": "Terminate Process",
+      "description": "Terminate a running process on a managed endpoint",
+      "http_method": "POST",
+      "endpoint": "/response/endpoints/terminateProcess",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "endpointName",
+          "type": "string",
+          "description": "Hostname of the endpoint",
+          "required": true
+        },
+        {
+          "name": "fileSha1",
+          "type": "string",
+          "description": "SHA1 hash of the process file to terminate",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Description of why the process is being terminated",
+          "required": false
+        }
+      ],
+      "observable_type": "hash"
+    },
+    {
+      "id": "add_to_block_list",
+      "name": "Add to Block List",
+      "description": "Add file hashes to the suspicious object block list across all endpoints",
+      "http_method": "POST",
+      "endpoint": "/response/suspiciousObjects",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Object type: fileSha1, fileSha256, ip, domain, url, senderMailAddress",
+          "required": true
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "description": "The indicator value to block",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Description of why the object is being blocked",
+          "required": false
+        },
+        {
+          "name": "riskLevel",
+          "type": "string",
+          "description": "Risk level: high, medium, low",
+          "required": false,
+          "default": "high"
+        }
+      ],
+      "observable_type": "hash"
+    },
+    {
+      "id": "collect_file",
+      "name": "Collect File",
+      "description": "Collect a file from an endpoint for forensic analysis",
+      "http_method": "POST",
+      "endpoint": "/response/endpoints/collectFile",
+      "action_type": "investigate",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "endpointName",
+          "type": "string",
+          "description": "Hostname of the endpoint",
+          "required": true
+        },
+        {
+          "name": "filePath",
+          "type": "string",
+          "description": "Full path of the file to collect",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Description of why the file is being collected",
+          "required": false
+        }
+      ],
+      "observable_type": "hostname"
+    }
+  ]
+}

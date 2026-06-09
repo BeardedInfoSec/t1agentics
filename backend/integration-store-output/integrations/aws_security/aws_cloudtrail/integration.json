@@ -1,0 +1,151 @@
+{
+  "id": "aws_cloudtrail",
+  "name": "AWS CloudTrail",
+  "description": "AWS service for governance, compliance, operational auditing, and risk auditing by logging API calls and events across AWS infrastructure",
+  "version": "1.0.0",
+  "category": "aws_security",
+  "vendor": "Amazon Web Services",
+  "auth_type": "aws",
+  "auth_config": {
+    "type": "aws",
+    "service": "cloudtrail",
+    "signing_version": "v4"
+  },
+  "base_url": "https://cloudtrail.{region}.amazonaws.com",
+  "actions": [
+    {
+      "id": "lookup_events",
+      "name": "Lookup Events",
+      "description": "Look up management events or CloudTrail Insights events captured by CloudTrail",
+      "http_method": "POST",
+      "endpoint": "/",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "LookupAttributes",
+          "type": "array",
+          "description": "Attributes to filter events (e.g., [{\"AttributeKey\": \"EventName\", \"AttributeValue\": \"ConsoleLogin\"}])",
+          "required": false
+        },
+        {
+          "name": "StartTime",
+          "type": "string",
+          "description": "Start of the event time range in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "EndTime",
+          "type": "string",
+          "description": "End of the event time range in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "MaxResults",
+          "type": "number",
+          "description": "Maximum events to return (1-50)",
+          "required": false,
+          "default": 50
+        },
+        {
+          "name": "NextToken",
+          "type": "string",
+          "description": "Pagination token for next page",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "describe_trails",
+      "name": "Describe Trails",
+      "description": "Retrieve settings for one or more trails, including trail configuration and logging status",
+      "http_method": "POST",
+      "endpoint": "/",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "trailNameList",
+          "type": "array",
+          "description": "Array of trail names or ARNs to describe (empty returns all trails)",
+          "required": false
+        },
+        {
+          "name": "includeShadowTrails",
+          "type": "boolean",
+          "description": "Include organization trails not created in this account",
+          "required": false,
+          "default": true
+        }
+      ]
+    },
+    {
+      "id": "get_trail_status",
+      "name": "Get Trail Status",
+      "description": "Get the current status of a trail including whether logging is enabled",
+      "http_method": "POST",
+      "endpoint": "/",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "Name",
+          "type": "string",
+          "description": "Trail name or ARN",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_trails",
+      "name": "List Trails",
+      "description": "List trails associated with the current region for the account",
+      "http_method": "POST",
+      "endpoint": "/",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "NextToken",
+          "type": "string",
+          "description": "Pagination token",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_event_selectors",
+      "name": "Get Event Selectors",
+      "description": "Retrieve event selectors configured for a trail including management and data events",
+      "http_method": "POST",
+      "endpoint": "/",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "TrailName",
+          "type": "string",
+          "description": "Trail name or ARN",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_insight_selectors",
+      "name": "Get Insight Selectors",
+      "description": "Retrieve insight selectors configured for a trail for anomaly detection",
+      "http_method": "POST",
+      "endpoint": "/",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "TrailName",
+          "type": "string",
+          "description": "Trail name or ARN",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,165 @@
+{
+  "id": "fortiweb",
+  "name": "FortiWeb WAF",
+  "description": "Fortinet FortiWeb Web Application Firewall REST API for managing server policies, protected hostnames, URL access rules, and security profiles",
+  "version": "1.0.0",
+  "category": "waf",
+  "vendor": "Fortinet",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "header_name": "Authorization",
+    "location": "header",
+    "token_prefix": "Bearer"
+  },
+  "base_url": "https://{host}/api/v2.0",
+  "actions": [
+    {
+      "id": "list_server_policies",
+      "name": "List Server Policies",
+      "description": "Retrieve all server policies that define how traffic is inspected",
+      "http_method": "GET",
+      "endpoint": "/cmdb/server-policy/policy",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "get_server_policy",
+      "name": "Get Server Policy",
+      "description": "Retrieve details of a specific server policy",
+      "http_method": "GET",
+      "endpoint": "/cmdb/server-policy/policy/{policy_name}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "policy_name",
+          "type": "string",
+          "description": "Name of the server policy to retrieve",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_protected_hostnames",
+      "name": "List Protected Hostname Groups",
+      "description": "Retrieve all protected hostname groups used in server policies",
+      "http_method": "GET",
+      "endpoint": "/cmdb/server-policy/allow-hosts",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "create_protected_hostname",
+      "name": "Create Protected Hostname Group",
+      "description": "Create a new protected hostname group for host header validation",
+      "http_method": "POST",
+      "endpoint": "/cmdb/server-policy/allow-hosts",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "body",
+          "type": "object",
+          "description": "Hostname group definition including name and action (Allow/Deny)",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_url_access_rules",
+      "name": "List URL Access Rules",
+      "description": "Retrieve all URL access policy rules for request filtering",
+      "http_method": "GET",
+      "endpoint": "/cmdb/waf/url-access.url-access-rule",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "create_url_access_rule",
+      "name": "Create URL Access Rule",
+      "description": "Create a new URL access rule to allow or deny specific URL patterns",
+      "http_method": "POST",
+      "endpoint": "/cmdb/waf/url-access.url-access-rule",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "body",
+          "type": "object",
+          "description": "URL access rule including name, host pattern, URL pattern, and action",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_ip_lists",
+      "name": "List IP Lists",
+      "description": "Retrieve all IP access control lists (blocklists and allowlists)",
+      "http_method": "GET",
+      "endpoint": "/cmdb/waf/ip-list",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "add_ip_to_blocklist",
+      "name": "Add IP to Block List",
+      "description": "Add an IP address to a WAF IP block list",
+      "http_method": "POST",
+      "endpoint": "/cmdb/waf/ip-list/{list_name}/members",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "list_name",
+          "type": "string",
+          "description": "Name of the IP list to add the entry to",
+          "required": true
+        },
+        {
+          "name": "body",
+          "type": "object",
+          "description": "IP entry including type (Black-IP/Trust-IP), ip address, and severity",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_attack_logs",
+      "name": "Get Attack Logs",
+      "description": "Retrieve WAF attack detection logs and events",
+      "http_method": "GET",
+      "endpoint": "/log/attack",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "count",
+          "type": "integer",
+          "description": "Number of log entries to return",
+          "required": false
+        },
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "Filter expression for attack logs",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_waf_profiles",
+      "name": "List WAF Profiles",
+      "description": "Retrieve all WAF inline protection profiles",
+      "http_method": "GET",
+      "endpoint": "/cmdb/waf/web-protection-profile.inline-protection",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    }
+  ]
+}

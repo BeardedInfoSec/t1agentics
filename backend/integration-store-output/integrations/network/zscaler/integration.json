@@ -1,0 +1,973 @@
+{
+  "id": "zscaler",
+  "name": "Zscaler",
+  "description": "This app implements containment and investigative actions on Zscaler",
+  "version": "3.0.1",
+  "category": "network",
+  "vendor": "Zscaler",
+  "auth_type": "basic_auth",
+  "auth_config": {
+    "type": "basic_auth",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "get_report",
+      "name": "Get Report",
+      "description": "Fetch sandbox report for provided md5 file hash",
+      "http_method": "GET",
+      "endpoint": "/actions/get_report",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "file_hash",
+          "type": "string",
+          "description": "The md5 file hash",
+          "required": true,
+          "contains": [
+            "md5"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "list_url_categories",
+      "name": "List Url Categories",
+      "description": "List all URL categories",
+      "http_method": "GET",
+      "endpoint": "/actions/list_url_categories",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "get_ids_and_names_only",
+          "type": "boolean",
+          "description": "Whether to retrieve only a list containing URL category IDs and names. Even if displayURL is set to true, URLs will not be returned",
+          "required": false,
+          "default": false
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "block_ip",
+      "name": "Block Ip",
+      "description": "Block an IP",
+      "http_method": "POST",
+      "endpoint": "/actions/block_ip",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "A list of IPs",
+          "required": true,
+          "contains": [
+            "ip",
+            "ipv6"
+          ]
+        },
+        {
+          "name": "url_category",
+          "type": "string",
+          "description": "Add to this category",
+          "required": false,
+          "contains": [
+            "zscaler url category"
+          ]
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "block_url",
+      "name": "Block Url",
+      "description": "Block a URL",
+      "http_method": "POST",
+      "endpoint": "/actions/block_url",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "A list of URLs",
+          "required": true,
+          "contains": [
+            "url",
+            "url list",
+            "domain"
+          ]
+        },
+        {
+          "name": "url_category",
+          "type": "string",
+          "description": "Add to this category",
+          "required": false,
+          "contains": [
+            "zscaler url category"
+          ]
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "unblock_ip",
+      "name": "Unblock Ip",
+      "description": "Unblock an IP",
+      "http_method": "POST",
+      "endpoint": "/actions/unblock_ip",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "A list of IPs",
+          "required": true,
+          "contains": [
+            "ip",
+            "ipv6"
+          ]
+        },
+        {
+          "name": "url_category",
+          "type": "string",
+          "description": "Remove from this category",
+          "required": false,
+          "contains": [
+            "zscaler url category"
+          ]
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "unblock_url",
+      "name": "Unblock Url",
+      "description": "Unblock a URL",
+      "http_method": "POST",
+      "endpoint": "/actions/unblock_url",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "A list of URLs",
+          "required": true,
+          "contains": [
+            "url",
+            "url list",
+            "domain"
+          ]
+        },
+        {
+          "name": "url_category",
+          "type": "string",
+          "description": "Remove from this category",
+          "required": false,
+          "contains": [
+            "zscaler url category"
+          ]
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "allow_ip",
+      "name": "Allow Ip",
+      "description": "Add an IP address to the allowlist",
+      "http_method": "POST",
+      "endpoint": "/actions/allow_ip",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "A list of IPs",
+          "required": true,
+          "contains": [
+            "ip",
+            "ipv6"
+          ]
+        },
+        {
+          "name": "url_category",
+          "type": "string",
+          "description": "Add to this category",
+          "required": false,
+          "contains": [
+            "zscaler url category"
+          ]
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "allow_url",
+      "name": "Allow Url",
+      "description": "Add a URL to the allowed list",
+      "http_method": "POST",
+      "endpoint": "/actions/allow_url",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "A list of URLs",
+          "required": true,
+          "contains": [
+            "url",
+            "domain",
+            "url list"
+          ]
+        },
+        {
+          "name": "url_category",
+          "type": "string",
+          "description": "Add to this category",
+          "required": false,
+          "contains": [
+            "zscaler url category"
+          ]
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "unallow_ip",
+      "name": "Unallow Ip",
+      "description": "Remove an IP address from the allowlist",
+      "http_method": "POST",
+      "endpoint": "/actions/unallow_ip",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "A list of IPs",
+          "required": true,
+          "contains": [
+            "ip",
+            "ipv6"
+          ]
+        },
+        {
+          "name": "url_category",
+          "type": "string",
+          "description": "Remove from this category",
+          "required": false,
+          "contains": [
+            "zscaler url category"
+          ]
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "unallow_url",
+      "name": "Unallow Url",
+      "description": "Remove a URL from the allowed list",
+      "http_method": "POST",
+      "endpoint": "/actions/unallow_url",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "A list of URLs",
+          "required": true,
+          "contains": [
+            "url",
+            "domain",
+            "url list"
+          ]
+        },
+        {
+          "name": "url_category",
+          "type": "string",
+          "description": "Remove from this category",
+          "required": false,
+          "contains": [
+            "zscaler url category"
+          ]
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "lookup_ip",
+      "name": "Lookup Ip",
+      "description": "Lookup the categories related to an IP",
+      "http_method": "GET",
+      "endpoint": "/actions/lookup_ip",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "A list of IPs",
+          "required": true,
+          "contains": [
+            "ip",
+            "ipv6"
+          ]
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "lookup_url",
+      "name": "Lookup Url",
+      "description": "Lookup the categories related to a URL",
+      "http_method": "GET",
+      "endpoint": "/actions/lookup_url",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "A list of URLs",
+          "required": true,
+          "contains": [
+            "url",
+            "domain",
+            "url list"
+          ]
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "submit_file",
+      "name": "Submit File",
+      "description": "Submit a file to Zscaler Sandbox",
+      "http_method": "GET",
+      "endpoint": "/actions/submit_file",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "vault_id",
+          "type": "string",
+          "description": "Vault ID of file to submit",
+          "required": true,
+          "contains": [
+            "vault id",
+            "sha1"
+          ]
+        },
+        {
+          "name": "force",
+          "type": "boolean",
+          "description": "Submit file to sandbox even if found malicious during AV scan and a verdict already exists",
+          "required": false
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "get_admin_users",
+      "name": "Get Admin Users",
+      "description": "Get a list of admin users",
+      "http_method": "GET",
+      "endpoint": "/actions/get_admin_users",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of records to fetch",
+          "required": false,
+          "default": 1000
+        }
+      ]
+    },
+    {
+      "id": "get_users",
+      "name": "Get Users",
+      "description": "Gets a list of all users and allows user filtering by name, department, or group",
+      "http_method": "GET",
+      "endpoint": "/actions/get_users",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "User Name/ID",
+          "required": false
+        },
+        {
+          "name": "dept",
+          "type": "string",
+          "description": "User department",
+          "required": false
+        },
+        {
+          "name": "group",
+          "type": "string",
+          "description": "User group",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of records to fetch",
+          "required": false,
+          "default": 1000
+        }
+      ]
+    },
+    {
+      "id": "get_groups",
+      "name": "Get Groups",
+      "description": "Gets a list of groups",
+      "http_method": "GET",
+      "endpoint": "/actions/get_groups",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "search",
+          "type": "string",
+          "description": "The search string used to match against a group's name or comments attributes",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of records to fetch",
+          "required": false,
+          "default": 1000
+        }
+      ]
+    },
+    {
+      "id": "add_group_user",
+      "name": "Add Group User",
+      "description": "Add user to group",
+      "http_method": "GET",
+      "endpoint": "/actions/add_group_user",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "user_id",
+          "type": "number",
+          "description": "ZScaler User ID",
+          "required": true,
+          "contains": [
+            "zscaler user id"
+          ]
+        },
+        {
+          "name": "group_id",
+          "type": "number",
+          "description": "ZScaler Group ID",
+          "required": true,
+          "contains": [
+            "zscaler group id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "remove_group_user",
+      "name": "Remove Group User",
+      "description": "Remove user from group",
+      "http_method": "POST",
+      "endpoint": "/actions/remove_group_user",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "user_id",
+          "type": "number",
+          "description": "ZScaler User Id",
+          "required": true,
+          "contains": [
+            "zscaler user id"
+          ]
+        },
+        {
+          "name": "group_id",
+          "type": "number",
+          "description": "ZScaler Group Id",
+          "required": true,
+          "contains": [
+            "zscaler group id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_allowlist",
+      "name": "Get Allowlist",
+      "description": "Get urls on the allow list",
+      "http_method": "GET",
+      "endpoint": "/actions/get_allowlist",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "get_denylist",
+      "name": "Get Denylist",
+      "description": "Get urls on the deny list",
+      "http_method": "GET",
+      "endpoint": "/actions/get_denylist",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "Filter results be url or ip",
+          "required": false
+        },
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Regular expression to match url or ip against",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "update_user",
+      "name": "Update User",
+      "description": "Update user with given id",
+      "http_method": "POST",
+      "endpoint": "/actions/update_user",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "user_id",
+          "type": "number",
+          "description": "ZScaler User Id",
+          "required": true,
+          "contains": [
+            "zscaler user id"
+          ]
+        },
+        {
+          "name": "user",
+          "type": "string",
+          "description": "JSON object containing the user details (see https://help.zscaler.com/zia/user-management#/users/{userId}-put)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "add_category_url",
+      "name": "Add Category Url",
+      "description": "Add urls to a cetgory",
+      "http_method": "GET",
+      "endpoint": "/actions/add_category_url",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "category_id",
+          "type": "string",
+          "description": "The ID of the category to add the specified URLs to",
+          "required": true
+        },
+        {
+          "name": "urls",
+          "type": "string",
+          "description": "A comma-separated list of URLs to add to the specified category",
+          "required": false
+        },
+        {
+          "name": "retaining-parent-category-url",
+          "type": "string",
+          "description": "A comma-separated list of URLs to add to the retaining parent category section inside the specified category",
+          "required": false
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "add_category_ip",
+      "name": "Add Category Ip",
+      "description": "Add IPs to a cetgory",
+      "http_method": "GET",
+      "endpoint": "/actions/add_category_ip",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "category_id",
+          "type": "string",
+          "description": "The ID of the category to add the specified URLs to",
+          "required": true
+        },
+        {
+          "name": "ips",
+          "type": "string",
+          "description": "A comma-separated list of IP addresses to add to the specified category",
+          "required": false
+        },
+        {
+          "name": "retaining-parent-category-ip",
+          "type": "string",
+          "description": "A comma-separated list of IPs to add to the retaining parent category section inside the specified category",
+          "required": false
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "remove_category_url",
+      "name": "Remove Category Url",
+      "description": "Add urls to a cetgory",
+      "http_method": "GET",
+      "endpoint": "/actions/remove_category_url",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "category_id",
+          "type": "string",
+          "description": "The ID of the category to add the specified URLs to",
+          "required": true
+        },
+        {
+          "name": "urls",
+          "type": "string",
+          "description": "A comma-separated list of URLs to remove from the specified category",
+          "required": false
+        },
+        {
+          "name": "retaining-parent-category-url",
+          "type": "string",
+          "description": "A comma-separated list of URLs to remove from the retaining parent category section inside the specified category",
+          "required": false
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "remove_category_ip",
+      "name": "Remove Category Ip",
+      "description": "Remove IPs to a cetgory",
+      "http_method": "GET",
+      "endpoint": "/actions/remove_category_ip",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "category_id",
+          "type": "string",
+          "description": "The ID of the category to add the specified URLs to",
+          "required": true
+        },
+        {
+          "name": "ips",
+          "type": "string",
+          "description": "A comma-separated list of IP addresses to add to the specified category",
+          "required": false
+        },
+        {
+          "name": "retaining-parent-category-ip",
+          "type": "string",
+          "description": "A comma-separated list of IPs to add to the retaining parent category section inside the specified category",
+          "required": false
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "create_destination_group",
+      "name": "Create Destination Group",
+      "description": "Create destination group",
+      "http_method": "GET",
+      "endpoint": "/actions/create_destination_group",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Destination IP group name",
+          "required": true
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Destination IP group type (i.e., the group can contain destination IP addresses, countries, URL categories or FQDNs)",
+          "required": true
+        },
+        {
+          "name": "addresses",
+          "type": "string",
+          "description": "Comma seperated string of destination IP addresses, FQDNs, or wildcard FQDNs added to the group",
+          "required": false
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Additional information about the destination IP group.",
+          "required": false
+        },
+        {
+          "name": "ip_categories",
+          "type": "string",
+          "description": "Destination IP address URL categories",
+          "required": false
+        },
+        {
+          "name": "countries",
+          "type": "string",
+          "description": "Destination IP address countries. You can identify destinations based on the location of a server.",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_destination_group",
+      "name": "List Destination Group",
+      "description": "List destination group",
+      "http_method": "GET",
+      "endpoint": "/actions/list_destination_group",
+      "action_type": "investigate",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "ip_group_ids",
+          "type": "string",
+          "description": "A comma-separated list of unique identifiers for the IP destination groups",
+          "required": false
+        },
+        {
+          "name": "exclude_type",
+          "type": "string",
+          "description": "The IP group type to be excluded from the results",
+          "required": false
+        },
+        {
+          "name": "category_type",
+          "type": "string",
+          "description": "Comma seperated list of IP group types to be filtered from results. This argument is only supported when the 'lite' argument is set to True",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Limit of the results to be retrieved",
+          "required": false,
+          "default": 50
+        },
+        {
+          "name": "lite",
+          "type": "boolean",
+          "description": "Whether to retrieve only limited information of IP destination groups. Includes ID, name and type of the IP destination groups",
+          "required": false,
+          "default": false
+        }
+      ]
+    },
+    {
+      "id": "edit_destination_group",
+      "name": "Edit Destination Group",
+      "description": "Edit destination group",
+      "http_method": "GET",
+      "endpoint": "/actions/edit_destination_group",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "ip_group_id",
+          "type": "number",
+          "description": "The unique identifier for the IP destination group",
+          "required": true
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Destination IP group name",
+          "required": false
+        },
+        {
+          "name": "addresses",
+          "type": "string",
+          "description": "Comma seperated string of destination IP addresses, FQDNs, or wildcard FQDNs added to the group",
+          "required": false
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Additional information about the destination IP group.",
+          "required": false
+        },
+        {
+          "name": "ip_categories",
+          "type": "string",
+          "description": "Destination IP address URL categories",
+          "required": false
+        },
+        {
+          "name": "countries",
+          "type": "string",
+          "description": "Destination IP address countries. You can identify destinations based on the location of a server.",
+          "required": false
+        },
+        {
+          "name": "is_non_editable",
+          "type": "boolean",
+          "description": "If set to true, the destination IP address group is non-editable. This field is applicable only to predefined IP address groups, which cannot be modified",
+          "required": false,
+          "default": false
+        }
+      ]
+    },
+    {
+      "id": "delete_destination_group",
+      "name": "Delete Destination Group",
+      "description": "Delete destination group",
+      "http_method": "GET",
+      "endpoint": "/actions/delete_destination_group",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "ip_group_ids",
+          "type": "string",
+          "description": "A comma-separated list of unique identifiers for the IP destination groups",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_departments",
+      "name": "Get Departments",
+      "description": "Get a list of departments",
+      "http_method": "GET",
+      "endpoint": "/actions/get_departments",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Filter by department name",
+          "required": false
+        },
+        {
+          "name": "page",
+          "type": "number",
+          "description": "Specifies the page offset",
+          "required": false
+        },
+        {
+          "name": "pageSize",
+          "type": "number",
+          "description": "Specifies the page size",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "get_category_details",
+      "name": "Get Category Details",
+      "description": "Get the urls and keywords of a category",
+      "http_method": "GET",
+      "endpoint": "/actions/get_category_details",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "category_ids",
+          "type": "string",
+          "description": "Comma seperated string of category id's to query",
+          "required": false
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Zscaler",
+    "original_type": "network security",
+    "converted_at": "2025-12-18T16:25:29.329152",
+    "source_version": "3.0.1"
+  }
+}

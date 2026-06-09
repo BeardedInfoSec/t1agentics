@@ -1,0 +1,581 @@
+{
+  "id": "falcon_sandbox",
+  "name": "Falcon Sandbox",
+  "description": "This app integrates with Falcon Sandbox Services to provide investigative actions",
+  "version": "2.1.0",
+  "category": "sandbox",
+  "vendor": "Hybrid Analysis",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "base_url",
+  "actions": [
+    {
+      "id": "search_terms",
+      "name": "Search Terms",
+      "description": "Search for samples in Falcon Sandbox database using search terms",
+      "http_method": "GET",
+      "endpoint": "/actions/search_terms",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "file_name",
+          "type": "string",
+          "description": "File name e.g. invoice.exe",
+          "required": false,
+          "contains": [
+            "file name"
+          ]
+        },
+        {
+          "name": "file_type",
+          "type": "string",
+          "description": "File type e.g. docx",
+          "required": false
+        },
+        {
+          "name": "file_type_substring",
+          "type": "string",
+          "description": "File type description e.g. PE32 executable",
+          "required": false
+        },
+        {
+          "name": "environment_id",
+          "type": "number",
+          "description": "Environment Id",
+          "required": false
+        },
+        {
+          "name": "country",
+          "type": "string",
+          "description": "Country (3 digit ISO) e.g. swe",
+          "required": false
+        },
+        {
+          "name": "verdict",
+          "type": "string",
+          "description": "Verdict",
+          "required": false,
+          "contains": [
+            "falcon sandbox verdict"
+          ]
+        },
+        {
+          "name": "av_detection",
+          "type": "string",
+          "description": "AV Multiscan range e.g. 50-70 (min 0, max 100)",
+          "required": false
+        },
+        {
+          "name": "av_family_substring",
+          "type": "string",
+          "description": "AV Family Substring e.g. nemucod",
+          "required": false,
+          "contains": [
+            "malware family"
+          ]
+        },
+        {
+          "name": "hashtag",
+          "type": "string",
+          "description": "Hashtag e.g. ransomware",
+          "required": false,
+          "contains": [
+            "falcon sandbox tag"
+          ]
+        },
+        {
+          "name": "port",
+          "type": "number",
+          "description": "Port e.g. 8080",
+          "required": false,
+          "contains": [
+            "port"
+          ]
+        },
+        {
+          "name": "host",
+          "type": "string",
+          "description": "Host e.g. 192.168.0.1",
+          "required": false,
+          "contains": [
+            "ip"
+          ]
+        },
+        {
+          "name": "domain",
+          "type": "string",
+          "description": "Domain e.g. checkip.dyndns.org",
+          "required": false,
+          "contains": [
+            "domain"
+          ]
+        },
+        {
+          "name": "url",
+          "type": "string",
+          "description": "HTTP Request Substring e.g. google",
+          "required": false,
+          "contains": [
+            "url"
+          ]
+        },
+        {
+          "name": "similar_samples",
+          "type": "string",
+          "description": "Similar Samples e.g. <sha256>",
+          "required": false,
+          "contains": [
+            "sha256"
+          ]
+        },
+        {
+          "name": "similar_context",
+          "type": "string",
+          "description": "Sample Context e.g. <sha256>",
+          "required": false,
+          "contains": [
+            "sha256"
+          ]
+        },
+        {
+          "name": "imphash",
+          "type": "string",
+          "description": "",
+          "required": false,
+          "contains": [
+            "imphash"
+          ]
+        },
+        {
+          "name": "ssdeep",
+          "type": "string",
+          "description": "",
+          "required": false,
+          "contains": [
+            "ssdeep"
+          ]
+        },
+        {
+          "name": "authentihash",
+          "type": "string",
+          "description": "",
+          "required": false
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "hunt_similar",
+      "name": "Hunt Similar",
+      "description": "Search for similar samples by given Sha256 hash in the Falcon Sandbox database",
+      "http_method": "GET",
+      "endpoint": "/actions/hunt_similar",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "sha256",
+          "type": "string",
+          "description": "Sample Sha256",
+          "required": true,
+          "contains": [
+            "sha256"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "hunt_ip",
+      "name": "Hunt Ip",
+      "description": "Search for a given IP in the Falcon Sandbox database",
+      "http_method": "GET",
+      "endpoint": "/actions/hunt_ip",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "host",
+          "type": "string",
+          "description": "IP",
+          "required": true,
+          "contains": [
+            "ip"
+          ]
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "hunt_hash",
+      "name": "Hunt Hash",
+      "description": "Search for a file by one kind of hash(Sha1, Md5, Sha256) in the Falcon Sandbox database",
+      "http_method": "GET",
+      "endpoint": "/actions/hunt_hash",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "hash",
+          "type": "string",
+          "description": "Sha1, Md5, Sha256",
+          "required": true,
+          "contains": [
+            "sha256",
+            "sha1",
+            "md5"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "hunt_file",
+      "name": "Hunt File",
+      "description": "Search for a file by one kind of data(Sha1, Md5, Sha256 or File name) in the Falcon Sandbox database",
+      "http_method": "GET",
+      "endpoint": "/actions/hunt_file",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "file_name",
+          "type": "string",
+          "description": "File name",
+          "required": true,
+          "contains": [
+            "file name"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "hunt_malware_family",
+      "name": "Hunt Malware Family",
+      "description": "Search for a given malware family in the Falcon Sandbox database",
+      "http_method": "GET",
+      "endpoint": "/actions/hunt_malware_family",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "malware_family",
+          "type": "string",
+          "description": "AV Family Substring e.g. nemucod",
+          "required": true,
+          "contains": [
+            "malware family"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "hunt_domain",
+      "name": "Hunt Domain",
+      "description": "Search for a given domain in the Falcon Sandbox database",
+      "http_method": "GET",
+      "endpoint": "/actions/hunt_domain",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "domain",
+          "type": "string",
+          "description": "Domain e.g. checkip.dyndns.org",
+          "required": true,
+          "contains": [
+            "domain"
+          ]
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "hunt_url",
+      "name": "Hunt Url",
+      "description": "Search for a given URL in the Falcon Sandbox database",
+      "http_method": "GET",
+      "endpoint": "/actions/hunt_url",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "HTTP Request Substring e.g. google",
+          "required": true,
+          "contains": [
+            "url"
+          ]
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "get_file_from_url",
+      "name": "Get File From Url",
+      "description": "Download file from a url",
+      "http_method": "GET",
+      "endpoint": "/actions/get_file_from_url",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "Url containing file",
+          "required": true,
+          "contains": [
+            "url"
+          ]
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "get_pcap",
+      "name": "Get Pcap",
+      "description": "Download the pcap file of sample from Falcon Sandbox and add it to vault",
+      "http_method": "GET",
+      "endpoint": "/actions/get_pcap",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Sample Id in one of format: 'jobId' or 'sha256:environmentId'",
+          "required": true,
+          "contains": [
+            "falcon sandbox job id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_file",
+      "name": "Get File",
+      "description": "Download sample result data from Falcon Sandbox and add it to vault",
+      "http_method": "GET",
+      "endpoint": "/actions/get_file",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Sample Id in one of format: 'jobId' or 'sha256:environmentId'",
+          "required": true,
+          "contains": [
+            "falcon sandbox job id"
+          ]
+        },
+        {
+          "name": "file_type",
+          "type": "string",
+          "description": "File type",
+          "required": true,
+          "default": "xml"
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "get_report",
+      "name": "Get Report",
+      "description": "Fetch results of an already completed analysis in the Falcon Sandbox",
+      "http_method": "GET",
+      "endpoint": "/actions/get_report",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Sample Id in one of format: 'jobId' or 'sha256:environmentId'",
+          "required": true,
+          "contains": [
+            "falcon sandbox job id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "check_status",
+      "name": "Check Status",
+      "description": "Check status of sample (file or URL) submitted in the Falcon Sandbox",
+      "http_method": "GET",
+      "endpoint": "/actions/check_status",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Sample Id in one of format: 'jobId' or 'sha256:environmentId'",
+          "required": true,
+          "contains": [
+            "falcon sandbox job id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "check_url_hash",
+      "name": "Check Url Hash",
+      "description": "Determine a SHA256 that an online file or URL submission will have when being processed by the Falcon Sandbox",
+      "http_method": "GET",
+      "endpoint": "/actions/check_url_hash",
+      "action_type": "investigate",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "Url to check",
+          "required": true,
+          "contains": [
+            "url"
+          ]
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "detonate_url",
+      "name": "Detonate Url",
+      "description": "Detonate a URL in the Falcon Sandbox",
+      "http_method": "GET",
+      "endpoint": "/actions/detonate_url",
+      "action_type": "investigate",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "Url",
+          "required": true,
+          "contains": [
+            "url"
+          ]
+        },
+        {
+          "name": "environment_id",
+          "type": "number",
+          "description": "Environment Id",
+          "required": true
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "detonate_online_file",
+      "name": "Detonate Online File",
+      "description": "Detonate an online file in the Falcon Sandbox",
+      "http_method": "GET",
+      "endpoint": "/actions/detonate_online_file",
+      "action_type": "investigate",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "Url",
+          "required": true,
+          "contains": [
+            "url"
+          ]
+        },
+        {
+          "name": "environment_id",
+          "type": "number",
+          "description": "Environment Id",
+          "required": true
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "detonate_file",
+      "name": "Detonate File",
+      "description": "Detonate the file in the Falcon Sandbox",
+      "http_method": "GET",
+      "endpoint": "/actions/detonate_file",
+      "action_type": "investigate",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "vault_id",
+          "type": "string",
+          "description": "Vault ID of file to submit",
+          "required": true,
+          "contains": [
+            "vault id"
+          ]
+        },
+        {
+          "name": "environment_id",
+          "type": "number",
+          "description": "Environment ID",
+          "required": true
+        },
+        {
+          "name": "file_name",
+          "type": "string",
+          "description": "File name to use",
+          "required": true,
+          "contains": [
+            "file name"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Falcon Sandbox",
+    "original_type": "sandbox",
+    "converted_at": "2025-12-18T16:25:28.768632",
+    "source_version": "2.1.0"
+  }
+}

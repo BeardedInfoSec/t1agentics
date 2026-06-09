@@ -1,0 +1,170 @@
+{
+  "id": "cohesity",
+  "name": "Cohesity DataProtect",
+  "description": "Integrates with Cohesity DataProtect REST API for protection job management, backup run monitoring, source registration, and restore operations across hybrid and multi-cloud environments",
+  "version": "1.0.0",
+  "category": "backup",
+  "vendor": "Cohesity",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "https://{host}/irisservices/api/v1",
+  "actions": [
+    {
+      "id": "list_protection_jobs",
+      "name": "List Protection Jobs",
+      "description": "Retrieve all protection jobs with their configuration, schedule, and current status",
+      "http_method": "GET",
+      "endpoint": "/public/protectionJobs",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "names",
+          "type": "string",
+          "description": "Comma-separated list of job names to filter by",
+          "required": false
+        },
+        {
+          "name": "environments",
+          "type": "string",
+          "description": "Filter by environment type (kVMware, kPhysical, kSQL, kOracle, kAWS, kAzure)",
+          "required": false
+        },
+        {
+          "name": "isActive",
+          "type": "boolean",
+          "description": "Filter by active status",
+          "required": false
+        },
+        {
+          "name": "isDeleted",
+          "type": "boolean",
+          "description": "Include deleted jobs",
+          "required": false,
+          "default": false
+        }
+      ]
+    },
+    {
+      "id": "list_protection_runs",
+      "name": "List Protection Runs",
+      "description": "Retrieve backup run history for a specific protection job showing run status, duration, and data transferred",
+      "http_method": "GET",
+      "endpoint": "/public/protectionRuns",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "jobId",
+          "type": "number",
+          "description": "Filter runs by protection job ID",
+          "required": false
+        },
+        {
+          "name": "startedTimeUsecs",
+          "type": "number",
+          "description": "Filter runs started after this time (microseconds since epoch)",
+          "required": false
+        },
+        {
+          "name": "numRuns",
+          "type": "number",
+          "description": "Maximum number of runs to return",
+          "required": false,
+          "default": 50
+        },
+        {
+          "name": "runTypes",
+          "type": "string",
+          "description": "Filter by run type (kRegular, kFull, kLog, kSystem)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_protection_sources",
+      "name": "List Protection Sources",
+      "description": "Retrieve all registered protection sources (VMs, physical servers, databases, cloud instances)",
+      "http_method": "GET",
+      "endpoint": "/public/protectionSources/rootNodes",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "environments",
+          "type": "string",
+          "description": "Filter by environment type (kVMware, kPhysical, kSQL, kOracle, kAWS)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "trigger_backup",
+      "name": "Trigger Backup Run",
+      "description": "Initiate an immediate backup run for a specified protection job",
+      "http_method": "POST",
+      "endpoint": "/public/protectionJobs/run/{jobId}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "jobId",
+          "type": "number",
+          "description": "Unique identifier of the protection job to run",
+          "required": true
+        },
+        {
+          "name": "runType",
+          "type": "string",
+          "description": "Type of backup run (kRegular, kFull, kLog)",
+          "required": false,
+          "default": "kRegular"
+        }
+      ]
+    },
+    {
+      "id": "list_alerts",
+      "name": "List Alerts",
+      "description": "Retrieve system alerts including backup failures, capacity warnings, and security notifications",
+      "http_method": "GET",
+      "endpoint": "/public/alerts",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "alertCategoryList",
+          "type": "string",
+          "description": "Filter by alert category (kDisk, kNode, kCluster, kNodeHealth, kClusterHealth, kBackupRestore)",
+          "required": false
+        },
+        {
+          "name": "alertSeverityList",
+          "type": "string",
+          "description": "Filter by severity (kCritical, kWarning, kInfo)",
+          "required": false
+        },
+        {
+          "name": "maxAlerts",
+          "type": "number",
+          "description": "Maximum number of alerts to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "get_cluster_info",
+      "name": "Get Cluster Info",
+      "description": "Retrieve Cohesity cluster information including health status, capacity, and node details",
+      "http_method": "GET",
+      "endpoint": "/public/cluster",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    }
+  ]
+}

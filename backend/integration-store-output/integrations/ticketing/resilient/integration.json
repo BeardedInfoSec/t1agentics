@@ -1,0 +1,1199 @@
+{
+  "id": "resilient",
+  "name": "Resilient",
+  "description": "Resilient Ticket System",
+  "version": "2.0.1",
+  "category": "ticketing",
+  "vendor": "IBM",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "on_poll",
+      "name": "On Poll",
+      "description": "Callback action for the on_poll ingest functionality",
+      "http_method": "GET",
+      "endpoint": "/actions/on_poll",
+      "action_type": "ingest",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "container_id",
+          "type": "string",
+          "description": "Container IDs to limit the ingestion to",
+          "required": false
+        },
+        {
+          "name": "start_time",
+          "type": "number",
+          "description": "Start of time range, in epoch time (milliseconds)",
+          "required": true
+        },
+        {
+          "name": "end_time",
+          "type": "number",
+          "description": "End of time range, in epoch time (milliseconds)",
+          "required": true
+        },
+        {
+          "name": "container_count",
+          "type": "number",
+          "description": "Maximum number of container records to query for",
+          "required": false
+        },
+        {
+          "name": "artifact_count",
+          "type": "number",
+          "description": "Parameter ignored in this app",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_tickets",
+      "name": "List Tickets",
+      "description": "List all incidents",
+      "http_method": "GET",
+      "endpoint": "/actions/list_tickets",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "want_closed",
+          "type": "boolean",
+          "description": "Also returns closed incidents. Default is true",
+          "required": false,
+          "default": true
+        }
+      ]
+    },
+    {
+      "id": "get_ticket",
+      "name": "Get Ticket",
+      "description": "Get incident details by id",
+      "http_method": "GET",
+      "endpoint": "/actions/get_ticket",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "incident_id",
+          "type": "string",
+          "description": "ID of incident to retrieve",
+          "required": true,
+          "contains": [
+            "ibm resilient ticketid"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "create_ticket",
+      "name": "Create Ticket",
+      "description": "Create new incident",
+      "http_method": "GET",
+      "endpoint": "/actions/create_ticket",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "incident_name",
+          "type": "string",
+          "description": "Name of incident",
+          "required": true
+        },
+        {
+          "name": "incident_description",
+          "type": "string",
+          "description": "Short description of incident",
+          "required": true
+        },
+        {
+          "name": "fullincidentdatadto",
+          "type": "string",
+          "description": "Incident data as JSON String, format is FullIncidentDataDTO data type from API",
+          "required": false
+        },
+        {
+          "name": "want_full_data",
+          "type": "boolean",
+          "description": "Returns full incident instead of summary. Default is true",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "want_tasks",
+          "type": "boolean",
+          "description": "Also returns associated tasks. Default is false",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "update_ticket",
+      "name": "Update Ticket",
+      "description": "Update existing incident. This action downloads the incident and copies the provided JSON onto the download data, overwriting any existing data elements",
+      "http_method": "GET",
+      "endpoint": "/actions/update_ticket",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "incident_id",
+          "type": "string",
+          "description": "ID of incident to update",
+          "required": true,
+          "contains": [
+            "ibm resilient ticketid"
+          ]
+        },
+        {
+          "name": "fullincidentdatadto",
+          "type": "string",
+          "description": "Incident data as JSON String, the format is FullIncidentDataDTO data type from API. This data should first be retrieved from Resilient and then modified with the desired changes",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "search_tickets",
+      "name": "Search Tickets",
+      "description": "Submit search query for incidents",
+      "http_method": "GET",
+      "endpoint": "/actions/search_tickets",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "handle_format_is_name",
+          "type": "boolean",
+          "description": "Treat handles as a name. Default is true",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "querydto",
+          "type": "string",
+          "description": "Query data as JSON String, the format is QueryDTO data type from API",
+          "required": false
+        },
+        {
+          "name": "add_condition_all_active_tickets",
+          "type": "boolean",
+          "description": "Filters for active tickets",
+          "required": false
+        },
+        {
+          "name": "add_condition_closed_in_last_24_hours",
+          "type": "boolean",
+          "description": "Filters for tickets closed in last 24 hours",
+          "required": false
+        },
+        {
+          "name": "add_condition_created_in_last_24_hours",
+          "type": "boolean",
+          "description": "Filters for tickets created in last 24 hours",
+          "required": false
+        },
+        {
+          "name": "1st_condition_field_name",
+          "type": "string",
+          "description": "The field name in the condition",
+          "required": false
+        },
+        {
+          "name": "1st_condition_field_value",
+          "type": "string",
+          "description": "The value used for comparison",
+          "required": false
+        },
+        {
+          "name": "1st_condition_value_is_datetime",
+          "type": "boolean",
+          "description": "The value is a datetime; convert to Resilient internal representation",
+          "required": false
+        },
+        {
+          "name": "1st_condition_comparison_method",
+          "type": "string",
+          "description": "The method used to compare the value, [equals, gt, lte]. Look up MethodName datatype in the API",
+          "required": false
+        },
+        {
+          "name": "2nd_condition_field_name",
+          "type": "string",
+          "description": "The field name in the condition",
+          "required": false
+        },
+        {
+          "name": "2nd_condition_field_value",
+          "type": "string",
+          "description": "The value used for comparison",
+          "required": false
+        },
+        {
+          "name": "2nd_condition_value_is_datetime",
+          "type": "boolean",
+          "description": "The value is a datetime",
+          "required": false
+        },
+        {
+          "name": "2nd_condition_comparison_method",
+          "type": "string",
+          "description": "The method used to compare the value",
+          "required": false
+        },
+        {
+          "name": "3rd_condition_field_name",
+          "type": "string",
+          "description": "The field name in the condition",
+          "required": false
+        },
+        {
+          "name": "3rd_condition_field_value",
+          "type": "string",
+          "description": "The value used for comparison",
+          "required": false
+        },
+        {
+          "name": "3rd_condition_value_is_datetime",
+          "type": "boolean",
+          "description": "The value is a datetime",
+          "required": false
+        },
+        {
+          "name": "3rd_condition_comparison_method",
+          "type": "string",
+          "description": "The method used to compare the value",
+          "required": false
+        },
+        {
+          "name": "4th_condition_field_name",
+          "type": "string",
+          "description": "The field name in the condition",
+          "required": false
+        },
+        {
+          "name": "4th_condition_field_value",
+          "type": "string",
+          "description": "The value used for comparison",
+          "required": false
+        },
+        {
+          "name": "4th_condition_value_is_datetime",
+          "type": "boolean",
+          "description": "The value is a datetime",
+          "required": false
+        },
+        {
+          "name": "4th_condition_comparison_method",
+          "type": "string",
+          "description": "The method used to compare the value",
+          "required": false
+        },
+        {
+          "name": "5th_condition_field_name",
+          "type": "string",
+          "description": "The field name in the condition",
+          "required": false
+        },
+        {
+          "name": "5th_condition_field_value",
+          "type": "string",
+          "description": "The value used for comparison",
+          "required": false
+        },
+        {
+          "name": "5th_condition_value_is_datetime",
+          "type": "boolean",
+          "description": "The value is a datetime",
+          "required": false
+        },
+        {
+          "name": "5th_condition_comparison_method",
+          "type": "string",
+          "description": "The method used to compare the value",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_artifacts",
+      "name": "List Artifacts",
+      "description": "List all artifacts for incident",
+      "http_method": "GET",
+      "endpoint": "/actions/list_artifacts",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "incident_id",
+          "type": "string",
+          "description": "ID of incident",
+          "required": true,
+          "contains": [
+            "ibm resilient ticketid"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_artifact",
+      "name": "Get Artifact",
+      "description": "Get artifact details by incident and artifact id",
+      "http_method": "GET",
+      "endpoint": "/actions/get_artifact",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "incident_id",
+          "type": "string",
+          "description": "ID of incident",
+          "required": true,
+          "contains": [
+            "ibm resilient ticketid"
+          ]
+        },
+        {
+          "name": "artifact_id",
+          "type": "string",
+          "description": "ID of artifact to retrieve",
+          "required": true,
+          "contains": [
+            "artifactid"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "create_artifact",
+      "name": "Create Artifact",
+      "description": "Create new artifact",
+      "http_method": "GET",
+      "endpoint": "/actions/create_artifact",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "incident_id",
+          "type": "string",
+          "description": "ID of incident",
+          "required": true,
+          "contains": [
+            "ibm resilient ticketid"
+          ]
+        },
+        {
+          "name": "incidentartifactdto",
+          "type": "string",
+          "description": "Artifact data as JSON String, format is IncidentArtifactDTO data type from API",
+          "required": false
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Type of artifact",
+          "required": false
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "description": "Artifact value field",
+          "required": false,
+          "contains": [
+            "url"
+          ]
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Short description of artifact",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "update_artifact",
+      "name": "Update Artifact",
+      "description": "Update existing artifact",
+      "http_method": "GET",
+      "endpoint": "/actions/update_artifact",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "incident_id",
+          "type": "string",
+          "description": "ID of incident",
+          "required": true,
+          "contains": [
+            "ibm resilient ticketid"
+          ]
+        },
+        {
+          "name": "artifact_id",
+          "type": "string",
+          "description": "ID of artifact to update",
+          "required": true,
+          "contains": [
+            "artifactid"
+          ]
+        },
+        {
+          "name": "incidentartifactdto",
+          "type": "string",
+          "description": "Artifact data as JSON String, format is IncidentArtifactDTO data type from API",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_comments",
+      "name": "List Comments",
+      "description": "List all comment for incident",
+      "http_method": "GET",
+      "endpoint": "/actions/list_comments",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "handle_format_is_name",
+          "type": "boolean",
+          "description": "Treat handles as a name. Default is true",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "incident_id",
+          "type": "string",
+          "description": "ID of incident",
+          "required": true,
+          "contains": [
+            "ibm resilient ticketid"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_comment",
+      "name": "Get Comment",
+      "description": "Get comment details by incident and comment id",
+      "http_method": "GET",
+      "endpoint": "/actions/get_comment",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "handle_format_is_name",
+          "type": "boolean",
+          "description": "Treat handles as a name. Default is true",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "incident_id",
+          "type": "string",
+          "description": "ID of incident",
+          "required": true,
+          "contains": [
+            "ibm resilient ticketid"
+          ]
+        },
+        {
+          "name": "comment_id",
+          "type": "string",
+          "description": "ID of comment to retrieve",
+          "required": true,
+          "contains": [
+            "ibm resilient commentid"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "create_comment",
+      "name": "Create Comment",
+      "description": "Create new comment",
+      "http_method": "GET",
+      "endpoint": "/actions/create_comment",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "handle_format_is_name",
+          "type": "boolean",
+          "description": "Treat handles as a name. Default is true",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "incident_id",
+          "type": "string",
+          "description": "ID of incident",
+          "required": true,
+          "contains": [
+            "ibm resilient ticketid"
+          ]
+        },
+        {
+          "name": "parent_id",
+          "type": "string",
+          "description": "The ID of the initial comment if posting a reply",
+          "required": false,
+          "contains": [
+            "ibm resilient commentid"
+          ]
+        },
+        {
+          "name": "text",
+          "type": "string",
+          "description": "Comment as text",
+          "required": false
+        },
+        {
+          "name": "incidentcommentdto",
+          "type": "string",
+          "description": "Comment data as JSON String, format is IncidentCommentDTO data type from API",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "update_comment",
+      "name": "Update Comment",
+      "description": "Update existing comment",
+      "http_method": "GET",
+      "endpoint": "/actions/update_comment",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "handle_format_is_name",
+          "type": "boolean",
+          "description": "Treat handles as a name. Default is true",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "incident_id",
+          "type": "string",
+          "description": "ID of incident",
+          "required": true,
+          "contains": [
+            "ibm resilient ticketid"
+          ]
+        },
+        {
+          "name": "comment_id",
+          "type": "string",
+          "description": "ID of comment to retrieve",
+          "required": true,
+          "contains": [
+            "ibm resilient commentid"
+          ]
+        },
+        {
+          "name": "incidentcommentdto",
+          "type": "string",
+          "description": "Comment data as JSON String, format is IncidentCommentDTO data type from API",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_tables",
+      "name": "List Tables",
+      "description": "List tables",
+      "http_method": "GET",
+      "endpoint": "/actions/list_tables",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "handle_format_is_name",
+          "type": "boolean",
+          "description": "Treat handles as a name. Default is true",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "incident_id",
+          "type": "string",
+          "description": "ID of incident",
+          "required": true,
+          "contains": [
+            "ibm resilient ticketid"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_table",
+      "name": "Get Table",
+      "description": "Get table",
+      "http_method": "GET",
+      "endpoint": "/actions/get_table",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "handle_format_is_name",
+          "type": "boolean",
+          "description": "Treat handles as a name. Default is true",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "incident_id",
+          "type": "string",
+          "description": "ID of incident",
+          "required": true,
+          "contains": [
+            "ibm resilient ticketid"
+          ]
+        },
+        {
+          "name": "table_id",
+          "type": "string",
+          "description": "ID of table",
+          "required": true,
+          "contains": [
+            "ibm resilient ticketid"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "add_table_row",
+      "name": "Add Table Row",
+      "description": "Add table row",
+      "http_method": "GET",
+      "endpoint": "/actions/add_table_row",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "handle_format_is_name",
+          "type": "boolean",
+          "description": "Treat handles as a name. Default is true",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "incident_id",
+          "type": "string",
+          "description": "ID of incident",
+          "required": true,
+          "contains": [
+            "ibm resilient ticketid"
+          ]
+        },
+        {
+          "name": "table_id",
+          "type": "string",
+          "description": "ID of table",
+          "required": true,
+          "contains": [
+            "tableid"
+          ]
+        },
+        {
+          "name": "datatablerowdatadto",
+          "type": "string",
+          "description": "Table row as JSON String, format is DataTableRowDataDTO data type from API",
+          "required": true
+        },
+        {
+          "name": "1st_condition_cell_property",
+          "type": "string",
+          "description": "The property name of the cell",
+          "required": false
+        },
+        {
+          "name": "1st_condition_cell_value",
+          "type": "string",
+          "description": "The value of the cell",
+          "required": false
+        },
+        {
+          "name": "2nd_condition_cell_property",
+          "type": "string",
+          "description": "The property name of the cell",
+          "required": false
+        },
+        {
+          "name": "2nd_condition_cell_value",
+          "type": "string",
+          "description": "The value of the cell",
+          "required": false
+        },
+        {
+          "name": "3rd_condition_cell_property",
+          "type": "string",
+          "description": "The property name of the cell",
+          "required": false
+        },
+        {
+          "name": "3rd_condition_cell_value",
+          "type": "string",
+          "description": "The value of the cell",
+          "required": false
+        },
+        {
+          "name": "4th_condition_cell_property",
+          "type": "string",
+          "description": "The property name of the cell",
+          "required": false
+        },
+        {
+          "name": "4th_condition_cell_value",
+          "type": "string",
+          "description": "The value of the cell",
+          "required": false
+        },
+        {
+          "name": "5th_condition_cell_property",
+          "type": "string",
+          "description": "The property name of the cell",
+          "required": false
+        },
+        {
+          "name": "5th_condition_cell_value",
+          "type": "string",
+          "description": "The value of the cell",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "update_table_row",
+      "name": "Update Table Row",
+      "description": "Update table row",
+      "http_method": "GET",
+      "endpoint": "/actions/update_table_row",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "handle_format_is_name",
+          "type": "boolean",
+          "description": "Treat handles as a name. Default is true",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "incident_id",
+          "type": "string",
+          "description": "ID of incident",
+          "required": true,
+          "contains": [
+            "ibm resilient ticketid"
+          ]
+        },
+        {
+          "name": "table_id",
+          "type": "string",
+          "description": "ID of table",
+          "required": true,
+          "contains": [
+            "tableid"
+          ]
+        },
+        {
+          "name": "row_id",
+          "type": "string",
+          "description": "ID of row in table",
+          "required": true,
+          "contains": [
+            "rowid"
+          ]
+        },
+        {
+          "name": "datatablerowdatadto",
+          "type": "string",
+          "description": "Table row as JSON String, format is DataTableRowDataDTO data type from API",
+          "required": true
+        },
+        {
+          "name": "1st_condition_cell_property",
+          "type": "string",
+          "description": "The property name of the cell",
+          "required": false
+        },
+        {
+          "name": "1st_condition_cell_value",
+          "type": "string",
+          "description": "The value of the cell",
+          "required": false
+        },
+        {
+          "name": "2nd_condition_cell_property",
+          "type": "string",
+          "description": "The property name of the cell",
+          "required": false
+        },
+        {
+          "name": "2nd_condition_cell_value",
+          "type": "string",
+          "description": "The value of the cell",
+          "required": false
+        },
+        {
+          "name": "3rd_condition_cell_property",
+          "type": "string",
+          "description": "The property name of the cell",
+          "required": false
+        },
+        {
+          "name": "3rd_condition_cell_value",
+          "type": "string",
+          "description": "The value of the cell",
+          "required": false
+        },
+        {
+          "name": "4th_condition_cell_property",
+          "type": "string",
+          "description": "The property name of the cell",
+          "required": false
+        },
+        {
+          "name": "4th_condition_cell_value",
+          "type": "string",
+          "description": "The value of the cell",
+          "required": false
+        },
+        {
+          "name": "5th_condition_cell_property",
+          "type": "string",
+          "description": "The property name of the cell",
+          "required": false
+        },
+        {
+          "name": "5th_condition_cell_value",
+          "type": "string",
+          "description": "The value of the cell",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "update_table_row_with_key",
+      "name": "Update Table Row With Key",
+      "description": "Update table row with key",
+      "http_method": "GET",
+      "endpoint": "/actions/update_table_row_with_key",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "handle_format_is_name",
+          "type": "boolean",
+          "description": "Treat handles as a name. Default is true",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "incident_id",
+          "type": "string",
+          "description": "ID of incident",
+          "required": true,
+          "contains": [
+            "ibm resilient ticketid"
+          ]
+        },
+        {
+          "name": "table_id",
+          "type": "string",
+          "description": "ID of table",
+          "required": true,
+          "contains": [
+            "tableid"
+          ]
+        },
+        {
+          "name": "key",
+          "type": "string",
+          "description": "Property name in row to find",
+          "required": true,
+          "contains": [
+            "ibm resilient keyid"
+          ]
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "description": "Property value in row to find",
+          "required": true
+        },
+        {
+          "name": "datatablerowdatadto",
+          "type": "string",
+          "description": "Table row as JSON String, format is DataTableRowDataDTO data type from API",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_tasks",
+      "name": "List Tasks",
+      "description": "List tasks for user (defined in asset configuration)",
+      "http_method": "GET",
+      "endpoint": "/actions/list_tasks",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "handle_format_is_name",
+          "type": "boolean",
+          "description": "Treat handles as a name. Default is true",
+          "required": false,
+          "default": true
+        }
+      ]
+    },
+    {
+      "id": "get_task",
+      "name": "Get Task",
+      "description": "Get task details",
+      "http_method": "GET",
+      "endpoint": "/actions/get_task",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "handle_format_is_name",
+          "type": "boolean",
+          "description": "Treat handles as a name. Default is true",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "task_id",
+          "type": "string",
+          "description": "ID of incident",
+          "required": true,
+          "contains": [
+            "ibm resilient taskid"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "update_task",
+      "name": "Update Task",
+      "description": "Update task. This action downloads the task and copy the provided json onto the download data, overwriting any existing data elements",
+      "http_method": "GET",
+      "endpoint": "/actions/update_task",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "handle_format_is_name",
+          "type": "boolean",
+          "description": "Treat handles as a name. Default is true",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "task_id",
+          "type": "string",
+          "description": "ID of incident",
+          "required": true,
+          "contains": [
+            "ibm resilient taskid"
+          ]
+        },
+        {
+          "name": "taskdto",
+          "type": "string",
+          "description": "Table row as JSON String, format is TaskDTO data type from API",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "close_task",
+      "name": "Close Task",
+      "description": "Close task",
+      "http_method": "GET",
+      "endpoint": "/actions/close_task",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "task_id",
+          "type": "string",
+          "description": "ID of incident",
+          "required": true,
+          "contains": [
+            "ibm resilient taskid"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_attachments",
+      "name": "List Attachments",
+      "description": "List attachments for incident",
+      "http_method": "GET",
+      "endpoint": "/actions/list_attachments",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "handle_format_is_name",
+          "type": "boolean",
+          "description": "Treat handles as a name. Default is true",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "incident_id",
+          "type": "string",
+          "description": "ID of incident",
+          "required": true,
+          "contains": [
+            "ibm resilient ticketid"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_attachment",
+      "name": "Get Attachment",
+      "description": "Get attachment details from incident",
+      "http_method": "GET",
+      "endpoint": "/actions/get_attachment",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "handle_format_is_name",
+          "type": "boolean",
+          "description": "Treat handles as a name. Default is true",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "incident_id",
+          "type": "string",
+          "description": "ID of incident",
+          "required": true,
+          "contains": [
+            "ibm resilient ticketid"
+          ]
+        },
+        {
+          "name": "attachment_id",
+          "type": "string",
+          "description": "ID of attachment",
+          "required": true,
+          "contains": [
+            "ibm resilient attachmentid"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "add_attachment",
+      "name": "Add Attachment",
+      "description": "Add attachment to incident",
+      "http_method": "GET",
+      "endpoint": "/actions/add_attachment",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "handle_format_is_name",
+          "type": "boolean",
+          "description": "Treat handles as a name. Default is true",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "incident_id",
+          "type": "string",
+          "description": "ID of incident",
+          "required": true,
+          "contains": [
+            "ibm resilient ticketid"
+          ]
+        },
+        {
+          "name": "vault_id",
+          "type": "string",
+          "description": "Vault ID of file",
+          "required": true,
+          "contains": [
+            "sha1",
+            "vault id"
+          ]
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Resilient",
+    "original_type": "ticketing",
+    "converted_at": "2025-12-18T16:25:29.072148",
+    "source_version": "2.0.1"
+  }
+}

@@ -1,0 +1,263 @@
+{
+  "id": "cisco_threat_grid",
+  "name": "Cisco Threat Grid",
+  "description": "Cisco Secure Malware Analytics (Threat Grid) provides advanced sandboxing and malware analysis with threat intelligence context, behavioral indicators, and detailed network traffic analysis",
+  "version": "1.0.0",
+  "category": "sandbox",
+  "vendor": "Cisco",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "api_key",
+    "location": "query"
+  },
+  "base_url": "https://panacea.threatgrid.com/api/v2",
+  "actions": [
+    {
+      "id": "submit_sample",
+      "name": "Submit Sample",
+      "description": "Submit a file sample for dynamic malware analysis in the Threat Grid sandbox",
+      "http_method": "POST",
+      "endpoint": "/samples",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "sample",
+          "type": "file",
+          "description": "The file to submit for analysis (multipart form data)",
+          "required": true
+        },
+        {
+          "name": "filename",
+          "type": "string",
+          "description": "Custom filename for the submitted sample",
+          "required": false
+        },
+        {
+          "name": "vm",
+          "type": "string",
+          "description": "VM image to use for analysis (e.g., win10-x64, win7-x64)",
+          "required": false
+        },
+        {
+          "name": "private",
+          "type": "boolean",
+          "description": "Mark the sample and results as private (not shared with the community)",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "playbook",
+          "type": "string",
+          "description": "Name of the Threat Grid playbook to execute during analysis",
+          "required": false
+        },
+        {
+          "name": "sample_password",
+          "type": "string",
+          "description": "Password for encrypted/password-protected samples",
+          "required": false
+        },
+        {
+          "name": "tags",
+          "type": "string",
+          "description": "Comma-separated list of tags to apply to the sample",
+          "required": false
+        },
+        {
+          "name": "vm_runtime",
+          "type": "integer",
+          "description": "Analysis runtime in minutes (must be 2 or 5)",
+          "required": false
+        }
+      ],
+      "observable_type": "hash"
+    },
+    {
+      "id": "submit_url",
+      "name": "Submit URL",
+      "description": "Submit a URL for analysis in the Threat Grid sandbox",
+      "http_method": "POST",
+      "endpoint": "/samples",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "URL to submit for analysis",
+          "required": true
+        },
+        {
+          "name": "vm",
+          "type": "string",
+          "description": "VM image to use for analysis",
+          "required": false
+        },
+        {
+          "name": "private",
+          "type": "boolean",
+          "description": "Mark the URL and results as private",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "playbook",
+          "type": "string",
+          "description": "Playbook name to execute during analysis",
+          "required": false
+        },
+        {
+          "name": "tags",
+          "type": "string",
+          "description": "Comma-separated list of tags",
+          "required": false
+        },
+        {
+          "name": "vm_runtime",
+          "type": "integer",
+          "description": "Analysis runtime in minutes (must be 2 or 5)",
+          "required": false
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "get_sample_report",
+      "name": "Get Sample Report",
+      "description": "Retrieve the full analysis report for a completed sample submission",
+      "http_method": "GET",
+      "endpoint": "/samples/{sample_id}/report.html",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "sample_id",
+          "type": "string",
+          "description": "Sample ID (task ID) returned from submission",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_sample_summary",
+      "name": "Get Sample Summary",
+      "description": "Get a summary of the analysis including verdict, threat score, and behavioral indicators",
+      "http_method": "GET",
+      "endpoint": "/samples/{sample_id}/summary",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "sample_id",
+          "type": "string",
+          "description": "Sample ID returned from submission",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_sample_state",
+      "name": "Get Sample State",
+      "description": "Check the current processing state of a submitted sample",
+      "http_method": "GET",
+      "endpoint": "/samples/{sample_id}/state",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "sample_id",
+          "type": "string",
+          "description": "Sample ID to check status for",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_sample_threat_indicators",
+      "name": "Get Threat Indicators",
+      "description": "Retrieve behavioral threat indicators and IOCs from a completed analysis",
+      "http_method": "GET",
+      "endpoint": "/samples/{sample_id}/analysis/indicators",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "sample_id",
+          "type": "string",
+          "description": "Sample ID to get threat indicators for",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "search_submissions",
+      "name": "Search Submissions",
+      "description": "Search for previously submitted samples by hash, filename, tag, or other criteria",
+      "http_method": "GET",
+      "endpoint": "/search/submissions",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "q",
+          "type": "string",
+          "description": "Search query (hash, filename, domain, IP, or other search term)",
+          "required": true
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "description": "Maximum number of results to return (default: 100)",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "offset",
+          "type": "integer",
+          "description": "Offset for pagination",
+          "required": false
+        }
+      ],
+      "observable_type": "hash"
+    },
+    {
+      "id": "get_sample_network_streams",
+      "name": "Get Network Streams",
+      "description": "Retrieve captured network traffic streams from the sandbox analysis",
+      "http_method": "GET",
+      "endpoint": "/samples/{sample_id}/analysis/network_streams",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "sample_id",
+          "type": "string",
+          "description": "Sample ID to get network data for",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_playbooks",
+      "name": "List Playbooks",
+      "description": "List all available analysis playbooks in the Threat Grid environment",
+      "http_method": "GET",
+      "endpoint": "/configuration/playbooks",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "list_vms",
+      "name": "List VMs",
+      "description": "List all available VM images for sandbox analysis",
+      "http_method": "GET",
+      "endpoint": "/configuration/vms",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    }
+  ]
+}

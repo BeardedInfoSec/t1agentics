@@ -1,0 +1,450 @@
+{
+  "id": "chronicle",
+  "name": "Chronicle",
+  "description": "This app enables the end-user to search, analyze, and ingest the enterprise security data stored in the Chronicle using investigative, reputation, and ingestion actions",
+  "version": "2.2.9",
+  "category": "threat_intel",
+  "vendor": "Google Cloud",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "list_ioc_details",
+      "name": "List Ioc Details",
+      "description": "Return any threat intelligence associated with the specified artifact",
+      "http_method": "GET",
+      "endpoint": "/v1/artifact/listiocdetails",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "artifact_indicator",
+          "type": "string",
+          "description": "Specify the artifact indicator",
+          "required": true
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "description": "Specify the artifact indicator value",
+          "required": true,
+          "contains": [
+            "ip",
+            "domain"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_iocs",
+      "name": "List Iocs",
+      "description": "List all of the IoCs discovered within the enterprise within the specified time",
+      "http_method": "GET",
+      "endpoint": "/v1/ioc/listiocs",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "time_range",
+          "type": "string",
+          "description": "Specify the time range of the search (Use this format <digit><d/h/m/s> where d=Days, h=Hours, m=Minutes, s=Seconds)",
+          "required": false,
+          "contains": [
+            "gc time range"
+          ]
+        },
+        {
+          "name": "start_time",
+          "type": "string",
+          "description": "Specify the start time of the search (Use this format yyyy-MM-ddTHH:mm:ssZ where y=Year, M=Month, d=Day, H=Hour, m=Minutes, s=Seconds)",
+          "required": false,
+          "contains": [
+            "gc time"
+          ]
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Specify the maximum number of IoCs results to return. You can specify between 1 and 10,000. (Default is 10,000)",
+          "required": false,
+          "default": 10000
+        }
+      ]
+    },
+    {
+      "id": "list_assets",
+      "name": "List Assets",
+      "description": "List all of the assets that accessed the specified artifact within the specified time",
+      "http_method": "GET",
+      "endpoint": "/v1/artifact/listassets",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "artifact_indicator",
+          "type": "string",
+          "description": "Specify the artifact indicator",
+          "required": true
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "description": "Specify the artifact indicator value",
+          "required": true,
+          "contains": [
+            "ip",
+            "domain",
+            "md5",
+            "sha1",
+            "sha256"
+          ]
+        },
+        {
+          "name": "time_range",
+          "type": "string",
+          "description": "Specify the time range of the search (Use this format <digit><d/h/m/s> where d=Days, h=Hours, m=Minutes, s=Seconds)",
+          "required": false,
+          "contains": [
+            "gc time range"
+          ]
+        },
+        {
+          "name": "start_time",
+          "type": "string",
+          "description": "Specify the start time of the search (Use this format yyyy-MM-ddTHH:mm:ssZ where y=Year, M=Month, d=Day, H=Hour, m=Minutes, s=Seconds)",
+          "required": false,
+          "contains": [
+            "gc time"
+          ]
+        },
+        {
+          "name": "end_time",
+          "type": "string",
+          "description": "Specify the end time of the search (Use this format yyyy-MM-ddTHH:mm:ssZ where y=Year, M=Month, d=Day, H=Hour, m=Minutes, s=Seconds)",
+          "required": false,
+          "contains": [
+            "gc time"
+          ]
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Specify the maximum number of assets to return. You can specify between 1 and 10,000. (Default is 10,000)",
+          "required": false,
+          "default": 10000
+        }
+      ]
+    },
+    {
+      "id": "list_events",
+      "name": "List Events",
+      "description": "List all of the events discovered within the enterprise on a particular device within the specified time",
+      "http_method": "GET",
+      "endpoint": "/v1/asset/listevents",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "asset_indicator",
+          "type": "string",
+          "description": "Specify the asset indicator",
+          "required": true
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "description": "Specify the asset indicator value",
+          "required": true,
+          "contains": [
+            "gc mac",
+            "gc product id",
+            "host name",
+            "ip"
+          ]
+        },
+        {
+          "name": "time_range",
+          "type": "string",
+          "description": "Specify the time range of the search (Use this format <digit><d/h/m/s> where d=Days, h=Hours, m=Minutes, s=Seconds)",
+          "required": false,
+          "contains": [
+            "gc time range"
+          ]
+        },
+        {
+          "name": "start_time",
+          "type": "string",
+          "description": "Specify the start time of the search (Use this format yyyy-MM-ddTHH:mm:ssZ where y=Year, M=Month, d=Day, H=Hour, m=Minutes, s=Seconds)",
+          "required": false,
+          "contains": [
+            "gc time"
+          ]
+        },
+        {
+          "name": "end_time",
+          "type": "string",
+          "description": "Specify the end time of the search (Use this format yyyy-MM-ddTHH:mm:ssZ where y=Year, M=Month, d=Day, H=Hour, m=Minutes, s=Seconds)",
+          "required": false,
+          "contains": [
+            "gc time"
+          ]
+        },
+        {
+          "name": "reference_time",
+          "type": "string",
+          "description": "Specify the time for the asset you are investigating (Use this format yyyy-MM-ddTHH:mm:ssZ where y=Year, M=Month, d=Day, H=Hour, m=Minutes, s=Seconds)",
+          "required": false,
+          "contains": [
+            "gc time"
+          ]
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Specify the maximum number of events results to return (Default is 10,000)",
+          "required": false,
+          "default": 10000
+        }
+      ]
+    },
+    {
+      "id": "domain_reputation",
+      "name": "Domain Reputation",
+      "description": "Derive the reputation of the specified domain artifact (The reputation can be either of 'Malicious', 'Suspicious', and 'Unknown')",
+      "http_method": "GET",
+      "endpoint": "/actions/domain_reputation",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "domain_name",
+          "type": "string",
+          "description": "Specify a domain name",
+          "required": true,
+          "contains": [
+            "domain"
+          ]
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "ip_reputation",
+      "name": "Ip Reputation",
+      "description": "Derive the reputation of the specified destination IP address artifact (The reputation can be either of 'Malicious', 'Suspicious', and 'Unknown')",
+      "http_method": "GET",
+      "endpoint": "/actions/ip_reputation",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "destination_ip_address",
+          "type": "string",
+          "description": "Specify a destination IP address",
+          "required": true,
+          "contains": [
+            "ip"
+          ]
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "list_alerts",
+      "name": "List Alerts",
+      "description": "List all of the security alerts tracked within the enterprise on particular assets and|or users for the specified time",
+      "http_method": "GET",
+      "endpoint": "/v1/alert/listalerts",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "time_range",
+          "type": "string",
+          "description": "Specify the time range of the search (Use this format <digit><d/h/m/s> where d=Days, h=Hours, m=Minutes, s=Seconds)",
+          "required": false,
+          "contains": [
+            "gc time range"
+          ]
+        },
+        {
+          "name": "start_time",
+          "type": "string",
+          "description": "Specify the start time of the search (Use this format yyyy-MM-ddTHH:mm:ssZ where y=Year, M=Month, d=Day, H=Hour, m=Minutes, s=Seconds)",
+          "required": false,
+          "contains": [
+            "gc time"
+          ]
+        },
+        {
+          "name": "end_time",
+          "type": "string",
+          "description": "Specify the end time of the search (Use this format yyyy-MM-ddTHH:mm:ssZ where y=Year, M=Month, d=Day, H=Hour, m=Minutes, s=Seconds)",
+          "required": false,
+          "contains": [
+            "gc time"
+          ]
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Specify the maximum number of results to return. You can specify between 1 and 100,000. (Default is 10,000)",
+          "required": false,
+          "default": 10000
+        },
+        {
+          "name": "alert_type",
+          "type": "string",
+          "description": "Specify the type of alerts to fetch",
+          "required": false,
+          "default": "All"
+        }
+      ]
+    },
+    {
+      "id": "list_rules",
+      "name": "List Rules",
+      "description": "List the latest versions of the rules created in the Detection Engine within the enterprise",
+      "http_method": "GET",
+      "endpoint": "/v2/detect/rules",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Specify the number of rules to return (Default is 1000)",
+          "required": false,
+          "default": 1000
+        }
+      ]
+    },
+    {
+      "id": "list_detections",
+      "name": "List Detections",
+      "description": "List all the detections for the specific versions of the given Rule ID(s)",
+      "http_method": "GET",
+      "endpoint": "/v2/detect/rules/{rule_id}/detections",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "rule_ids",
+          "type": "string",
+          "description": "Comma-separated Rule ID(s) (with or without versionId)",
+          "required": true,
+          "contains": [
+            "gc rule id"
+          ]
+        },
+        {
+          "name": "alert_state",
+          "type": "string",
+          "description": "Alert State to filter the detections",
+          "required": false,
+          "default": "ALL"
+        },
+        {
+          "name": "time_range",
+          "type": "string",
+          "description": "Specify the time range of the search (Use this format <digit><d/h/m/s> where d=Days, h=Hours, m=Minutes, s=Seconds)",
+          "required": false,
+          "contains": [
+            "gc time range"
+          ]
+        },
+        {
+          "name": "start_time",
+          "type": "string",
+          "description": "Specify the start time of the search (Use this format yyyy-MM-ddTHH:mm:ssZ where y=Year, M=Month, d=Day, H=Hour, m=Minutes, s=Seconds)",
+          "required": false,
+          "contains": [
+            "gc time"
+          ]
+        },
+        {
+          "name": "end_time",
+          "type": "string",
+          "description": "Specify the end time of the search (Use this format yyyy-MM-ddTHH:mm:ssZ where y=Year, M=Month, d=Day, H=Hour, m=Minutes, s=Seconds)",
+          "required": false,
+          "contains": [
+            "gc time"
+          ]
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Specify the maximum number of detections to return (Default is 10,000)",
+          "required": false,
+          "default": 10000
+        }
+      ]
+    },
+    {
+      "id": "on_poll",
+      "name": "On Poll",
+      "description": "Action handler for the on poll ingest functionality",
+      "http_method": "GET",
+      "endpoint": "/actions/on_poll",
+      "action_type": "ingest",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "start_time",
+          "type": "number",
+          "description": "Parameter ignored in this app",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "number",
+          "description": "Parameter ignored in this app",
+          "required": false
+        },
+        {
+          "name": "container_count",
+          "type": "number",
+          "description": "Parameter ignored in this app",
+          "required": false
+        },
+        {
+          "name": "artifact_count",
+          "type": "number",
+          "description": "Parameter ignored in this app",
+          "required": false
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Chronicle",
+    "original_type": "investigative",
+    "converted_at": "2025-12-18T16:25:28.647433",
+    "source_version": "2.2.9"
+  }
+}

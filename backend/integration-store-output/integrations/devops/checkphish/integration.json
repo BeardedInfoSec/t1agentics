@@ -1,0 +1,75 @@
+{
+  "id": "checkphish",
+  "name": "CheckPhish",
+  "description": "This app provides investigative actions for bolster.ai and checkphish.ai",
+  "version": "1.0.2",
+  "category": "devops",
+  "vendor": "Bolster",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "check_status",
+      "name": "Check Status",
+      "description": "Get URL scan Results",
+      "http_method": "GET",
+      "endpoint": "/neo/scan/status",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "job_id",
+          "type": "string",
+          "description": "Job ID retrieved during a previous URL scan",
+          "required": true,
+          "contains": [
+            "checkphish job id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "detonate_url",
+      "name": "Detonate Url",
+      "description": "Submit a URL for scan",
+      "http_method": "GET",
+      "endpoint": "/actions/detonate_url",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "URL to be scanned",
+          "required": true,
+          "contains": [
+            "url"
+          ]
+        },
+        {
+          "name": "scan_type",
+          "type": "string",
+          "description": "Type of scan to run",
+          "required": true,
+          "default": "quick"
+        }
+      ],
+      "observable_type": "url"
+    }
+  ],
+  "source_metadata": {
+    "original_name": "CheckPhish",
+    "original_type": "devops",
+    "converted_at": "2025-12-18T16:25:28.637922",
+    "source_version": "1.0.2"
+  }
+}

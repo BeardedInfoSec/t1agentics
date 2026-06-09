@@ -1,0 +1,109 @@
+{
+  "id": "zendesk",
+  "name": "Zendesk",
+  "description": "Integrates with Zendesk Support REST API v2 for customer service ticket management including creation, tracking, and resolution of support tickets",
+  "version": "1.0.0",
+  "category": "ticketing",
+  "vendor": "Zendesk",
+  "auth_type": "basic",
+  "auth_config": {
+    "type": "basic",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "https://{subdomain}.zendesk.com/api/v2",
+  "actions": [
+    {
+      "id": "create_ticket",
+      "name": "Create Ticket",
+      "description": "Create a new support ticket in Zendesk",
+      "http_method": "POST",
+      "endpoint": "/tickets.json",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "subject", "type": "string", "description": "Subject/title of the ticket", "required": true},
+        {"name": "description", "type": "string", "description": "Description body of the ticket (first comment)", "required": true},
+        {"name": "priority", "type": "string", "description": "Priority level (urgent, high, normal, low)", "required": false},
+        {"name": "type", "type": "string", "description": "Ticket type (problem, incident, question, task)", "required": false},
+        {"name": "status", "type": "string", "description": "Ticket status (new, open, pending, hold, solved, closed)", "required": false, "default": "new"},
+        {"name": "assignee_id", "type": "number", "description": "Agent ID to assign the ticket to", "required": false},
+        {"name": "group_id", "type": "number", "description": "Group ID to assign the ticket to", "required": false},
+        {"name": "requester_id", "type": "number", "description": "Requester user ID", "required": false},
+        {"name": "tags", "type": "string", "description": "Comma-separated list of tags", "required": false}
+      ]
+    },
+    {
+      "id": "get_ticket",
+      "name": "Get Ticket",
+      "description": "Retrieve details of a specific Zendesk ticket",
+      "http_method": "GET",
+      "endpoint": "/tickets/{ticket_id}.json",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "ticket_id", "type": "number", "description": "Ticket ID to retrieve", "required": true}
+      ]
+    },
+    {
+      "id": "update_ticket",
+      "name": "Update Ticket",
+      "description": "Update an existing Zendesk ticket",
+      "http_method": "PUT",
+      "endpoint": "/tickets/{ticket_id}.json",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "ticket_id", "type": "number", "description": "Ticket ID to update", "required": true},
+        {"name": "status", "type": "string", "description": "Updated status (new, open, pending, hold, solved, closed)", "required": false},
+        {"name": "priority", "type": "string", "description": "Updated priority (urgent, high, normal, low)", "required": false},
+        {"name": "assignee_id", "type": "number", "description": "New assignee agent ID", "required": false},
+        {"name": "subject", "type": "string", "description": "Updated subject", "required": false},
+        {"name": "comment_body", "type": "string", "description": "Comment to add with the update", "required": false},
+        {"name": "comment_public", "type": "boolean", "description": "Whether the comment is public or internal note", "required": false, "default": true},
+        {"name": "tags", "type": "string", "description": "Comma-separated list of tags to set", "required": false}
+      ]
+    },
+    {
+      "id": "list_tickets",
+      "name": "List Tickets",
+      "description": "List and search Zendesk tickets",
+      "http_method": "GET",
+      "endpoint": "/tickets.json",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "sort_by", "type": "string", "description": "Sort field (created_at, updated_at, priority, status)", "required": false, "default": "created_at"},
+        {"name": "sort_order", "type": "string", "description": "Sort order (asc or desc)", "required": false, "default": "desc"},
+        {"name": "per_page", "type": "number", "description": "Number of tickets per page (max 100)", "required": false, "default": 100}
+      ]
+    },
+    {
+      "id": "add_comment",
+      "name": "Add Comment",
+      "description": "Add a comment to an existing ticket",
+      "http_method": "PUT",
+      "endpoint": "/tickets/{ticket_id}.json",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "ticket_id", "type": "number", "description": "Ticket ID to comment on", "required": true},
+        {"name": "body", "type": "string", "description": "Comment body text", "required": true},
+        {"name": "public", "type": "boolean", "description": "Whether the comment is public or internal note", "required": false, "default": true}
+      ]
+    },
+    {
+      "id": "close_ticket",
+      "name": "Close Ticket",
+      "description": "Close a Zendesk ticket by setting status to solved",
+      "http_method": "PUT",
+      "endpoint": "/tickets/{ticket_id}.json",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "ticket_id", "type": "number", "description": "Ticket ID to close", "required": true},
+        {"name": "comment_body", "type": "string", "description": "Resolution comment", "required": false}
+      ]
+    }
+  ]
+}

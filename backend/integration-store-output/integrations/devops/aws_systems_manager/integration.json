@@ -1,0 +1,458 @@
+{
+  "id": "aws_systems_manager",
+  "name": "AWS Systems Manager",
+  "description": "This app integrates with AWS Simple Systems Manager (SSM) to remotely and securely manage the configuration of any EC2 instance or on-premise machine configured for SSM",
+  "version": "2.3.2",
+  "category": "devops",
+  "vendor": "AWS",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "execute_program",
+      "name": "Execute Program",
+      "description": "Runs shell script command on a managed instance",
+      "http_method": "GET",
+      "endpoint": "/actions/execute_program",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "instance_id",
+          "type": "string",
+          "description": "The AWS Instance ID of where the command will run",
+          "required": true,
+          "contains": [
+            "aws instance id"
+          ]
+        },
+        {
+          "name": "platform_type",
+          "type": "string",
+          "description": "The operating system of the instance",
+          "required": true
+        },
+        {
+          "name": "command",
+          "type": "string",
+          "description": "Single command to be executed on the instance",
+          "required": true
+        },
+        {
+          "name": "working_directory",
+          "type": "string",
+          "description": "The path to the working directory on your instance",
+          "required": false
+        },
+        {
+          "name": "timeout_seconds",
+          "type": "number",
+          "description": "If this time is reached and the command has not already started running, it will not run",
+          "required": false
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "User-specified information about the command, such as a brief description of what the command should do",
+          "required": false
+        },
+        {
+          "name": "output_s3_bucket_name",
+          "type": "string",
+          "description": "The name of the existing S3 bucket where command execution responses should be stored",
+          "required": false
+        },
+        {
+          "name": "save_output_to_vault",
+          "type": "boolean",
+          "description": "Store the output of the command into the vault",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "credentials",
+          "type": "string",
+          "description": "Assumed role credentials",
+          "required": false,
+          "contains": [
+            "aws credentials"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_file",
+      "name": "Get File",
+      "description": "Retrieve a file from an AWS instance and save it to the vault",
+      "http_method": "GET",
+      "endpoint": "/actions/get_file",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "instance_id",
+          "type": "string",
+          "description": "The AWS Instance ID of where to grab the file from",
+          "required": true,
+          "contains": [
+            "aws instance id"
+          ]
+        },
+        {
+          "name": "platform_type",
+          "type": "string",
+          "description": "The operating system of the instance",
+          "required": true
+        },
+        {
+          "name": "file_path",
+          "type": "string",
+          "description": "Full path of the file to download (include filename)",
+          "required": true
+        },
+        {
+          "name": "credentials",
+          "type": "string",
+          "description": "Assumed role credentials",
+          "required": false,
+          "contains": [
+            "aws credentials"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "run_document",
+      "name": "Run Document",
+      "description": "Runs command using a public or custom SSM Document on one or more managed instances",
+      "http_method": "GET",
+      "endpoint": "/actions/run_document",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "instance_id",
+          "type": "string",
+          "description": "The AWS Instance ID of where the command will run",
+          "required": true,
+          "contains": [
+            "aws instance id"
+          ]
+        },
+        {
+          "name": "document_name",
+          "type": "string",
+          "description": "The name of the Systems Manager document to run. This can be a public document or a custom document",
+          "required": true,
+          "contains": [
+            "aws document name"
+          ]
+        },
+        {
+          "name": "document_hash",
+          "type": "string",
+          "description": "The Sha256 or Sha1 hash created by the system when the document was created",
+          "required": true,
+          "contains": [
+            "sha256",
+            "sha1"
+          ]
+        },
+        {
+          "name": "parameters",
+          "type": "string",
+          "description": "JSON object. The required and optional parameters specified in the document being run. Example: {\"commands\": [\"ls\"]}",
+          "required": true
+        },
+        {
+          "name": "working_directory",
+          "type": "string",
+          "description": "The path to the working directory on your instance",
+          "required": false
+        },
+        {
+          "name": "timeout_seconds",
+          "type": "number",
+          "description": "If this time is reached and the command has not already started running, it will not run",
+          "required": false
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "User-specified information about the command, such as a brief description of what the command should do",
+          "required": false
+        },
+        {
+          "name": "output_s3_bucket_name",
+          "type": "string",
+          "description": "The name of the S3 bucket where command execution responses should be stored",
+          "required": false
+        },
+        {
+          "name": "credentials",
+          "type": "string",
+          "description": "Assumed role credentials",
+          "required": false,
+          "contains": [
+            "aws credentials"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_commands",
+      "name": "List Commands",
+      "description": "Lists the commands ran by users of the AWS account",
+      "http_method": "GET",
+      "endpoint": "/actions/list_commands",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "command_id",
+          "type": "string",
+          "description": "If provided, lists only the specified command",
+          "required": false,
+          "contains": [
+            "aws command id"
+          ]
+        },
+        {
+          "name": "instance_id",
+          "type": "string",
+          "description": "Lists commands issued against this instance ID",
+          "required": false,
+          "contains": [
+            "aws instance id"
+          ]
+        },
+        {
+          "name": "max_results",
+          "type": "number",
+          "description": "The maximum number of items to return for this call",
+          "required": false
+        },
+        {
+          "name": "credentials",
+          "type": "string",
+          "description": "Assumed role credentials",
+          "required": false,
+          "contains": [
+            "aws credentials"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_documents",
+      "name": "List Documents",
+      "description": "Lists one or more of the Systems Manager documents",
+      "http_method": "GET",
+      "endpoint": "/actions/list_documents",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "The name of the document to search for (case sensitive)",
+          "required": false,
+          "contains": [
+            "aws document name"
+          ]
+        },
+        {
+          "name": "owner",
+          "type": "string",
+          "description": "The owner of the document to search for",
+          "required": false
+        },
+        {
+          "name": "platform_type",
+          "type": "string",
+          "description": "The OS platform type that the document can execute on (i.e. Windows, Linux)",
+          "required": false
+        },
+        {
+          "name": "document_type",
+          "type": "string",
+          "description": "The type of document",
+          "required": false
+        },
+        {
+          "name": "max_results",
+          "type": "number",
+          "description": "The maximum number of items to return for this call",
+          "required": false
+        },
+        {
+          "name": "credentials",
+          "type": "string",
+          "description": "Assumed role credentials",
+          "required": false,
+          "contains": [
+            "aws credentials"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_parameter",
+      "name": "Get Parameter",
+      "description": "Get information about a parameter by using the parameter name",
+      "http_method": "GET",
+      "endpoint": "/actions/get_parameter",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "The name of the parameter that you want to query",
+          "required": true,
+          "contains": [
+            "aws parameter name"
+          ]
+        },
+        {
+          "name": "with_decryption",
+          "type": "boolean",
+          "description": "Check to decrypt values of secure string parameters. This flag is ignored for String and StringList parameter types",
+          "required": false
+        },
+        {
+          "name": "credentials",
+          "type": "string",
+          "description": "Assumed role credentials",
+          "required": false,
+          "contains": [
+            "aws credentials"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "add_parameter",
+      "name": "Add Parameter",
+      "description": "Adds a parameter to the AWS account's Parameter Store",
+      "http_method": "GET",
+      "endpoint": "/actions/add_parameter",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "The fully qualified name of the parameter that you want to add to the system. Please refer to app documentation page for naming restrictions",
+          "required": true,
+          "contains": [
+            "aws parameter name"
+          ]
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Information about the parameter that you want to add to the system. Optional but recommended",
+          "required": false
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "description": "The parameter value that you want to add to the system. Standard parameters have a value limit of 4 KB. Advanced parameters have a value limit of 8 KB",
+          "required": true
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "The type of parameter that you want to add to the system. Items in StringList must be separated by a comma (,). SecureString parameters must use an AWS KMS Key ID",
+          "required": true
+        },
+        {
+          "name": "key_id",
+          "type": "string",
+          "description": "The KMS Key ID that you want to use to encrypt a SecureString parameter. Defaults to the AWS KMS key automatically assigned to your AWS account if no key ID is provided",
+          "required": false
+        },
+        {
+          "name": "overwrite",
+          "type": "boolean",
+          "description": "Overwrite an existing parameter",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "allowed_pattern",
+          "type": "string",
+          "description": "A regular expression used to validate the parameter value. For example, for String types with values restricted to numbers, you can specify the following: AllowedPattern=^d+$",
+          "required": false
+        },
+        {
+          "name": "credentials",
+          "type": "string",
+          "description": "Assumed role credentials",
+          "required": false,
+          "contains": [
+            "aws credentials"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "describe_instance",
+      "name": "Describe Instance",
+      "description": "Describes your AWS instance, including the instance's platform type",
+      "http_method": "GET",
+      "endpoint": "/actions/describe_instance",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "instance_id",
+          "type": "string",
+          "description": "The AWS instance ID",
+          "required": true,
+          "contains": [
+            "aws instance id"
+          ]
+        },
+        {
+          "name": "credentials",
+          "type": "string",
+          "description": "Assumed role credentials",
+          "required": false,
+          "contains": [
+            "aws credentials"
+          ]
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "AWS Systems Manager",
+    "original_type": "devops",
+    "converted_at": "2025-12-18T16:25:28.595399",
+    "source_version": "2.3.2"
+  }
+}

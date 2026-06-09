@@ -1,0 +1,225 @@
+{
+  "id": "logrhythm_siem",
+  "name": "LogRhythm SIEM",
+  "description": "Integrates with LogRhythm SIEM for alarm management, case handling, AI Engine drilldown, and log search via the LogRhythm REST API",
+  "version": "1.0.0",
+  "category": "siem",
+  "vendor": "LogRhythm (Exabeam)",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "https://{host}/lr-admin-api",
+  "actions": [
+    {
+      "id": "get_alarms",
+      "name": "Get Alarms",
+      "description": "Retrieve alarms from LogRhythm with optional filtering by status and date range",
+      "http_method": "GET",
+      "endpoint": "/alarms",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "alarmStatus",
+          "type": "string",
+          "description": "Filter by alarm status (New, Opened, Working, Escalated, Closed, Auto-Closed)",
+          "required": false
+        },
+        {
+          "name": "dateInserted",
+          "type": "string",
+          "description": "Filter alarms created after this datetime (ISO 8601)",
+          "required": false
+        },
+        {
+          "name": "count",
+          "type": "number",
+          "description": "Number of alarms to retrieve",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Offset for pagination",
+          "required": false,
+          "default": 0
+        }
+      ]
+    },
+    {
+      "id": "get_alarm_by_id",
+      "name": "Get Alarm Details",
+      "description": "Retrieve details for a specific alarm by its ID",
+      "http_method": "GET",
+      "endpoint": "/alarms/{alarmId}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "alarmId",
+          "type": "number",
+          "description": "Alarm ID to retrieve",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "update_alarm_status",
+      "name": "Update Alarm Status",
+      "description": "Update the status of an alarm (e.g., open, close, escalate)",
+      "http_method": "PATCH",
+      "endpoint": "/alarms/{alarmId}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "alarmId",
+          "type": "number",
+          "description": "Alarm ID to update",
+          "required": true
+        },
+        {
+          "name": "alarmStatus",
+          "type": "string",
+          "description": "New alarm status (New, Opened, Working, Escalated, Closed)",
+          "required": true
+        },
+        {
+          "name": "comments",
+          "type": "string",
+          "description": "Comment to add with the status change",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_cases",
+      "name": "List Cases",
+      "description": "Retrieve a list of cases from LogRhythm",
+      "http_method": "GET",
+      "endpoint": "/cases",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Filter by case status",
+          "required": false
+        },
+        {
+          "name": "priority",
+          "type": "number",
+          "description": "Filter by case priority (1-5)",
+          "required": false
+        },
+        {
+          "name": "count",
+          "type": "number",
+          "description": "Number of cases to return",
+          "required": false,
+          "default": 50
+        }
+      ]
+    },
+    {
+      "id": "create_case",
+      "name": "Create Case",
+      "description": "Create a new case in LogRhythm",
+      "http_method": "POST",
+      "endpoint": "/cases",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Case name/title",
+          "required": true
+        },
+        {
+          "name": "priority",
+          "type": "number",
+          "description": "Case priority (1-5, where 1 is highest)",
+          "required": true
+        },
+        {
+          "name": "summary",
+          "type": "string",
+          "description": "Case summary/description",
+          "required": false
+        },
+        {
+          "name": "externalId",
+          "type": "string",
+          "description": "External reference ID for the case",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "ai_engine_drilldown",
+      "name": "AI Engine Drilldown",
+      "description": "Retrieve AI Engine drilldown data for an alarm including associated logs",
+      "http_method": "GET",
+      "endpoint": "/alarms/{alarmId}/drilldown",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "alarmId",
+          "type": "number",
+          "description": "Alarm ID to drilldown into",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "search_logs",
+      "name": "Search Logs",
+      "description": "Execute a log search query in LogRhythm",
+      "http_method": "POST",
+      "endpoint": "/lr-search-api/actions/search",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "maxMsgsToQuery",
+          "type": "number",
+          "description": "Maximum number of log messages to return",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "queryTimeout",
+          "type": "number",
+          "description": "Query timeout in seconds",
+          "required": false,
+          "default": 300
+        },
+        {
+          "name": "searchServerOrigin",
+          "type": "number",
+          "description": "Search origin server ID",
+          "required": false
+        },
+        {
+          "name": "dateCriteria",
+          "type": "object",
+          "description": "Date range criteria object with useInsertedDate, lastIntervalValue, lastIntervalUnit fields",
+          "required": true
+        },
+        {
+          "name": "queryFilter",
+          "type": "object",
+          "description": "Filter criteria object with msgFilterType, fieldFilters, and groupFilters",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

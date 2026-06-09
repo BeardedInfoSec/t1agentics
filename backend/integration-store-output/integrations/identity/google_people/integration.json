@@ -1,0 +1,160 @@
+{
+  "id": "google_people",
+  "name": "Google People",
+  "description": "This app integrates with Google People to support various generic and investigative actions",
+  "version": "1.1.8",
+  "category": "identity",
+  "vendor": "Google",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "list_other_contacts",
+      "name": "List Other Contacts",
+      "description": "Lists all contacts that are not in a contact group",
+      "http_method": "GET",
+      "endpoint": "/actions/list_other_contacts",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "read_mask",
+          "type": "string",
+          "description": "Comma-separated list of fields to be returned for each person. If not provided, default values will be used",
+          "required": false,
+          "default": "names,emailAddresses"
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Number of contacts to include in the response",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "copy_contact",
+      "name": "Copy Contact",
+      "description": "Copy 'Other contact' to 'myContacts' group",
+      "http_method": "GET",
+      "endpoint": "/actions/copy_contact",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "resource_name",
+          "type": "string",
+          "description": "Resource name of the \"Other contact\" to copy",
+          "required": true,
+          "contains": [
+            "googlepeople resource name"
+          ]
+        },
+        {
+          "name": "copy_mask",
+          "type": "string",
+          "description": "Comma-separated list of fields to be copied into the new contact",
+          "required": false,
+          "default": "names,emailAddresses,phoneNumbers"
+        }
+      ]
+    },
+    {
+      "id": "list_directory",
+      "name": "List Directory",
+      "description": "Lists all contacts and profiles in the user's domain directory",
+      "http_method": "GET",
+      "endpoint": "/actions/list_directory",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "read_mask",
+          "type": "string",
+          "description": "Comma-separated list of fields to be returned for each person. If not provided, default values will be used",
+          "required": false,
+          "default": "names,emailAddresses"
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Number of responses to include in the response",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_user_profile",
+      "name": "Get User Profile",
+      "description": "Provides information about a person given account ID",
+      "http_method": "GET",
+      "endpoint": "/actions/get_user_profile",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "resource_name",
+          "type": "string",
+          "description": "Resource name of the person to provide info about",
+          "required": true,
+          "contains": [
+            "googlepeople resource name"
+          ]
+        },
+        {
+          "name": "person_fields",
+          "type": "string",
+          "description": "Comma-separated list of fields to be returned for the person",
+          "required": false,
+          "default": "names,emailAddresses"
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "list_people",
+      "name": "List People",
+      "description": "Lists authenticated user's contacts",
+      "http_method": "GET",
+      "endpoint": "/actions/list_people",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "person_fields",
+          "type": "string",
+          "description": "Comma-separated list of fields to be returned for each person. If not provided, default values will be used",
+          "required": false,
+          "default": "names,emailAddresses"
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Number of connections to include in the response",
+          "required": false
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Google People",
+    "original_type": "identity management",
+    "converted_at": "2025-12-18T16:25:28.821653",
+    "source_version": "1.1.8"
+  }
+}

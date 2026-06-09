@@ -1,0 +1,186 @@
+{
+  "id": "thinkst_canary",
+  "name": "Thinkst Canary",
+  "description": "Network honeypot and canarytoken platform deploying realistic decoy devices and digital tripwires to detect attackers, insider threats, and unauthorized access",
+  "version": "1.0.0",
+  "category": "deception",
+  "vendor": "Thinkst",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "param_name": "auth_token",
+    "location": "query",
+    "description": "API auth token passed as query parameter on all requests"
+  },
+  "base_url": "https://{hash}.canary.tools/api/v1",
+  "actions": [
+    {
+      "id": "list_canaries",
+      "name": "List Canaries",
+      "description": "List all deployed Canary hardware and virtual honeypot devices",
+      "http_method": "GET",
+      "endpoint": "/devices/all",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "auth_token",
+          "type": "string",
+          "description": "API authorization token",
+          "required": true,
+          "location": "query"
+        }
+      ]
+    },
+    {
+      "id": "get_canary",
+      "name": "Get Canary Details",
+      "description": "Retrieve detailed information about a specific Canary device",
+      "http_method": "GET",
+      "endpoint": "/device/info",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "auth_token",
+          "type": "string",
+          "description": "API authorization token",
+          "required": true,
+          "location": "query"
+        },
+        {
+          "name": "node_id",
+          "type": "string",
+          "description": "Canary device node ID",
+          "required": true,
+          "location": "query"
+        }
+      ]
+    },
+    {
+      "id": "list_incidents",
+      "name": "List All Incidents",
+      "description": "List all unacknowledged incidents across all Canaries and tokens",
+      "http_method": "GET",
+      "endpoint": "/incidents/unacknowledged",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "auth_token",
+          "type": "string",
+          "description": "API authorization token",
+          "required": true,
+          "location": "query"
+        },
+        {
+          "name": "node_id",
+          "type": "string",
+          "description": "Filter by specific Canary device node ID",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "incidents_since",
+          "type": "integer",
+          "description": "Only return incidents since this epoch timestamp",
+          "required": false,
+          "location": "query"
+        }
+      ]
+    },
+    {
+      "id": "search_incidents",
+      "name": "Search Incidents by Source",
+      "description": "Search for incidents originating from a specific source IP address",
+      "http_method": "GET",
+      "endpoint": "/incidents/history/source",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "auth_token",
+          "type": "string",
+          "description": "API authorization token",
+          "required": true,
+          "location": "query"
+        },
+        {
+          "name": "src_host",
+          "type": "string",
+          "description": "Source IP address to search for",
+          "required": true,
+          "location": "query"
+        }
+      ]
+    },
+    {
+      "id": "list_canarytokens",
+      "name": "List Canarytokens",
+      "description": "List all deployed Canarytokens (digital tripwires like DNS tokens, web bugs, AWS keys)",
+      "http_method": "GET",
+      "endpoint": "/canarytokens/list",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "auth_token",
+          "type": "string",
+          "description": "API authorization token",
+          "required": true,
+          "location": "query"
+        }
+      ]
+    },
+    {
+      "id": "get_canarytoken",
+      "name": "Get Canarytoken Details",
+      "description": "Retrieve details for a specific Canarytoken including trigger history",
+      "http_method": "GET",
+      "endpoint": "/canarytoken/fetch",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "auth_token",
+          "type": "string",
+          "description": "API authorization token",
+          "required": true,
+          "location": "query"
+        },
+        {
+          "name": "canarytoken",
+          "type": "string",
+          "description": "Canarytoken identifier",
+          "required": true,
+          "location": "query"
+        }
+      ]
+    },
+    {
+      "id": "acknowledge_incident",
+      "name": "Acknowledge Incident",
+      "description": "Acknowledge an incident to mark it as reviewed",
+      "http_method": "POST",
+      "endpoint": "/incident/acknowledge",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "auth_token",
+          "type": "string",
+          "description": "API authorization token",
+          "required": true,
+          "location": "query"
+        },
+        {
+          "name": "incident",
+          "type": "string",
+          "description": "Incident ID to acknowledge",
+          "required": true,
+          "location": "query"
+        }
+      ]
+    }
+  ]
+}

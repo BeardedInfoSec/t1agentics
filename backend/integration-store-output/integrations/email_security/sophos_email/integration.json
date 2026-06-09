@@ -1,0 +1,171 @@
+{
+  "id": "sophos_email",
+  "name": "Sophos Email Security",
+  "description": "Cloud email security integrated with Sophos Central providing anti-phishing, anti-malware, DLP, and encryption with quarantine management APIs",
+  "version": "1.0.0",
+  "category": "email_security",
+  "vendor": "Sophos",
+  "auth_type": "oauth2_client",
+  "auth_config": {
+    "type": "oauth2_client",
+    "header_name": "Authorization",
+    "location": "header",
+    "prefix": "Bearer",
+    "token_url": "https://id.sophos.com/api/v2/oauth2/token"
+  },
+  "base_url": "https://api.central.sophos.com",
+  "actions": [
+    {
+      "id": "get_quarantine_messages",
+      "name": "Get Quarantine Messages",
+      "description": "Retrieve messages in the email security quarantine",
+      "http_method": "GET",
+      "endpoint": "/email/v1/quarantine/messages",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "from",
+          "type": "string",
+          "description": "Start date in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "to",
+          "type": "string",
+          "description": "End date in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "reason",
+          "type": "string",
+          "description": "Filter by quarantine reason (spam, malware, bulkEmail, phishing)",
+          "required": false
+        },
+        {
+          "name": "direction",
+          "type": "string",
+          "description": "Filter by direction (inbound, outbound)",
+          "required": false
+        },
+        {
+          "name": "pageSize",
+          "type": "number",
+          "description": "Number of results per page",
+          "required": false,
+          "default": 50
+        }
+      ]
+    },
+    {
+      "id": "get_quarantine_message_details",
+      "name": "Get Quarantine Message Details",
+      "description": "Retrieve details of a specific quarantined message including attachments and URLs",
+      "http_method": "GET",
+      "endpoint": "/email/v1/quarantine/messages/{message_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "message_id",
+          "type": "string",
+          "description": "The quarantine message ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "release_quarantine_message",
+      "name": "Release Quarantine Message",
+      "description": "Release a quarantined email for delivery",
+      "http_method": "POST",
+      "endpoint": "/email/v1/quarantine/messages/{message_id}/actions/release",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "message_id",
+          "type": "string",
+          "description": "The quarantine message ID to release",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "delete_quarantine_message",
+      "name": "Delete Quarantine Message",
+      "description": "Delete a message from quarantine",
+      "http_method": "DELETE",
+      "endpoint": "/email/v1/quarantine/messages/{message_id}",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "message_id",
+          "type": "string",
+          "description": "The quarantine message ID to delete",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_post_delivery_quarantine",
+      "name": "Get Post Delivery Quarantine",
+      "description": "Retrieve messages in the post-delivery quarantine",
+      "http_method": "GET",
+      "endpoint": "/email/v1/post-delivery-quarantine/messages",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "from",
+          "type": "string",
+          "description": "Start date in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "to",
+          "type": "string",
+          "description": "End date in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "pageSize",
+          "type": "number",
+          "description": "Number of results per page",
+          "required": false,
+          "default": 50
+        }
+      ]
+    },
+    {
+      "id": "add_block_allow_entry",
+      "name": "Add Block/Allow Entry",
+      "description": "Add an entry to the block or allow list",
+      "http_method": "POST",
+      "endpoint": "/email/v1/policies/blocklists",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Entry type (sender, domain, ip)",
+          "required": true
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "description": "Value to block (email address, domain, or IP)",
+          "required": true
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "Comment for the entry",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

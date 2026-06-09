@@ -1,0 +1,178 @@
+{
+  "id": "trustifi",
+  "name": "Trustifi",
+  "description": "AI-powered email security platform providing inbound threat protection, outbound encryption, DLP, and account compromise detection via API deployment",
+  "version": "1.0.0",
+  "category": "email_security",
+  "vendor": "Trustifi",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header",
+    "prefix": "Bearer"
+  },
+  "base_url": "https://api.trustifi.com/v1",
+  "actions": [
+    {
+      "id": "get_threats",
+      "name": "Get Threats",
+      "description": "Retrieve email threats detected by Trustifi Inbound Shield",
+      "http_method": "GET",
+      "endpoint": "/threats",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "start_date",
+          "type": "string",
+          "description": "Start date in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "end_date",
+          "type": "string",
+          "description": "End date in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "threat_type",
+          "type": "string",
+          "description": "Filter by threat type (phishing, malware, bec, spam, impersonation)",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of threats to return",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Offset for pagination",
+          "required": false,
+          "default": 0
+        }
+      ]
+    },
+    {
+      "id": "get_threat_details",
+      "name": "Get Threat Details",
+      "description": "Retrieve detailed analysis of a specific threat including body, links, and files analysis",
+      "http_method": "GET",
+      "endpoint": "/threats/{threat_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "threat_id",
+          "type": "string",
+          "description": "The threat ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "remediate_threat",
+      "name": "Remediate Threat",
+      "description": "Remove a detected threat from user inboxes",
+      "http_method": "POST",
+      "endpoint": "/threats/{threat_id}/remediate",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "threat_id",
+          "type": "string",
+          "description": "The threat ID to remediate",
+          "required": true
+        },
+        {
+          "name": "action",
+          "type": "string",
+          "description": "Remediation action (quarantine, delete)",
+          "required": true,
+          "default": "quarantine"
+        }
+      ]
+    },
+    {
+      "id": "get_quarantine",
+      "name": "Get Quarantine",
+      "description": "Retrieve quarantined email messages",
+      "http_method": "GET",
+      "endpoint": "/quarantine",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "start_date",
+          "type": "string",
+          "description": "Start date in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "end_date",
+          "type": "string",
+          "description": "End date in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of results",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "release_quarantine",
+      "name": "Release from Quarantine",
+      "description": "Release a quarantined email for delivery",
+      "http_method": "POST",
+      "endpoint": "/quarantine/{message_id}/release",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "message_id",
+          "type": "string",
+          "description": "The message ID to release",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_email_tracking",
+      "name": "Get Email Tracking",
+      "description": "Retrieve email tracking and delivery status information",
+      "http_method": "GET",
+      "endpoint": "/tracking",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "email_id",
+          "type": "string",
+          "description": "Email ID to track",
+          "required": false
+        },
+        {
+          "name": "recipient",
+          "type": "string",
+          "description": "Recipient email address",
+          "required": false
+        },
+        {
+          "name": "start_date",
+          "type": "string",
+          "description": "Start date in ISO 8601 format",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

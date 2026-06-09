@@ -1,0 +1,173 @@
+{
+  "id": "radware_waf",
+  "name": "Radware AppWall WAF",
+  "description": "Radware AppWall Web Application Firewall REST API for managing WAF policies, security profiles, protected applications, and attack monitoring",
+  "version": "1.0.0",
+  "category": "waf",
+  "vendor": "Radware",
+  "auth_type": "basic",
+  "auth_config": {
+    "type": "basic",
+    "header_name": "Authorization",
+    "location": "header",
+    "note": "Uses HTTP Basic Authentication or HTTPS-based RESTful API calls"
+  },
+  "base_url": "https://{host}/api/v1",
+  "actions": [
+    {
+      "id": "list_protected_applications",
+      "name": "List Protected Applications",
+      "description": "Retrieve all web applications protected by AppWall",
+      "http_method": "GET",
+      "endpoint": "/applications",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "get_protected_application",
+      "name": "Get Protected Application",
+      "description": "Retrieve details of a specific protected application",
+      "http_method": "GET",
+      "endpoint": "/applications/{app_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "app_id",
+          "type": "string",
+          "description": "ID of the protected application",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_security_policies",
+      "name": "List Security Policies",
+      "description": "Retrieve all WAF security policies configured on the AppWall",
+      "http_method": "GET",
+      "endpoint": "/security-policies",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "get_security_policy",
+      "name": "Get Security Policy",
+      "description": "Retrieve a specific WAF security policy and its settings",
+      "http_method": "GET",
+      "endpoint": "/security-policies/{policy_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "policy_id",
+          "type": "string",
+          "description": "ID of the security policy",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "update_security_policy",
+      "name": "Update Security Policy",
+      "description": "Update WAF security policy settings and protection levels",
+      "http_method": "PUT",
+      "endpoint": "/security-policies/{policy_id}",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "policy_id",
+          "type": "string",
+          "description": "ID of the security policy to update",
+          "required": true
+        },
+        {
+          "name": "body",
+          "type": "object",
+          "description": "Updated policy settings including protection mode, security level, and filter configurations",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_ip_groups",
+      "name": "List IP Groups",
+      "description": "Retrieve all IP groups used for access control (block/allow lists)",
+      "http_method": "GET",
+      "endpoint": "/ip-groups",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "add_ip_to_blocklist",
+      "name": "Add IP to Block List",
+      "description": "Add an IP address to the WAF block list for immediate blocking",
+      "http_method": "POST",
+      "endpoint": "/ip-groups/{group_id}/entries",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "group_id",
+          "type": "string",
+          "description": "ID of the IP group (block list)",
+          "required": true
+        },
+        {
+          "name": "body",
+          "type": "object",
+          "description": "IP entry including ip_address, mask, and description",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_security_events",
+      "name": "Get Security Events",
+      "description": "Retrieve WAF security events including attack detections and blocks",
+      "http_method": "GET",
+      "endpoint": "/security-events",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "from",
+          "type": "string",
+          "description": "Start time for event query (ISO 8601 format)",
+          "required": false
+        },
+        {
+          "name": "to",
+          "type": "string",
+          "description": "End time for event query (ISO 8601 format)",
+          "required": false
+        },
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Filter by event severity (low, medium, high, critical)",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "description": "Maximum number of events to return",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_resource_monitoring",
+      "name": "Get Resource Monitoring",
+      "description": "Retrieve AppWall resource monitoring data including bandwidth, CPU, memory, and traffic levels",
+      "http_method": "GET",
+      "endpoint": "/monitoring/resources",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    }
+  ]
+}

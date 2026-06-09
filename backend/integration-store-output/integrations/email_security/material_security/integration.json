@@ -1,0 +1,179 @@
+{
+  "id": "material_security",
+  "name": "Material Security",
+  "description": "API-first email security platform protecting data at rest in mailboxes with fine-grained access controls, sensitive data detection, and phishing protection",
+  "version": "1.0.0",
+  "category": "email_security",
+  "vendor": "Material Security",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header",
+    "prefix": "Bearer"
+  },
+  "base_url": "https://api.material.security/v1",
+  "actions": [
+    {
+      "id": "get_detections",
+      "name": "Get Detections",
+      "description": "Retrieve email threat detections from Material Security",
+      "http_method": "GET",
+      "endpoint": "/detections",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "start_date",
+          "type": "string",
+          "description": "Start date in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "end_date",
+          "type": "string",
+          "description": "End date in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "category",
+          "type": "string",
+          "description": "Filter by detection category (phishing, bec, malware, spam)",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of detections to return",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Offset for pagination",
+          "required": false,
+          "default": 0
+        }
+      ]
+    },
+    {
+      "id": "get_detection_details",
+      "name": "Get Detection Details",
+      "description": "Retrieve detailed information about a specific detection",
+      "http_method": "GET",
+      "endpoint": "/detections/{detection_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "detection_id",
+          "type": "string",
+          "description": "The detection ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_sensitive_messages",
+      "name": "Get Sensitive Messages",
+      "description": "Retrieve messages containing sensitive data detected by classification policies",
+      "http_method": "GET",
+      "endpoint": "/sensitive-data/messages",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "classification",
+          "type": "string",
+          "description": "Filter by classification category (pii, phi, financial, credentials)",
+          "required": false
+        },
+        {
+          "name": "mailbox",
+          "type": "string",
+          "description": "Filter by mailbox email address",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of results",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "redact_message",
+      "name": "Redact Message",
+      "description": "Apply redaction to a message containing sensitive data",
+      "http_method": "POST",
+      "endpoint": "/sensitive-data/messages/{message_id}/redact",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "message_id",
+          "type": "string",
+          "description": "The message ID to redact",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "remediate_email",
+      "name": "Remediate Email",
+      "description": "Remove a malicious or unwanted email from user mailboxes",
+      "http_method": "POST",
+      "endpoint": "/detections/{detection_id}/remediate",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "detection_id",
+          "type": "string",
+          "description": "The detection ID to remediate",
+          "required": true
+        },
+        {
+          "name": "action",
+          "type": "string",
+          "description": "Remediation action (delete, move_to_trash, quarantine)",
+          "required": true,
+          "default": "quarantine"
+        }
+      ]
+    },
+    {
+      "id": "get_access_events",
+      "name": "Get Access Events",
+      "description": "Retrieve email access events and step-up authentication requests",
+      "http_method": "GET",
+      "endpoint": "/access-events",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "start_date",
+          "type": "string",
+          "description": "Start date in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "end_date",
+          "type": "string",
+          "description": "End date in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of events to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    }
+  ]
+}

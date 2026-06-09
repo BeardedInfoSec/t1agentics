@@ -1,0 +1,238 @@
+{
+  "id": "aws_secrets_manager",
+  "name": "AWS Secrets Manager",
+  "description": "Cloud secrets management through AWS Secrets Manager API for storing, retrieving, rotating, and managing secrets and credentials",
+  "version": "1.0.0",
+  "category": "secrets_management",
+  "vendor": "AWS",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "auth_method": "aws_signature_v4",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "https://secretsmanager.{region}.amazonaws.com",
+  "actions": [
+    {
+      "id": "list_secrets",
+      "name": "List Secrets",
+      "description": "List all secrets stored in AWS Secrets Manager",
+      "http_method": "POST",
+      "endpoint": "/",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "MaxResults",
+          "type": "number",
+          "description": "Maximum number of results (1-100)",
+          "required": false
+        },
+        {
+          "name": "NextToken",
+          "type": "string",
+          "description": "Pagination token from a previous request",
+          "required": false
+        },
+        {
+          "name": "Filters",
+          "type": "array",
+          "description": "Filters to narrow the list (Key: name, tag-key, tag-value, etc.)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_secret_value",
+      "name": "Get Secret Value",
+      "description": "Retrieve the current value of a secret",
+      "http_method": "POST",
+      "endpoint": "/",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "SecretId",
+          "type": "string",
+          "description": "Secret ARN or name",
+          "required": true
+        },
+        {
+          "name": "VersionId",
+          "type": "string",
+          "description": "Specific version ID to retrieve",
+          "required": false
+        },
+        {
+          "name": "VersionStage",
+          "type": "string",
+          "description": "Version stage (AWSCURRENT or AWSPREVIOUS)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "describe_secret",
+      "name": "Describe Secret",
+      "description": "Retrieve metadata about a secret (not the secret value)",
+      "http_method": "POST",
+      "endpoint": "/",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "SecretId",
+          "type": "string",
+          "description": "Secret ARN or name",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "create_secret",
+      "name": "Create Secret",
+      "description": "Create a new secret with an optional initial value",
+      "http_method": "POST",
+      "endpoint": "/",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "Name",
+          "type": "string",
+          "description": "Name for the new secret",
+          "required": true
+        },
+        {
+          "name": "SecretString",
+          "type": "string",
+          "description": "Secret value as a string (JSON recommended)",
+          "required": false
+        },
+        {
+          "name": "Description",
+          "type": "string",
+          "description": "Description of the secret",
+          "required": false
+        },
+        {
+          "name": "KmsKeyId",
+          "type": "string",
+          "description": "KMS key ID for encryption",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "update_secret",
+      "name": "Update Secret",
+      "description": "Update the value of an existing secret",
+      "http_method": "POST",
+      "endpoint": "/",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "SecretId",
+          "type": "string",
+          "description": "Secret ARN or name",
+          "required": true
+        },
+        {
+          "name": "SecretString",
+          "type": "string",
+          "description": "New secret value",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "rotate_secret",
+      "name": "Rotate Secret",
+      "description": "Trigger rotation of a secret using its configured rotation Lambda function",
+      "http_method": "POST",
+      "endpoint": "/",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "SecretId",
+          "type": "string",
+          "description": "Secret ARN or name to rotate",
+          "required": true
+        },
+        {
+          "name": "RotationLambdaARN",
+          "type": "string",
+          "description": "ARN of the Lambda function for rotation",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "delete_secret",
+      "name": "Delete Secret",
+      "description": "Schedule a secret for deletion with a recovery window",
+      "http_method": "POST",
+      "endpoint": "/",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "SecretId",
+          "type": "string",
+          "description": "Secret ARN or name to delete",
+          "required": true
+        },
+        {
+          "name": "RecoveryWindowInDays",
+          "type": "number",
+          "description": "Number of days before permanent deletion (7-30, default 30)",
+          "required": false
+        },
+        {
+          "name": "ForceDeleteWithoutRecovery",
+          "type": "boolean",
+          "description": "Delete immediately without recovery window",
+          "required": false,
+          "default": false
+        }
+      ]
+    },
+    {
+      "id": "restore_secret",
+      "name": "Restore Secret",
+      "description": "Restore a previously deleted secret that is within its recovery window",
+      "http_method": "POST",
+      "endpoint": "/",
+      "action_type": "correct",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "SecretId",
+          "type": "string",
+          "description": "Secret ARN or name to restore",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_resource_policy",
+      "name": "Get Resource Policy",
+      "description": "Retrieve the resource-based policy attached to a secret",
+      "http_method": "POST",
+      "endpoint": "/",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "SecretId",
+          "type": "string",
+          "description": "Secret ARN or name",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

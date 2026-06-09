@@ -1,0 +1,139 @@
+{
+  "id": "tigera_calico",
+  "name": "Tigera Calico Enterprise",
+  "description": "Kubernetes network security and observability platform providing network policy management, compliance reporting, threat detection, and micro-segmentation",
+  "version": "1.0.0",
+  "category": "container_security",
+  "vendor": "Tigera",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "header_name": "Authorization",
+    "prefix": "Bearer ",
+    "location": "header",
+    "description": "Service account token from Kubernetes RBAC or Calico Enterprise token"
+  },
+  "base_url": "https://{host}/apis",
+  "actions": [
+    {
+      "id": "list_network_policies",
+      "name": "List Network Policies",
+      "description": "List all Calico network policies across tiers",
+      "http_method": "GET",
+      "endpoint": "/projectcalico.org/v3/networkpolicies",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "namespace",
+          "type": "string",
+          "description": "Filter by Kubernetes namespace",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "tier",
+          "type": "string",
+          "description": "Filter by policy tier",
+          "required": false,
+          "location": "query"
+        }
+      ]
+    },
+    {
+      "id": "list_global_policies",
+      "name": "List Global Network Policies",
+      "description": "List all global (cluster-wide) network policies",
+      "http_method": "GET",
+      "endpoint": "/projectcalico.org/v3/globalnetworkpolicies",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "tier",
+          "type": "string",
+          "description": "Filter by policy tier",
+          "required": false,
+          "location": "query"
+        }
+      ]
+    },
+    {
+      "id": "list_tiers",
+      "name": "List Policy Tiers",
+      "description": "List all policy tiers with their priority order",
+      "http_method": "GET",
+      "endpoint": "/projectcalico.org/v3/tiers",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "get_compliance_reports",
+      "name": "Get Compliance Reports",
+      "description": "Retrieve compliance report results including network policy audit trails",
+      "http_method": "GET",
+      "endpoint": "/projectcalico.org/v3/globalreports",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "reportType",
+          "type": "string",
+          "description": "Report type: inventory, network-access, policy-audit, cis-benchmark",
+          "required": false,
+          "location": "query"
+        }
+      ]
+    },
+    {
+      "id": "list_threat_feeds",
+      "name": "List Threat Feeds",
+      "description": "List configured threat intelligence feeds for network-based threat detection",
+      "http_method": "GET",
+      "endpoint": "/projectcalico.org/v3/globalthreatfeeds",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "get_flow_logs",
+      "name": "Get Flow Logs",
+      "description": "Retrieve network flow logs for security analysis and forensics",
+      "http_method": "GET",
+      "endpoint": "/projectcalico.org/v3/flowlogs",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "namespace",
+          "type": "string",
+          "description": "Filter by namespace",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "action",
+          "type": "string",
+          "description": "Filter by action: allow, deny",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "startTime",
+          "type": "string",
+          "description": "Start time (ISO 8601)",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "endTime",
+          "type": "string",
+          "description": "End time (ISO 8601)",
+          "required": false,
+          "location": "query"
+        }
+      ]
+    }
+  ]
+}

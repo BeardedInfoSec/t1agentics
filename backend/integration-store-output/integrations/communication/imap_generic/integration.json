@@ -1,0 +1,75 @@
+{
+  "id": "imap_generic",
+  "name": "IMAP Email",
+  "description": "Generic IMAP connector for reading and searching emails in playbooks. Works with Gmail, Outlook, Microsoft 365, Exchange, and any IMAP server. Use to monitor inboxes, fetch phishing reports, and process inbound alerts.",
+  "version": "1.0.0",
+  "category": "communication",
+  "vendor": "Generic",
+  "auth_type": "basic",
+  "auth_config": {
+    "type": "basic",
+    "username_field": "username",
+    "password_field": "password"
+  },
+  "base_url": "imaps://imap.yourserver.com:993",
+  "setup_doc": "IMAP EMAIL — SETUP GUIDE\n========================\n\nCREDENTIALS NEEDED\n  Username   Your email address (e.g., alerts@yourcompany.com)\n  Password   Your account password or app-specific password\n\nBASE URL FORMAT\n  imaps://host:port   SSL/TLS on port 993  (recommended)\n  imap://host:port    Plain/STARTTLS on port 143\n\nCOMMON IMAP SERVERS\n  Gmail           imaps://imap.gmail.com:993\n  Outlook / M365  imaps://outlook.office365.com:993\n  Yahoo Mail      imaps://imap.mail.yahoo.com:993\n  Exchange        imaps://mail.yourcompany.com:993\n\nGMAIL SETUP\n  1. Enable IMAP in Gmail Settings > Forwarding and POP/IMAP\n  2. Enable 2-Step Verification on your Google Account\n  3. Go to Google Account > Security > App Passwords\n  4. Select app: Mail / device: Other\n  5. Use your Gmail address as username\n  6. Use the generated app password (not your login password)\n\n  NOTE: Standard accounts may also need to enable\n  'Less secure app access' in older Google Workspace configs.\n\nOUTLOOK / MICROSOFT 365\n  1. IMAP must be enabled by your Exchange/M365 admin\n  2. Go to Outlook Settings > Mail > Sync Email to verify\n  3. If MFA is enabled, generate an App Password in\n     Microsoft Account Security settings\n\nEXCHANGE ON-PREMISES\n  1. Ask your Exchange admin to enable IMAP for your mailbox\n  2. Use your full email address or domain\\username as username\n  3. Port 993 for SSL, port 143 for STARTTLS\n\nTROUBLESHOOTING\n  - 'Authentication failed': Check that IMAP is enabled for your\n    account and you are using an App Password if MFA is on.\n  - 'Connection refused': Verify host and port. Check firewall rules.\n  - Gmail blocking: Enable 'Allow less secure apps' OR use OAuth2.",
+  "actions": [
+    {
+      "id": "search_inbox",
+      "name": "Search Inbox",
+      "description": "Search for emails matching criteria (subject, sender, date range)",
+      "http_method": "GET",
+      "endpoint": "/search",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        { "name": "folder", "type": "string", "description": "Mailbox folder to search (default: INBOX)", "required": false },
+        { "name": "subject", "type": "string", "description": "Subject keyword to match", "required": false },
+        { "name": "from_address", "type": "string", "description": "Filter by sender email address", "required": false },
+        { "name": "since_date", "type": "string", "description": "Only emails received after this date (YYYY-MM-DD)", "required": false },
+        { "name": "unseen_only", "type": "boolean", "description": "Only return unread emails (default: false)", "required": false },
+        { "name": "limit", "type": "integer", "description": "Maximum number of emails to return (default: 10)", "required": false }
+      ]
+    },
+    {
+      "id": "get_email",
+      "name": "Get Email",
+      "description": "Fetch the full content of a specific email by UID",
+      "http_method": "GET",
+      "endpoint": "/email/{uid}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        { "name": "uid", "type": "string", "description": "Email UID from a search result", "required": true },
+        { "name": "folder", "type": "string", "description": "Mailbox folder containing the email", "required": false }
+      ]
+    },
+    {
+      "id": "mark_as_read",
+      "name": "Mark Email as Read",
+      "description": "Mark one or more emails as read by UID",
+      "http_method": "POST",
+      "endpoint": "/mark-read",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        { "name": "uid", "type": "string", "description": "Email UID or comma-separated list of UIDs", "required": true },
+        { "name": "folder", "type": "string", "description": "Mailbox folder (default: INBOX)", "required": false }
+      ]
+    },
+    {
+      "id": "move_email",
+      "name": "Move Email",
+      "description": "Move an email to a different folder",
+      "http_method": "POST",
+      "endpoint": "/move",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        { "name": "uid", "type": "string", "description": "Email UID to move", "required": true },
+        { "name": "destination_folder", "type": "string", "description": "Target folder name (e.g., Processed, Quarantine)", "required": true },
+        { "name": "source_folder", "type": "string", "description": "Source folder (default: INBOX)", "required": false }
+      ]
+    }
+  ]
+}

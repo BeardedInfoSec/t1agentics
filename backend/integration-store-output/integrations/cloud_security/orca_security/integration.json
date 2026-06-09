@@ -1,0 +1,194 @@
+{
+  "id": "orca_security",
+  "name": "Orca Security",
+  "description": "Agentless cloud security platform providing CNAPP, CSPM, CWPP, and vulnerability management across multi-cloud environments",
+  "version": "1.0.0",
+  "category": "cloud_security",
+  "vendor": "Orca Security",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "prefix": "Token",
+    "location": "header"
+  },
+  "base_url": "https://app.{region}.orcasecurity.io/api",
+  "actions": [
+    {
+      "id": "list_alerts",
+      "name": "List Alerts",
+      "description": "Retrieve security alerts with optional filters for severity, status, and alert type",
+      "http_method": "GET",
+      "endpoint": "/alerts",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "dsl_filter",
+          "type": "string",
+          "description": "DSL filter expression for alert filtering",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum alerts to return",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "next_page_token",
+          "type": "string",
+          "description": "Pagination token for next page of results",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_alert_details",
+      "name": "Get Alert Details",
+      "description": "Get detailed information about a specific security alert",
+      "http_method": "GET",
+      "endpoint": "/alerts/{alert_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "alert_id",
+          "type": "string",
+          "description": "The unique identifier of the alert",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_assets",
+      "name": "List Assets",
+      "description": "List discovered cloud assets across all connected cloud accounts",
+      "http_method": "GET",
+      "endpoint": "/assets",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "asset_type",
+          "type": "string",
+          "description": "Filter by asset type (e.g., vm, container, serverless, storage)",
+          "required": false
+        },
+        {
+          "name": "cloud_provider",
+          "type": "string",
+          "description": "Filter by cloud provider (aws, azure, gcp)",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum assets to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "get_asset_details",
+      "name": "Get Asset Details",
+      "description": "Retrieve detailed information about a specific cloud asset including risk score and findings",
+      "http_method": "GET",
+      "endpoint": "/assets/{asset_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "asset_id",
+          "type": "string",
+          "description": "The unique identifier of the asset",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "search_vulnerabilities",
+      "name": "Search Vulnerabilities",
+      "description": "Search for vulnerabilities across cloud workloads with CVE and severity filtering",
+      "http_method": "GET",
+      "endpoint": "/vulnerabilities",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "cve_id",
+          "type": "string",
+          "description": "Filter by specific CVE ID",
+          "required": false
+        },
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Filter by severity (critical, high, medium, low)",
+          "required": false
+        },
+        {
+          "name": "has_fix",
+          "type": "boolean",
+          "description": "Filter for vulnerabilities with available fixes",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum results to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "get_compliance_status",
+      "name": "Get Compliance Status",
+      "description": "Retrieve compliance assessment results for a specific framework",
+      "http_method": "GET",
+      "endpoint": "/compliance/frameworks",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "framework_name",
+          "type": "string",
+          "description": "Compliance framework name (e.g., CIS, SOC2, PCI-DSS, HIPAA)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "update_alert_status",
+      "name": "Update Alert Status",
+      "description": "Update the status of a security alert (dismiss, snooze, or reopen)",
+      "http_method": "PUT",
+      "endpoint": "/alerts/{alert_id}/status",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "alert_id",
+          "type": "string",
+          "description": "The unique identifier of the alert",
+          "required": true
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "New status (open, dismissed, snoozed, in_progress)",
+          "required": true
+        },
+        {
+          "name": "reason",
+          "type": "string",
+          "description": "Reason for status change",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

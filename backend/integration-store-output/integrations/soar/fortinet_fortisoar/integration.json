@@ -1,0 +1,177 @@
+{
+  "id": "fortinet_fortisoar",
+  "name": "FortiSOAR",
+  "description": "Fortinet security orchestration, automation and response platform for incident management, playbook execution, and coordinated security operations using a JSON-LD based REST API.",
+  "version": "1.0.0",
+  "category": "soar",
+  "vendor": "Fortinet",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "header_name": "Authorization",
+    "location": "header",
+    "token_prefix": "Bearer"
+  },
+  "base_url": "https://{host}/api/3",
+  "actions": [
+    {
+      "id": "list_incidents",
+      "name": "List Incidents",
+      "description": "Retrieve a paginated list of incidents (alerts) from FortiSOAR.",
+      "http_method": "GET",
+      "endpoint": "/alerts",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "$limit", "type": "integer", "description": "Maximum records to return (default 30).", "required": false},
+        {"name": "$offset", "type": "integer", "description": "Number of records to skip.", "required": false},
+        {"name": "$orderby", "type": "string", "description": "Field to sort by (e.g., 'createDate desc').", "required": false},
+        {"name": "$filter", "type": "string", "description": "OData-style filter expression.", "required": false}
+      ]
+    },
+    {
+      "id": "get_incident",
+      "name": "Get Incident",
+      "description": "Retrieve details of a specific incident by its IRI or UUID.",
+      "http_method": "GET",
+      "endpoint": "/alerts/{alert_iri}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "alert_iri", "type": "string", "description": "The alert IRI (Internationalized Resource Identifier) or UUID.", "required": true}
+      ]
+    },
+    {
+      "id": "create_incident",
+      "name": "Create Incident",
+      "description": "Create a new alert/incident in FortiSOAR.",
+      "http_method": "POST",
+      "endpoint": "/alerts",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "name", "type": "string", "description": "Name/title of the alert.", "required": true},
+        {"name": "description", "type": "string", "description": "Alert description.", "required": false},
+        {"name": "severity", "type": "string", "description": "Severity IRI (e.g., '/api/3/picklists/{uuid}').", "required": false},
+        {"name": "status", "type": "string", "description": "Status IRI.", "required": false},
+        {"name": "type", "type": "string", "description": "Alert type IRI.", "required": false},
+        {"name": "assignedTo", "type": "string", "description": "User or team IRI to assign.", "required": false},
+        {"name": "source", "type": "string", "description": "Source of the alert.", "required": false},
+        {"name": "sourceId", "type": "string", "description": "Source system ID.", "required": false}
+      ]
+    },
+    {
+      "id": "update_incident",
+      "name": "Update Incident",
+      "description": "Update fields of an existing alert/incident.",
+      "http_method": "PUT",
+      "endpoint": "/alerts/{alert_iri}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "alert_iri", "type": "string", "description": "The alert IRI or UUID.", "required": true},
+        {"name": "name", "type": "string", "description": "Updated name.", "required": false},
+        {"name": "severity", "type": "string", "description": "Updated severity IRI.", "required": false},
+        {"name": "status", "type": "string", "description": "Updated status IRI.", "required": false},
+        {"name": "assignedTo", "type": "string", "description": "Updated assignee IRI.", "required": false},
+        {"name": "description", "type": "string", "description": "Updated description.", "required": false}
+      ]
+    },
+    {
+      "id": "close_incident",
+      "name": "Close Incident",
+      "description": "Close an alert by updating its status to resolved/closed.",
+      "http_method": "PUT",
+      "endpoint": "/alerts/{alert_iri}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "alert_iri", "type": "string", "description": "The alert IRI or UUID.", "required": true},
+        {"name": "status", "type": "string", "description": "Closed status IRI.", "required": true},
+        {"name": "closureReason", "type": "string", "description": "Reason for closure.", "required": false}
+      ]
+    },
+    {
+      "id": "list_indicators",
+      "name": "List Indicators",
+      "description": "Retrieve a list of indicators (artifacts/IOCs).",
+      "http_method": "GET",
+      "endpoint": "/indicators",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "$limit", "type": "integer", "description": "Maximum records to return.", "required": false},
+        {"name": "$offset", "type": "integer", "description": "Records to skip.", "required": false},
+        {"name": "$filter", "type": "string", "description": "OData-style filter expression.", "required": false}
+      ]
+    },
+    {
+      "id": "create_indicator",
+      "name": "Create Indicator",
+      "description": "Create a new indicator (artifact) record.",
+      "http_method": "POST",
+      "endpoint": "/indicators",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "value", "type": "string", "description": "The indicator value (IP, domain, hash, etc.).", "required": true},
+        {"name": "typeofindicator", "type": "string", "description": "Indicator type IRI.", "required": true},
+        {"name": "indicatorStatus", "type": "string", "description": "Indicator status IRI.", "required": false},
+        {"name": "reputation", "type": "string", "description": "Reputation IRI (Malicious, Suspicious, etc.).", "required": false},
+        {"name": "description", "type": "string", "description": "Description of the indicator.", "required": false}
+      ]
+    },
+    {
+      "id": "run_playbook",
+      "name": "Run Playbook",
+      "description": "Trigger a playbook execution via custom API endpoint.",
+      "http_method": "POST",
+      "endpoint": "/api/triggers/{trigger_endpoint}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "trigger_endpoint", "type": "string", "description": "Custom playbook trigger endpoint path.", "required": true},
+        {"name": "body", "type": "object", "description": "JSON payload with input data for the playbook.", "required": false}
+      ]
+    },
+    {
+      "id": "list_playbooks",
+      "name": "List Playbooks",
+      "description": "Retrieve a list of all playbook collections and playbooks.",
+      "http_method": "GET",
+      "endpoint": "/workflow_collections",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "$limit", "type": "integer", "description": "Maximum records to return.", "required": false},
+        {"name": "$offset", "type": "integer", "description": "Records to skip.", "required": false}
+      ]
+    },
+    {
+      "id": "add_comment",
+      "name": "Add Comment",
+      "description": "Add a comment/note to an alert or incident.",
+      "http_method": "POST",
+      "endpoint": "/comments",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "content", "type": "string", "description": "Comment text content.", "required": true},
+        {"name": "alerts", "type": "array", "description": "Array of alert IRIs to attach the comment to.", "required": true}
+      ]
+    },
+    {
+      "id": "link_indicator_to_alert",
+      "name": "Link Indicator to Alert",
+      "description": "Create a relationship between an indicator and an alert.",
+      "http_method": "POST",
+      "endpoint": "/alerts/{alert_iri}/indicators",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "alert_iri", "type": "string", "description": "The alert IRI.", "required": true},
+        {"name": "indicators", "type": "array", "description": "Array of indicator IRIs to link.", "required": true}
+      ]
+    }
+  ]
+}

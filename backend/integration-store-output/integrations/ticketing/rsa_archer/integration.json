@@ -1,0 +1,461 @@
+{
+  "id": "rsa_archer_ticketing",
+  "name": "RSA Archer",
+  "description": "This app implements ticket management actions on RSA Archer GRC",
+  "version": "3.2.1",
+  "category": "ticketing",
+  "vendor": "RSA",
+  "auth_type": "basic_auth",
+  "auth_config": {
+    "type": "basic_auth",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "create_ticket",
+      "name": "Create Ticket",
+      "description": "Create a new ticket",
+      "http_method": "GET",
+      "endpoint": "/actions/create_ticket",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "application",
+          "type": "string",
+          "description": "Application/Module name (e.g. Incidents)",
+          "required": true,
+          "contains": [
+            "archer application"
+          ]
+        },
+        {
+          "name": "json_string",
+          "type": "string",
+          "description": "JSON data string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "update_ticket",
+      "name": "Update Ticket",
+      "description": "Update the value of a field of a record",
+      "http_method": "GET",
+      "endpoint": "/actions/update_ticket",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "application",
+          "type": "string",
+          "description": "Application/Module name (e.g. Incidents)",
+          "required": true,
+          "contains": [
+            "archer application"
+          ]
+        },
+        {
+          "name": "content_id",
+          "type": "number",
+          "description": "Content ID (Identifies the specific record)",
+          "required": false,
+          "contains": [
+            "archer content id"
+          ]
+        },
+        {
+          "name": "name_field",
+          "type": "string",
+          "description": "Name of Tracking ID field (e.g. \"Incident ID\")",
+          "required": false
+        },
+        {
+          "name": "name_value",
+          "type": "string",
+          "description": "Name of record (e.g. \"INC-1234\")",
+          "required": false,
+          "contains": [
+            "archer user friendly id"
+          ]
+        },
+        {
+          "name": "field_id",
+          "type": "string",
+          "description": "ID or name of the field to update in the record",
+          "required": false
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "description": "New value of the record's field (Comma-separated values allowed if Users or Groups to be updated to a field)",
+          "required": false
+        },
+        {
+          "name": "json_string",
+          "type": "string",
+          "description": "JSON data string",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_ticket",
+      "name": "Get Ticket",
+      "description": "Get ticket information",
+      "http_method": "GET",
+      "endpoint": "/actions/get_ticket",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "application",
+          "type": "string",
+          "description": "Application/Module name (e.g. Incidents)",
+          "required": true,
+          "contains": [
+            "archer application"
+          ]
+        },
+        {
+          "name": "content_id",
+          "type": "number",
+          "description": "Content ID (Identifies the specific record)",
+          "required": false,
+          "contains": [
+            "archer content id"
+          ]
+        },
+        {
+          "name": "name_field",
+          "type": "string",
+          "description": "Name of Tracking ID field (e.g. \"Incident ID\")",
+          "required": false
+        },
+        {
+          "name": "name_value",
+          "type": "string",
+          "description": "Name of record (e.g. \"INC-1234\")",
+          "required": false,
+          "contains": [
+            "archer user friendly id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_tickets",
+      "name": "List Tickets",
+      "description": "Get a list of tickets in an application",
+      "http_method": "GET",
+      "endpoint": "/actions/list_tickets",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "application",
+          "type": "string",
+          "description": "Application/Module name (e.g. Incidents)",
+          "required": true,
+          "contains": [
+            "archer application"
+          ]
+        },
+        {
+          "name": "max_results",
+          "type": "number",
+          "description": "Max number of records to return",
+          "required": true,
+          "default": 100
+        },
+        {
+          "name": "name_field",
+          "type": "string",
+          "description": "Name of field to search in (e.g. \"Incident ID\")",
+          "required": false
+        },
+        {
+          "name": "search_value",
+          "type": "string",
+          "description": "Value to search for in this application",
+          "required": false
+        },
+        {
+          "name": "results_filter_json",
+          "type": "string",
+          "description": "JSON with field names and values of results filter for this application",
+          "required": false
+        },
+        {
+          "name": "results_filter_operator",
+          "type": "string",
+          "description": "Boolean operator of key/value pairs in the results filter JSON for this application (its value would be \"and\" if only one condition is specified)",
+          "required": false
+        },
+        {
+          "name": "results_filter_equality",
+          "type": "string",
+          "description": "Equality operator of key/value pairs in the results filter JSON for this application",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "create_attachment",
+      "name": "Create Attachment",
+      "description": "Create an attachment",
+      "http_method": "GET",
+      "endpoint": "/api/core/content/attachment",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "vault_id",
+          "type": "string",
+          "description": "Vault ID of the file",
+          "required": true,
+          "contains": [
+            "vault id"
+          ]
+        },
+        {
+          "name": "file_name",
+          "type": "string",
+          "description": "File name",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_report",
+      "name": "Get Report",
+      "description": "Get a list of tickets from a report",
+      "http_method": "GET",
+      "endpoint": "/actions/get_report",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "guid",
+          "type": "string",
+          "description": "Report GUID",
+          "required": true,
+          "contains": [
+            "archer guid"
+          ]
+        },
+        {
+          "name": "max_results",
+          "type": "number",
+          "description": "Max number of records to return",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "max_pages",
+          "type": "number",
+          "description": "Max number of report pages to return",
+          "required": false,
+          "default": 10
+        },
+        {
+          "name": "results_filter_json",
+          "type": "string",
+          "description": "JSON with field names and values of results filter for a report",
+          "required": false
+        },
+        {
+          "name": "results_filter_operator",
+          "type": "string",
+          "description": "Boolean operator of key/value pairs in the results filter JSON for a report (its value would be \"and\" if only one condition is specified)",
+          "required": false
+        },
+        {
+          "name": "results_filter_equality",
+          "type": "string",
+          "description": "Equality operator of key/value pairs in the results filter JSON for a report",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "on_poll",
+      "name": "On Poll",
+      "description": "Callback action for the on_poll ingest functionality",
+      "http_method": "GET",
+      "endpoint": "/actions/on_poll",
+      "action_type": "ingest",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "start_time",
+          "type": "number",
+          "description": "Parameter ignored for this app",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "number",
+          "description": "Parameter ignored for this app",
+          "required": false
+        },
+        {
+          "name": "container_count",
+          "type": "number",
+          "description": "Maximum number of container records to query for",
+          "required": false
+        },
+        {
+          "name": "artifact_count",
+          "type": "number",
+          "description": "Maximum number of artifact records to query for",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "assign_ticket",
+      "name": "Assign Ticket",
+      "description": "Assign users and/or groups to record",
+      "http_method": "GET",
+      "endpoint": "/actions/assign_ticket",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "application",
+          "type": "string",
+          "description": "Application/Module name (e.g. Incidents)",
+          "required": true,
+          "contains": [
+            "archer application"
+          ]
+        },
+        {
+          "name": "content_id",
+          "type": "number",
+          "description": "Content ID (Identifies the specific record)",
+          "required": false,
+          "contains": [
+            "archer content id"
+          ]
+        },
+        {
+          "name": "name_field",
+          "type": "string",
+          "description": "Name of Tracking ID field (e.g. \"Incident ID\")",
+          "required": false
+        },
+        {
+          "name": "name_value",
+          "type": "string",
+          "description": "Name of record (e.g. \"INC-1234\")",
+          "required": false,
+          "contains": [
+            "archer user friendly id"
+          ]
+        },
+        {
+          "name": "field_id",
+          "type": "string",
+          "description": "Field id of field to add users or groups",
+          "required": false
+        },
+        {
+          "name": "users",
+          "type": "string",
+          "description": "Users to assign to incident/tasks. Provide numeric values (Comma-separated values allowed)",
+          "required": false
+        },
+        {
+          "name": "groups",
+          "type": "string",
+          "description": "Groups to assign to incident/tasks. Provide numeric values (Comma-separated values allowed)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "attach_alert",
+      "name": "Attach Alert",
+      "description": "Attach Security alert to the record",
+      "http_method": "GET",
+      "endpoint": "/actions/attach_alert",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "application",
+          "type": "string",
+          "description": "Application/Module name (e.g. Security Incidents)",
+          "required": true,
+          "contains": [
+            "archer application"
+          ]
+        },
+        {
+          "name": "content_id",
+          "type": "number",
+          "description": "Content ID (Identifies the specific incident)",
+          "required": false,
+          "contains": [
+            "archer content id"
+          ]
+        },
+        {
+          "name": "name_field",
+          "type": "string",
+          "description": "Name of Tracking ID field (e.g. \"Incident ID\")",
+          "required": false
+        },
+        {
+          "name": "name_value",
+          "type": "string",
+          "description": "Name of record (e.g. \"INC-1234\")",
+          "required": false,
+          "contains": [
+            "archer user friendly id"
+          ]
+        },
+        {
+          "name": "field_id",
+          "type": "string",
+          "description": "Field ID of field to edit. If not provided, searches for Field ID of Security Alerts field",
+          "required": false
+        },
+        {
+          "name": "security_alert_id",
+          "type": "string",
+          "description": "Security Alert that will be assigned to record (Comma-separated values allowed)",
+          "required": true
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "RSA Archer",
+    "original_type": "ticketing",
+    "converted_at": "2025-12-18T16:25:29.089654",
+    "source_version": "3.2.1"
+  }
+}

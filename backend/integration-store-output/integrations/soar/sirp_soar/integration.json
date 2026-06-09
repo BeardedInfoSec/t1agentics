@@ -1,0 +1,162 @@
+{
+  "id": "sirp_soar",
+  "name": "SIRP SOAR",
+  "description": "SIRP AI-native security operations platform for risk-based incident management, automated playbook execution, and coordinated threat response.",
+  "version": "1.0.0",
+  "category": "soar",
+  "vendor": "SIRP",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header",
+    "token_prefix": "Token"
+  },
+  "base_url": "https://{host}/api/v1",
+  "actions": [
+    {
+      "id": "list_incidents",
+      "name": "List Incidents",
+      "description": "Retrieve a list of security incidents.",
+      "http_method": "GET",
+      "endpoint": "/incidents",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "page", "type": "integer", "description": "Page number.", "required": false},
+        {"name": "limit", "type": "integer", "description": "Results per page.", "required": false},
+        {"name": "status", "type": "string", "description": "Filter by status: 'open', 'in_progress', 'closed'.", "required": false},
+        {"name": "severity", "type": "string", "description": "Filter by severity.", "required": false},
+        {"name": "category", "type": "string", "description": "Filter by category.", "required": false}
+      ]
+    },
+    {
+      "id": "get_incident",
+      "name": "Get Incident",
+      "description": "Retrieve details of a specific incident.",
+      "http_method": "GET",
+      "endpoint": "/incidents/{incidentId}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "incidentId", "type": "string", "description": "The incident ID.", "required": true}
+      ]
+    },
+    {
+      "id": "create_incident",
+      "name": "Create Incident",
+      "description": "Create a new security incident.",
+      "http_method": "POST",
+      "endpoint": "/incidents",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "name", "type": "string", "description": "Incident name.", "required": true},
+        {"name": "description", "type": "string", "description": "Incident description.", "required": false},
+        {"name": "severity", "type": "string", "description": "Severity: 'Low', 'Medium', 'High', 'Critical'.", "required": false},
+        {"name": "category", "type": "string", "description": "Incident category (e.g., 'Phishing', 'Malware', 'Unauthorized Access').", "required": false},
+        {"name": "assignee", "type": "string", "description": "Assigned analyst.", "required": false},
+        {"name": "priority", "type": "string", "description": "Priority level.", "required": false}
+      ]
+    },
+    {
+      "id": "update_incident",
+      "name": "Update Incident",
+      "description": "Update an existing incident.",
+      "http_method": "PUT",
+      "endpoint": "/incidents/{incidentId}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "incidentId", "type": "string", "description": "The incident ID.", "required": true},
+        {"name": "name", "type": "string", "description": "Updated name.", "required": false},
+        {"name": "severity", "type": "string", "description": "Updated severity.", "required": false},
+        {"name": "status", "type": "string", "description": "Updated status.", "required": false},
+        {"name": "assignee", "type": "string", "description": "Updated assignee.", "required": false}
+      ]
+    },
+    {
+      "id": "close_incident",
+      "name": "Close Incident",
+      "description": "Close an incident with resolution details.",
+      "http_method": "PUT",
+      "endpoint": "/incidents/{incidentId}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "incidentId", "type": "string", "description": "The incident ID.", "required": true},
+        {"name": "status", "type": "string", "description": "Set to 'closed'.", "required": true},
+        {"name": "resolution", "type": "string", "description": "Resolution summary.", "required": true},
+        {"name": "closureReason", "type": "string", "description": "Reason for closure.", "required": false}
+      ]
+    },
+    {
+      "id": "run_playbook",
+      "name": "Run Playbook",
+      "description": "Execute a playbook on an incident.",
+      "http_method": "POST",
+      "endpoint": "/playbooks/{playbookId}/execute",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "playbookId", "type": "string", "description": "The playbook ID.", "required": true},
+        {"name": "incidentId", "type": "string", "description": "Target incident ID.", "required": true},
+        {"name": "parameters", "type": "object", "description": "Playbook input parameters.", "required": false}
+      ]
+    },
+    {
+      "id": "list_playbooks",
+      "name": "List Playbooks",
+      "description": "Retrieve available playbooks from the marketplace and custom library.",
+      "http_method": "GET",
+      "endpoint": "/playbooks",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "page", "type": "integer", "description": "Page number.", "required": false},
+        {"name": "limit", "type": "integer", "description": "Results per page.", "required": false}
+      ]
+    },
+    {
+      "id": "add_artifact",
+      "name": "Add Artifact",
+      "description": "Add an artifact/observable to an incident.",
+      "http_method": "POST",
+      "endpoint": "/incidents/{incidentId}/artifacts",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "incidentId", "type": "string", "description": "The incident ID.", "required": true},
+        {"name": "type", "type": "string", "description": "Artifact type.", "required": true},
+        {"name": "value", "type": "string", "description": "Artifact value.", "required": true},
+        {"name": "description", "type": "string", "description": "Description.", "required": false}
+      ]
+    },
+    {
+      "id": "add_comment",
+      "name": "Add Comment",
+      "description": "Add a comment to an incident.",
+      "http_method": "POST",
+      "endpoint": "/incidents/{incidentId}/comments",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "incidentId", "type": "string", "description": "The incident ID.", "required": true},
+        {"name": "comment", "type": "string", "description": "Comment text.", "required": true}
+      ]
+    },
+    {
+      "id": "get_risk_score",
+      "name": "Get Risk Score",
+      "description": "Retrieve the SIRP risk score for an incident or entity.",
+      "http_method": "GET",
+      "endpoint": "/risk/{entityType}/{entityId}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "entityType", "type": "string", "description": "Entity type: 'incident', 'observable', 'vulnerability'.", "required": true},
+        {"name": "entityId", "type": "string", "description": "The entity ID.", "required": true}
+      ]
+    }
+  ]
+}

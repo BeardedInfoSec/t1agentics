@@ -1,0 +1,171 @@
+{
+  "id": "veracode",
+  "name": "Veracode",
+  "description": "Application security platform providing SAST, DAST, SCA, and manual penetration testing with findings management",
+  "version": "1.0.0",
+  "category": "code_security",
+  "vendor": "Veracode",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "hmac",
+    "header_name": "Authorization",
+    "location": "header",
+    "description": "HMAC authentication using API ID and API Key credentials"
+  },
+  "base_url": "https://api.veracode.com/appsec/v2",
+  "actions": [
+    {
+      "id": "list_applications",
+      "name": "List Applications",
+      "description": "Retrieve a list of application profiles in the portfolio",
+      "http_method": "GET",
+      "endpoint": "/applications",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Filter by application name",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "page",
+          "type": "integer",
+          "description": "Page number (0-based)",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "size",
+          "type": "integer",
+          "description": "Number of results per page",
+          "required": false,
+          "location": "query"
+        }
+      ]
+    },
+    {
+      "id": "list_findings",
+      "name": "List Findings",
+      "description": "Retrieve findings (vulnerabilities) for a specific application",
+      "http_method": "GET",
+      "endpoint": "/applications/{application_guid}/findings",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "application_guid",
+          "type": "string",
+          "description": "Application GUID",
+          "required": true,
+          "location": "path"
+        },
+        {
+          "name": "scan_type",
+          "type": "string",
+          "description": "Filter by scan type: STATIC, DYNAMIC, MANUAL, SCA",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "severity",
+          "type": "integer",
+          "description": "Filter by exact severity level (0-5)",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "severity_gte",
+          "type": "integer",
+          "description": "Filter by minimum severity level (0-5)",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "cwe",
+          "type": "integer",
+          "description": "Filter by CWE ID",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "violates_policy",
+          "type": "boolean",
+          "description": "Filter to only findings that violate policy",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "size",
+          "type": "integer",
+          "description": "Number of results per page",
+          "required": false,
+          "location": "query"
+        }
+      ]
+    },
+    {
+      "id": "get_finding",
+      "name": "Get Finding Details",
+      "description": "Retrieve detailed information about a specific finding",
+      "http_method": "GET",
+      "endpoint": "/applications/{application_guid}/findings/{finding_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "application_guid",
+          "type": "string",
+          "description": "Application GUID",
+          "required": true,
+          "location": "path"
+        },
+        {
+          "name": "finding_id",
+          "type": "string",
+          "description": "Finding ID",
+          "required": true,
+          "location": "path"
+        }
+      ]
+    },
+    {
+      "id": "get_policy_evaluation",
+      "name": "Get Policy Evaluation",
+      "description": "Get the policy compliance evaluation for an application",
+      "http_method": "GET",
+      "endpoint": "/applications/{application_guid}/policy",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "application_guid",
+          "type": "string",
+          "description": "Application GUID",
+          "required": true,
+          "location": "path"
+        }
+      ]
+    },
+    {
+      "id": "get_scan_summary",
+      "name": "Get Scan Summary",
+      "description": "Retrieve summary of the latest scan for an application",
+      "http_method": "GET",
+      "endpoint": "/applications/{application_guid}/summary_report",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "application_guid",
+          "type": "string",
+          "description": "Application GUID",
+          "required": true,
+          "location": "path"
+        }
+      ]
+    }
+  ]
+}

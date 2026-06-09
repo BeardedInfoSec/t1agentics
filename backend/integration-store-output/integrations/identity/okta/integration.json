@@ -1,8 +1,8 @@
 {
   "id": "okta",
   "name": "Okta",
-  "description": "Integration with Okta for security operations",
-  "version": "1.0.0",
+  "description": "This app supports various identity management actions on Okta",
+  "version": "2.3.2",
   "category": "identity",
   "vendor": "Okta",
   "auth_type": "api_key",
@@ -11,58 +11,502 @@
     "header_name": "Authorization",
     "location": "header"
   },
-  "base_url": "",
+  "base_url": "base_url",
   "actions": [
     {
-      "id": "get_user",
-      "name": "Get User",
-      "http_method": "GET",
-      "endpoint": "/api/v1/users/{user_id}",
-      "read_only": true,
-      "cacheable": true,
-      "cache_ttl_days": 1,
-      "description": "Get user details by ID or email",
-      "observable_type": "email"
-    },
-    {
-      "id": "list_user_factors",
-      "name": "List User MFA Factors",
-      "http_method": "GET",
-      "endpoint": "/api/v1/users/{user_id}/factors",
-      "read_only": true,
-      "cacheable": true,
-      "cache_ttl_days": 1,
-      "description": "List enrolled MFA factors for a user"
-    },
-    {
-      "id": "get_system_logs",
-      "name": "Get System Logs",
-      "http_method": "GET",
-      "endpoint": "/api/v1/logs",
-      "read_only": true,
-      "cacheable": false,
-      "cache_ttl_days": 30,
-      "description": "Get Okta system/audit logs"
-    },
-    {
-      "id": "suspend_user",
-      "name": "Suspend User",
+      "id": "send_push_notification",
+      "name": "Send Push Notification",
+      "description": "Validate the user prompt with push notification",
       "http_method": "POST",
-      "endpoint": "/api/v1/users/{user_id}/lifecycle/suspend",
-      "read_only": true,
+      "endpoint": "/actions/send_push_notification",
+      "action_type": "contain",
+      "read_only": false,
       "cacheable": false,
-      "cache_ttl_days": 30,
-      "description": "Suspend a user account (response action)"
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "email",
+          "type": "string",
+          "description": "Okta User id, email address, or username",
+          "required": true,
+          "contains": [
+            "okta user id",
+            "okta email address",
+            "okta username",
+            "user name",
+            "email"
+          ]
+        },
+        {
+          "name": "factortype",
+          "type": "string",
+          "description": "Okta Factor Type",
+          "required": true,
+          "default": "push"
+        }
+      ]
+    },
+    {
+      "id": "list_users",
+      "name": "List Users",
+      "description": "Get the list of users",
+      "http_method": "GET",
+      "endpoint": "/actions/list_users",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Find a user that matches firstName, lastName, and email properties",
+          "required": false
+        },
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "Filters users with a supported expression for a subset of properties",
+          "required": false
+        },
+        {
+          "name": "search",
+          "type": "string",
+          "description": "Searches for users with a supported filtering expression for most properties",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Specifies the number of results returned",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_user_groups",
+      "name": "List User Groups",
+      "description": "Enumerates Groups in your organization with pagination. A subset of Groups can be returned that match a supported filter expression or query",
+      "http_method": "GET",
+      "endpoint": "/groups",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Find a group that matches name property",
+          "required": false
+        },
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "Filters groups with a supported expression for a subset of properties",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Specifies the number of results returned",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "add_group",
+      "name": "Add Group",
+      "description": "Add a group",
+      "http_method": "GET",
+      "endpoint": "/actions/add_group",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Name of the group",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Description of the group",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "reset_password",
+      "name": "Reset Password",
+      "description": "Generate a one-time token that can be used to reset the user's password",
+      "http_method": "POST",
+      "endpoint": "/actions/reset_password",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "user_id",
+          "type": "string",
+          "description": "User id",
+          "required": true,
+          "contains": [
+            "okta user id"
+          ]
+        },
+        {
+          "name": "receive_type",
+          "type": "string",
+          "description": "Return one-time token via email or in UI",
+          "required": true,
+          "default": "Email"
+        }
+      ]
+    },
+    {
+      "id": "set_password",
+      "name": "Set Password",
+      "description": "Set the password of a user without validating existing credentials",
+      "http_method": "POST",
+      "endpoint": "/actions/set_password",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "new_password",
+          "type": "string",
+          "description": "Password string to set",
+          "required": true
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "description": "ID of user",
+          "required": true,
+          "contains": [
+            "okta user id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "disable_user",
+      "name": "Disable User",
+      "description": "Disables the specified user",
+      "http_method": "POST",
+      "endpoint": "/actions/disable_user",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "ID of user to disable",
+          "required": true,
+          "contains": [
+            "okta user id"
+          ]
+        }
+      ]
     },
     {
       "id": "clear_user_sessions",
       "name": "Clear User Sessions",
-      "http_method": "DELETE",
-      "endpoint": "/api/v1/users/{user_id}/sessions",
-      "read_only": true,
+      "description": "Clears the specified user's sessions",
+      "http_method": "POST",
+      "endpoint": "/actions/clear_user_sessions",
+      "action_type": "contain",
+      "read_only": false,
       "cacheable": false,
-      "cache_ttl_days": 30,
-      "description": "Clear all active sessions for a user"
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "ID of user to clear sessions for",
+          "required": true,
+          "contains": [
+            "okta user id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "enable_user",
+      "name": "Enable User",
+      "description": "Enables the specified user",
+      "http_method": "POST",
+      "endpoint": "/actions/enable_user",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "ID of user to enable",
+          "required": true,
+          "contains": [
+            "okta user id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_user",
+      "name": "Get User",
+      "description": "Get information about a user",
+      "http_method": "GET",
+      "endpoint": "/actions/get_user",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "user_id",
+          "type": "string",
+          "description": "User ID",
+          "required": true,
+          "contains": [
+            "okta user id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_group",
+      "name": "Get Group",
+      "description": "Get information about a group",
+      "http_method": "GET",
+      "endpoint": "/actions/get_group",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "group_id",
+          "type": "string",
+          "description": "Group id",
+          "required": true,
+          "contains": [
+            "okta group id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_providers",
+      "name": "List Providers",
+      "description": "List identity providers (IdPs) in your organization",
+      "http_method": "GET",
+      "endpoint": "/actions/list_providers",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Find the identity providers that matches name property",
+          "required": false
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Filter IdPs by type",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Specifies the number of results returned",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_roles",
+      "name": "List Roles",
+      "description": "Lists all roles assigned to a user",
+      "http_method": "GET",
+      "endpoint": "/actions/list_roles",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "user_id",
+          "type": "string",
+          "description": "User ID",
+          "required": true,
+          "contains": [
+            "okta user id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "assign_role",
+      "name": "Assign Role",
+      "description": "Assign a role to a user",
+      "http_method": "GET",
+      "endpoint": "/actions/assign_role",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Type of role",
+          "required": true
+        },
+        {
+          "name": "user_id",
+          "type": "string",
+          "description": "User ID",
+          "required": true,
+          "contains": [
+            "okta user id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "unassign_role",
+      "name": "Unassign Role",
+      "description": "Unassign a role to a user",
+      "http_method": "GET",
+      "endpoint": "/actions/unassign_role",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "user_id",
+          "type": "string",
+          "description": "User ID",
+          "required": true,
+          "contains": [
+            "okta user id"
+          ]
+        },
+        {
+          "name": "role_id",
+          "type": "string",
+          "description": "ID of rule",
+          "required": true,
+          "contains": [
+            "okta role id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "add_group_user",
+      "name": "Add Group User",
+      "description": "Add a user to an Okta group",
+      "http_method": "GET",
+      "endpoint": "/actions/add_group_user",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "group_id",
+          "type": "string",
+          "description": "Group id",
+          "required": true,
+          "contains": [
+            "okta group id"
+          ]
+        },
+        {
+          "name": "user_id",
+          "type": "string",
+          "description": "User id",
+          "required": true,
+          "contains": [
+            "okta user id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "remove_group_user",
+      "name": "Remove Group User",
+      "description": "Remove a user from a group",
+      "http_method": "GET",
+      "endpoint": "/actions/remove_group_user",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "group_id",
+          "type": "string",
+          "description": "Group id",
+          "required": true,
+          "contains": [
+            "okta group id"
+          ]
+        },
+        {
+          "name": "user_id",
+          "type": "string",
+          "description": "User id",
+          "required": true,
+          "contains": [
+            "okta user id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_user_groups",
+      "name": "Get User Groups",
+      "description": "List groups the user is part of",
+      "http_method": "GET",
+      "endpoint": "/groups",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "user_id",
+          "type": "string",
+          "description": "User id",
+          "required": true,
+          "contains": [
+            "okta user id"
+          ]
+        }
+      ]
     }
-  ]
+  ],
+  "source_metadata": {
+    "original_name": "Okta",
+    "original_type": "identity management",
+    "converted_at": "2025-12-18T16:25:29.013513",
+    "source_version": "2.3.2"
+  }
 }

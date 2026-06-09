@@ -1,0 +1,264 @@
+{
+  "id": "duo_security",
+  "name": "Duo Security",
+  "description": "Multi-factor authentication and access management through Cisco Duo Admin API for managing users, groups, phones, authentication logs, and bypass codes",
+  "version": "1.0.0",
+  "category": "identity",
+  "vendor": "Cisco (Duo)",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "auth_method": "hmac-sha1",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "https://api-{host}.duosecurity.com",
+  "actions": [
+    {
+      "id": "list_users",
+      "name": "List Users",
+      "description": "List all users in the Duo account with optional filtering",
+      "http_method": "GET",
+      "endpoint": "/admin/v1/users",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "username",
+          "type": "string",
+          "description": "Filter by username (exact match)",
+          "required": false
+        },
+        {
+          "name": "email",
+          "type": "string",
+          "description": "Filter by email address",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of results (max 500)",
+          "required": false
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Offset for pagination",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_user",
+      "name": "Get User",
+      "description": "Retrieve details of a specific user",
+      "http_method": "GET",
+      "endpoint": "/admin/v1/users/{user_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "user_id",
+          "type": "string",
+          "description": "Duo user ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "disable_user",
+      "name": "Disable User",
+      "description": "Set user status to disabled to prevent Duo authentication",
+      "http_method": "POST",
+      "endpoint": "/admin/v1/users/{user_id}",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "user_id",
+          "type": "string",
+          "description": "Duo user ID to disable",
+          "required": true
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "User status to set",
+          "required": true,
+          "default": "disabled"
+        }
+      ]
+    },
+    {
+      "id": "enable_user",
+      "name": "Enable User",
+      "description": "Set user status to active to allow Duo authentication",
+      "http_method": "POST",
+      "endpoint": "/admin/v1/users/{user_id}",
+      "action_type": "correct",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "user_id",
+          "type": "string",
+          "description": "Duo user ID to enable",
+          "required": true
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "User status to set",
+          "required": true,
+          "default": "active"
+        }
+      ]
+    },
+    {
+      "id": "bypass_user",
+      "name": "Set User Bypass",
+      "description": "Set user status to bypass to allow login without Duo MFA",
+      "http_method": "POST",
+      "endpoint": "/admin/v1/users/{user_id}",
+      "action_type": "correct",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "user_id",
+          "type": "string",
+          "description": "Duo user ID",
+          "required": true
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "User status to set",
+          "required": true,
+          "default": "bypass"
+        }
+      ]
+    },
+    {
+      "id": "create_bypass_code",
+      "name": "Create Bypass Code",
+      "description": "Generate a bypass code for a user to use instead of MFA",
+      "http_method": "POST",
+      "endpoint": "/admin/v1/users/{user_id}/bypass_codes",
+      "action_type": "correct",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "user_id",
+          "type": "string",
+          "description": "Duo user ID",
+          "required": true
+        },
+        {
+          "name": "count",
+          "type": "number",
+          "description": "Number of bypass codes to generate",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "valid_secs",
+          "type": "number",
+          "description": "Validity period in seconds (0 for no expiration)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_groups",
+      "name": "List Groups",
+      "description": "List all groups in the Duo account",
+      "http_method": "GET",
+      "endpoint": "/admin/v1/groups",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of results",
+          "required": false
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Offset for pagination",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_user_phones",
+      "name": "List User Phones",
+      "description": "List all phones associated with a user",
+      "http_method": "GET",
+      "endpoint": "/admin/v1/users/{user_id}/phones",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "user_id",
+          "type": "string",
+          "description": "Duo user ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_authentication_logs",
+      "name": "Get Authentication Logs",
+      "description": "Retrieve authentication log events (v2 endpoint with filtering)",
+      "http_method": "GET",
+      "endpoint": "/admin/v2/logs/authentication",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "mintime",
+          "type": "number",
+          "description": "Start time as Unix timestamp in milliseconds",
+          "required": true
+        },
+        {
+          "name": "maxtime",
+          "type": "number",
+          "description": "End time as Unix timestamp in milliseconds",
+          "required": true
+        },
+        {
+          "name": "users",
+          "type": "string",
+          "description": "Comma-separated list of user IDs to filter",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of results (max 1000)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_admin_logs",
+      "name": "Get Admin Logs",
+      "description": "Retrieve administrator action log events",
+      "http_method": "GET",
+      "endpoint": "/admin/v1/logs/administrator",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "mintime",
+          "type": "number",
+          "description": "Start time as Unix timestamp",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

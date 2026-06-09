@@ -1,0 +1,151 @@
+{
+  "id": "abnormal_security",
+  "name": "Abnormal Security",
+  "description": "This app integrates with Abnormal Security to support various generic and investigative actions",
+  "version": "1.0.7",
+  "category": "edr",
+  "vendor": "Abnormal Security",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "list_threats",
+      "name": "List Threats",
+      "description": "Fetch the list of threat IDs which are in threat log",
+      "http_method": "GET",
+      "endpoint": "/actions/list_threats",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Limit the number of results to return (Default 100)",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "get_threat_details",
+      "name": "Get Threat Details",
+      "description": "List threat details with the given threat ID",
+      "http_method": "GET",
+      "endpoint": "/actions/get_threat_details",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "threat_id",
+          "type": "string",
+          "description": "A UUID representing the threat",
+          "required": true,
+          "contains": [
+            "abnormal threat id"
+          ]
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Limit the number of results to return (Default 100)",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "list_abuse_mailboxes",
+      "name": "List Abuse Mailboxes",
+      "description": "Fetch the list of abuse mailbox IDs",
+      "http_method": "GET",
+      "endpoint": "/actions/list_abuse_mailboxes",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Limit the number of results to return (Default 100)",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "update_threat_status",
+      "name": "Update Threat Status",
+      "description": "Change the status of threat with given threat ID",
+      "http_method": "GET",
+      "endpoint": "/actions/update_threat_status",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "threat_id",
+          "type": "string",
+          "description": "A UUID representing the threat",
+          "required": true,
+          "contains": [
+            "abnormal threat id"
+          ]
+        },
+        {
+          "name": "action",
+          "type": "string",
+          "description": "Action to update status for threat",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_threat_status",
+      "name": "Get Threat Status",
+      "description": "Fetch the status of threat",
+      "http_method": "GET",
+      "endpoint": "/actions/get_threat_status",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "threat_id",
+          "type": "string",
+          "description": "A UUID representing the threat",
+          "required": true,
+          "contains": [
+            "abnormal threat id"
+          ]
+        },
+        {
+          "name": "action_id",
+          "type": "string",
+          "description": "A UUID representing the action",
+          "required": true,
+          "contains": [
+            "abnormal action id"
+          ]
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Abnormal Security",
+    "original_type": "endpoint",
+    "converted_at": "2025-12-18T16:25:28.543551",
+    "source_version": "1.0.7"
+  }
+}

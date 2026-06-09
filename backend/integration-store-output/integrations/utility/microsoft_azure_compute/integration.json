@@ -1,0 +1,835 @@
+{
+  "id": "microsoft_azure_compute",
+  "name": "Microsoft Azure Compute",
+  "description": "This app implements virtualization actions for Microsoft Azure Virtual Machines",
+  "version": "2.3.1",
+  "category": "utility",
+  "vendor": "Microsoft",
+  "auth_type": "oauth2",
+  "auth_config": {
+    "type": "oauth2",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "https://management.azure.com/subscriptions/{subscriptionId}",
+  "actions": [
+    {
+      "id": "generate_token",
+      "name": "Generate Token",
+      "description": "Generates a token",
+      "http_method": "GET",
+      "endpoint": "/actions/generate_token",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": []
+    },
+    {
+      "id": "get_system_info",
+      "name": "Get System Info",
+      "description": "Get information about a VM",
+      "http_method": "GET",
+      "endpoint": "/resourceGroups/{resourceGroupName}/providers/Microsoft.Compute/virtualMachines/{vmName}?api-version=2018-06-01",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "resource_group_name",
+          "type": "string",
+          "description": "The name of the resource group",
+          "required": true,
+          "contains": [
+            "vm management resource group"
+          ]
+        },
+        {
+          "name": "vm_name",
+          "type": "string",
+          "description": "The name of the virtual machine",
+          "required": true,
+          "contains": [
+            "vm management virtual machine"
+          ]
+        },
+        {
+          "name": "subscription_id",
+          "type": "string",
+          "description": "Subscription ID to overwrite asset configuration value",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_vms",
+      "name": "List Vms",
+      "description": "Get the list of registered VMs",
+      "http_method": "GET",
+      "endpoint": "/resourceGroups/{resourceGroupName}/providers/Microsoft.Compute/virtualMachines?api-version=2018-06-01",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "resource_group_name",
+          "type": "string",
+          "description": "Name of the resource group",
+          "required": false,
+          "contains": [
+            "vm management resource group"
+          ]
+        },
+        {
+          "name": "subscription_id",
+          "type": "string",
+          "description": "Subscription ID to overwrite asset configuration value",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "snapshot_vm",
+      "name": "Snapshot Vm",
+      "description": "Take a snapshot of the VM",
+      "http_method": "GET",
+      "endpoint": "/resourceGroups/{resourceGroupName}/providers/Microsoft.Compute/snapshots/{snapshotName}?api-version=2018-06-01",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "resource_group_name",
+          "type": "string",
+          "description": "The name of the resource group",
+          "required": true,
+          "contains": [
+            "vm management resource group"
+          ]
+        },
+        {
+          "name": "snapshot_name",
+          "type": "string",
+          "description": "The name of the snapshot that is being created. The name can't be changed after the snapshot is created. Supported characters for the name are a-z, A-Z, 0-9, and _. The max name length is 80 characters",
+          "required": true
+        },
+        {
+          "name": "location",
+          "type": "string",
+          "description": "Resource location",
+          "required": true
+        },
+        {
+          "name": "create_option",
+          "type": "string",
+          "description": "Source for disk's creation",
+          "required": true
+        },
+        {
+          "name": "source_resource_id",
+          "type": "string",
+          "description": "If create_option is Copy, this is the ARM ID of the source snapshot or disk",
+          "required": false
+        },
+        {
+          "name": "source_uri",
+          "type": "string",
+          "description": "If create_option is Import, this is the URI of a blob to be imported into a managed disk",
+          "required": false
+        },
+        {
+          "name": "subscription_id",
+          "type": "string",
+          "description": "Subscription ID to overwrite asset configuration value",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "start_vm",
+      "name": "Start Vm",
+      "description": "Start a stopped or suspended VM",
+      "http_method": "POST",
+      "endpoint": "/actions/start_vm",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "resource_group_name",
+          "type": "string",
+          "description": "The name of the resource group",
+          "required": true,
+          "contains": [
+            "vm management resource group"
+          ]
+        },
+        {
+          "name": "vm_name",
+          "type": "string",
+          "description": "The name of the virtual machine",
+          "required": true,
+          "contains": [
+            "vm management virtual machine"
+          ]
+        },
+        {
+          "name": "subscription_id",
+          "type": "string",
+          "description": "Subscription ID to overwrite asset configuration value",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "stop_vm",
+      "name": "Stop Vm",
+      "description": "Stop a VM",
+      "http_method": "POST",
+      "endpoint": "/actions/stop_vm",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "resource_group_name",
+          "type": "string",
+          "description": "The name of the resource group",
+          "required": true,
+          "contains": [
+            "vm management resource group"
+          ]
+        },
+        {
+          "name": "vm_name",
+          "type": "string",
+          "description": "The name of the virtual machine",
+          "required": true,
+          "contains": [
+            "vm management virtual machine"
+          ]
+        },
+        {
+          "name": "subscription_id",
+          "type": "string",
+          "description": "Subscription ID to overwrite asset configuration value",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "delete_vm",
+      "name": "Delete Vm",
+      "description": "Delete a VM",
+      "http_method": "POST",
+      "endpoint": "/actions/delete_vm",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "resource_group_name",
+          "type": "string",
+          "description": "The name of the resource group",
+          "required": true,
+          "contains": [
+            "vm management resource group"
+          ]
+        },
+        {
+          "name": "vm_name",
+          "type": "string",
+          "description": "The name of the virtual machine",
+          "required": true,
+          "contains": [
+            "vm management virtual machine"
+          ]
+        },
+        {
+          "name": "subscription_id",
+          "type": "string",
+          "description": "Subscription ID to overwrite asset configuration value",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "deallocate_vm",
+      "name": "Deallocate Vm",
+      "description": "Shut down the virtual machine and release the compute resources. You are not billed for the compute resource that this virtual machine uses",
+      "http_method": "POST",
+      "endpoint": "/actions/deallocate_vm",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "resource_group_name",
+          "type": "string",
+          "description": "The name of the resource group",
+          "required": true,
+          "contains": [
+            "vm management resource group"
+          ]
+        },
+        {
+          "name": "vm_name",
+          "type": "string",
+          "description": "The name of the virtual machine",
+          "required": true,
+          "contains": [
+            "vm management virtual machine"
+          ]
+        },
+        {
+          "name": "subscription_id",
+          "type": "string",
+          "description": "Subscription ID to overwrite asset configuration value",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_tags",
+      "name": "List Tags",
+      "description": "Get the names and values of all resource tags that are defined in the subscription",
+      "http_method": "GET",
+      "endpoint": "/tagNames?api-version=2018-05-01",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "subscription_id",
+          "type": "string",
+          "description": "Subscription ID to overwrite asset configuration value",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "create_tag",
+      "name": "Create Tag",
+      "description": "Create or update a tag",
+      "http_method": "GET",
+      "endpoint": "/tagNames/{tagName}{tagValue}?api-version=2018-05-01",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "tag_name",
+          "type": "string",
+          "description": "The name of the tag",
+          "required": true,
+          "contains": [
+            "vm management tag name"
+          ]
+        },
+        {
+          "name": "tag_value",
+          "type": "string",
+          "description": "The value of the tag to create or update",
+          "required": false
+        },
+        {
+          "name": "subscription_id",
+          "type": "string",
+          "description": "Subscription ID to overwrite asset configuration value",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_resource_groups",
+      "name": "List Resource Groups",
+      "description": "Get the list of resource groups for the subscription",
+      "http_method": "GET",
+      "endpoint": "/resourceGroups/{resourceGroupName}/providers/Microsoft.Compute/virtualMachines?api-version=2018-06-01",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "subscription_id",
+          "type": "string",
+          "description": "Subscription ID to overwrite asset configuration value",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_snapshots",
+      "name": "List Snapshots",
+      "description": "Get the list of snapshots under the subscription",
+      "http_method": "GET",
+      "endpoint": "{resourceValue}/providers/Microsoft.Compute/snapshots?api-version=2018-06-01",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "resource_group_name",
+          "type": "string",
+          "description": "The name of the resource group",
+          "required": false,
+          "contains": [
+            "vm management resource group"
+          ]
+        },
+        {
+          "name": "subscription_id",
+          "type": "string",
+          "description": "Subscription ID to overwrite asset configuration value",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_security_groups",
+      "name": "List Security Groups",
+      "description": "Get the list of all security groups in a resource group",
+      "http_method": "GET",
+      "endpoint": "/resourceGroups/{resourceGroupName}/providers/Microsoft.Compute/virtualMachines?api-version=2018-06-01",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "resource_group_name",
+          "type": "string",
+          "description": "The name of the resource group",
+          "required": true,
+          "contains": [
+            "vm management resource group"
+          ]
+        },
+        {
+          "name": "group_type",
+          "type": "string",
+          "description": "Type of security group to query",
+          "required": true
+        },
+        {
+          "name": "subscription_id",
+          "type": "string",
+          "description": "Subscription ID to overwrite asset configuration value",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "add_network_security_group",
+      "name": "Add Network Group",
+      "description": "Add a network security group in a resource group",
+      "http_method": "GET",
+      "endpoint": "/actions/add_network_security_group",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "resource_group_name",
+          "type": "string",
+          "description": "The name of the resource group",
+          "required": true,
+          "contains": [
+            "vm management resource group"
+          ]
+        },
+        {
+          "name": "group_name",
+          "type": "string",
+          "description": "Name of security group to add",
+          "required": true,
+          "contains": [
+            "vm management group name"
+          ]
+        },
+        {
+          "name": "location",
+          "type": "string",
+          "description": "Resource location",
+          "required": true
+        },
+        {
+          "name": "tags",
+          "type": "string",
+          "description": "String object of resource tags",
+          "required": false
+        },
+        {
+          "name": "default_security_rules",
+          "type": "string",
+          "description": "Comma separated list of default security rules for the network security group",
+          "required": false
+        },
+        {
+          "name": "provisioning_state",
+          "type": "string",
+          "description": "The provisioning state of the public IP resource",
+          "required": false
+        },
+        {
+          "name": "resource_guid",
+          "type": "string",
+          "description": "The resource GUID property of the network security group resource",
+          "required": false
+        },
+        {
+          "name": "security_rules",
+          "type": "string",
+          "description": "Comma separated list of security rules of the network security group",
+          "required": false
+        },
+        {
+          "name": "subscription_id",
+          "type": "string",
+          "description": "Subscription ID to overwrite asset configuration value",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "add_application_security_group",
+      "name": "Add Application Group",
+      "description": "Add an application security groups in a resource group",
+      "http_method": "GET",
+      "endpoint": "/actions/add_application_security_group",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "resource_group_name",
+          "type": "string",
+          "description": "The name of the resource group",
+          "required": true,
+          "contains": [
+            "vm management resource group"
+          ]
+        },
+        {
+          "name": "group_name",
+          "type": "string",
+          "description": "Name of security group to add",
+          "required": true,
+          "contains": [
+            "vm management group name"
+          ]
+        },
+        {
+          "name": "location",
+          "type": "string",
+          "description": "Resource location",
+          "required": true
+        },
+        {
+          "name": "tags",
+          "type": "string",
+          "description": "String object of resource tags. It should be in JSON format",
+          "required": false
+        },
+        {
+          "name": "subscription_id",
+          "type": "string",
+          "description": "Subscription ID to overwrite asset configuration value",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_virtual_networks",
+      "name": "List Virtual Networks",
+      "description": "Get the list of virtual networks",
+      "http_method": "GET",
+      "endpoint": "{resourceGroup}/providers/Microsoft.Network/virtualNetworks?api-version=2018-11-01",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "resource_group_name",
+          "type": "string",
+          "description": "The name of the resource group",
+          "required": false,
+          "contains": [
+            "vm management resource group"
+          ]
+        },
+        {
+          "name": "subscription_id",
+          "type": "string",
+          "description": "Subscription ID to overwrite asset configuration value",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_subnets",
+      "name": "List Subnets",
+      "description": "Get the list of subnets",
+      "http_method": "GET",
+      "endpoint": "/resourceGroups/{resourceGroupName}/providers/Microsoft.Network/virtualNetworks/{virtualNetworkName}/\\\nsubnets?api-version=2018-11-01",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "resource_group_name",
+          "type": "string",
+          "description": "The name of the resource group",
+          "required": true,
+          "contains": [
+            "vm management resource group"
+          ]
+        },
+        {
+          "name": "virtual_network_name",
+          "type": "string",
+          "description": "The name of the virtual network",
+          "required": true,
+          "contains": [
+            "vm management virtual network"
+          ]
+        },
+        {
+          "name": "subscription_id",
+          "type": "string",
+          "description": "Subscription ID to overwrite asset configuration value",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "check_address_availability",
+      "name": "Get Ip Availability",
+      "description": "Check if a private IP address is available for use",
+      "http_method": "GET",
+      "endpoint": "/actions/check_address_availability",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "resource_group_name",
+          "type": "string",
+          "description": "The name of the resource group",
+          "required": true,
+          "contains": [
+            "vm management resource group"
+          ]
+        },
+        {
+          "name": "virtual_network_name",
+          "type": "string",
+          "description": "The name of the virtual network",
+          "required": true,
+          "contains": [
+            "vm management virtual network"
+          ]
+        },
+        {
+          "name": "ip_address",
+          "type": "string",
+          "description": "The private IP address to be verified",
+          "required": true,
+          "contains": [
+            "ip",
+            "ipv6"
+          ]
+        },
+        {
+          "name": "subscription_id",
+          "type": "string",
+          "description": "Subscription ID to overwrite asset configuration value",
+          "required": false
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "generalize_vm",
+      "name": "Generalize Vm",
+      "description": "Set the state of the virtual machine to be generalized",
+      "http_method": "GET",
+      "endpoint": "/actions/generalize_vm",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "resource_group_name",
+          "type": "string",
+          "description": "The name of the resource group",
+          "required": true,
+          "contains": [
+            "vm management resource group"
+          ]
+        },
+        {
+          "name": "vm_name",
+          "type": "string",
+          "description": "The name of the virtual machine",
+          "required": true,
+          "contains": [
+            "vm management virtual machine"
+          ]
+        },
+        {
+          "name": "subscription_id",
+          "type": "string",
+          "description": "Subscription ID to overwrite asset configuration value",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "redeploy_vm",
+      "name": "Redeploy Vm",
+      "description": "Redeploy a virtual machine",
+      "http_method": "GET",
+      "endpoint": "/actions/redeploy_vm",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "resource_group_name",
+          "type": "string",
+          "description": "The name of the resource group",
+          "required": true,
+          "contains": [
+            "vm management resource group"
+          ]
+        },
+        {
+          "name": "vm_name",
+          "type": "string",
+          "description": "The name of the virtual machine",
+          "required": true,
+          "contains": [
+            "vm management virtual machine"
+          ]
+        },
+        {
+          "name": "subscription_id",
+          "type": "string",
+          "description": "Subscription ID to overwrite asset configuration value",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "run_command",
+      "name": "Run Command",
+      "description": "Run a command on the virtual machine",
+      "http_method": "GET",
+      "endpoint": "/resourceGroups/{resourceGroupName}/providers/Microsoft.Compute/virtualMachines/{vmName}/\\\nrunCommand?api-version=2017-03-30",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "resource_group_name",
+          "type": "string",
+          "description": "The name of the resource group",
+          "required": true,
+          "contains": [
+            "vm management resource group"
+          ]
+        },
+        {
+          "name": "vm_name",
+          "type": "string",
+          "description": "The name of the virtual machine",
+          "required": true,
+          "contains": [
+            "vm management virtual machine"
+          ]
+        },
+        {
+          "name": "command_id",
+          "type": "string",
+          "description": "The command to run against the VM",
+          "required": true,
+          "contains": [
+            "vm management command id"
+          ]
+        },
+        {
+          "name": "script",
+          "type": "string",
+          "description": "The script to be executed. When this value is given, the given script will override the default script of the command",
+          "required": false
+        },
+        {
+          "name": "script_parameters",
+          "type": "string",
+          "description": "The run command parameters",
+          "required": false
+        },
+        {
+          "name": "subscription_id",
+          "type": "string",
+          "description": "Subscription ID to overwrite asset configuration value",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_results",
+      "name": "Get Results",
+      "description": "Fetch the results of a previously executed run_command action",
+      "http_method": "GET",
+      "endpoint": "/actions/get_results",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "results_url",
+          "type": "string",
+          "description": "URL to fetch result of run command",
+          "required": true,
+          "contains": [
+            "vm management results url"
+          ]
+        },
+        {
+          "name": "subscription_id",
+          "type": "string",
+          "description": "Subscription ID to overwrite asset configuration value",
+          "required": false
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Microsoft Azure Compute",
+    "original_type": "virtualization",
+    "converted_at": "2025-12-18T16:25:28.930550",
+    "source_version": "2.3.1"
+  }
+}

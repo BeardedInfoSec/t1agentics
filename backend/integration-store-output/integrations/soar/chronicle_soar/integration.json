@@ -1,0 +1,156 @@
+{
+  "id": "chronicle_soar",
+  "name": "Chronicle SOAR",
+  "description": "Google Cloud Security Operations SOAR platform (formerly Siemplify) for case management, playbook automation, and coordinated threat response across security tools.",
+  "version": "1.0.0",
+  "category": "soar",
+  "vendor": "Google Cloud",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "header_name": "Authorization",
+    "location": "header",
+    "token_prefix": "Bearer"
+  },
+  "base_url": "https://{host}/api/external/v1",
+  "actions": [
+    {
+      "id": "list_cases",
+      "name": "List Cases",
+      "description": "Retrieve a list of cases with optional filtering and pagination.",
+      "http_method": "GET",
+      "endpoint": "/cases/GetCaseFullDetails",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "caseId", "type": "string", "description": "Case ID to retrieve specific case details.", "required": false},
+        {"name": "startTime", "type": "string", "description": "Start time filter in ISO 8601 format.", "required": false},
+        {"name": "endTime", "type": "string", "description": "End time filter in ISO 8601 format.", "required": false}
+      ]
+    },
+    {
+      "id": "get_case",
+      "name": "Get Case",
+      "description": "Retrieve full details of a specific case by case ID.",
+      "http_method": "GET",
+      "endpoint": "/cases/GetCaseFullDetails/{caseId}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "caseId", "type": "string", "description": "The case ID.", "required": true}
+      ]
+    },
+    {
+      "id": "update_case",
+      "name": "Update Case",
+      "description": "Update case properties such as priority, status, or assignee.",
+      "http_method": "POST",
+      "endpoint": "/cases/UpdateCase",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "caseId", "type": "string", "description": "The case ID to update.", "required": true},
+        {"name": "priority", "type": "integer", "description": "Case priority: 40 (Low), 60 (Medium), 80 (High), 100 (Critical).", "required": false},
+        {"name": "status", "type": "integer", "description": "Case status: 1 (Open), 2 (Closed).", "required": false},
+        {"name": "assignee", "type": "string", "description": "Username of the assignee.", "required": false},
+        {"name": "stage", "type": "string", "description": "Case stage (e.g., 'Triage', 'Investigation', 'Containment').", "required": false},
+        {"name": "tags", "type": "array", "description": "Tags to apply to the case.", "required": false}
+      ]
+    },
+    {
+      "id": "close_case",
+      "name": "Close Case",
+      "description": "Close a case with a root cause and resolution reason.",
+      "http_method": "POST",
+      "endpoint": "/cases/CloseCase",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "caseId", "type": "string", "description": "The case ID to close.", "required": true},
+        {"name": "rootCause", "type": "string", "description": "Root cause of the case (e.g., 'Malicious', 'Not Malicious', 'Maintenance').", "required": true},
+        {"name": "comment", "type": "string", "description": "Closing comment.", "required": false}
+      ]
+    },
+    {
+      "id": "add_comment",
+      "name": "Add Comment",
+      "description": "Add a comment to an existing case.",
+      "http_method": "POST",
+      "endpoint": "/cases/AddCaseComment",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "caseId", "type": "string", "description": "The case ID.", "required": true},
+        {"name": "comment", "type": "string", "description": "Comment text.", "required": true}
+      ]
+    },
+    {
+      "id": "add_tag",
+      "name": "Add Tag",
+      "description": "Add a tag to a case for categorization.",
+      "http_method": "POST",
+      "endpoint": "/cases/AddTag",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "caseId", "type": "string", "description": "The case ID.", "required": true},
+        {"name": "tag", "type": "string", "description": "Tag string to add.", "required": true}
+      ]
+    },
+    {
+      "id": "run_playbook",
+      "name": "Run Playbook",
+      "description": "Execute a playbook on a specific alert or case.",
+      "http_method": "POST",
+      "endpoint": "/cases/ExecutePlaybook",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "caseId", "type": "string", "description": "The case ID.", "required": true},
+        {"name": "alertIdentifier", "type": "string", "description": "Alert identifier to run the playbook against.", "required": true},
+        {"name": "playbookName", "type": "string", "description": "Name of the playbook to execute.", "required": true}
+      ]
+    },
+    {
+      "id": "get_playbook_status",
+      "name": "Get Playbook Status",
+      "description": "Get the execution status of a playbook run.",
+      "http_method": "GET",
+      "endpoint": "/cases/GetPlaybookStatus",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "caseId", "type": "string", "description": "The case ID.", "required": true},
+        {"name": "alertIdentifier", "type": "string", "description": "Alert identifier.", "required": true}
+      ]
+    },
+    {
+      "id": "add_entity_to_case",
+      "name": "Add Entity to Case",
+      "description": "Add an entity (observable/indicator) to a case.",
+      "http_method": "POST",
+      "endpoint": "/cases/AddEntityToCase",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "caseId", "type": "string", "description": "The case ID.", "required": true},
+        {"name": "alertIdentifier", "type": "string", "description": "Alert identifier.", "required": true},
+        {"name": "entityIdentifier", "type": "string", "description": "Entity value (e.g., IP, domain, hash).", "required": true},
+        {"name": "entityType", "type": "string", "description": "Entity type (e.g., 'ADDRESS', 'HOSTNAME', 'FILEHASH').", "required": true}
+      ]
+    },
+    {
+      "id": "manage_custom_list",
+      "name": "Manage Custom List",
+      "description": "Add or remove entries from a custom list (e.g., blocklists, allowlists).",
+      "http_method": "POST",
+      "endpoint": "/customlist/AddCustomList",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "category", "type": "string", "description": "Custom list category name.", "required": true},
+        {"name": "entries", "type": "array", "description": "Array of entries to add to the list.", "required": true}
+      ]
+    }
+  ]
+}

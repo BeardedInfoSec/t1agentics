@@ -1,0 +1,140 @@
+{
+  "id": "signalfx",
+  "name": "SignalFx",
+  "description": "This App uses the Splunk Infrastructure Monitoring (SignalFx) API to retrieve and send data",
+  "version": "1.2.3",
+  "category": "edr",
+  "vendor": "Splunk",
+  "auth_type": "bearer_token",
+  "auth_config": {
+    "type": "bearer_token",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "run_query",
+      "name": "Run Query",
+      "description": "Retrieves dimensions based on a query",
+      "http_method": "GET",
+      "endpoint": "/actions/run_query",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "'Dimension name' or 'name and value' to search for (e.g: aws_region:region_name)",
+          "required": true,
+          "contains": [
+            "signalfx query"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "observability_event",
+      "name": "Create Observability Event",
+      "description": "POST an event to Splunk observability containing any selected fields from SOAR",
+      "http_method": "GET",
+      "endpoint": "/actions/observability_event",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "title",
+          "type": "string",
+          "description": "Title of your Splunk Observability Event",
+          "required": true
+        },
+        {
+          "name": "dimensions",
+          "type": "string",
+          "description": "A set of key-value pairs defining event definitions",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "clear_incident",
+      "name": "Clear Incident",
+      "description": "Clears a specified incident",
+      "http_method": "GET",
+      "endpoint": "/actions/clear_incident",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "incidentid",
+          "type": "string",
+          "description": "The ID of the incident to be cleared",
+          "required": true,
+          "contains": [
+            "signalfx incidentid"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_incident",
+      "name": "Get Incident",
+      "description": "Get details of a specified incident",
+      "http_method": "GET",
+      "endpoint": "/actions/get_incident",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "incidentid",
+          "type": "string",
+          "description": "The ID of the incident to get details about",
+          "required": true,
+          "contains": [
+            "signalfx incidentid"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_incidents",
+      "name": "List Incidents",
+      "description": "List all incidents",
+      "http_method": "GET",
+      "endpoint": "/actions/list_incidents",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "include_resolved",
+          "type": "boolean",
+          "description": "Whether to fetch resolved incidents",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Number of results to be returned",
+          "required": false
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "SignalFx",
+    "original_type": "endpoint",
+    "converted_at": "2025-12-18T16:25:29.125525",
+    "source_version": "1.2.3"
+  }
+}

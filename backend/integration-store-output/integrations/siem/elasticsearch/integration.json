@@ -1,0 +1,115 @@
+{
+  "id": "elasticsearch",
+  "name": "Elasticsearch",
+  "description": "This app integrates with an Elasticsearch installation to implement ingestion and investigative actions",
+  "version": "3.0.5",
+  "category": "siem",
+  "vendor": "Elastic",
+  "auth_type": "basic_auth",
+  "auth_config": {
+    "type": "basic_auth",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "Using url: {base_url}",
+  "actions": [
+    {
+      "id": "get_config",
+      "name": "Get Config",
+      "description": "Returns the list of indices and their information currently configured on the ElasticSearch instance",
+      "http_method": "GET",
+      "endpoint": "/actions/get_config",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "run_query",
+      "name": "Run Query",
+      "description": "Run a search query on the Elasticsearch installation. Please escape any quotes that are part of the query string",
+      "http_method": "GET",
+      "endpoint": "/actions/run_query",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "index",
+          "type": "string",
+          "description": "Comma-separated list of indexes to query on",
+          "required": true,
+          "contains": [
+            "elasticsearch index"
+          ]
+        },
+        {
+          "name": "routing",
+          "type": "string",
+          "description": "Shards to query on (routing value)",
+          "required": false
+        },
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Query to run (in ElasticSearch language)",
+          "required": false,
+          "contains": [
+            "elasticsearch query"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "on_poll",
+      "name": "On Poll",
+      "description": "Run a query in elasticsearch and ingest the results",
+      "http_method": "GET",
+      "endpoint": "/actions/on_poll",
+      "action_type": "ingest",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "container_id",
+          "type": "string",
+          "description": "Limit ingestion to these container IDs",
+          "required": false
+        },
+        {
+          "name": "start_time",
+          "type": "number",
+          "description": "Start of time range in epoch time (default: 10 days ago)",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "number",
+          "description": "End of time range in epoch time (default: now)",
+          "required": false
+        },
+        {
+          "name": "container_count",
+          "type": "number",
+          "description": "Maximum number of containers to create",
+          "required": false
+        },
+        {
+          "name": "artifact_count",
+          "type": "number",
+          "description": "Maximum number of artifacts to create per container",
+          "required": false
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Elasticsearch",
+    "original_type": "siem",
+    "converted_at": "2025-12-18T16:25:28.751120",
+    "source_version": "3.0.5"
+  }
+}

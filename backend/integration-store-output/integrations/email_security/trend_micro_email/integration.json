@@ -1,0 +1,201 @@
+{
+  "id": "trend_micro_email",
+  "name": "Trend Micro Email Security",
+  "description": "Cloud-based email security service providing protection against phishing, BEC, ransomware, and advanced threats with sandboxing and URL analysis",
+  "version": "1.0.0",
+  "category": "email_security",
+  "vendor": "Trend Micro",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header",
+    "prefix": "Bearer"
+  },
+  "base_url": "https://api.tmcas.trendmicro.com/v1",
+  "actions": [
+    {
+      "id": "get_email_activities",
+      "name": "Get Email Activities",
+      "description": "Retrieve email security events and activities",
+      "http_method": "GET",
+      "endpoint": "/siem/security_events",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "start",
+          "type": "string",
+          "description": "Start time in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "end",
+          "type": "string",
+          "description": "End time in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "service",
+          "type": "string",
+          "description": "Filter by service (exchange, gmail)",
+          "required": false
+        },
+        {
+          "name": "event_type",
+          "type": "string",
+          "description": "Filter by event type (securityrisk, virtualanalyzer, ransomware, dlp)",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of events to return",
+          "required": false,
+          "default": 500
+        }
+      ]
+    },
+    {
+      "id": "quarantine_email",
+      "name": "Quarantine Email",
+      "description": "Take action on an email message including quarantine or delete",
+      "http_method": "POST",
+      "endpoint": "/mitigation/mails",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "action_type",
+          "type": "string",
+          "description": "Action to take (quarantine, delete, restore)",
+          "required": true
+        },
+        {
+          "name": "service",
+          "type": "string",
+          "description": "Email service (exchange, gmail)",
+          "required": true
+        },
+        {
+          "name": "mail_message_id",
+          "type": "string",
+          "description": "Email message ID",
+          "required": true
+        },
+        {
+          "name": "mail_unique_id",
+          "type": "string",
+          "description": "Unique email ID from the service",
+          "required": true
+        },
+        {
+          "name": "mailbox",
+          "type": "string",
+          "description": "Mailbox email address",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_quarantined_emails",
+      "name": "Get Quarantined Emails",
+      "description": "Retrieve list of quarantined emails",
+      "http_method": "GET",
+      "endpoint": "/mitigation/mails",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "start",
+          "type": "string",
+          "description": "Start time in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "end",
+          "type": "string",
+          "description": "End time in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of results to return",
+          "required": false,
+          "default": 500
+        }
+      ]
+    },
+    {
+      "id": "download_quarantined_email",
+      "name": "Download Quarantined Email",
+      "description": "Download a quarantined email for analysis",
+      "http_method": "GET",
+      "endpoint": "/mitigation/mails/{mail_unique_id}/download",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "mail_unique_id",
+          "type": "string",
+          "description": "Unique ID of the quarantined email",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "add_sender_filter",
+      "name": "Add Sender Filter",
+      "description": "Add a sender to the block or allow list",
+      "http_method": "POST",
+      "endpoint": "/policy/sender_filter",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "sender",
+          "type": "string",
+          "description": "Sender email address or domain",
+          "required": true
+        },
+        {
+          "name": "filter_type",
+          "type": "string",
+          "description": "Filter type (block, allow)",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_sweep_results",
+      "name": "Get Sweep Results",
+      "description": "Retrieve results from email sweep operations",
+      "http_method": "GET",
+      "endpoint": "/sweeping/mails",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "start",
+          "type": "string",
+          "description": "Start time in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "end",
+          "type": "string",
+          "description": "End time in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of results",
+          "required": false,
+          "default": 500
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,105 @@
+{
+  "id": "google_chat",
+  "name": "Google Chat",
+  "description": "Integrates with Google Chat API v1 for workspace messaging, space management, and team collaboration",
+  "version": "1.0.0",
+  "category": "communication",
+  "vendor": "Google",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "https://chat.googleapis.com/v1",
+  "actions": [
+    {
+      "id": "send_message",
+      "name": "Send Message",
+      "description": "Send a message to a Google Chat space",
+      "http_method": "POST",
+      "endpoint": "/spaces/{space}/messages",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "space", "type": "string", "description": "Space resource name (e.g. spaces/AAAA)", "required": true},
+        {"name": "text", "type": "string", "description": "Message text content", "required": true},
+        {"name": "threadKey", "type": "string", "description": "Thread key for threaded replies", "required": false},
+        {"name": "messageReplyOption", "type": "string", "description": "Reply behavior (REPLY_MESSAGE_FALLBACK_TO_NEW_THREAD, REPLY_MESSAGE_OR_FAIL)", "required": false},
+        {"name": "cards", "type": "string", "description": "JSON array of card objects for rich formatting", "required": false}
+      ]
+    },
+    {
+      "id": "list_spaces",
+      "name": "List Spaces",
+      "description": "List Google Chat spaces the caller is a member of",
+      "http_method": "GET",
+      "endpoint": "/spaces",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "pageSize", "type": "number", "description": "Maximum spaces to return (max 1000)", "required": false, "default": 100},
+        {"name": "pageToken", "type": "string", "description": "Pagination token", "required": false},
+        {"name": "filter", "type": "string", "description": "Filter expression (e.g. spaceType = 'SPACE')", "required": false}
+      ]
+    },
+    {
+      "id": "get_message",
+      "name": "Get Message",
+      "description": "Retrieve a specific message from a Google Chat space",
+      "http_method": "GET",
+      "endpoint": "/spaces/{space}/messages/{message}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "space", "type": "string", "description": "Space resource name", "required": true},
+        {"name": "message", "type": "string", "description": "Message resource name", "required": true}
+      ]
+    },
+    {
+      "id": "list_messages",
+      "name": "List Messages",
+      "description": "List messages in a Google Chat space",
+      "http_method": "GET",
+      "endpoint": "/spaces/{space}/messages",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "space", "type": "string", "description": "Space resource name", "required": true},
+        {"name": "pageSize", "type": "number", "description": "Maximum messages to return (max 1000)", "required": false, "default": 25},
+        {"name": "pageToken", "type": "string", "description": "Pagination token", "required": false},
+        {"name": "filter", "type": "string", "description": "Filter by date (e.g. createTime > \"2023-04-01T00:00:00Z\")", "required": false},
+        {"name": "orderBy", "type": "string", "description": "Sort order (createTime asc or createTime desc)", "required": false}
+      ]
+    },
+    {
+      "id": "create_space",
+      "name": "Create Space",
+      "description": "Create a new Google Chat space",
+      "http_method": "POST",
+      "endpoint": "/spaces",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "displayName", "type": "string", "description": "Display name of the space", "required": true},
+        {"name": "spaceType", "type": "string", "description": "Type of space (SPACE, GROUP_CHAT)", "required": false, "default": "SPACE"},
+        {"name": "singleUserBotDm", "type": "boolean", "description": "Create as 1:1 DM with the calling Chat app", "required": false, "default": false}
+      ]
+    },
+    {
+      "id": "update_message",
+      "name": "Update Message",
+      "description": "Update an existing message in a Google Chat space",
+      "http_method": "PUT",
+      "endpoint": "/spaces/{space}/messages/{message}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "space", "type": "string", "description": "Space resource name", "required": true},
+        {"name": "message", "type": "string", "description": "Message resource name", "required": true},
+        {"name": "text", "type": "string", "description": "Updated message text", "required": true},
+        {"name": "updateMask", "type": "string", "description": "Fields to update (e.g. text,cardsV2)", "required": false}
+      ]
+    }
+  ]
+}

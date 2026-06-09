@@ -1,0 +1,238 @@
+{
+  "id": "cloudflare_waf",
+  "name": "Cloudflare WAF",
+  "description": "Cloudflare Web Application Firewall API for managing WAF rulesets, custom rules, IP access rules, and security events",
+  "version": "1.0.0",
+  "category": "waf",
+  "vendor": "Cloudflare",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "header_name": "Authorization",
+    "location": "header",
+    "token_prefix": "Bearer"
+  },
+  "base_url": "https://api.cloudflare.com/client/v4",
+  "actions": [
+    {
+      "id": "list_waf_rulesets",
+      "name": "List WAF Rulesets",
+      "description": "Retrieve all WAF rulesets configured for a zone",
+      "http_method": "GET",
+      "endpoint": "/zones/{zone_id}/rulesets",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "zone_id",
+          "type": "string",
+          "description": "Cloudflare zone identifier",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_waf_ruleset",
+      "name": "Get WAF Ruleset",
+      "description": "Retrieve a specific WAF ruleset and its rules",
+      "http_method": "GET",
+      "endpoint": "/zones/{zone_id}/rulesets/{ruleset_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "zone_id",
+          "type": "string",
+          "description": "Cloudflare zone identifier",
+          "required": true
+        },
+        {
+          "name": "ruleset_id",
+          "type": "string",
+          "description": "Ruleset identifier",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "create_custom_rule",
+      "name": "Create Custom WAF Rule",
+      "description": "Create a custom WAF rule in a zone ruleset for blocking or challenging traffic",
+      "http_method": "POST",
+      "endpoint": "/zones/{zone_id}/rulesets/{ruleset_id}/rules",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "zone_id",
+          "type": "string",
+          "description": "Cloudflare zone identifier",
+          "required": true
+        },
+        {
+          "name": "ruleset_id",
+          "type": "string",
+          "description": "Ruleset identifier to add the rule to",
+          "required": true
+        },
+        {
+          "name": "body",
+          "type": "object",
+          "description": "Rule definition including expression (filter), action (block, challenge, managed_challenge, js_challenge, log), and description",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_ip_access_rules",
+      "name": "List IP Access Rules",
+      "description": "Retrieve all IP access rules for a zone or account",
+      "http_method": "GET",
+      "endpoint": "/zones/{zone_id}/firewall/access_rules/rules",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "zone_id",
+          "type": "string",
+          "description": "Cloudflare zone identifier",
+          "required": true
+        },
+        {
+          "name": "mode",
+          "type": "string",
+          "description": "Filter by mode: block, challenge, whitelist, js_challenge, managed_challenge",
+          "required": false
+        },
+        {
+          "name": "page",
+          "type": "integer",
+          "description": "Page number for pagination",
+          "required": false
+        },
+        {
+          "name": "per_page",
+          "type": "integer",
+          "description": "Number of results per page",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "create_ip_access_rule",
+      "name": "Create IP Access Rule",
+      "description": "Block or challenge an IP address, IP range, country, or ASN at the WAF level",
+      "http_method": "POST",
+      "endpoint": "/zones/{zone_id}/firewall/access_rules/rules",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "zone_id",
+          "type": "string",
+          "description": "Cloudflare zone identifier",
+          "required": true
+        },
+        {
+          "name": "mode",
+          "type": "string",
+          "description": "Action to apply: block, challenge, whitelist, js_challenge, managed_challenge",
+          "required": true
+        },
+        {
+          "name": "configuration",
+          "type": "object",
+          "description": "Target configuration with target (ip, ip_range, country, asn) and value",
+          "required": true
+        },
+        {
+          "name": "notes",
+          "type": "string",
+          "description": "Note to describe the reason for the rule",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "delete_ip_access_rule",
+      "name": "Delete IP Access Rule",
+      "description": "Remove an IP access rule from the zone",
+      "http_method": "DELETE",
+      "endpoint": "/zones/{zone_id}/firewall/access_rules/rules/{rule_id}",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "zone_id",
+          "type": "string",
+          "description": "Cloudflare zone identifier",
+          "required": true
+        },
+        {
+          "name": "rule_id",
+          "type": "string",
+          "description": "IP access rule identifier to delete",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_security_events",
+      "name": "List Security Events",
+      "description": "Retrieve WAF security events and firewall events for a zone",
+      "http_method": "GET",
+      "endpoint": "/zones/{zone_id}/security/events",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "zone_id",
+          "type": "string",
+          "description": "Cloudflare zone identifier",
+          "required": true
+        },
+        {
+          "name": "since",
+          "type": "string",
+          "description": "Start time in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "until",
+          "type": "string",
+          "description": "End time in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "description": "Maximum number of events to return",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_zones",
+      "name": "List Zones",
+      "description": "Retrieve all zones in the Cloudflare account",
+      "http_method": "GET",
+      "endpoint": "/zones",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Filter by zone name (domain)",
+          "required": false
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Filter by zone status (active, pending, initializing, moved, deleted)",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

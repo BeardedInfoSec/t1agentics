@@ -1,0 +1,110 @@
+{
+  "id": "manageengine_servicedesk",
+  "name": "ManageEngine ServiceDesk Plus",
+  "description": "Integrates with ManageEngine ServiceDesk Plus REST API v3 for IT help desk request management, incident tracking, and service operations",
+  "version": "1.0.0",
+  "category": "ticketing",
+  "vendor": "Zoho (ManageEngine)",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "https://{host}/api/v3",
+  "actions": [
+    {
+      "id": "create_request",
+      "name": "Create Request",
+      "description": "Create a new service desk request",
+      "http_method": "POST",
+      "endpoint": "/requests",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "subject", "type": "string", "description": "Subject of the request", "required": true},
+        {"name": "description", "type": "string", "description": "Detailed description of the request", "required": false},
+        {"name": "requester", "type": "string", "description": "Name of the requester", "required": true},
+        {"name": "priority", "type": "string", "description": "Priority name (Low, Medium, High, Urgent)", "required": false},
+        {"name": "status", "type": "string", "description": "Status name (Open, On Hold, Resolved, Closed)", "required": false},
+        {"name": "impact", "type": "string", "description": "Impact (Low, Medium, High)", "required": false},
+        {"name": "urgency", "type": "string", "description": "Urgency (Low, Medium, High)", "required": false},
+        {"name": "category", "type": "string", "description": "Category name", "required": false},
+        {"name": "group", "type": "string", "description": "Support group name", "required": false},
+        {"name": "technician", "type": "string", "description": "Technician name to assign", "required": false}
+      ]
+    },
+    {
+      "id": "get_request",
+      "name": "Get Request",
+      "description": "Retrieve a specific service desk request by ID",
+      "http_method": "GET",
+      "endpoint": "/requests/{request_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "request_id", "type": "number", "description": "Request ID to retrieve", "required": true}
+      ]
+    },
+    {
+      "id": "update_request",
+      "name": "Update Request",
+      "description": "Update an existing service desk request",
+      "http_method": "PUT",
+      "endpoint": "/requests/{request_id}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "request_id", "type": "number", "description": "Request ID to update", "required": true},
+        {"name": "subject", "type": "string", "description": "Updated subject", "required": false},
+        {"name": "status", "type": "string", "description": "Updated status", "required": false},
+        {"name": "priority", "type": "string", "description": "Updated priority", "required": false},
+        {"name": "technician", "type": "string", "description": "New technician assignee", "required": false},
+        {"name": "group", "type": "string", "description": "New support group", "required": false}
+      ]
+    },
+    {
+      "id": "list_requests",
+      "name": "List Requests",
+      "description": "List and filter service desk requests",
+      "http_method": "GET",
+      "endpoint": "/requests",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "list_info.row_count", "type": "number", "description": "Number of records per page", "required": false, "default": 50},
+        {"name": "list_info.start_index", "type": "number", "description": "Starting index for pagination", "required": false, "default": 1},
+        {"name": "list_info.sort_field", "type": "string", "description": "Field to sort by", "required": false},
+        {"name": "list_info.sort_order", "type": "string", "description": "Sort order (asc or desc)", "required": false},
+        {"name": "list_info.search_criteria", "type": "string", "description": "Search filter criteria in JSON format", "required": false}
+      ]
+    },
+    {
+      "id": "add_note",
+      "name": "Add Note",
+      "description": "Add a note to an existing request",
+      "http_method": "POST",
+      "endpoint": "/requests/{request_id}/notes",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "request_id", "type": "number", "description": "Request ID", "required": true},
+        {"name": "description", "type": "string", "description": "Note content", "required": true},
+        {"name": "show_to_requester", "type": "boolean", "description": "Make note visible to requester", "required": false, "default": false}
+      ]
+    },
+    {
+      "id": "close_request",
+      "name": "Close Request",
+      "description": "Close a service desk request",
+      "http_method": "PUT",
+      "endpoint": "/requests/{request_id}/close",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "request_id", "type": "number", "description": "Request ID to close", "required": true},
+        {"name": "closure_comments", "type": "string", "description": "Closure comments", "required": false}
+      ]
+    }
+  ]
+}

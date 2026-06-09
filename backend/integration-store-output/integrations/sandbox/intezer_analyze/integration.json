@@ -1,0 +1,289 @@
+{
+  "id": "intezer_analyze",
+  "name": "Intezer Analyze",
+  "description": "Intezer Analyze provides genetic malware analysis using code DNA mapping to identify code reuse, classify malware families, and detect threats through unique code similarity technology",
+  "version": "1.0.0",
+  "category": "sandbox",
+  "vendor": "Intezer",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "header_name": "Authorization",
+    "location": "header",
+    "prefix": "Bearer"
+  },
+  "base_url": "https://analyze.intezer.com/api/v2-0",
+  "actions": [
+    {
+      "id": "get_access_token",
+      "name": "Get Access Token",
+      "description": "Authenticate with the Intezer API and obtain a JWT access token for subsequent requests",
+      "http_method": "POST",
+      "endpoint": "/get-access-token",
+      "action_type": "generic",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "api_key",
+          "type": "string",
+          "description": "Your Intezer Analyze API key",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "analyze_file",
+      "name": "Analyze File",
+      "description": "Submit a file for Intezer genetic code analysis including code reuse detection and malware classification",
+      "http_method": "POST",
+      "endpoint": "/analyze",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "file",
+          "type": "file",
+          "description": "The file to analyze (multipart form data)",
+          "required": true
+        },
+        {
+          "name": "code_item_type",
+          "type": "string",
+          "description": "Type of code item: file, memory_module",
+          "required": false
+        },
+        {
+          "name": "disable_dynamic_execution",
+          "type": "boolean",
+          "description": "Skip dynamic (sandbox) execution and only perform static analysis",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "disable_static_extraction",
+          "type": "boolean",
+          "description": "Skip static extraction phase",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "zip_password",
+          "type": "string",
+          "description": "Password for ZIP-protected files",
+          "required": false
+        }
+      ],
+      "observable_type": "hash"
+    },
+    {
+      "id": "analyze_by_hash",
+      "name": "Analyze by Hash",
+      "description": "Submit a SHA256 hash for analysis. If the file is known, returns existing results; otherwise queues it for analysis",
+      "http_method": "POST",
+      "endpoint": "/analyze-by-hash",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "hash",
+          "type": "string",
+          "description": "SHA256 hash of the file to analyze",
+          "required": true
+        }
+      ],
+      "observable_type": "hash"
+    },
+    {
+      "id": "analyze_url",
+      "name": "Analyze URL",
+      "description": "Submit a URL for Intezer analysis including page behavior and downloaded content scanning",
+      "http_method": "POST",
+      "endpoint": "/url",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "URL to analyze",
+          "required": true
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "get_analysis",
+      "name": "Get Analysis",
+      "description": "Retrieve the status and results of a file analysis including verdict, malware family, and code reuse findings",
+      "http_method": "GET",
+      "endpoint": "/analyses/{analysis_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "analysis_id",
+          "type": "string",
+          "description": "Analysis ID returned from the analyze endpoint",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_url_analysis",
+      "name": "Get URL Analysis",
+      "description": "Retrieve the results of a URL analysis",
+      "http_method": "GET",
+      "endpoint": "/url-analyses/{analysis_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "analysis_id",
+          "type": "string",
+          "description": "URL analysis ID returned from the URL submission",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_sub_analyses",
+      "name": "Get Sub-Analyses",
+      "description": "Retrieve child/sub-analyses for a parent file analysis (e.g., embedded files, dropped payloads)",
+      "http_method": "GET",
+      "endpoint": "/analyses/{analysis_id}/sub-analyses",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "analysis_id",
+          "type": "string",
+          "description": "Parent analysis ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_code_reuse",
+      "name": "Get Code Reuse",
+      "description": "Retrieve detailed code reuse analysis showing genetic similarity to known malware families and trusted software",
+      "http_method": "GET",
+      "endpoint": "/analyses/{analysis_id}/sub-analyses/{sub_analysis_id}/code-reuse",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "analysis_id",
+          "type": "string",
+          "description": "Parent analysis ID",
+          "required": true
+        },
+        {
+          "name": "sub_analysis_id",
+          "type": "string",
+          "description": "Sub-analysis ID (use 'root' for the main file)",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_metadata",
+      "name": "Get Metadata",
+      "description": "Retrieve file metadata including PE headers, imports, sections, and other file-format-specific details",
+      "http_method": "GET",
+      "endpoint": "/analyses/{analysis_id}/sub-analyses/{sub_analysis_id}/metadata",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "analysis_id",
+          "type": "string",
+          "description": "Parent analysis ID",
+          "required": true
+        },
+        {
+          "name": "sub_analysis_id",
+          "type": "string",
+          "description": "Sub-analysis ID (use 'root' for the main file)",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_latest_analysis_by_hash",
+      "name": "Get Latest Analysis by Hash",
+      "description": "Retrieve the most recent analysis results for a file by its SHA256 hash",
+      "http_method": "GET",
+      "endpoint": "/files/{hash}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "hash",
+          "type": "string",
+          "description": "SHA256 hash of the file",
+          "required": true
+        }
+      ],
+      "observable_type": "hash"
+    },
+    {
+      "id": "index_file",
+      "name": "Index File",
+      "description": "Index a file in your organization's private Genome Database as trusted or malicious for future detection",
+      "http_method": "POST",
+      "endpoint": "/index",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "file",
+          "type": "file",
+          "description": "File to index (multipart form data)",
+          "required": true
+        },
+        {
+          "name": "index_as",
+          "type": "string",
+          "description": "Classification for the file: trusted or malicious",
+          "required": true
+        },
+        {
+          "name": "family_name",
+          "type": "string",
+          "description": "Malware family name (required if index_as is malicious)",
+          "required": false
+        }
+      ],
+      "observable_type": "hash"
+    },
+    {
+      "id": "get_analysis_history",
+      "name": "Get Analysis History",
+      "description": "Query the history of file analyses for your account with optional filters",
+      "http_method": "POST",
+      "endpoint": "/history/analyses",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "start_date",
+          "type": "string",
+          "description": "Start date filter (ISO 8601 format)",
+          "required": false
+        },
+        {
+          "name": "end_date",
+          "type": "string",
+          "description": "End date filter (ISO 8601 format)",
+          "required": false
+        },
+        {
+          "name": "verdicts",
+          "type": "string",
+          "description": "Comma-separated verdicts to filter by (e.g., malicious, suspicious, trusted, unknown)",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

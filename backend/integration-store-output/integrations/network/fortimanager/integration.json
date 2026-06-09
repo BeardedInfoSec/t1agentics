@@ -1,0 +1,945 @@
+{
+  "id": "fortimanager",
+  "name": "FortiManager",
+  "description": "This app performs firewall configuration and security policy management actions in FortiManager",
+  "version": "1.1.0",
+  "category": "network",
+  "vendor": "Fortinet",
+  "auth_type": "basic_auth",
+  "auth_config": {
+    "type": "basic_auth",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "create_firewall_policy",
+      "name": "Create Firewall Policy",
+      "description": "Create an ADOM firewall policy",
+      "http_method": "GET",
+      "endpoint": "/actions/create_firewall_policy",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "level",
+          "type": "string",
+          "description": "Level type at which to create the firewall policy. Choosing 'ADOM' (Administrative Domain Name) of the FortiManager server allows you to perform against that particular ADOM",
+          "required": true,
+          "default": "ADOM"
+        },
+        {
+          "name": "adom",
+          "type": "string",
+          "description": "ADOM name",
+          "required": false,
+          "default": "root"
+        },
+        {
+          "name": "package",
+          "type": "string",
+          "description": "The Policy Package name or full folder path to create the firewall policy within",
+          "required": true,
+          "default": "default"
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Policy name to create",
+          "required": true
+        },
+        {
+          "name": "source_interface",
+          "type": "string",
+          "description": "Incoming (ingress) interface to specify for the firewall policy. Interfaces must already exist in the FortiManager server. If specifying more than one, enter as a comma-separated list",
+          "required": true,
+          "default": "any"
+        },
+        {
+          "name": "destination_interface",
+          "type": "string",
+          "description": "Outgoing (egress) interface to specify for the firewall policy. Interfaces must already exist in the FortiManager server. If specifying more than one, enter as a comma-separated list",
+          "required": true,
+          "default": "any"
+        },
+        {
+          "name": "source_address",
+          "type": "string",
+          "description": "Source IPv4 Addresses, address objects, and/or address group names to specify for the firewall policy. If providing new address objects that are NOT of type Subnet (IPv4/Netmask format) or any new address groups that do not already exist in the FortiManager server, the action will fail. If specifying more than one, enter as a comma-separated list",
+          "required": true,
+          "default": "all"
+        },
+        {
+          "name": "destination_address",
+          "type": "string",
+          "description": "Destination IPv4 Addresses, address objects, and/or address group names to specify for the firewall policy. If providing new address objects that are NOT of type Subnet (IPv4/Netmask format) or any new address groups that do not already exist in the FortiManager server, the action will fail. If specifying more than one, enter as a comma-separated list",
+          "required": true,
+          "default": "all"
+        },
+        {
+          "name": "action",
+          "type": "string",
+          "description": "Policy action to specify for the firewall policy. Accept: Allows sessions that match the firewall policy. Deny: Blocks sessions that match the firewall policy. IPSec: Firewall policy becomes a policy-based IPsec VPN policy",
+          "required": true,
+          "default": "deny"
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "'Enable' or 'Disable' this firewall policy on your FortiManager instance",
+          "required": true,
+          "default": "enable"
+        },
+        {
+          "name": "schedule",
+          "type": "string",
+          "description": "Name for the schedule to be associated with the firewall policy (e.g. always, none)",
+          "required": true,
+          "default": "always"
+        },
+        {
+          "name": "service",
+          "type": "string",
+          "description": "Service and Service group names to create for the firewall policy. If specifying more than one, enter as a comma-separated list",
+          "required": true,
+          "default": "ALL"
+        },
+        {
+          "name": "inspection_mode",
+          "type": "string",
+          "description": "Firewall policy Inspection Mode",
+          "required": true,
+          "default": "flow"
+        },
+        {
+          "name": "log_traffic",
+          "type": "string",
+          "description": "Enables or disables logging of either all sessions or only security profile sessions",
+          "required": true,
+          "default": "disable"
+        }
+      ]
+    },
+    {
+      "id": "list_firewall_policies",
+      "name": "List Firewall Policies",
+      "description": "List ADOM firewall policies",
+      "http_method": "GET",
+      "endpoint": "/actions/list_firewall_policies",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "level",
+          "type": "string",
+          "description": "Level type at which to list the firewall policies",
+          "required": true,
+          "default": "ADOM"
+        },
+        {
+          "name": "adom",
+          "type": "string",
+          "description": "ADOM name. Only required for 'ADOM' Firewall Policies",
+          "required": false,
+          "default": "root"
+        },
+        {
+          "name": "package",
+          "type": "string",
+          "description": "Policy Package name",
+          "required": true
+        },
+        {
+          "name": "package_path",
+          "type": "string",
+          "description": "The full folder path nested within the policy package",
+          "required": false
+        },
+        {
+          "name": "policy_name",
+          "type": "string",
+          "description": "Specific firewall policy name whose details you want to retrieve",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "update_firewall_policy",
+      "name": "Update Firewall Policy",
+      "description": "Update an ADOM firewall policy",
+      "http_method": "GET",
+      "endpoint": "/actions/update_firewall_policy",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "level",
+          "type": "string",
+          "description": "Level type at which to update the firewall policy. Choosing 'ADOM' (Administrative Domain Name) of the FortiManager server allows you to perform against that particular ADOM",
+          "required": true,
+          "default": "ADOM"
+        },
+        {
+          "name": "adom",
+          "type": "string",
+          "description": "ADOM name",
+          "required": false,
+          "default": "root"
+        },
+        {
+          "name": "package",
+          "type": "string",
+          "description": "The Policy Package name or full folder path to update the firewall policy within",
+          "required": true,
+          "default": "default"
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "description": "The policy name that will be updated. Note: this does not update the policy name itself",
+          "required": true
+        },
+        {
+          "name": "source_interface",
+          "type": "string",
+          "description": "Incoming (ingress) interface to add to the firewall policy. Interfaces must already exist in the FortiManager server. If specifying more than one, enter as a comma-separated list",
+          "required": false
+        },
+        {
+          "name": "destination_interface",
+          "type": "string",
+          "description": "Outgoing (egress) interface to specify for the firewall policy. Interfaces must already exist in the FortiManager server. If specifying more than one, enter as a comma-separated list",
+          "required": false
+        },
+        {
+          "name": "source_address",
+          "type": "string",
+          "description": "Source IPv4 Addresses, address objects, and/or address group names to specify for the firewall policy. If specifying more than one, enter as a comma-separated list",
+          "required": false
+        },
+        {
+          "name": "destination_address",
+          "type": "string",
+          "description": "Destination IPv4 Addresses, address objects, and/or address group names to specify for the firewall policy. If specifying more than one, enter as a comma-separated list",
+          "required": false
+        },
+        {
+          "name": "action",
+          "type": "string",
+          "description": "Policy action to specify for the firewall policy. Accept: Allows sessions that match the firewall policy. Deny: Blocks sessions that match the firewall policy. IPSec: Firewall policy becomes a policy-based IPsec VPN policy",
+          "required": false
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "'Enable' or 'Disable' this firewall policy on your FortiManager instance",
+          "required": false
+        },
+        {
+          "name": "schedule",
+          "type": "string",
+          "description": "Name for the schedule to be associated with the firewall policy (e.g. always, none)",
+          "required": false
+        },
+        {
+          "name": "service",
+          "type": "string",
+          "description": "Service and Service group names to create for the firewall policy. If specifying more than one, enter as a comma-separated list",
+          "required": false
+        },
+        {
+          "name": "inspection_mode",
+          "type": "string",
+          "description": "Firewall policy Inspection Mode",
+          "required": false
+        },
+        {
+          "name": "log_traffic",
+          "type": "string",
+          "description": "Enables or disables logging of either all sessions or only security profile sessions",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "install_firewall_policy",
+      "name": "Install Firewall Policy",
+      "description": "Install a firewall policy on a device",
+      "http_method": "GET",
+      "endpoint": "/securityconsole/install/package",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "level",
+          "type": "string",
+          "description": "Level Type",
+          "required": true,
+          "default": "ADOM"
+        },
+        {
+          "name": "adom",
+          "type": "string",
+          "description": "Administrative Domain Name",
+          "required": false,
+          "default": "root"
+        },
+        {
+          "name": "generate_rev",
+          "type": "boolean",
+          "description": "Generate new ADOM revision before install",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "ph",
+          "type": "string",
+          "description": "",
+          "required": false
+        },
+        {
+          "name": "adom_rev_comments",
+          "type": "string",
+          "description": "If 'generate_rev' flag is set, the comment for the new ADOM revision",
+          "required": false
+        },
+        {
+          "name": "adom_rev_name",
+          "type": "string",
+          "description": "If 'generate_rev' flag is set, the name for the new ADOM revision",
+          "required": false
+        },
+        {
+          "name": "dev_rev_comments",
+          "type": "string",
+          "description": "Comments for the device configuration revision that will be generated during install",
+          "required": false
+        },
+        {
+          "name": "policy_pkg",
+          "type": "string",
+          "description": "Source package path and name",
+          "required": true,
+          "default": "default"
+        },
+        {
+          "name": "scope_name",
+          "type": "string",
+          "description": "Scope name",
+          "required": false
+        },
+        {
+          "name": "scope_vdom",
+          "type": "string",
+          "description": "Scope VDOM",
+          "required": false
+        },
+        {
+          "name": "preview",
+          "type": "boolean",
+          "description": "Generate preview cache only",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "unassign",
+          "type": "boolean",
+          "description": "Remove global policy from ADOM",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "ifpolicy_only",
+          "type": "boolean",
+          "description": "Only install interface policies",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "no_ifpolicy",
+          "type": "boolean",
+          "description": "Install regular policies only - do not install interface policies",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "objs_only",
+          "type": "boolean",
+          "description": "Install objects only - do not install any policies",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "auto_lock_ws",
+          "type": "boolean",
+          "description": "Automatically lock and unlock workspace when performing security console task",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "copy_only",
+          "type": "boolean",
+          "description": "Only copy to device db",
+          "required": false,
+          "default": false
+        }
+      ]
+    },
+    {
+      "id": "create_address",
+      "name": "Create Address",
+      "description": "Create a firewall address object",
+      "http_method": "GET",
+      "endpoint": "/actions/create_address",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "level",
+          "type": "string",
+          "description": "Level Type",
+          "required": true,
+          "default": "ADOM"
+        },
+        {
+          "name": "adom",
+          "type": "string",
+          "description": "Administrative Domain Name",
+          "required": false,
+          "default": "root"
+        },
+        {
+          "name": "address_type",
+          "type": "string",
+          "description": "Type of address to create",
+          "required": true
+        },
+        {
+          "name": "address_name",
+          "type": "string",
+          "description": "Address name",
+          "required": true,
+          "contains": [
+            "fortimanager address name"
+          ]
+        },
+        {
+          "name": "ip_netmask",
+          "type": "string",
+          "description": "IP address or IP address and netmask. Examples of valid formats: 1.1.1.1, 1.1.1.1/32, 1.1.1.1/255.255.255.255",
+          "required": false,
+          "contains": [
+            "ip",
+            "netmask"
+          ]
+        },
+        {
+          "name": "fqdn",
+          "type": "string",
+          "description": "Fully Qualified Domain Name",
+          "required": false
+        },
+        {
+          "name": "policy_group_name",
+          "type": "string",
+          "description": "Name of policy group to be added to address",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "delete_address",
+      "name": "Delete Address",
+      "description": "Delete firewall address object",
+      "http_method": "GET",
+      "endpoint": "/actions/delete_address",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "level",
+          "type": "string",
+          "description": "Level type",
+          "required": true,
+          "default": "ADOM"
+        },
+        {
+          "name": "adom",
+          "type": "string",
+          "description": "ADOM name",
+          "required": false,
+          "default": "root"
+        },
+        {
+          "name": "address_name",
+          "type": "string",
+          "description": "Name of address object to delete",
+          "required": true,
+          "contains": [
+            "fortimanager address name"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_addresses",
+      "name": "List Addresses",
+      "description": "List firewall address objects",
+      "http_method": "GET",
+      "endpoint": "/actions/list_addresses",
+      "action_type": "generic",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "level",
+          "type": "string",
+          "description": "Level type",
+          "required": true,
+          "default": "ADOM"
+        },
+        {
+          "name": "adom",
+          "type": "string",
+          "description": "ADOM name",
+          "required": false,
+          "default": "root"
+        },
+        {
+          "name": "address_name",
+          "type": "string",
+          "description": "Name of address object to retrieve. If none is specified, this action will return all matching values.",
+          "required": false,
+          "contains": [
+            "fortimanager address name"
+          ]
+        },
+        {
+          "name": "filter_by",
+          "type": "string",
+          "description": "Criteria to filter results by. Use the following format to specify filter: [[\"{attribute}\", \"==\", \"{value}\"]]",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of addresses to return. Default is 0, which returns all results.",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "The starting point of the results to be returned.",
+          "required": false,
+          "default": 0
+        }
+      ]
+    },
+    {
+      "id": "update_address",
+      "name": "Update Address",
+      "description": "Update existing firewall address object",
+      "http_method": "GET",
+      "endpoint": "/actions/update_address",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "level",
+          "type": "string",
+          "description": "Level type",
+          "required": true,
+          "default": "ADOM"
+        },
+        {
+          "name": "adom",
+          "type": "string",
+          "description": "ADOM name",
+          "required": false,
+          "default": "root"
+        },
+        {
+          "name": "address_name",
+          "type": "string",
+          "description": "Name of address object to update",
+          "required": true,
+          "contains": [
+            "fortimanager address name"
+          ]
+        },
+        {
+          "name": "ip_netmask",
+          "type": "string",
+          "description": "Updated IP address and netmask (e.g. 0.0.0.0/32) to assign address object",
+          "required": false,
+          "contains": [
+            "ip",
+            "netmask"
+          ]
+        },
+        {
+          "name": "fqdn",
+          "type": "string",
+          "description": "Updated Fully Qualified Domain Name to assign address object",
+          "required": false
+        },
+        {
+          "name": "policy_group_name",
+          "type": "string",
+          "description": "Name of policy group to be added to address",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "block_ip",
+      "name": "Block Ip",
+      "description": "Block ADOM level IP addresses",
+      "http_method": "POST",
+      "endpoint": "/actions/block_ip",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "level",
+          "type": "string",
+          "description": "Level type at which to block IP addresses",
+          "required": true,
+          "default": "ADOM"
+        },
+        {
+          "name": "adom",
+          "type": "string",
+          "description": "ADOM name. Only required for 'ADOM' blocking of IP addresses",
+          "required": true
+        },
+        {
+          "name": "package",
+          "type": "string",
+          "description": "Policy package name",
+          "required": true
+        },
+        {
+          "name": "package_path",
+          "type": "string",
+          "description": "The full folder path nested within the policy package",
+          "required": false
+        },
+        {
+          "name": "policy_name",
+          "type": "string",
+          "description": "Specific firewall policy name for blocking IP addresses",
+          "required": true
+        },
+        {
+          "name": "address_group_name",
+          "type": "string",
+          "description": "Specific address group name for for blocking IP addresses",
+          "required": true
+        },
+        {
+          "name": "ip_addresses",
+          "type": "string",
+          "description": "Comma-separated list of IP addresses to block",
+          "required": true
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "unblock_ip",
+      "name": "Unblock Ip",
+      "description": "Unblock ADOM level IP addresses",
+      "http_method": "POST",
+      "endpoint": "/actions/unblock_ip",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "level",
+          "type": "string",
+          "description": "Level type at which to unblock IP addresses",
+          "required": true,
+          "default": "ADOM"
+        },
+        {
+          "name": "adom",
+          "type": "string",
+          "description": "ADOM name. Only required for 'ADOM' unblocking of IP addresses",
+          "required": true
+        },
+        {
+          "name": "package",
+          "type": "string",
+          "description": "Policy package name",
+          "required": true
+        },
+        {
+          "name": "package_path",
+          "type": "string",
+          "description": "The full folder path nested within the policy package",
+          "required": false
+        },
+        {
+          "name": "policy_name",
+          "type": "string",
+          "description": "Specific firewall policy name for unblocking IP addresses",
+          "required": true
+        },
+        {
+          "name": "address_group_name",
+          "type": "string",
+          "description": "Specific address group name for for unblocking IP addresses",
+          "required": true
+        },
+        {
+          "name": "ip_addresses",
+          "type": "string",
+          "description": "Comma-separated list of IP addresses to unblock",
+          "required": true
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "delete_firewall_policy",
+      "name": "Delete Firewall Policy",
+      "description": "Delete an ADOM firewall policy",
+      "http_method": "GET",
+      "endpoint": "/actions/delete_firewall_policy",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "level",
+          "type": "string",
+          "description": "Level type at which to create the firewall policy. Choosing 'ADOM' (Administrative Domain Name) of the FortiManager server allows you to perform against that particular ADOM",
+          "required": true,
+          "default": "ADOM"
+        },
+        {
+          "name": "adom",
+          "type": "string",
+          "description": "ADOM name",
+          "required": false,
+          "default": "root"
+        },
+        {
+          "name": "package",
+          "type": "string",
+          "description": "The Policy Package name or full folder path of the firewall policy to delete",
+          "required": true,
+          "default": "default"
+        },
+        {
+          "name": "policy_id",
+          "type": "string",
+          "description": "Policy ID (can be retrieved from 'List Firewall Policies' action) to delete",
+          "required": true,
+          "contains": [
+            "fortimanager firewall policy id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "block_url",
+      "name": "Block Url",
+      "description": "Block ADOM level URLs",
+      "http_method": "POST",
+      "endpoint": "/actions/block_url",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "level",
+          "type": "string",
+          "description": "Level type at which to block URLs. Choosing 'ADOM' (Administrative Domain Name) of the FortiManager server allows you to perform against that particular ADOM",
+          "required": true,
+          "default": "ADOM"
+        },
+        {
+          "name": "adom",
+          "type": "string",
+          "description": "ADOM name",
+          "required": false,
+          "default": "root"
+        },
+        {
+          "name": "web_filter_profile_name",
+          "type": "string",
+          "description": "The Web Filter profile name to use to block URLs",
+          "required": true,
+          "default": "default"
+        },
+        {
+          "name": "url",
+          "type": "string",
+          "description": "URL to block",
+          "required": true
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Type of URL format. Wildcard must include a '*'",
+          "required": true,
+          "default": "simple"
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "unblock_url",
+      "name": "Unblock Url",
+      "description": "Unblock ADOM level URLs",
+      "http_method": "POST",
+      "endpoint": "/actions/unblock_url",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "level",
+          "type": "string",
+          "description": "Level type at which to unblock URLs. Choosing 'ADOM' (Administrative Domain Name) of the FortiManager server allows you to perform against that particular ADOM",
+          "required": true,
+          "default": "ADOM"
+        },
+        {
+          "name": "adom",
+          "type": "string",
+          "description": "ADOM name",
+          "required": false,
+          "default": "root"
+        },
+        {
+          "name": "web_filter_profile_name",
+          "type": "string",
+          "description": "The Web Filter profile name to use to unblock URLs",
+          "required": true,
+          "default": "default"
+        },
+        {
+          "name": "url",
+          "type": "string",
+          "description": "URL to unblock",
+          "required": true
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "create_address_group",
+      "name": "Create Address Group",
+      "description": "Create address group",
+      "http_method": "GET",
+      "endpoint": "/actions/create_address_group",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "level",
+          "type": "string",
+          "description": "Level type at which to create the address group. Choosing 'ADOM' (Administrative Domain Name) of the FortiManager server allows you to perform the action against that particular ADOM",
+          "required": true,
+          "default": "ADOM"
+        },
+        {
+          "name": "adom",
+          "type": "string",
+          "description": "ADOM name",
+          "required": false,
+          "default": "root"
+        },
+        {
+          "name": "address_group_name",
+          "type": "string",
+          "description": "Unique name of address group you want to create",
+          "required": true,
+          "contains": [
+            "fortimanager address group name"
+          ]
+        },
+        {
+          "name": "members",
+          "type": "string",
+          "description": "Comma-separated list of address objects or address groups to add to the address group. Accepted values include FortiManager address object names, IP/netmask, and FQDN",
+          "required": true,
+          "contains": [
+            "fortimanager address name"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "delete_address_group",
+      "name": "Delete Address Group",
+      "description": "Delete address group",
+      "http_method": "GET",
+      "endpoint": "/actions/delete_address_group",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "level",
+          "type": "string",
+          "description": "Level type at which to create the address group. Choosing 'ADOM' (Administrative Domain Name) of the FortiManager server allows you to perform the action against that particular ADOM",
+          "required": true,
+          "default": "ADOM"
+        },
+        {
+          "name": "adom",
+          "type": "string",
+          "description": "ADOM name",
+          "required": false,
+          "default": "root"
+        },
+        {
+          "name": "address_group_name",
+          "type": "string",
+          "description": "Unique name of address group you want to create",
+          "required": true,
+          "contains": [
+            "fortimanager address group name"
+          ]
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "FortiManager",
+    "original_type": "network security",
+    "converted_at": "2025-12-18T16:25:28.795656",
+    "source_version": "1.1.0"
+  }
+}

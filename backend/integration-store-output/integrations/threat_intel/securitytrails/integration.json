@@ -1,0 +1,205 @@
+{
+  "id": "securitytrails",
+  "name": "SecurityTrails",
+  "description": "SecurityTrails provides comprehensive domain, DNS, IP, and WHOIS intelligence with historical data. Enables attack surface discovery, subdomain enumeration, and infrastructure mapping for threat investigations.",
+  "version": "1.0.0",
+  "category": "threat_intel",
+  "vendor": "SecurityTrails (Recorded Future)",
+  "auth_type": "custom_header",
+  "auth_config": {
+    "type": "custom_header",
+    "header_name": "APIKEY",
+    "location": "header"
+  },
+  "base_url": "https://api.securitytrails.com/v1",
+  "actions": [
+    {
+      "id": "get_domain",
+      "name": "Get Domain Details",
+      "description": "Retrieve current DNS records and domain information including A, AAAA, MX, NS, SOA, and TXT records for a given domain.",
+      "http_method": "GET",
+      "endpoint": "/domain/{hostname}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "hostname",
+          "type": "string",
+          "description": "The domain name to look up (e.g., 'example.com')",
+          "required": true,
+          "contains": ["domain"]
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "list_subdomains",
+      "name": "List Subdomains",
+      "description": "Enumerate all known subdomains for a given domain from SecurityTrails' comprehensive subdomain database.",
+      "http_method": "GET",
+      "endpoint": "/domain/{hostname}/subdomains",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "hostname",
+          "type": "string",
+          "description": "The domain name to list subdomains for",
+          "required": true,
+          "contains": ["domain"]
+        },
+        {
+          "name": "children_only",
+          "type": "boolean",
+          "description": "Return only direct child subdomains (default: false)",
+          "required": false
+        },
+        {
+          "name": "include_inactive",
+          "type": "boolean",
+          "description": "Include subdomains that no longer resolve (default: true)",
+          "required": false
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "get_domain_whois",
+      "name": "Get Domain WHOIS",
+      "description": "Retrieve current WHOIS registration data for a domain including registrant information, registrar, creation and expiration dates.",
+      "http_method": "GET",
+      "endpoint": "/domain/{hostname}/whois",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "hostname",
+          "type": "string",
+          "description": "The domain name to get WHOIS data for",
+          "required": true,
+          "contains": ["domain"]
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "get_associated_domains",
+      "name": "Get Associated Domains",
+      "description": "Find domains related to a given hostname through shared registrant information, name servers, mail servers, or other infrastructure.",
+      "http_method": "GET",
+      "endpoint": "/domain/{hostname}/associated",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "hostname",
+          "type": "string",
+          "description": "The domain name to find associated domains for",
+          "required": true,
+          "contains": ["domain"]
+        },
+        {
+          "name": "page",
+          "type": "integer",
+          "description": "Page number for pagination (default: 1)",
+          "required": false
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "get_dns_history",
+      "name": "Get DNS History",
+      "description": "Retrieve historical DNS records for a domain showing how its DNS configuration has changed over time, filtered by record type.",
+      "http_method": "GET",
+      "endpoint": "/history/{hostname}/dns/{type}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "hostname",
+          "type": "string",
+          "description": "The domain name to get DNS history for",
+          "required": true,
+          "contains": ["domain"]
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "DNS record type: 'a', 'aaaa', 'mx', 'ns', 'soa', 'txt'",
+          "required": true
+        },
+        {
+          "name": "page",
+          "type": "integer",
+          "description": "Page number for pagination (default: 1)",
+          "required": false
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "get_whois_history",
+      "name": "Get WHOIS History",
+      "description": "Access historical WHOIS records for a domain showing ownership changes, registrar transfers, and contact information modifications over time.",
+      "http_method": "GET",
+      "endpoint": "/history/{hostname}/whois",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "hostname",
+          "type": "string",
+          "description": "The domain name to get WHOIS history for",
+          "required": true,
+          "contains": ["domain"]
+        },
+        {
+          "name": "page",
+          "type": "integer",
+          "description": "Page number for pagination (default: 1)",
+          "required": false
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "get_ip_whois",
+      "name": "Get IP WHOIS",
+      "description": "Retrieve WHOIS registration information for an IP address including network block, ASN, organization, and allocation details.",
+      "http_method": "GET",
+      "endpoint": "/ips/{ipaddress}/whois",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "ipaddress",
+          "type": "string",
+          "description": "The IP address to get WHOIS data for",
+          "required": true,
+          "contains": ["ip"]
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "get_ip_neighbors",
+      "name": "Get IP Neighbors",
+      "description": "Explore nearby IP addresses in the same network range to discover related infrastructure and neighboring hosts.",
+      "http_method": "GET",
+      "endpoint": "/ips/nearby/{ipaddress}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "ipaddress",
+          "type": "string",
+          "description": "The IP address to explore neighbors for",
+          "required": true,
+          "contains": ["ip"]
+        }
+      ],
+      "observable_type": "ip"
+    }
+  ]
+}

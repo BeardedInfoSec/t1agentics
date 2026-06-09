@@ -1,0 +1,173 @@
+{
+  "id": "keeper_pam",
+  "name": "KeeperPAM",
+  "description": "Privileged access management through KeeperPAM REST API for managing records, secrets, users, and audit reports",
+  "version": "1.0.0",
+  "category": "identity",
+  "vendor": "Keeper Security",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "api-key",
+    "location": "header"
+  },
+  "base_url": "https://{host}:9090/api/v2",
+  "actions": [
+    {
+      "id": "search_records",
+      "name": "Search Records",
+      "description": "Search for records (secrets, credentials) in the Keeper vault",
+      "http_method": "POST",
+      "endpoint": "/executecommand",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "command",
+          "type": "string",
+          "description": "Search command (e.g. search record <query>)",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_record",
+      "name": "Get Record",
+      "description": "Retrieve details of a specific record by UID",
+      "http_method": "POST",
+      "endpoint": "/executecommand",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "command",
+          "type": "string",
+          "description": "Get command with record UID (e.g. get <recordUid>)",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "rotate_password",
+      "name": "Rotate Password",
+      "description": "Rotate the password for a PAM record on the target system",
+      "http_method": "POST",
+      "endpoint": "/executecommand",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "command",
+          "type": "string",
+          "description": "Rotate command (e.g. pam action rotate --record <recordUid>)",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_users",
+      "name": "List Users",
+      "description": "List all users in the Keeper enterprise",
+      "http_method": "POST",
+      "endpoint": "/executecommand",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "command",
+          "type": "string",
+          "description": "Enterprise user list command",
+          "required": true,
+          "default": "enterprise-user --format json"
+        }
+      ]
+    },
+    {
+      "id": "lock_user",
+      "name": "Lock User",
+      "description": "Lock a user account in the Keeper enterprise",
+      "http_method": "POST",
+      "endpoint": "/executecommand",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "command",
+          "type": "string",
+          "description": "Enterprise user lock command (e.g. enterprise-user --lock <email>)",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "unlock_user",
+      "name": "Unlock User",
+      "description": "Unlock a previously locked user account",
+      "http_method": "POST",
+      "endpoint": "/executecommand",
+      "action_type": "correct",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "command",
+          "type": "string",
+          "description": "Enterprise user unlock command (e.g. enterprise-user --unlock <email>)",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_audit_report",
+      "name": "Get Audit Report",
+      "description": "Retrieve audit report of user and system activities",
+      "http_method": "POST",
+      "endpoint": "/executecommand",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "command",
+          "type": "string",
+          "description": "Audit report command (e.g. audit-report --format json)",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_teams",
+      "name": "List Teams",
+      "description": "List all teams in the Keeper enterprise",
+      "http_method": "POST",
+      "endpoint": "/executecommand",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "command",
+          "type": "string",
+          "description": "Enterprise team list command",
+          "required": true,
+          "default": "enterprise-team --format json"
+        }
+      ]
+    },
+    {
+      "id": "list_shared_folders",
+      "name": "List Shared Folders",
+      "description": "List all shared folders in the vault",
+      "http_method": "POST",
+      "endpoint": "/executecommand",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "command",
+          "type": "string",
+          "description": "Shared folder list command",
+          "required": true,
+          "default": "sf-list --format json"
+        }
+      ]
+    }
+  ]
+}

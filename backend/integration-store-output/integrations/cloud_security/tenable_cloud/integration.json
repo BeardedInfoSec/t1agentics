@@ -1,0 +1,183 @@
+{
+  "id": "tenable_cloud",
+  "name": "Tenable Cloud Security",
+  "description": "Cloud security platform providing CNAPP capabilities including CSPM, CIEM, IaC security, and vulnerability management across multi-cloud environments",
+  "version": "1.0.0",
+  "category": "cloud_security",
+  "vendor": "Tenable",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "header_name": "Authorization",
+    "prefix": "Bearer",
+    "location": "header"
+  },
+  "base_url": "https://cloud.tenable.com/cns/api/v1",
+  "actions": [
+    {
+      "id": "list_findings",
+      "name": "List Findings",
+      "description": "Retrieve cloud security findings including misconfigurations, IAM risks, and network exposures",
+      "http_method": "GET",
+      "endpoint": "/findings",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Filter by severity (critical, high, medium, low)",
+          "required": false
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Finding type (misconfiguration, iam, network, data)",
+          "required": false
+        },
+        {
+          "name": "cloud_provider",
+          "type": "string",
+          "description": "Filter by cloud provider (aws, azure, gcp)",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum findings to return",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Offset for pagination",
+          "required": false,
+          "default": 0
+        }
+      ]
+    },
+    {
+      "id": "list_cloud_accounts",
+      "name": "List Cloud Accounts",
+      "description": "List onboarded cloud accounts and their scanning status",
+      "http_method": "GET",
+      "endpoint": "/accounts",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "provider",
+          "type": "string",
+          "description": "Filter by cloud provider (aws, azure, gcp)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_compliance_status",
+      "name": "Get Compliance Status",
+      "description": "Retrieve compliance assessment status for configured frameworks",
+      "http_method": "GET",
+      "endpoint": "/compliance",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "framework",
+          "type": "string",
+          "description": "Compliance framework name (e.g., CIS, SOC2, NIST, PCI-DSS)",
+          "required": false
+        },
+        {
+          "name": "account_id",
+          "type": "string",
+          "description": "Filter by specific cloud account ID",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_iac_violations",
+      "name": "List IaC Violations",
+      "description": "Retrieve Infrastructure as Code security violations from scanned repositories",
+      "http_method": "GET",
+      "endpoint": "/iac/violations",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Filter by severity",
+          "required": false
+        },
+        {
+          "name": "project_id",
+          "type": "string",
+          "description": "Filter by IaC project ID",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_assets",
+      "name": "List Assets",
+      "description": "List cloud assets discovered across all connected accounts with risk scoring",
+      "http_method": "GET",
+      "endpoint": "/inventory/assets",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Asset type filter (e.g., ec2, s3, rds, lambda)",
+          "required": false
+        },
+        {
+          "name": "provider",
+          "type": "string",
+          "description": "Cloud provider filter",
+          "required": false
+        },
+        {
+          "name": "risk_score_min",
+          "type": "number",
+          "description": "Minimum risk score filter (0-100)",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum results to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "get_iam_analysis",
+      "name": "Get IAM Analysis",
+      "description": "Retrieve IAM entitlement analysis showing overprivileged identities and excessive permissions",
+      "http_method": "GET",
+      "endpoint": "/iam/analysis",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "account_id",
+          "type": "string",
+          "description": "Cloud account ID for IAM analysis",
+          "required": false
+        },
+        {
+          "name": "risk_level",
+          "type": "string",
+          "description": "Filter by risk level (critical, high, medium, low)",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

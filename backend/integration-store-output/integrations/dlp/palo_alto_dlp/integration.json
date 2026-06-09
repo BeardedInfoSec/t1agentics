@@ -1,0 +1,144 @@
+{
+  "id": "palo_alto_dlp",
+  "name": "Palo Alto Networks Enterprise DLP",
+  "description": "Integrates with Palo Alto Networks Enterprise DLP API for incident review, report retrieval, assignee management, and data pattern monitoring across SASE infrastructure",
+  "version": "1.0.0",
+  "category": "dlp",
+  "vendor": "Palo Alto Networks",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "https://api.sase.paloaltonetworks.com/dlp/v1",
+  "actions": [
+    {
+      "id": "list_incidents",
+      "name": "List DLP Incidents",
+      "description": "Retrieve all DLP incidents in the tenant with optional filtering by date range, severity, and status",
+      "http_method": "GET",
+      "endpoint": "/incidents",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "start_time",
+          "type": "string",
+          "description": "Start time filter (ISO 8601 format)",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "string",
+          "description": "End time filter (ISO 8601 format)",
+          "required": false
+        },
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Filter by severity (critical, high, medium, low)",
+          "required": false
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Filter by incident status",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of incidents to return",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Offset for pagination",
+          "required": false,
+          "default": 0
+        }
+      ]
+    },
+    {
+      "id": "get_report_details",
+      "name": "Get Report Details",
+      "description": "Retrieve detailed report for a specific DLP incident including matched data patterns and file metadata",
+      "http_method": "GET",
+      "endpoint": "/reports/{reportId}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "reportId",
+          "type": "string",
+          "description": "Unique identifier of the DLP report",
+          "required": true
+        },
+        {
+          "name": "fetchSnippets",
+          "type": "boolean",
+          "description": "Include matched data snippets in the response",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "update_incident",
+      "name": "Update Incident",
+      "description": "Update incident details including assignee, notes, and status",
+      "http_method": "PATCH",
+      "endpoint": "/incidents/{incidentId}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "incidentId",
+          "type": "string",
+          "description": "Unique identifier of the DLP incident",
+          "required": true
+        },
+        {
+          "name": "assignee",
+          "type": "string",
+          "description": "User email to assign the incident to",
+          "required": false
+        },
+        {
+          "name": "notes",
+          "type": "string",
+          "description": "Notes to add to the incident",
+          "required": false
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "New status for the incident",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_data_patterns",
+      "name": "List Data Patterns",
+      "description": "Retrieve all configured data patterns used for sensitive data detection",
+      "http_method": "GET",
+      "endpoint": "/data-patterns",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "list_data_profiles",
+      "name": "List Data Profiles",
+      "description": "Retrieve all data profiles that group data patterns for policy enforcement",
+      "http_method": "GET",
+      "endpoint": "/data-profiles",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    }
+  ]
+}

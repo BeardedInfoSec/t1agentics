@@ -1,0 +1,83 @@
+{
+  "id": "cisco_firepower",
+  "name": "Cisco Firepower",
+  "description": "This app interfaces with Cisco Firepower devices to add or remove IPs or networks to a Firepower Network Group Object, which is configured with an ACL",
+  "version": "2.0.4",
+  "category": "network",
+  "vendor": "Cisco Systems",
+  "auth_type": "basic_auth",
+  "auth_config": {
+    "type": "basic_auth",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "list_networks",
+      "name": "List Networks",
+      "description": "Lists currently blocked networks",
+      "http_method": "GET",
+      "endpoint": "/actions/list_networks",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "block_ip",
+      "name": "Block Ip",
+      "description": "Blocks an IP network",
+      "http_method": "POST",
+      "endpoint": "/actions/block_ip",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "IP/network to block (X.X.X.X/NM)",
+          "required": true,
+          "contains": [
+            "ip",
+            "ip network"
+          ]
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "unblock_ip",
+      "name": "Unblock Ip",
+      "description": "Unblocks an IP network",
+      "http_method": "POST",
+      "endpoint": "/actions/unblock_ip",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "IP/network to unBlock (X.X.X.X/NM)",
+          "required": true,
+          "contains": [
+            "ip",
+            "ip network"
+          ]
+        }
+      ],
+      "observable_type": "ip"
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Cisco Firepower",
+    "original_type": "firewall",
+    "converted_at": "2025-12-18T16:25:28.651942",
+    "source_version": "2.0.4"
+  }
+}

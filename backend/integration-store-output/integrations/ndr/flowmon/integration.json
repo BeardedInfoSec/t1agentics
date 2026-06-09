@@ -1,0 +1,233 @@
+{
+  "id": "flowmon",
+  "name": "Flowmon",
+  "description": "Network traffic monitoring and anomaly detection platform using flow data analysis and ML-powered detection for network security and performance monitoring",
+  "version": "1.0.0",
+  "category": "ndr",
+  "vendor": "Progress (Kemp)",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header",
+    "prefix": "Bearer"
+  },
+  "base_url": "https://{host}/rest",
+  "actions": [
+    {
+      "id": "get_events",
+      "name": "Get Events",
+      "description": "Retrieve anomaly detection events from Flowmon ADS",
+      "http_method": "GET",
+      "endpoint": "/ads/events",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "from",
+          "type": "string",
+          "description": "Start time filter in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "to",
+          "type": "string",
+          "description": "End time filter in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "priority",
+          "type": "string",
+          "description": "Filter by event priority (info, low, medium, high, critical)",
+          "required": false
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Filter by event type",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of events to return",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Offset for pagination",
+          "required": false,
+          "default": 0
+        }
+      ]
+    },
+    {
+      "id": "get_event_details",
+      "name": "Get Event Details",
+      "description": "Retrieve detailed information about a specific anomaly detection event",
+      "http_method": "GET",
+      "endpoint": "/ads/events/{event_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "event_id",
+          "type": "number",
+          "description": "The event ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_alerts",
+      "name": "Get Alerts",
+      "description": "Retrieve active alerts from Flowmon monitoring",
+      "http_method": "GET",
+      "endpoint": "/monitoring/alerts",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "from",
+          "type": "string",
+          "description": "Start time filter in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "to",
+          "type": "string",
+          "description": "End time filter in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Filter by alert severity",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of alerts to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "search_flows",
+      "name": "Search Flows",
+      "description": "Search network flow data with filtering criteria",
+      "http_method": "POST",
+      "endpoint": "/flows/search",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "from",
+          "type": "string",
+          "description": "Start time in ISO 8601 format",
+          "required": true
+        },
+        {
+          "name": "to",
+          "type": "string",
+          "description": "End time in ISO 8601 format",
+          "required": true
+        },
+        {
+          "name": "src_ip",
+          "type": "string",
+          "description": "Source IP address filter",
+          "required": false
+        },
+        {
+          "name": "dst_ip",
+          "type": "string",
+          "description": "Destination IP address filter",
+          "required": false
+        },
+        {
+          "name": "src_port",
+          "type": "number",
+          "description": "Source port filter",
+          "required": false
+        },
+        {
+          "name": "dst_port",
+          "type": "number",
+          "description": "Destination port filter",
+          "required": false
+        },
+        {
+          "name": "protocol",
+          "type": "string",
+          "description": "Protocol filter (TCP, UDP, ICMP)",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of flow records to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "get_sources",
+      "name": "Get Flow Sources",
+      "description": "Retrieve configured flow data sources and exporters",
+      "http_method": "GET",
+      "endpoint": "/sources",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "get_profiles",
+      "name": "Get Monitoring Profiles",
+      "description": "Retrieve monitoring profiles and their configurations",
+      "http_method": "GET",
+      "endpoint": "/monitoring/profiles",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "acknowledge_event",
+      "name": "Acknowledge Event",
+      "description": "Acknowledge an anomaly detection event",
+      "http_method": "PUT",
+      "endpoint": "/ads/events/{event_id}/acknowledge",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "event_id",
+          "type": "number",
+          "description": "The event ID to acknowledge",
+          "required": true
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "Comment for the acknowledgement",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_system_info",
+      "name": "Get System Info",
+      "description": "Retrieve Flowmon system information and health status",
+      "http_method": "GET",
+      "endpoint": "/system/info",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    }
+  ]
+}

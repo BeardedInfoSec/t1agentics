@@ -1,0 +1,394 @@
+{
+  "id": "fireeye_hx",
+  "name": "FireEye HX",
+  "description": "FireEye HX Endpoint Security",
+  "version": "2.3.2",
+  "category": "edr",
+  "vendor": "FireEye",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "get_system_info",
+      "name": "Get System Info",
+      "description": "Get system information for an endpoint",
+      "http_method": "GET",
+      "endpoint": "/actions/get_system_info",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "agent_id",
+          "type": "string",
+          "description": "HX Agent ID to get system info of",
+          "required": true,
+          "contains": [
+            "fireeyehx agentid"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "quarantine_device",
+      "name": "Quarantine Device",
+      "description": "Request to contain the endpoint",
+      "http_method": "POST",
+      "endpoint": "/actions/quarantine_device",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "agent_id",
+          "type": "string",
+          "description": "HX Endpoint Agent ID you want to contain",
+          "required": true,
+          "contains": [
+            "fireeyehx agentid"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_quarantine_status",
+      "name": "Get Quarantine Status",
+      "description": "Get the containment status for an endpoint",
+      "http_method": "GET",
+      "endpoint": "/actions/get_quarantine_status",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "agent_id",
+          "type": "string",
+          "description": "HX Endpoint Agent ID you want to check the status",
+          "required": true,
+          "contains": [
+            "fireeyehx agentid"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "set_quarantine_approved",
+      "name": "Set Quarantine Approved",
+      "description": "Approve containment request for host",
+      "http_method": "GET",
+      "endpoint": "/actions/set_quarantine_approved",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "agent_id",
+          "type": "string",
+          "description": "HX Endpoint Agent ID you want to approve containment",
+          "required": true,
+          "contains": [
+            "fireeyehx agentid"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "unquarantine_device",
+      "name": "Unquarantine Device",
+      "description": "Containment cancellation for host",
+      "http_method": "POST",
+      "endpoint": "/actions/unquarantine_device",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "agent_id",
+          "type": "string",
+          "description": "HX Endpoint Agent ID you want to cancel containment",
+          "required": true,
+          "contains": [
+            "fireeyehx agentid"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_acquisition_status",
+      "name": "Get Acquisition Status",
+      "description": "Get status of file acquisition",
+      "http_method": "GET",
+      "endpoint": "/actions/get_acquisition_status",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "acquisition_id",
+          "type": "string",
+          "description": "Acquisition ID from (get file) action to query status",
+          "required": true,
+          "contains": [
+            "fireeyehx acquisition id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_triage",
+      "name": "Get Triage",
+      "description": "Request Endpoint Host Triage Package",
+      "http_method": "GET",
+      "endpoint": "/actions/get_triage",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "agent_id",
+          "type": "string",
+          "description": "HX Agent ID to get Triage Package",
+          "required": true,
+          "contains": [
+            "fireeyehx agentid"
+          ]
+        },
+        {
+          "name": "req_timestamp",
+          "type": "string",
+          "description": "The triage collection time in ISO-8601_DATE format",
+          "required": false
+        },
+        {
+          "name": "external_id",
+          "type": "string",
+          "description": "External correlation ID",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_host_sets",
+      "name": "List Device Groups",
+      "description": "Retrieve a list of host sets in HX optionally filtered by name",
+      "http_method": "GET",
+      "endpoint": "/actions/list_host_sets",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Host set name for filtering",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_host_set",
+      "name": "Get Device Group",
+      "description": "List endpoints in a host set",
+      "http_method": "GET",
+      "endpoint": "/actions/get_host_set",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "host_set_id",
+          "type": "string",
+          "description": "ID of the Host Set",
+          "required": true,
+          "contains": [
+            "fireeyehx hostsetid"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_endpoints",
+      "name": "List Endpoints",
+      "description": "List and search the endpoints on HX",
+      "http_method": "GET",
+      "endpoint": "/actions/list_endpoints",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Limit the number of hosts returned. (HX Defaults to 50)",
+          "required": false
+        },
+        {
+          "name": "search",
+          "type": "string",
+          "description": "Search all hosts connected to the HX appliance. Search for hostname, IP address or Agent ID",
+          "required": false,
+          "contains": [
+            "host name",
+            "ip",
+            "fireeyehx agentid"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_acquisitions",
+      "name": "List Acquisitions",
+      "description": "Retrieve a list of all acquisitions with optional filters",
+      "http_method": "GET",
+      "endpoint": "/actions/list_acquisitions",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "agent_id",
+          "type": "string",
+          "description": "HX Agent ID for the host",
+          "required": false,
+          "contains": [
+            "fireeyehx agentid"
+          ]
+        },
+        {
+          "name": "req_filename",
+          "type": "string",
+          "description": "Name of the file acquired",
+          "required": false,
+          "contains": [
+            "file name"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "start_acquisition",
+      "name": "Start Acquisition",
+      "description": "Request a file to be acquired into FireEye HX",
+      "http_method": "GET",
+      "endpoint": "/actions/start_acquisition",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "agent_id",
+          "type": "string",
+          "description": "HX Agent ID for the host",
+          "required": true,
+          "contains": [
+            "fireeyehx agentid"
+          ]
+        },
+        {
+          "name": "req_path",
+          "type": "string",
+          "description": "Path of the file that you want to acquire",
+          "required": true,
+          "contains": [
+            "file path"
+          ]
+        },
+        {
+          "name": "req_filename",
+          "type": "string",
+          "description": "Name of the file you want to acquire",
+          "required": true,
+          "contains": [
+            "file name"
+          ]
+        },
+        {
+          "name": "req_use_api",
+          "type": "boolean",
+          "description": "Whether to use RAW or API mode",
+          "required": false
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "General Comment",
+          "required": false
+        },
+        {
+          "name": "external_id",
+          "type": "string",
+          "description": "External correlation ID from a SIEM solution",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_file",
+      "name": "Get File",
+      "description": "Pull the acquired file into Phantom Vault",
+      "http_method": "GET",
+      "endpoint": "/actions/get_file",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "acquisition_id",
+          "type": "string",
+          "description": "HX Acquisition ID for the acquired file",
+          "required": true,
+          "contains": [
+            "fireeyehx acquisition id"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "get_alert",
+      "name": "Get Alert",
+      "description": "Pull single alert info by ID",
+      "http_method": "GET",
+      "endpoint": "/actions/get_alert",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "alert_id",
+          "type": "string",
+          "description": "The ID of the alert to fetch data from",
+          "required": true,
+          "contains": [
+            "fireeyehx alert id"
+          ]
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "FireEye HX",
+    "original_type": "endpoint",
+    "converted_at": "2025-12-18T16:25:28.782139",
+    "source_version": "2.3.2"
+  }
+}

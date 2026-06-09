@@ -1,0 +1,110 @@
+{
+  "id": "trivy",
+  "name": "Trivy",
+  "description": "Open source vulnerability scanner for containers, filesystems, Git repositories, Kubernetes clusters, and cloud infrastructure",
+  "version": "1.0.0",
+  "category": "container_security",
+  "vendor": "Aqua Security (open source)",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Trivy-Token",
+    "location": "header",
+    "description": "Token configured via --token flag when starting Trivy server"
+  },
+  "base_url": "https://{host}:8080",
+  "actions": [
+    {
+      "id": "scan_image",
+      "name": "Scan Container Image",
+      "description": "Submit a container image for vulnerability scanning via Trivy server",
+      "http_method": "POST",
+      "endpoint": "/twirp/trivy.scanner.v1.Scanner/Scan",
+      "action_type": "generic",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "target",
+          "type": "string",
+          "description": "Container image name with tag (e.g., nginx:1.25)",
+          "required": true,
+          "location": "body"
+        },
+        {
+          "name": "artifact_type",
+          "type": "string",
+          "description": "Type of artifact to scan: container_image, filesystem, repository",
+          "required": false,
+          "location": "body"
+        }
+      ]
+    },
+    {
+      "id": "get_version",
+      "name": "Get Server Version",
+      "description": "Retrieve the Trivy server version and vulnerability database information",
+      "http_method": "GET",
+      "endpoint": "/healthz",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "scan_sbom",
+      "name": "Scan SBOM",
+      "description": "Scan a Software Bill of Materials document for vulnerabilities",
+      "http_method": "POST",
+      "endpoint": "/twirp/trivy.scanner.v1.Scanner/Scan",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "target",
+          "type": "string",
+          "description": "Path or content of SBOM file (CycloneDX or SPDX format)",
+          "required": true,
+          "location": "body"
+        },
+        {
+          "name": "artifact_type",
+          "type": "string",
+          "description": "Set to 'sbom' for SBOM scanning",
+          "required": true,
+          "location": "body"
+        }
+      ]
+    },
+    {
+      "id": "list_vulnerabilities",
+      "name": "List Image Vulnerabilities",
+      "description": "Scan and retrieve vulnerability list for a container image including CVE details",
+      "http_method": "POST",
+      "endpoint": "/twirp/trivy.scanner.v1.Scanner/Scan",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "target",
+          "type": "string",
+          "description": "Container image to scan (e.g., alpine:3.18)",
+          "required": true,
+          "location": "body"
+        },
+        {
+          "name": "vuln_type",
+          "type": "string",
+          "description": "Vulnerability types to scan: os, library",
+          "required": false,
+          "location": "body"
+        },
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Minimum severity filter: UNKNOWN, LOW, MEDIUM, HIGH, CRITICAL",
+          "required": false,
+          "location": "body"
+        }
+      ]
+    }
+  ]
+}

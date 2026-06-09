@@ -1,0 +1,181 @@
+{
+  "id": "crowdstrike_cloud",
+  "name": "CrowdStrike Falcon Cloud Security",
+  "description": "CrowdStrike cloud security posture management (CSPM) and cloud workload protection via Falcon APIs for multi-cloud environments",
+  "version": "1.0.0",
+  "category": "cloud_security",
+  "vendor": "CrowdStrike",
+  "auth_type": "oauth2_client",
+  "auth_config": {
+    "type": "oauth2_client",
+    "token_url": "https://api.crowdstrike.com/oauth2/token",
+    "grant_type": "client_credentials"
+  },
+  "base_url": "https://api.crowdstrike.com",
+  "actions": [
+    {
+      "id": "list_cspm_findings",
+      "name": "List CSPM Findings",
+      "description": "List cloud security posture findings (indicators of misconfiguration) across cloud accounts",
+      "http_method": "GET",
+      "endpoint": "/detects/entities/iom/v2",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Filter by severity (Critical, High, Medium, Low, Informational)",
+          "required": false
+        },
+        {
+          "name": "cloud_provider",
+          "type": "string",
+          "description": "Filter by cloud provider (aws, azure, gcp)",
+          "required": false
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Filter by finding status (new, reoccurring, all)",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum findings to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "list_cspm_accounts",
+      "name": "List CSPM Cloud Accounts",
+      "description": "List registered CSPM cloud accounts and their scanning status",
+      "http_method": "GET",
+      "endpoint": "/cloud-connect-cspm-aws/entities/account/v1",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "scan_type",
+          "type": "string",
+          "description": "Filter by scan type (full, dry)",
+          "required": false
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Filter by account status (provisioned, operational)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_ioa_events",
+      "name": "List IOA Events",
+      "description": "Retrieve indicators of attack events detected in cloud environments",
+      "http_method": "GET",
+      "endpoint": "/ioa/entities/events/v2",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "cloud_provider",
+          "type": "string",
+          "description": "Cloud provider filter (aws, azure, gcp)",
+          "required": false
+        },
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Filter by severity",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum events to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "get_cspm_policy_settings",
+      "name": "Get CSPM Policy Settings",
+      "description": "Retrieve current CSPM policy configurations and enabled status",
+      "http_method": "GET",
+      "endpoint": "/settings/entities/policy/v1",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "policy_id",
+          "type": "string",
+          "description": "Specific policy ID to retrieve settings for",
+          "required": false
+        },
+        {
+          "name": "cloud_platform",
+          "type": "string",
+          "description": "Filter by cloud platform (aws, azure, gcp)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_compliance_assessment",
+      "name": "Get Compliance Assessment",
+      "description": "Retrieve compliance assessment results for registered cloud accounts",
+      "http_method": "GET",
+      "endpoint": "/compliance/entities/benchmarks/v1",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "benchmark",
+          "type": "string",
+          "description": "Compliance benchmark name (e.g., CIS, NIST, SOC2)",
+          "required": false
+        },
+        {
+          "name": "cloud_provider",
+          "type": "string",
+          "description": "Cloud provider filter",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "search_cloud_resources",
+      "name": "Search Cloud Resources",
+      "description": "Search and enumerate cloud resources across registered accounts",
+      "http_method": "GET",
+      "endpoint": "/cloud-connect-cspm-aws/entities/resource/v1",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "resource_type",
+          "type": "string",
+          "description": "Cloud resource type to search",
+          "required": false
+        },
+        {
+          "name": "account_id",
+          "type": "string",
+          "description": "Cloud account ID to scope the search",
+          "required": false
+        },
+        {
+          "name": "region",
+          "type": "string",
+          "description": "Cloud region to filter",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

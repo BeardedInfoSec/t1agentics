@@ -1,0 +1,198 @@
+{
+  "id": "hashicorp_vault_identity",
+  "name": "HashiCorp Vault",
+  "description": "Secrets management and identity-based access through HashiCorp Vault HTTP API for managing secrets, auth methods, policies, and audit logs",
+  "version": "1.0.0",
+  "category": "identity",
+  "vendor": "HashiCorp (IBM)",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "header_name": "X-Vault-Token",
+    "location": "header"
+  },
+  "base_url": "https://{host}:8200/v1",
+  "actions": [
+    {
+      "id": "read_secret",
+      "name": "Read Secret",
+      "description": "Read a secret from the KV secrets engine (v2)",
+      "http_method": "GET",
+      "endpoint": "/secret/data/{path}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "path",
+          "type": "string",
+          "description": "Path to the secret in the KV engine",
+          "required": true
+        },
+        {
+          "name": "version",
+          "type": "number",
+          "description": "Version of the secret to read (latest if not specified)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_secrets",
+      "name": "List Secrets",
+      "description": "List secret keys at a given path in the KV secrets engine",
+      "http_method": "LIST",
+      "endpoint": "/secret/metadata/{path}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "path",
+          "type": "string",
+          "description": "Path to list secrets at",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "write_secret",
+      "name": "Write Secret",
+      "description": "Create or update a secret in the KV secrets engine (v2)",
+      "http_method": "POST",
+      "endpoint": "/secret/data/{path}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "path",
+          "type": "string",
+          "description": "Path to write the secret to",
+          "required": true
+        },
+        {
+          "name": "data",
+          "type": "object",
+          "description": "Key-value pairs for the secret data",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "delete_secret",
+      "name": "Delete Secret",
+      "description": "Soft-delete the latest version of a secret",
+      "http_method": "DELETE",
+      "endpoint": "/secret/data/{path}",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "path",
+          "type": "string",
+          "description": "Path of the secret to delete",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_auth_methods",
+      "name": "List Auth Methods",
+      "description": "List all enabled authentication methods",
+      "http_method": "GET",
+      "endpoint": "/sys/auth",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "list_policies",
+      "name": "List Policies",
+      "description": "List all ACL policies in the Vault",
+      "http_method": "GET",
+      "endpoint": "/sys/policies/acl",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "get_policy",
+      "name": "Get Policy",
+      "description": "Retrieve a specific ACL policy by name",
+      "http_method": "GET",
+      "endpoint": "/sys/policies/acl/{name}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Policy name",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_token_accessors",
+      "name": "List Token Accessors",
+      "description": "List all token accessors for audit",
+      "http_method": "LIST",
+      "endpoint": "/auth/token/accessors",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "lookup_token",
+      "name": "Lookup Token",
+      "description": "Retrieve information about a token",
+      "http_method": "POST",
+      "endpoint": "/auth/token/lookup",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "token",
+          "type": "string",
+          "description": "Token to look up",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "revoke_token",
+      "name": "Revoke Token",
+      "description": "Revoke a token and all its children",
+      "http_method": "POST",
+      "endpoint": "/auth/token/revoke",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "token",
+          "type": "string",
+          "description": "Token to revoke",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_secrets_engines",
+      "name": "List Secrets Engines",
+      "description": "List all enabled secrets engines",
+      "http_method": "GET",
+      "endpoint": "/sys/mounts",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "get_health",
+      "name": "Get Health Status",
+      "description": "Check the health and seal status of the Vault server",
+      "http_method": "GET",
+      "endpoint": "/sys/health",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    }
+  ]
+}

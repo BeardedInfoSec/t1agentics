@@ -1,0 +1,207 @@
+{
+  "id": "ossim",
+  "name": "OSSIM",
+  "description": "Integrates with AlienVault OSSIM open-source SIEM for alarm management, event retrieval, asset inventory, and directive/policy monitoring via the OSSIM REST API",
+  "version": "1.0.0",
+  "category": "siem",
+  "vendor": "AT&T Cybersecurity (LevelBlue)",
+  "auth_type": "basic",
+  "auth_config": {
+    "type": "basic",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "https://{host}/ossim/api",
+  "actions": [
+    {
+      "id": "list_alarms",
+      "name": "List Alarms",
+      "description": "Retrieve alarms from OSSIM with optional filtering",
+      "http_method": "GET",
+      "endpoint": "/alarm/alarm",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Filter by alarm status (open, closed)",
+          "required": false
+        },
+        {
+          "name": "from_date",
+          "type": "string",
+          "description": "Start date filter (YYYY-MM-DD)",
+          "required": false
+        },
+        {
+          "name": "to_date",
+          "type": "string",
+          "description": "End date filter (YYYY-MM-DD)",
+          "required": false
+        },
+        {
+          "name": "page",
+          "type": "number",
+          "description": "Page number for pagination",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "page_rows",
+          "type": "number",
+          "description": "Number of results per page",
+          "required": false,
+          "default": 50
+        }
+      ]
+    },
+    {
+      "id": "get_alarm",
+      "name": "Get Alarm Details",
+      "description": "Retrieve details for a specific alarm by UUID",
+      "http_method": "GET",
+      "endpoint": "/alarm/alarm/{alarm_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "alarm_id",
+          "type": "string",
+          "description": "Alarm UUID to retrieve",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "close_alarm",
+      "name": "Close Alarm",
+      "description": "Close an OSSIM alarm",
+      "http_method": "PUT",
+      "endpoint": "/alarm/alarm/{alarm_id}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "alarm_id",
+          "type": "string",
+          "description": "Alarm UUID to close",
+          "required": true
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "New status (closed)",
+          "required": true,
+          "default": "closed"
+        }
+      ]
+    },
+    {
+      "id": "list_events",
+      "name": "List Events",
+      "description": "Retrieve security events from OSSIM",
+      "http_method": "GET",
+      "endpoint": "/event/event",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "from_date",
+          "type": "string",
+          "description": "Start date (YYYY-MM-DD)",
+          "required": false
+        },
+        {
+          "name": "to_date",
+          "type": "string",
+          "description": "End date (YYYY-MM-DD)",
+          "required": false
+        },
+        {
+          "name": "src_ip",
+          "type": "string",
+          "description": "Filter by source IP",
+          "required": false
+        },
+        {
+          "name": "dst_ip",
+          "type": "string",
+          "description": "Filter by destination IP",
+          "required": false
+        },
+        {
+          "name": "page",
+          "type": "number",
+          "description": "Page number",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "page_rows",
+          "type": "number",
+          "description": "Results per page",
+          "required": false,
+          "default": 50
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "list_assets",
+      "name": "List Assets",
+      "description": "Retrieve the OSSIM asset inventory",
+      "http_method": "GET",
+      "endpoint": "/host/host",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "search",
+          "type": "string",
+          "description": "Search by hostname or IP",
+          "required": false
+        },
+        {
+          "name": "page",
+          "type": "number",
+          "description": "Page number",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "page_rows",
+          "type": "number",
+          "description": "Results per page",
+          "required": false,
+          "default": 50
+        }
+      ]
+    },
+    {
+      "id": "get_directives",
+      "name": "Get Directives",
+      "description": "Retrieve correlation directives configured in OSSIM",
+      "http_method": "GET",
+      "endpoint": "/directive/directive",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "page",
+          "type": "number",
+          "description": "Page number",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "page_rows",
+          "type": "number",
+          "description": "Results per page",
+          "required": false,
+          "default": 50
+        }
+      ]
+    }
+  ]
+}

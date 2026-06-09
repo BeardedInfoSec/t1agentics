@@ -1,0 +1,190 @@
+{
+  "id": "isight_partners",
+  "name": "iSight Partners",
+  "description": "This app integrates with iSight Partners' ThreatScape product to pull campaign reports and provide hunting capabilities",
+  "version": "3.0.1",
+  "category": "utility",
+  "vendor": "iSight Partners",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "api_url",
+  "actions": [
+    {
+      "id": "hunt_file",
+      "name": "Hunt File",
+      "description": "Look for information about a file hash in the ThreatScape product database",
+      "http_method": "GET",
+      "endpoint": "/actions/hunt_file",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "hash",
+          "type": "string",
+          "description": "Hash of the binary to hunt",
+          "required": true,
+          "contains": [
+            "hash",
+            "md5",
+            "sha1",
+            "sha256"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "hunt_domain",
+      "name": "Hunt Domain",
+      "description": "Look for information about a domain in the ThreatScape product database",
+      "http_method": "GET",
+      "endpoint": "/actions/hunt_domain",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "domain",
+          "type": "string",
+          "description": "Domain to hunt",
+          "required": true,
+          "contains": [
+            "domain"
+          ]
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "hunt_ip",
+      "name": "Hunt Ip",
+      "description": "Look for information about an IP in the ThreatScape product database",
+      "http_method": "GET",
+      "endpoint": "/actions/hunt_ip",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "IP to hunt",
+          "required": true,
+          "contains": [
+            "ip"
+          ]
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "hunt_url",
+      "name": "Hunt Url",
+      "description": "Look for information about a URL in the ThreatScape product database",
+      "http_method": "GET",
+      "endpoint": "/actions/hunt_url",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "URL to hunt",
+          "required": true,
+          "contains": [
+            "url"
+          ]
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "get_report",
+      "name": "Get Report",
+      "description": "Get report details",
+      "http_method": "GET",
+      "endpoint": "/actions/get_report",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Report ID to get the details of",
+          "required": true,
+          "contains": [
+            "isightpartners report id"
+          ]
+        },
+        {
+          "name": "download_report",
+          "type": "boolean",
+          "description": "Download the report pdf to vault",
+          "required": false,
+          "default": false
+        }
+      ]
+    },
+    {
+      "id": "on_poll",
+      "name": "On Poll",
+      "description": "Callback action for the on_poll ingest functionality",
+      "http_method": "GET",
+      "endpoint": "/actions/on_poll",
+      "action_type": "ingest",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "container_id",
+          "type": "string",
+          "description": "Container IDs to limit the ingestion to",
+          "required": false
+        },
+        {
+          "name": "start_time",
+          "type": "number",
+          "description": "Start of time range, in epoch time (milliseconds)",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "number",
+          "description": "End of time range, in epoch time (milliseconds)",
+          "required": false
+        },
+        {
+          "name": "container_count",
+          "type": "number",
+          "description": "Maximum number of container records to query for",
+          "required": false
+        },
+        {
+          "name": "artifact_count",
+          "type": "number",
+          "description": "Maximum number of artifact records to query for",
+          "required": false
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "iSight Partners",
+    "original_type": "threat intel",
+    "converted_at": "2025-12-18T16:25:28.879171",
+    "source_version": "3.0.1"
+  }
+}

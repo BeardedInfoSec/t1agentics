@@ -1,0 +1,169 @@
+{
+  "id": "azure_defender_iot",
+  "name": "Microsoft Defender for IoT",
+  "description": "Azure IoT security solution providing asset discovery, vulnerability management, and threat detection for IoT and OT devices and networks",
+  "version": "1.0.0",
+  "category": "azure_security",
+  "vendor": "Microsoft Azure",
+  "auth_type": "oauth2_client",
+  "auth_config": {
+    "type": "oauth2_client",
+    "token_url": "https://login.microsoftonline.com/{tenantId}/oauth2/v2.0/token",
+    "scope": "https://management.azure.com/.default",
+    "grant_type": "client_credentials"
+  },
+  "base_url": "https://management.azure.com",
+  "actions": [
+    {
+      "id": "list_alerts",
+      "name": "List IoT Alerts",
+      "description": "List Defender for IoT security alerts for a subscription",
+      "http_method": "GET",
+      "endpoint": "/subscriptions/{subscriptionId}/providers/Microsoft.Security/iotAlerts",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "subscriptionId",
+          "type": "string",
+          "description": "Azure subscription ID",
+          "required": true
+        },
+        {
+          "name": "api-version",
+          "type": "string",
+          "description": "API version",
+          "required": true,
+          "default": "2021-07-01-preview"
+        },
+        {
+          "name": "$filter",
+          "type": "string",
+          "description": "OData filter expression",
+          "required": false
+        },
+        {
+          "name": "$top",
+          "type": "number",
+          "description": "Maximum alerts to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "get_alert",
+      "name": "Get IoT Alert Details",
+      "description": "Retrieve detailed information about a specific IoT security alert",
+      "http_method": "GET",
+      "endpoint": "/subscriptions/{subscriptionId}/providers/Microsoft.Security/iotAlerts/{alertId}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "subscriptionId",
+          "type": "string",
+          "description": "Azure subscription ID",
+          "required": true
+        },
+        {
+          "name": "alertId",
+          "type": "string",
+          "description": "Alert ID",
+          "required": true
+        },
+        {
+          "name": "api-version",
+          "type": "string",
+          "description": "API version",
+          "required": true,
+          "default": "2021-07-01-preview"
+        }
+      ]
+    },
+    {
+      "id": "list_recommendations",
+      "name": "List IoT Recommendations",
+      "description": "List security recommendations for IoT devices and networks",
+      "http_method": "GET",
+      "endpoint": "/subscriptions/{subscriptionId}/providers/Microsoft.Security/iotRecommendations",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "subscriptionId",
+          "type": "string",
+          "description": "Azure subscription ID",
+          "required": true
+        },
+        {
+          "name": "api-version",
+          "type": "string",
+          "description": "API version",
+          "required": true,
+          "default": "2021-07-01-preview"
+        }
+      ]
+    },
+    {
+      "id": "list_devices",
+      "name": "List Devices",
+      "description": "List discovered IoT and OT devices with their security posture",
+      "http_method": "GET",
+      "endpoint": "/subscriptions/{subscriptionId}/providers/Microsoft.Security/devices",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "subscriptionId",
+          "type": "string",
+          "description": "Azure subscription ID",
+          "required": true
+        },
+        {
+          "name": "api-version",
+          "type": "string",
+          "description": "API version",
+          "required": true,
+          "default": "2021-07-01-preview"
+        },
+        {
+          "name": "$filter",
+          "type": "string",
+          "description": "OData filter expression",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_device_vulnerabilities",
+      "name": "List Device Vulnerabilities",
+      "description": "List known vulnerabilities for IoT and OT devices",
+      "http_method": "GET",
+      "endpoint": "/subscriptions/{subscriptionId}/providers/Microsoft.Security/deviceVulnerabilities",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "subscriptionId",
+          "type": "string",
+          "description": "Azure subscription ID",
+          "required": true
+        },
+        {
+          "name": "api-version",
+          "type": "string",
+          "description": "API version",
+          "required": true,
+          "default": "2021-07-01-preview"
+        },
+        {
+          "name": "deviceId",
+          "type": "string",
+          "description": "Filter by specific device ID",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

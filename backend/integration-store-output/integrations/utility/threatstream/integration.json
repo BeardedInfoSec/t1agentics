@@ -1,0 +1,2662 @@
+{
+  "id": "threatstream",
+  "name": "ThreatStream",
+  "description": "Integrates a variety of generic, reputation, and investigative actions from the Anomali ThreatStream threat intelligence platform",
+  "version": "3.6.1",
+  "category": "utility",
+  "vendor": "Anomali",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "file_reputation",
+      "name": "File Reputation",
+      "description": "Get information about a file",
+      "http_method": "GET",
+      "endpoint": "/actions/file_reputation",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "hash",
+          "type": "string",
+          "description": "Hash of file",
+          "required": true,
+          "contains": [
+            "sha1",
+            "sha256",
+            "md5",
+            "hash"
+          ]
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Total number of observables to return",
+          "required": false,
+          "default": 1000
+        },
+        {
+          "name": "extend_source",
+          "type": "boolean",
+          "description": "Fetch extra data from Anomali server if available",
+          "required": false
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "domain_reputation",
+      "name": "Domain Reputation",
+      "description": "Get information about a given domain",
+      "http_method": "GET",
+      "endpoint": "/actions/domain_reputation",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "domain",
+          "type": "string",
+          "description": "Domain to investigate",
+          "required": true,
+          "contains": [
+            "domain",
+            "url"
+          ]
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Total number of observables to return",
+          "required": false,
+          "default": 1000
+        },
+        {
+          "name": "extend_source",
+          "type": "boolean",
+          "description": "Fetch extra data from Anomali server if available",
+          "required": false
+        },
+        {
+          "name": "pdns",
+          "type": "boolean",
+          "description": "If enabled, pdns will also be fetched",
+          "required": false
+        },
+        {
+          "name": "insights",
+          "type": "boolean",
+          "description": "If enabled, insights will also be fetched",
+          "required": false
+        },
+        {
+          "name": "external_references",
+          "type": "boolean",
+          "description": "If enabled, external references will also be fetched",
+          "required": false
+        },
+        {
+          "name": "search_exact_value",
+          "type": "boolean",
+          "description": "Search for the exact domain",
+          "required": false
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "ip_reputation",
+      "name": "Ip Reputation",
+      "description": "Get information about a given IP",
+      "http_method": "GET",
+      "endpoint": "/actions/ip_reputation",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "IP to investigate",
+          "required": true,
+          "contains": [
+            "ip",
+            "ipv6"
+          ]
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Total number of observables to return",
+          "required": false,
+          "default": 1000
+        },
+        {
+          "name": "extend_source",
+          "type": "boolean",
+          "description": "Fetch extra data from Anomali server if available",
+          "required": false
+        },
+        {
+          "name": "pdns",
+          "type": "boolean",
+          "description": "If enabled, pdns will also be fetched",
+          "required": false
+        },
+        {
+          "name": "insights",
+          "type": "boolean",
+          "description": "If enabled, insights will also be fetched",
+          "required": false
+        },
+        {
+          "name": "external_references",
+          "type": "boolean",
+          "description": "If enabled, external references will also be fetched",
+          "required": false
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "email_reputation",
+      "name": "Email Reputation",
+      "description": "Get information about a given email",
+      "http_method": "GET",
+      "endpoint": "/actions/email_reputation",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "email",
+          "type": "string",
+          "description": "Email to investigate",
+          "required": true,
+          "contains": [
+            "email"
+          ]
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Total number of observables to return",
+          "required": false,
+          "default": 1000
+        },
+        {
+          "name": "extend_source",
+          "type": "boolean",
+          "description": "Fetch extra data from Anomali server if available",
+          "required": false
+        },
+        {
+          "name": "search_exact_value",
+          "type": "boolean",
+          "description": "Search for the exact email",
+          "required": false
+        }
+      ],
+      "observable_type": "email"
+    },
+    {
+      "id": "url_reputation",
+      "name": "Url Reputation",
+      "description": "Get information about a URL",
+      "http_method": "GET",
+      "endpoint": "/actions/url_reputation",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "URL to investigate",
+          "required": true,
+          "contains": [
+            "url"
+          ]
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Total number of observables to return",
+          "required": false,
+          "default": 1000
+        },
+        {
+          "name": "extend_source",
+          "type": "boolean",
+          "description": "Fetch extra data from Anomali server if available",
+          "required": false
+        },
+        {
+          "name": "search_exact_value",
+          "type": "boolean",
+          "description": "Search for the exact url",
+          "required": false
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "whois_ip",
+      "name": "Whois Ip",
+      "description": "Execute a whois lookup on the given IP",
+      "http_method": "GET",
+      "endpoint": "/actions/whois_ip",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "IP",
+          "required": true,
+          "contains": [
+            "ip",
+            "ipv6"
+          ]
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "whois_domain",
+      "name": "Whois Domain",
+      "description": "Execute a whois lookup on the given domain",
+      "http_method": "GET",
+      "endpoint": "/actions/whois_domain",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "domain",
+          "type": "string",
+          "description": "Domain",
+          "required": true,
+          "contains": [
+            "domain",
+            "url"
+          ]
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "get_observable",
+      "name": "Get Observable",
+      "description": "Get observable present in ThreatStream by ID number",
+      "http_method": "GET",
+      "endpoint": "/actions/get_observable",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "intelligence_id",
+          "type": "string",
+          "description": "ID number of intelligence to return",
+          "required": true,
+          "contains": [
+            "threatstream intelligence id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_observables",
+      "name": "List Observables",
+      "description": "List observables present in ThreatStream",
+      "http_method": "GET",
+      "endpoint": "/actions/list_observables",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Total number of observables to return",
+          "required": false,
+          "default": 1000
+        }
+      ]
+    },
+    {
+      "id": "get_vulnerability",
+      "name": "Get Vulnerability",
+      "description": "Get vulnerability present in ThreatStream by ID number",
+      "http_method": "GET",
+      "endpoint": "/actions/get_vulnerability",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "vulnerability_id",
+          "type": "string",
+          "description": "ID number of vulnerability to return",
+          "required": true,
+          "contains": [
+            "threatstream vulnerability id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_vulnerabilities",
+      "name": "List Vulnerabilities",
+      "description": "List vulnerabilities present in ThreatStream",
+      "http_method": "GET",
+      "endpoint": "/actions/list_vulnerabilities",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Total number of vulnerabilities to return",
+          "required": false,
+          "default": 1000
+        }
+      ]
+    },
+    {
+      "id": "list_incidents",
+      "name": "List Incidents",
+      "description": "List incidents present in ThreatStream",
+      "http_method": "GET",
+      "endpoint": "/actions/list_incidents",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "intel_value",
+          "type": "string",
+          "description": "Intelligence value to filter incidents (ie. google.com)",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Total number of incidents to return",
+          "required": false,
+          "default": 1000
+        }
+      ]
+    },
+    {
+      "id": "delete_incident",
+      "name": "Delete Incident",
+      "description": "Delete incident in ThreatStream by ID number",
+      "http_method": "GET",
+      "endpoint": "/actions/delete_incident",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "incident_id",
+          "type": "string",
+          "description": "ID number of incident to delete",
+          "required": true,
+          "contains": [
+            "threatstream incident id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_incident",
+      "name": "Get Incident",
+      "description": "Get incident in ThreatStream by ID number",
+      "http_method": "GET",
+      "endpoint": "/actions/get_incident",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "incident_id",
+          "type": "string",
+          "description": "ID number of incident to return",
+          "required": true,
+          "contains": [
+            "threatstream incident id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "create_incident",
+      "name": "Create Incident",
+      "description": "Create an incident in ThreatStream",
+      "http_method": "GET",
+      "endpoint": "/actions/create_incident",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "local_intelligence",
+          "type": "string",
+          "description": "Comma-separated list of local intelligence IDs to associate with the incident - Note that this appends",
+          "required": false,
+          "contains": [
+            "threatstream intelligence id"
+          ]
+        },
+        {
+          "name": "cloud_intelligence",
+          "type": "string",
+          "description": "Comma-separated list of remote intelligence IDs to associate with the incident - Note that this appends",
+          "required": false,
+          "contains": [
+            "threatstream intelligence id"
+          ]
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Name to give the incident",
+          "required": true
+        },
+        {
+          "name": "fields",
+          "type": "string",
+          "description": "JSON formatted string of fields to include with the incident",
+          "required": false
+        },
+        {
+          "name": "is_public",
+          "type": "boolean",
+          "description": "Classification designation",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "create_on_cloud",
+          "type": "boolean",
+          "description": "Create on remote (cloud)? (applicable only for hybrid on-prem instances)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "update_incident",
+      "name": "Update Incident",
+      "description": "Update an incident in ThreatStream by ID number",
+      "http_method": "GET",
+      "endpoint": "/actions/update_incident",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "local_intelligence",
+          "type": "string",
+          "description": "Comma-separated list of local intelligence IDs to associate with the incident - Note that this appends",
+          "required": false
+        },
+        {
+          "name": "cloud_intelligence",
+          "type": "string",
+          "description": "Comma-separated list of remote intelligence IDs to associate with the incident - Note that this appends",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "type": "string",
+          "description": "JSON formatted string of fields to update on the incident",
+          "required": false
+        },
+        {
+          "name": "incident_id",
+          "type": "string",
+          "description": "ID number of incident to update",
+          "required": true,
+          "contains": [
+            "threatstream incident id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "import_domain_observable",
+      "name": "Import Domain Observable",
+      "description": "Import domain observable into ThreatStream",
+      "http_method": "GET",
+      "endpoint": "/actions/import_domain_observable",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "domain",
+          "type": "string",
+          "description": "Value of domain",
+          "required": true,
+          "contains": [
+            "domain"
+          ]
+        },
+        {
+          "name": "indicator_type",
+          "type": "string",
+          "description": "Type of observable to import",
+          "required": true
+        },
+        {
+          "name": "source",
+          "type": "string",
+          "description": "Source of observable to import (It will only be reflected on UI when observable is imported without approval)",
+          "required": false
+        },
+        {
+          "name": "classification",
+          "type": "string",
+          "description": "Designate classification for observable",
+          "required": false,
+          "default": "private"
+        },
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Severity of the observable",
+          "required": false
+        },
+        {
+          "name": "tags",
+          "type": "string",
+          "description": "Comma-separated list of tags to associate with this Observable",
+          "required": false,
+          "contains": [
+            "threatstream tags"
+          ]
+        },
+        {
+          "name": "create_on_cloud",
+          "type": "boolean",
+          "description": "Create on remote (cloud)? (applicable only for hybrid on-prem instances)",
+          "required": false
+        },
+        {
+          "name": "with_approval",
+          "type": "boolean",
+          "description": "Import the observable with approvals",
+          "required": false
+        },
+        {
+          "name": "allow_unresolved",
+          "type": "boolean",
+          "description": "Unresolved domains will be imported if set to true",
+          "required": false
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "import_url_observable",
+      "name": "Import Url Observable",
+      "description": "Import URL observable into ThreatStream",
+      "http_method": "GET",
+      "endpoint": "/actions/import_url_observable",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "Value of URL",
+          "required": true,
+          "contains": [
+            "url"
+          ]
+        },
+        {
+          "name": "indicator_type",
+          "type": "string",
+          "description": "Type of observable to import",
+          "required": true
+        },
+        {
+          "name": "source",
+          "type": "string",
+          "description": "Source of observable to import (It will only be reflected on UI when observable is imported without approval)",
+          "required": false
+        },
+        {
+          "name": "classification",
+          "type": "string",
+          "description": "Designate classification for observable",
+          "required": false,
+          "default": "private"
+        },
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Severity of the observable",
+          "required": false
+        },
+        {
+          "name": "tags",
+          "type": "string",
+          "description": "Comma-separated list of tags to associate with this Observable",
+          "required": false,
+          "contains": [
+            "threatstream tags"
+          ]
+        },
+        {
+          "name": "create_on_cloud",
+          "type": "boolean",
+          "description": "Create on remote (cloud)? (applicable only for hybrid on-prem instances)",
+          "required": false
+        },
+        {
+          "name": "with_approval",
+          "type": "boolean",
+          "description": "Import the observable with approvals",
+          "required": false
+        },
+        {
+          "name": "allow_unresolved",
+          "type": "boolean",
+          "description": "Unresolved urls will be imported if set to true",
+          "required": false
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "import_ip_observable",
+      "name": "Import Ip Observable",
+      "description": "Import IP observable into ThreatStream",
+      "http_method": "GET",
+      "endpoint": "/actions/import_ip_observable",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "ip_address",
+          "type": "string",
+          "description": "Value of IP",
+          "required": true,
+          "contains": [
+            "ip",
+            "ipv6"
+          ]
+        },
+        {
+          "name": "indicator_type",
+          "type": "string",
+          "description": "Type of observable to import",
+          "required": true
+        },
+        {
+          "name": "source",
+          "type": "string",
+          "description": "Source of observable to import (It will only be reflected on UI when observable is imported without approval)",
+          "required": false
+        },
+        {
+          "name": "classification",
+          "type": "string",
+          "description": "Designate classification for observable",
+          "required": false,
+          "default": "private"
+        },
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Severity of the observable",
+          "required": false
+        },
+        {
+          "name": "tags",
+          "type": "string",
+          "description": "Comma-separated list of tags to associate with this Observable",
+          "required": false,
+          "contains": [
+            "threatstream tags"
+          ]
+        },
+        {
+          "name": "create_on_cloud",
+          "type": "boolean",
+          "description": "Create on remote (cloud)? (applicable only for hybrid on-prem instances)",
+          "required": false
+        },
+        {
+          "name": "with_approval",
+          "type": "boolean",
+          "description": "Import the observable with approvals",
+          "required": false
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "import_file_observable",
+      "name": "Import File Observable",
+      "description": "Import file observable into ThreatStream",
+      "http_method": "GET",
+      "endpoint": "/actions/import_file_observable",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "file_hash",
+          "type": "string",
+          "description": "Hash value of file",
+          "required": true,
+          "contains": [
+            "sha1",
+            "sha256",
+            "md5",
+            "hash"
+          ]
+        },
+        {
+          "name": "indicator_type",
+          "type": "string",
+          "description": "Type of observable to import",
+          "required": true
+        },
+        {
+          "name": "source",
+          "type": "string",
+          "description": "Source of observable to import (It will only be reflected on UI when observable is imported without approval)",
+          "required": false
+        },
+        {
+          "name": "confidence",
+          "type": "number",
+          "description": "Confidence level",
+          "required": true
+        },
+        {
+          "name": "classification",
+          "type": "string",
+          "description": "Designate classification for observable",
+          "required": false,
+          "default": "private"
+        },
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Severity of the observable",
+          "required": false
+        },
+        {
+          "name": "tags",
+          "type": "string",
+          "description": "Comma-separated list of tags to associate with this Observable",
+          "required": false,
+          "contains": [
+            "threatstream tags"
+          ]
+        },
+        {
+          "name": "create_on_cloud",
+          "type": "boolean",
+          "description": "Create on remote (cloud)? (applicable only for hybrid on-prem instances)",
+          "required": false
+        },
+        {
+          "name": "with_approval",
+          "type": "boolean",
+          "description": "Import the observable with approvals",
+          "required": false
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "import_email_observable",
+      "name": "Import Email Observable",
+      "description": "Import email observable into ThreatStream",
+      "http_method": "GET",
+      "endpoint": "/actions/import_email_observable",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "email",
+          "type": "string",
+          "description": "Value of email",
+          "required": true,
+          "contains": [
+            "email"
+          ]
+        },
+        {
+          "name": "indicator_type",
+          "type": "string",
+          "description": "Type of observable to import",
+          "required": true
+        },
+        {
+          "name": "source",
+          "type": "string",
+          "description": "Source of observable to import (It will only be reflected on UI when observable is imported without approval)",
+          "required": false
+        },
+        {
+          "name": "confidence",
+          "type": "number",
+          "description": "Confidence level",
+          "required": true
+        },
+        {
+          "name": "classification",
+          "type": "string",
+          "description": "Designate classification for observable",
+          "required": false,
+          "default": "private"
+        },
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Severity of the observable",
+          "required": false
+        },
+        {
+          "name": "tags",
+          "type": "string",
+          "description": "Comma-separated list of tags to associate with this Observable",
+          "required": false,
+          "contains": [
+            "threatstream tags"
+          ]
+        },
+        {
+          "name": "create_on_cloud",
+          "type": "boolean",
+          "description": "Create on remote (cloud)? (applicable only for hybrid on-prem instances)",
+          "required": false
+        },
+        {
+          "name": "with_approval",
+          "type": "boolean",
+          "description": "Import the observable with approvals",
+          "required": false
+        }
+      ],
+      "observable_type": "email"
+    },
+    {
+      "id": "import_observables",
+      "name": "Import Observables",
+      "description": "Import observables into ThreatStream",
+      "http_method": "GET",
+      "endpoint": "/actions/import_observables",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "observable_type",
+          "type": "string",
+          "description": "Type of observable to import, types supported by default: [ip, domain, url, email, hash]. Custom types can also be provided if they are available on ThreatStream instance",
+          "required": true
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "description": "Observable value",
+          "required": true,
+          "contains": [
+            "ip",
+            "domain",
+            "url",
+            "email",
+            "md5",
+            "sha1",
+            "hash"
+          ]
+        },
+        {
+          "name": "classification",
+          "type": "string",
+          "description": "Designate classification for observable",
+          "required": true,
+          "default": "private"
+        },
+        {
+          "name": "fields",
+          "type": "string",
+          "description": "JSON formatted string of fields to include with the observable",
+          "required": false
+        },
+        {
+          "name": "create_on_cloud",
+          "type": "boolean",
+          "description": "Create on remote (cloud)? (applicable only for hybrid on-prem instances)",
+          "required": false
+        },
+        {
+          "name": "with_approval",
+          "type": "boolean",
+          "description": "Import the observable with approvals",
+          "required": false
+        },
+        {
+          "name": "allow_unresolved",
+          "type": "boolean",
+          "description": "Unresolved domains will be imported if set to true",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "tag_observable",
+      "name": "Tag Observable",
+      "description": "Add a tag to the observable",
+      "http_method": "GET",
+      "endpoint": "/actions/tag_observable",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Intelligence ID",
+          "required": true,
+          "contains": [
+            "threatstream intelligence id"
+          ]
+        },
+        {
+          "name": "source_user_id",
+          "type": "string",
+          "description": "ID of user to associate with tag",
+          "required": true
+        },
+        {
+          "name": "tags",
+          "type": "string",
+          "description": "Comma-separated list of tags to associate with this Observable",
+          "required": true,
+          "contains": [
+            "threatstream tags"
+          ]
+        },
+        {
+          "name": "tlp",
+          "type": "string",
+          "description": "TLP to assign to each tag",
+          "required": false,
+          "default": "red",
+          "contains": [
+            "threatstream tlp"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_pcap",
+      "name": "Get Pcap",
+      "description": "Download pcap file of a sample submitted to the sandbox and add it to vault",
+      "http_method": "GET",
+      "endpoint": "/actions/get_pcap",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "number",
+          "description": "ID of report associated with the pcap to download",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "detonate_file",
+      "name": "Detonate File",
+      "description": "Detonate file in ThreatStream",
+      "http_method": "GET",
+      "endpoint": "/actions/detonate_file",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "platform",
+          "type": "string",
+          "description": "Which platform to run the detonation on - Ex: WINDOWS10x64. Default is 'WINDOWS7' which will run the detonation on 'WINDOWS7' platform",
+          "required": false,
+          "default": "WINDOWS7"
+        },
+        {
+          "name": "vault_id",
+          "type": "string",
+          "description": "Vault id of file to be detonated",
+          "required": true,
+          "contains": [
+            "vault id",
+            "sha1"
+          ]
+        },
+        {
+          "name": "classification",
+          "type": "string",
+          "description": "Classification of the sandbox submission - private or public",
+          "required": true
+        },
+        {
+          "name": "use_premium_sandbox",
+          "type": "boolean",
+          "description": "Specify whether the premium sandbox should be used for detonation - true or false. If you want to use the Joe Sandbox service for detonation, set this attribute to true",
+          "required": false
+        },
+        {
+          "name": "use_vmray_sandbox",
+          "type": "boolean",
+          "description": "Specify whether the vmray sandbox should be used for detonation - true or false. If you want to use the VMRay sandbox service for detonation, set this attribute to true",
+          "required": false
+        },
+        {
+          "name": "vmray_max_jobs",
+          "type": "number",
+          "description": "Specify the number of detonations you want VMRay to perform for the submission",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "type": "string",
+          "description": "JSON formatted string of additional fields to be included in the detonate file action. e.g. {\"file_has_password\":\"true\",\"file_password\":\"abc123\"}. Please check the API doc to find more information on other valid fields",
+          "required": false
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "detonate_url",
+      "name": "Detonate Url",
+      "description": "Detonate URL in ThreatStream",
+      "http_method": "GET",
+      "endpoint": "/actions/detonate_url",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "platform",
+          "type": "string",
+          "description": "Which platform to run the detonation on - Ex: WINDOWS10x64. Default is 'WINDOWS7' which will run the detonation on 'WINDOWS7' platform",
+          "required": false,
+          "default": "WINDOWS7"
+        },
+        {
+          "name": "url",
+          "type": "string",
+          "description": "URL to be detonated",
+          "required": true,
+          "contains": [
+            "url"
+          ]
+        },
+        {
+          "name": "classification",
+          "type": "string",
+          "description": "Classification of the sandbox submission - private or public",
+          "required": true
+        },
+        {
+          "name": "use_premium_sandbox",
+          "type": "boolean",
+          "description": "Specify whether the premium sandbox should be used for detonation - true or false. If you want to use the Joe Sandbox service for detonation, set this attribute to true",
+          "required": false
+        },
+        {
+          "name": "use_vmray_sandbox",
+          "type": "boolean",
+          "description": "Specify whether the vmray sandbox should be used for detonation - true or false. If you want to use the VMRay sandbox service for detonation, set this attribute to true",
+          "required": false
+        },
+        {
+          "name": "vmray_max_jobs",
+          "type": "number",
+          "description": "Specify the number of detonations you want VMRay to perform for the submission",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "type": "string",
+          "description": "JSON formatted string of additional fields to be included in the detonate url action. e.g. {\"import_indicators\":\"true\",\"report_radio-notes\":\"Credential-Exposure,compromised_email\"}. Please check the API doc to find more infomation on other valid fields",
+          "required": false
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "get_status",
+      "name": "Get Status",
+      "description": "Retrieve detonation status present in Threatstream",
+      "http_method": "GET",
+      "endpoint": "/actions/get_status",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "endpoint",
+          "type": "string",
+          "description": "Endpoint given by Detonate File/URL (eg: /api/v1/submit/12345/)",
+          "required": true,
+          "contains": [
+            "threatstream endpoint status"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_report",
+      "name": "Get Report",
+      "description": "Retrieve detonation report present in Threatstream",
+      "http_method": "GET",
+      "endpoint": "/actions/get_report",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "endpoint",
+          "type": "string",
+          "description": "Endpoint given by Detonate File/URL (eg: /api/v1/submit/141/report/)",
+          "required": true,
+          "contains": [
+            "threatstream endpoint report"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "on_poll",
+      "name": "On Poll",
+      "description": "Callback action for the on_poll ingest functionality",
+      "http_method": "GET",
+      "endpoint": "/actions/on_poll",
+      "action_type": "ingest",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "container_id",
+          "type": "number",
+          "description": "Parameter ignored in this app",
+          "required": false
+        },
+        {
+          "name": "start_time",
+          "type": "number",
+          "description": "Parameter ignored in this app",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "number",
+          "description": "Parameter ignored in this app",
+          "required": false
+        },
+        {
+          "name": "container_count",
+          "type": "number",
+          "description": "Maximum number of container records (incidents) to query for",
+          "required": false
+        },
+        {
+          "name": "artifact_count",
+          "type": "number",
+          "description": "Parameter ignored in this app",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "run_query",
+      "name": "Run Query",
+      "description": "Run observables query in ThreatStream",
+      "http_method": "GET",
+      "endpoint": "/actions/run_query",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Search string in JSON format using the Anomali filter language (as seen on the advanced search page)",
+          "required": true
+        },
+        {
+          "name": "order_by",
+          "type": "string",
+          "description": "Field by which the query results will be ordered",
+          "required": false
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Record offset (used with paging, when returning many results)",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Record limit",
+          "required": false,
+          "default": 1000
+        }
+      ]
+    },
+    {
+      "id": "import_session_search",
+      "name": "List Import Sessions",
+      "description": "List all the import sessions",
+      "http_method": "GET",
+      "endpoint": "/actions/import_session_search",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "date_modified_gte",
+          "type": "string",
+          "description": "Import sessions with greater than or equal to the provided modified date will be returned",
+          "required": false,
+          "contains": [
+            "threatstream date"
+          ]
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Total number of import sessions to return",
+          "required": false,
+          "default": 1000
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Record offset (used with paging, when returning many results)",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "status_in",
+          "type": "string",
+          "description": "Status to filter the records",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "import_session_update",
+      "name": "Update Import Session",
+      "description": "This action updates the fields of the provided item id",
+      "http_method": "GET",
+      "endpoint": "/actions/import_session_update",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "item_id",
+          "type": "number",
+          "description": "ID of the import session to update",
+          "required": true,
+          "contains": [
+            "threatstream import session id"
+          ]
+        },
+        {
+          "name": "ph",
+          "type": "string",
+          "description": "Placeholder to be updated",
+          "required": false
+        },
+        {
+          "name": "intelligence_source",
+          "type": "string",
+          "description": "Intelligence Source to update",
+          "required": false
+        },
+        {
+          "name": "tlp",
+          "type": "string",
+          "description": "Traffic Light Protocol value to update",
+          "required": false,
+          "contains": [
+            "threatstream tlp"
+          ]
+        },
+        {
+          "name": "tags",
+          "type": "string",
+          "description": "Comma-separated list of tags to update",
+          "required": false,
+          "contains": [
+            "threatstream tags"
+          ]
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "Comment to update",
+          "required": false
+        },
+        {
+          "name": "expire_time",
+          "type": "string",
+          "description": "Expiration time to update (Format : YYYY-MM-DD HH:MM[:ss[.uuuuuu]][TZ])",
+          "required": false,
+          "contains": [
+            "threatstream date"
+          ]
+        },
+        {
+          "name": "threat_model_type",
+          "type": "string",
+          "description": "Comma-separated list of threat model types to associate",
+          "required": false
+        },
+        {
+          "name": "threat_model_to_associate",
+          "type": "string",
+          "description": "Comma-separated list of threat model IDs to associate",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "threat_model_search",
+      "name": "List Threat Models",
+      "description": "List all the threat models",
+      "http_method": "GET",
+      "endpoint": "/actions/threat_model_search",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "modified_ts__gte",
+          "type": "string",
+          "description": "Threat models with greater than or equal to the provided modified time stamp will be returned",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Total number of threat models to return",
+          "required": false,
+          "default": 1000
+        },
+        {
+          "name": "model_type",
+          "type": "string",
+          "description": "Model type to filter the records",
+          "required": false
+        },
+        {
+          "name": "tags_name",
+          "type": "string",
+          "description": "Tag name to filter the records",
+          "required": false,
+          "contains": [
+            "threatstream tags"
+          ]
+        },
+        {
+          "name": "publication_status",
+          "type": "string",
+          "description": "Publication status to filter the records",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "create_threat_bulletin",
+      "name": "Create Threat Bulletin",
+      "description": "Create a threat bulletin in ThreatStream",
+      "http_method": "GET",
+      "endpoint": "/actions/create_threat_bulletin",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Name to give the threat bulletin",
+          "required": true
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Status to give the threat bulletin",
+          "required": false,
+          "default": "new"
+        },
+        {
+          "name": "source",
+          "type": "string",
+          "description": "Source of the threat bulletin",
+          "required": false
+        },
+        {
+          "name": "tags",
+          "type": "string",
+          "description": "Comma-separated list of tags for the threat bulletin",
+          "required": false
+        },
+        {
+          "name": "tlp",
+          "type": "string",
+          "description": "Tlp to give the threat bulletin",
+          "required": false
+        },
+        {
+          "name": "assignee_user_id",
+          "type": "number",
+          "description": "Assignee to give the threat bulletin",
+          "required": false
+        },
+        {
+          "name": "body",
+          "type": "string",
+          "description": "Body content to give the threat bulletin",
+          "required": false
+        },
+        {
+          "name": "body_content_type",
+          "type": "string",
+          "description": "Body content type to give the threat bulletin (Once specified, body_content_type cannot be modified, Default is 'markdown')",
+          "required": false,
+          "default": "markdown"
+        },
+        {
+          "name": "comments",
+          "type": "string",
+          "description": "Comments to give the threat bulletin(JSON format containing body, title, etc.)",
+          "required": false
+        },
+        {
+          "name": "attachments",
+          "type": "string",
+          "description": "Vault id of an attachment to add on the threat bulletin",
+          "required": false,
+          "contains": [
+            "vault id",
+            "sha1"
+          ]
+        },
+        {
+          "name": "local_intelligence",
+          "type": "string",
+          "description": "Comma-separated list of local intelligence IDs to associate with the threat bulletin - Note that this appends",
+          "required": false,
+          "contains": [
+            "threatstream intelligence id"
+          ]
+        },
+        {
+          "name": "cloud_intelligence",
+          "type": "string",
+          "description": "Comma-separated list of remote intelligence IDs to associate with the threat bulletin - Note that this appends",
+          "required": false,
+          "contains": [
+            "threatstream intelligence id"
+          ]
+        },
+        {
+          "name": "circles",
+          "type": "string",
+          "description": "Comma-separated list of circles to give the threat bulletin (Applicable only when a cloud threat bulletin will be created)",
+          "required": false
+        },
+        {
+          "name": "import_sessions",
+          "type": "string",
+          "description": "Comma-separated list of sessions to give the threat bulletin",
+          "required": false
+        },
+        {
+          "name": "create_on_cloud",
+          "type": "boolean",
+          "description": "Create on remote (cloud)? (applicable only for hybrid on-prem instances)",
+          "required": false
+        },
+        {
+          "name": "is_public",
+          "type": "boolean",
+          "description": "Classification designation",
+          "required": false
+        },
+        {
+          "name": "is_anonymous",
+          "type": "boolean",
+          "description": "Whether the threat bulletin user and organization information is anonymized",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "update_threat_bulletin",
+      "name": "Update Threat Bulletin",
+      "description": "Update a threat bulletin in ThreatStream",
+      "http_method": "GET",
+      "endpoint": "/actions/update_threat_bulletin",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "ID of the threat bulletin",
+          "required": true,
+          "contains": [
+            "threatstream threatbulletin id"
+          ]
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Status to give the threat bulletin",
+          "required": false
+        },
+        {
+          "name": "source",
+          "type": "string",
+          "description": "Source of the threat bulletin",
+          "required": false
+        },
+        {
+          "name": "tags",
+          "type": "string",
+          "description": "Comma-separated list of tags for the threat bulletin",
+          "required": false
+        },
+        {
+          "name": "tlp",
+          "type": "string",
+          "description": "Tlp to give the threat bulletin",
+          "required": false
+        },
+        {
+          "name": "assignee_user_id",
+          "type": "number",
+          "description": "Assignee to give the threat bulletin",
+          "required": false
+        },
+        {
+          "name": "body",
+          "type": "string",
+          "description": "Body content to give the threat bulletin",
+          "required": false
+        },
+        {
+          "name": "comments",
+          "type": "string",
+          "description": "Comments to give the threat bulletin(JSON format containing body, title, etc.)",
+          "required": false
+        },
+        {
+          "name": "local_intelligence",
+          "type": "string",
+          "description": "Comma-separated list of local intelligence IDs to associate with the threat bulletin - Note that this appends",
+          "required": false,
+          "contains": [
+            "threatstream intelligence id"
+          ]
+        },
+        {
+          "name": "cloud_intelligence",
+          "type": "string",
+          "description": "Comma-separated list of remote intelligence IDs to associate with the threat bulletin - Note that this appends",
+          "required": false,
+          "contains": [
+            "threatstream intelligence id"
+          ]
+        },
+        {
+          "name": "attachments",
+          "type": "string",
+          "description": "Vault id of an attachment to add on the threat bulletin",
+          "required": false,
+          "contains": [
+            "vault id",
+            "sha1"
+          ]
+        },
+        {
+          "name": "circles",
+          "type": "string",
+          "description": "Comma-separated list of circles to give the threat bulletin (Applicable only when a cloud threat bulletin will be updated)",
+          "required": false
+        },
+        {
+          "name": "import_sessions",
+          "type": "string",
+          "description": "Comma-separated list of sessions to give the threat bulletin",
+          "required": false
+        },
+        {
+          "name": "is_public",
+          "type": "boolean",
+          "description": "Classification designation",
+          "required": false
+        },
+        {
+          "name": "is_anonymous",
+          "type": "boolean",
+          "description": "Whether the threat bulletin user and organization information is anonymized",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_threat_bulletins",
+      "name": "List Threat Bulletins",
+      "description": "List threat bulletins present in ThreatStream",
+      "http_method": "GET",
+      "endpoint": "/actions/list_threat_bulletins",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Total number of threat bulletins to return",
+          "required": false,
+          "default": 1000
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Name to filter the threat bulletins",
+          "required": false
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Status to filter the threat bulletins",
+          "required": false
+        },
+        {
+          "name": "source",
+          "type": "string",
+          "description": "Source to filter the threat bulletins",
+          "required": false
+        },
+        {
+          "name": "assignee_user_id",
+          "type": "number",
+          "description": "Assignee to filter the threat bulletins",
+          "required": false
+        },
+        {
+          "name": "is_public",
+          "type": "string",
+          "description": "Classification designation",
+          "required": false,
+          "default": "all"
+        }
+      ]
+    },
+    {
+      "id": "list_associations",
+      "name": "List Associations",
+      "description": "List associations of an entity present in ThreatStream",
+      "http_method": "GET",
+      "endpoint": "/actions/list_associations",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "entity_id",
+          "type": "string",
+          "description": "ID of the entity",
+          "required": true,
+          "contains": [
+            "threatstream actor id",
+            "threatstream campaign id",
+            "threatstream incident id",
+            "threatstream vulnerability id",
+            "threatstream ttp id",
+            "threatstream threatbulletin id",
+            "threatstream signature id"
+          ]
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Total number of associations to return",
+          "required": false,
+          "default": 1000
+        },
+        {
+          "name": "entity_type",
+          "type": "string",
+          "description": "Type of threat model entity to list the associations",
+          "required": true
+        },
+        {
+          "name": "associated_entity_type",
+          "type": "string",
+          "description": "Type of associations of the enitity to list",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "create_rule",
+      "name": "Create Rule",
+      "description": "Creates a new rule in Threatstream",
+      "http_method": "GET",
+      "endpoint": "/actions/create_rule",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Name of the rule",
+          "required": true
+        },
+        {
+          "name": "keywords",
+          "type": "string",
+          "description": "List of keywords for which you want the rule to match. i.e [\"keyword1\", \"keyword2\"]",
+          "required": true
+        },
+        {
+          "name": "fields",
+          "type": "string",
+          "description": "JSON formatted string of fields to include with the rule",
+          "required": false
+        },
+        {
+          "name": "create_on_cloud",
+          "type": "boolean",
+          "description": "Create on remote (cloud)? (applicable only for hybrid on-prem instances)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "update_rule",
+      "name": "Update Rule",
+      "description": "Update a rule in ThreatStream by ID number",
+      "http_method": "GET",
+      "endpoint": "/actions/update_rule",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "fields",
+          "type": "string",
+          "description": "JSON formatted string of fields to update on the incident",
+          "required": true
+        },
+        {
+          "name": "rule_id",
+          "type": "string",
+          "description": "ID number of rule to update",
+          "required": true,
+          "contains": [
+            "threatstream rule id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_rules",
+      "name": "List Rules",
+      "description": "List rules present in ThreatStream",
+      "http_method": "GET",
+      "endpoint": "/actions/list_rules",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Total number of rules to return",
+          "required": false,
+          "default": 1000
+        }
+      ]
+    },
+    {
+      "id": "delete_rule",
+      "name": "Delete Rule",
+      "description": "Delete rule in ThreatStream by ID number",
+      "http_method": "GET",
+      "endpoint": "/actions/delete_rule",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "rule_id",
+          "type": "string",
+          "description": "ID number of rule to delete",
+          "required": true,
+          "contains": [
+            "threatstream rule id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "add_association",
+      "name": "Add Association",
+      "description": "Create associations between threat model entities on the ThreatStream platform",
+      "http_method": "GET",
+      "endpoint": "/actions/add_association",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "entity_type",
+          "type": "string",
+          "description": "The type of the threat model entity on which want to add the association",
+          "required": true
+        },
+        {
+          "name": "entity_id",
+          "type": "number",
+          "description": "The ID of the threat model entity on which want to add the association",
+          "required": true,
+          "contains": [
+            "threatstream actor id",
+            "threatstream campaign id",
+            "threatstream incident id",
+            "threatstream vulnerability id",
+            "threatstream ttp id",
+            "threatstream threatbulletin id",
+            "threatstream signature id"
+          ]
+        },
+        {
+          "name": "associated_entity_type",
+          "type": "string",
+          "description": "The type of threat model entity which will associate the initial entity",
+          "required": true
+        },
+        {
+          "name": "ph",
+          "type": "string",
+          "description": "Placeholder to be updated",
+          "required": false
+        },
+        {
+          "name": "local_ids",
+          "type": "string",
+          "description": " Comma-separated list of local entity IDs to associate with the entity (this will appends on the existing)",
+          "required": false,
+          "contains": [
+            "threatstream actor id",
+            "threatstream campaign id",
+            "threatstream incident id",
+            "threatstream vulnerability id",
+            "threatstream ttp id",
+            "threatstream threatbulletin id",
+            "threatstream signature id",
+            "threatstream intelligence id"
+          ]
+        },
+        {
+          "name": "remote_ids",
+          "type": "string",
+          "description": "Comma-separated list of remote enitity IDs to associate with the entity (this will appends on the existing)",
+          "required": false,
+          "contains": [
+            "threatstream actor id",
+            "threatstream campaign id",
+            "threatstream incident id",
+            "threatstream vulnerability id",
+            "threatstream ttp id",
+            "threatstream threatbulletin id",
+            "threatstream signature id",
+            "threatstream intelligence id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "remove_association",
+      "name": "Remove Association",
+      "description": "Remove associations between threat model entities on the ThreatStream platform",
+      "http_method": "GET",
+      "endpoint": "/actions/remove_association",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "entity_type",
+          "type": "string",
+          "description": "Type of threat model entity from which you are removing the association",
+          "required": true
+        },
+        {
+          "name": "entity_id",
+          "type": "number",
+          "description": "ID of the threat model entity from which you are removing the association",
+          "required": true,
+          "contains": [
+            "threatstream actor id",
+            "threatstream campaign id",
+            "threatstream incident id",
+            "threatstream vulnerability id",
+            "threatstream ttp id",
+            "threatstream threatbulletin id",
+            "threatstream signature id"
+          ]
+        },
+        {
+          "name": "associated_entity_type",
+          "type": "string",
+          "description": "Type of threat model entity with which you are associating the initial entity",
+          "required": true
+        },
+        {
+          "name": "ph",
+          "type": "string",
+          "description": "Placeholder to be updated",
+          "required": false
+        },
+        {
+          "name": "local_ids",
+          "type": "string",
+          "description": "Comma-separated list of local enitity IDs to associate with the entity - Note that this appends",
+          "required": false,
+          "contains": [
+            "threatstream actor id",
+            "threatstream campaign id",
+            "threatstream incident id",
+            "threatstream vulnerability id",
+            "threatstream ttp id",
+            "threatstream threatbulletin id",
+            "threatstream signature id",
+            "threatstream intelligence id"
+          ]
+        },
+        {
+          "name": "remote_ids",
+          "type": "string",
+          "description": "Comma-separated list of remote enitity IDs to associate with the entity - Note that this appends",
+          "required": false,
+          "contains": [
+            "threatstream actor id",
+            "threatstream campaign id",
+            "threatstream incident id",
+            "threatstream vulnerability id",
+            "threatstream ttp id",
+            "threatstream threatbulletin id",
+            "threatstream signature id",
+            "threatstream intelligence id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_actors",
+      "name": "List Actors",
+      "description": "List actors present in ThreatStream",
+      "http_method": "GET",
+      "endpoint": "/actions/list_actors",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Total number of actors to return",
+          "required": false,
+          "default": 1000
+        }
+      ]
+    },
+    {
+      "id": "list_imports",
+      "name": "List Imports",
+      "description": "List imports present in ThreatStream",
+      "http_method": "GET",
+      "endpoint": "/actions/list_imports",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Total number of imports to return",
+          "required": false,
+          "default": 1000
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Status of imports",
+          "required": false
+        },
+        {
+          "name": "list_from_remote",
+          "type": "boolean",
+          "description": "List from remote? (applicable only for hybrid on-prem instances)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "create_vulnerability",
+      "name": "Create Vulnerability",
+      "description": "Create a vulnerability in ThreatStream",
+      "http_method": "GET",
+      "endpoint": "/actions/create_vulnerability",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Name to give the vulnerability",
+          "required": true
+        },
+        {
+          "name": "fields",
+          "type": "string",
+          "description": "JSON formatted string of fields to include with the vulnerability",
+          "required": false
+        },
+        {
+          "name": "local_intelligence",
+          "type": "string",
+          "description": "Comma-separated list of local intelligence IDs to associate with the vulnerability - Note that this appends",
+          "required": false,
+          "contains": [
+            "threatstream intelligence id"
+          ]
+        },
+        {
+          "name": "cloud_intelligence",
+          "type": "string",
+          "description": "Comma-separated list of remote intelligence IDs to associate with the vulnerability - Note that this appends",
+          "required": false,
+          "contains": [
+            "threatstream intelligence id"
+          ]
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "Comment to give the vulnerability (JSON format containing body, title, etc.)",
+          "required": false
+        },
+        {
+          "name": "attachment",
+          "type": "string",
+          "description": "Vault id of an attachment to add on the vulnerability",
+          "required": false,
+          "contains": [
+            "vault id",
+            "sha1"
+          ]
+        },
+        {
+          "name": "is_public",
+          "type": "boolean",
+          "description": "Classification designation",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "create_on_cloud",
+          "type": "boolean",
+          "description": "Create on remote (cloud)? (applicable only for hybrid on-prem instances)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "update_vulnerability",
+      "name": "Update Vulnerability",
+      "description": "Update the vulnerability in ThreatStream",
+      "http_method": "GET",
+      "endpoint": "/actions/update_vulnerability",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "ID of the vulnerability",
+          "required": true,
+          "contains": [
+            "threatstream vulnerability id"
+          ]
+        },
+        {
+          "name": "fields",
+          "type": "string",
+          "description": "JSON formatted string of fields to include with the vulnerability",
+          "required": false
+        },
+        {
+          "name": "local_intelligence",
+          "type": "string",
+          "description": "Comma-separated list of local intelligence IDs to associate with the vulnerability - Note that this appends",
+          "required": false,
+          "contains": [
+            "threatstream intelligence id"
+          ]
+        },
+        {
+          "name": "cloud_intelligence",
+          "type": "string",
+          "description": "Comma-separated list of remote intelligence IDs to associate with the vulnerability - Note that this appends",
+          "required": false,
+          "contains": [
+            "threatstream intelligence id"
+          ]
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "Comment to give the vulnerability (JSON format containing body, title, etc.)",
+          "required": false
+        },
+        {
+          "name": "attachment",
+          "type": "string",
+          "description": "Vault id of an attachment to add on the vulnerability",
+          "required": false,
+          "contains": [
+            "vault id",
+            "sha1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "create_actor",
+      "name": "Create Actor",
+      "description": "Create an actor in ThreatStream",
+      "http_method": "GET",
+      "endpoint": "/actions/create_actor",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Name to give an actor",
+          "required": true
+        },
+        {
+          "name": "fields",
+          "type": "string",
+          "description": "JSON formatted string of fields to include with an actor",
+          "required": false
+        },
+        {
+          "name": "local_intelligence",
+          "type": "string",
+          "description": "Comma-separated list of local intelligence IDs to associate with an actor - Note that this appends",
+          "required": false,
+          "contains": [
+            "threatstream intelligence id"
+          ]
+        },
+        {
+          "name": "cloud_intelligence",
+          "type": "string",
+          "description": "Comma-separated list of remote intelligence IDs to associate with an actor - Note that this appends",
+          "required": false,
+          "contains": [
+            "threatstream intelligence id"
+          ]
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "Comment to give an actor (JSON format containing body, title, etc.)",
+          "required": false
+        },
+        {
+          "name": "attachment",
+          "type": "string",
+          "description": "Vault id of an attachment to add on the actor",
+          "required": false,
+          "contains": [
+            "vault id",
+            "sha1"
+          ]
+        },
+        {
+          "name": "is_public",
+          "type": "boolean",
+          "description": "Classification designation",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "create_on_cloud",
+          "type": "boolean",
+          "description": "Create on remote (cloud)? (applicable only for hybrid on-prem instances)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "update_actor",
+      "name": "Update Actor",
+      "description": "Update an actor in ThreatStream",
+      "http_method": "GET",
+      "endpoint": "/actions/update_actor",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "ID of an actor",
+          "required": true,
+          "contains": [
+            "threatstream actor id"
+          ]
+        },
+        {
+          "name": "fields",
+          "type": "string",
+          "description": "JSON formatted string of fields to include with an actor",
+          "required": false
+        },
+        {
+          "name": "local_intelligence",
+          "type": "string",
+          "description": "Comma-separated list of local intelligence IDs to associate with an actor - Note that this appends",
+          "required": false,
+          "contains": [
+            "threatstream intelligence id"
+          ]
+        },
+        {
+          "name": "cloud_intelligence",
+          "type": "string",
+          "description": "Comma-separated list of remote intelligence IDs to associate with an actor - Note that this appends",
+          "required": false,
+          "contains": [
+            "threatstream intelligence id"
+          ]
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "Comment to give an actor (JSON format containing body, title, etc.)",
+          "required": false
+        },
+        {
+          "name": "attachment",
+          "type": "string",
+          "description": "Vault id of an attachment to add on the actor",
+          "required": false,
+          "contains": [
+            "vault id",
+            "sha1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "delete_threat_bulletin",
+      "name": "Delete Threat Bulletin",
+      "description": "Delete threat bulletin in ThreatStream by ID",
+      "http_method": "GET",
+      "endpoint": "/actions/delete_threat_bulletin",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "threat_bulletin_id",
+          "type": "string",
+          "description": "ID of the threat bulletin to delete",
+          "required": true,
+          "contains": [
+            "threatstream threatbulletin id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "delete_vulnerability",
+      "name": "Delete Vulnerability",
+      "description": "Delete vulnerability in ThreatStream by ID",
+      "http_method": "GET",
+      "endpoint": "/actions/delete_vulnerability",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "vulnerability_id",
+          "type": "string",
+          "description": "ID of the vulnerability to delete",
+          "required": true,
+          "contains": [
+            "threatstream vulnerability id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "delete_actor",
+      "name": "Delete Actor",
+      "description": "Delete actor in ThreatStream by ID number",
+      "http_method": "GET",
+      "endpoint": "/actions/delete_actor",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "actor_id",
+          "type": "string",
+          "description": "ID number of actor to delete",
+          "required": true,
+          "contains": [
+            "threatstream actor id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "update_observable",
+      "name": "Update Observable",
+      "description": "Update an observable in ThreatStream",
+      "http_method": "GET",
+      "endpoint": "/actions/update_observable",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "ID of the observable",
+          "required": true,
+          "contains": [
+            "threatstream intelligence id"
+          ]
+        },
+        {
+          "name": "indicator_type",
+          "type": "string",
+          "description": "Indicator type to give the observable",
+          "required": false
+        },
+        {
+          "name": "confidence",
+          "type": "number",
+          "description": "Confidence to give the observable",
+          "required": false
+        },
+        {
+          "name": "tlp",
+          "type": "string",
+          "description": "Tlp to give the observable",
+          "required": false
+        },
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Severity to give the observable",
+          "required": false
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Status to give the observable (For example, active, inactive, falsepos)",
+          "required": false
+        },
+        {
+          "name": "expiration_date",
+          "type": "string",
+          "description": "Expiration timestamp to give the observable (in UTC format)",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "type": "string",
+          "description": "JSON formatted string of fields to include with the observable",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "create_investigation",
+      "name": "Create Investigation",
+      "description": "Create an investigation in ThreatStream",
+      "http_method": "GET",
+      "endpoint": "/actions/create_investigation",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Name to give the investigation",
+          "required": true
+        },
+        {
+          "name": "priority",
+          "type": "string",
+          "description": "Priority assigned to the investigation",
+          "required": true
+        },
+        {
+          "name": "fields",
+          "type": "string",
+          "description": "JSON formatted string of fields to include with the investigation",
+          "required": false
+        },
+        {
+          "name": "create_on_cloud",
+          "type": "boolean",
+          "description": "Create on remote (cloud)? (applicable only for hybrid on-prem instances)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_investigations",
+      "name": "List Investigations",
+      "description": "List investigations present in ThreatStream",
+      "http_method": "GET",
+      "endpoint": "/actions/list_investigations",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Total number of investigations to return",
+          "required": false,
+          "default": 1000
+        }
+      ]
+    },
+    {
+      "id": "get_investigation",
+      "name": "Get Investigation",
+      "description": "Retrieve investigation present in Threatstream by ID",
+      "http_method": "GET",
+      "endpoint": "/actions/get_investigation",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "investigation_id",
+          "type": "number",
+          "description": "ID of the investigation to retrieve",
+          "required": true,
+          "contains": [
+            "threatstream investigation id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "update_investigation",
+      "name": "Update Investigation",
+      "description": "Update an investigation in ThreatStream",
+      "http_method": "GET",
+      "endpoint": "/actions/update_investigation",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "investigation_id",
+          "type": "number",
+          "description": "ID of the investigation to update",
+          "required": true,
+          "contains": [
+            "threatstream investigation id"
+          ]
+        },
+        {
+          "name": "fields",
+          "type": "string",
+          "description": "JSON formatted string of fields to include with the investigation",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "delete_investigation",
+      "name": "Delete Investigation",
+      "description": "Delete investigation in ThreatStream by ID number",
+      "http_method": "GET",
+      "endpoint": "/actions/delete_investigation",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "investigation_id",
+          "type": "number",
+          "description": "ID number of investigation to delete",
+          "required": true,
+          "contains": [
+            "threatstream investigation id"
+          ]
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "ThreatStream",
+    "original_type": "threat intel",
+    "converted_at": "2025-12-18T16:25:29.235408",
+    "source_version": "3.6.1"
+  }
+}

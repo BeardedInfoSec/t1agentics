@@ -1,0 +1,827 @@
+{
+  "id": "carbon_black_response",
+  "name": "Carbon Black Response",
+  "description": "This app supports executing various endpoint-based investigative and containment actions on Carbon Black Response",
+  "version": "2.3.5",
+  "category": "edr",
+  "vendor": "Bit9",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "Using base url: {base_url}",
+  "actions": [
+    {
+      "id": "hunt_file",
+      "name": "Hunt File",
+      "description": "Hunt for a binary file on the network by querying for the MD5 hash of it on the Carbon Black Response device. This utilizes Carbon Black Response's binary search feature to look for files on the hard drives of endpoints",
+      "http_method": "GET",
+      "endpoint": "/actions/hunt_file",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "hash",
+          "type": "string",
+          "description": "MD5 of the binary or process to hunt",
+          "required": true,
+          "contains": [
+            "hash",
+            "md5"
+          ]
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Type of search",
+          "required": true,
+          "default": "binary",
+          "contains": [
+            "carbon black query type"
+          ]
+        },
+        {
+          "name": "range",
+          "type": "string",
+          "description": "Range of items to return, for e.g. 0-10",
+          "required": false,
+          "default": "0-10"
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "create_alert",
+      "name": "Create Alert",
+      "description": "Create an alert/watchlist",
+      "http_method": "GET",
+      "endpoint": "/actions/create_alert",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Name of created alert/watchlist",
+          "required": true,
+          "contains": [
+            "carbon black watchlist"
+          ]
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Type of the query",
+          "required": true,
+          "contains": [
+            "carbon black query type"
+          ]
+        },
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Query to add the watchlist for",
+          "required": true,
+          "contains": [
+            "carbon black query"
+          ]
+        },
+        {
+          "name": "read_only",
+          "type": "boolean",
+          "description": "Read-only watchlist",
+          "required": false,
+          "default": false
+        }
+      ]
+    },
+    {
+      "id": "update_alerts",
+      "name": "Update Alerts",
+      "description": "Update or resolve an alert",
+      "http_method": "GET",
+      "endpoint": "/actions/update_alerts",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Query to run (Carbon Black Response search language). Parameter accepts the same data as the alert search box on the Triage Alerts page",
+          "required": false,
+          "contains": [
+            "carbon black query"
+          ]
+        },
+        {
+          "name": "alert_ids",
+          "type": "string",
+          "description": "Unique ID of alert or comma-separated list of unique alert IDs to update",
+          "required": false,
+          "contains": [
+            "carbon black alert id"
+          ]
+        },
+        {
+          "name": "requested_status",
+          "type": "string",
+          "description": "New status of the alert(s)",
+          "required": true
+        },
+        {
+          "name": "set_ignored",
+          "type": "boolean",
+          "description": "If set to true, modifies threat report so that any further hits on IOCs contained within that report will no longer trigger an alert",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "assigned_to",
+          "type": "string",
+          "description": "Assign owner of alert",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "run_query",
+      "name": "Run Query",
+      "description": "Run a search query on the device",
+      "http_method": "GET",
+      "endpoint": "/actions/run_query",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Query to run (Carbon Black Response search language)",
+          "required": true,
+          "contains": [
+            "carbon black query"
+          ]
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Type of search",
+          "required": true,
+          "contains": [
+            "carbon black query type"
+          ]
+        },
+        {
+          "name": "range",
+          "type": "string",
+          "description": "Range of items to return, for e.g. 0-10",
+          "required": false,
+          "default": "0-10"
+        }
+      ]
+    },
+    {
+      "id": "list_alerts",
+      "name": "List Alerts",
+      "description": "List all the alerts/watchlists configured on the device",
+      "http_method": "GET",
+      "endpoint": "/v1/banning/blacklist",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "list_endpoints",
+      "name": "List Endpoints",
+      "description": "List all the endpoints/sensors configured on the device",
+      "http_method": "GET",
+      "endpoint": "/v1/banning/blacklist",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "quarantine_device",
+      "name": "Quarantine Device",
+      "description": "Quarantine the endpoint",
+      "http_method": "POST",
+      "endpoint": "/actions/quarantine_device",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "ip_hostname",
+          "type": "string",
+          "description": "Hostname/IP of endpoint to quarantine",
+          "required": true,
+          "contains": [
+            "host name",
+            "ip"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "unquarantine_device",
+      "name": "Unquarantine Device",
+      "description": "Unquarantine the endpoint",
+      "http_method": "POST",
+      "endpoint": "/actions/unquarantine_device",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "ip_hostname",
+          "type": "string",
+          "description": "Hostname/IP of endpoint to unquarantine",
+          "required": true,
+          "contains": [
+            "host name",
+            "ip"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sync_events",
+      "name": "Sync Events",
+      "description": "Force a sensor to sync all queued events to the server",
+      "http_method": "GET",
+      "endpoint": "/actions/sync_events",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "ip_hostname",
+          "type": "string",
+          "description": "Hostname/IP address to sync events for",
+          "required": false,
+          "contains": [
+            "host name",
+            "ip"
+          ]
+        },
+        {
+          "name": "sensor_id",
+          "type": "number",
+          "description": "Carbon Black sensor id to sync events for",
+          "required": false,
+          "contains": [
+            "carbon black sensor id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_system_info",
+      "name": "Get System Info",
+      "description": "Get information about an endpoint",
+      "http_method": "GET",
+      "endpoint": "/info",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "ip_hostname",
+          "type": "string",
+          "description": "Hostname/IP address to get info of",
+          "required": false,
+          "contains": [
+            "host name",
+            "ip"
+          ]
+        },
+        {
+          "name": "sensor_id",
+          "type": "number",
+          "description": "Carbon Black sensor id",
+          "required": false,
+          "contains": [
+            "carbon black sensor id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_processes",
+      "name": "List Processes",
+      "description": "List the running processes on a machine",
+      "http_method": "GET",
+      "endpoint": "/v1/banning/blacklist",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "ip_hostname",
+          "type": "string",
+          "description": "Name/IP of the machine to list processes on",
+          "required": false,
+          "contains": [
+            "ip",
+            "host name"
+          ]
+        },
+        {
+          "name": "sensor_id",
+          "type": "number",
+          "description": "Carbon Black sensor id",
+          "required": false,
+          "contains": [
+            "carbon black sensor id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "terminate_process",
+      "name": "Terminate Process",
+      "description": "Kill running processes on a machine",
+      "http_method": "POST",
+      "endpoint": "/actions/terminate_process",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "ip_hostname",
+          "type": "string",
+          "description": "Name/IP of the machine to terminate process on",
+          "required": false,
+          "contains": [
+            "ip",
+            "host name"
+          ]
+        },
+        {
+          "name": "sensor_id",
+          "type": "number",
+          "description": "Carbon Black sensor id",
+          "required": false,
+          "contains": [
+            "carbon black sensor id"
+          ]
+        },
+        {
+          "name": "pid",
+          "type": "number",
+          "description": "PID of process to terminate",
+          "required": true,
+          "contains": [
+            "pid"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_file",
+      "name": "Get File",
+      "description": "Download a file from Carbon Black Response and add it to the vault",
+      "http_method": "GET",
+      "endpoint": "/actions/get_file",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "hash",
+          "type": "string",
+          "description": "MD5 of file/sample to download",
+          "required": false,
+          "contains": [
+            "md5",
+            "hash"
+          ]
+        },
+        {
+          "name": "ph_0",
+          "type": "string",
+          "description": "Placeholder",
+          "required": false
+        },
+        {
+          "name": "sensor_id",
+          "type": "number",
+          "description": "Carbon Black sensor id to sync events for. Required for getting file from source",
+          "required": false,
+          "contains": [
+            "carbon black sensor id"
+          ]
+        },
+        {
+          "name": "file_source",
+          "type": "string",
+          "description": "Source path of the file",
+          "required": false,
+          "contains": [
+            "file path"
+          ]
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "When source is defined, set the byte offset to start getting the file. Supports a partial get. Optional for getting file from source",
+          "required": false
+        },
+        {
+          "name": "get_count",
+          "type": "number",
+          "description": "When source is defined, set the number of bytes to grab. Optional for getting file from source",
+          "required": false
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "put_file",
+      "name": "Put File",
+      "description": "Upload file to a Windows hostname",
+      "http_method": "GET",
+      "endpoint": "/actions/put_file",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "vault_id",
+          "type": "string",
+          "description": "Vault id of file to upload",
+          "required": true,
+          "contains": [
+            "vault id"
+          ]
+        },
+        {
+          "name": "destination",
+          "type": "string",
+          "description": "Destination path of the file (ie: C:\\Windows\\CarbonBlack\\MyFolder\\filename)",
+          "required": true,
+          "contains": [
+            "file path"
+          ]
+        },
+        {
+          "name": "sensor_id",
+          "type": "number",
+          "description": "Carbon Black sensor id to sync events for",
+          "required": true,
+          "contains": [
+            "carbon black sensor id"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "run_command",
+      "name": "Run Command",
+      "description": "Issue a Carbon Black Response command by providing the command name and the command's parameters as the 'data'",
+      "http_method": "GET",
+      "endpoint": "/actions/run_command",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "sensor_id",
+          "type": "number",
+          "description": "Carbon Black sensor id to sync events for",
+          "required": true,
+          "contains": [
+            "carbon black sensor id"
+          ]
+        },
+        {
+          "name": "command",
+          "type": "string",
+          "description": "Command to run",
+          "required": true
+        },
+        {
+          "name": "data",
+          "type": "string",
+          "description": "JSON formatted body. Refer to Carbon Black REST API for command parameters",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "execute_program",
+      "name": "Execute Program",
+      "description": "Execute a process",
+      "http_method": "GET",
+      "endpoint": "/actions/execute_program",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "sensor_id",
+          "type": "number",
+          "description": "Carbon Black sensor id to sync events for",
+          "required": true,
+          "contains": [
+            "carbon black sensor id"
+          ]
+        },
+        {
+          "name": "entire_executable_path",
+          "type": "string",
+          "description": "Path and command line of the executable",
+          "required": true,
+          "contains": [
+            "file path",
+            "file name"
+          ]
+        },
+        {
+          "name": "output_file",
+          "type": "string",
+          "description": "File that STDERR and STDOUT will be redirected to",
+          "required": false
+        },
+        {
+          "name": "working_directory",
+          "type": "string",
+          "description": "The working directory of the executable",
+          "required": false
+        },
+        {
+          "name": "wait",
+          "type": "boolean",
+          "description": "Wait for the process to complete execution before reporting the result",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "memory_dump",
+      "name": "Memory Dump",
+      "description": "Memory dump for a specified path",
+      "http_method": "GET",
+      "endpoint": "/actions/memory_dump",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "sensor_id",
+          "type": "number",
+          "description": "Carbon Black sensor id to sync events for",
+          "required": true,
+          "contains": [
+            "carbon black sensor id"
+          ]
+        },
+        {
+          "name": "destination_path",
+          "type": "string",
+          "description": "Path on endpoint to save the resulting memory dump (ie: C:\\Windows\\CarbonBlack\\Folder)",
+          "required": true,
+          "contains": [
+            "file path"
+          ]
+        },
+        {
+          "name": "compress",
+          "type": "boolean",
+          "description": "Compress the memory dump",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "reset_session",
+      "name": "Reset Session",
+      "description": "Tell the server to reset the sensor \"sensor_wait_timeout\"",
+      "http_method": "GET",
+      "endpoint": "/actions/reset_session",
+      "action_type": "generic",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "session_id",
+          "type": "number",
+          "description": "Carbon Black session id",
+          "required": true,
+          "contains": [
+            "carbon black session id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_file_info",
+      "name": "Get File Info",
+      "description": "Get info about a file from Carbon Black Response",
+      "http_method": "GET",
+      "endpoint": "/info",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "hash",
+          "type": "string",
+          "description": "MD5 of file/sample to get info of",
+          "required": true,
+          "contains": [
+            "md5",
+            "hash"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "block_hash",
+      "name": "Block Hash",
+      "description": "Add a hash to the Carbon Black Response blacklist",
+      "http_method": "POST",
+      "endpoint": "/actions/block_hash",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "hash",
+          "type": "string",
+          "description": "MD5 of file to ban/block",
+          "required": true,
+          "contains": [
+            "md5",
+            "hash"
+          ]
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "Comment",
+          "required": false
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "unblock_hash",
+      "name": "Unblock Hash",
+      "description": "Unblock the hash",
+      "http_method": "POST",
+      "endpoint": "/actions/unblock_hash",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "hash",
+          "type": "string",
+          "description": "MD5 of file to block",
+          "required": true,
+          "contains": [
+            "md5",
+            "hash"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "list_connections",
+      "name": "List Connections",
+      "description": "List all of the connections from a given process name, PID, or Carbon Black process ID",
+      "http_method": "GET",
+      "endpoint": "/v1/banning/blacklist",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "ip_hostname",
+          "type": "string",
+          "description": "Hostname or IP",
+          "required": false,
+          "contains": [
+            "ip",
+            "host name"
+          ]
+        },
+        {
+          "name": "process_name",
+          "type": "string",
+          "description": "Name of process",
+          "required": false,
+          "contains": [
+            "process name"
+          ]
+        },
+        {
+          "name": "pid",
+          "type": "number",
+          "description": "PID of process",
+          "required": false,
+          "contains": [
+            "pid"
+          ]
+        },
+        {
+          "name": "carbonblack_process_id",
+          "type": "string",
+          "description": "Internal Carbon Black ID of process",
+          "required": false,
+          "contains": [
+            "carbon black process id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "on_poll",
+      "name": "On Poll",
+      "description": "Ingests unresolved alerts into Phantom",
+      "http_method": "GET",
+      "endpoint": "/actions/on_poll",
+      "action_type": "ingest",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "start_time",
+          "type": "number",
+          "description": "Start of the time range, in epoch time (milliseconds). If not specified, the default is the past_days setting of the App",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "number",
+          "description": "End of the time range, in epoch time (milliseconds). If not specified, the default is now",
+          "required": false
+        },
+        {
+          "name": "container_count",
+          "type": "number",
+          "description": "Maximum number of container records to query for",
+          "required": false
+        },
+        {
+          "name": "artifact_count",
+          "type": "number",
+          "description": "Maximum number of artifact records to query for",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_license",
+      "name": "Get License",
+      "description": "Gets the license information of the device",
+      "http_method": "GET",
+      "endpoint": "/actions/get_license",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Carbon Black Response",
+    "original_type": "endpoint",
+    "converted_at": "2025-12-18T16:25:28.634414",
+    "source_version": "2.3.5"
+  }
+}

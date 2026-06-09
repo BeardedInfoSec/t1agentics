@@ -1,0 +1,163 @@
+{
+  "id": "gitlab_security",
+  "name": "GitLab Security",
+  "description": "GitLab integrated security scanning including SAST, DAST, dependency scanning, container scanning, and secret detection",
+  "version": "1.0.0",
+  "category": "code_security",
+  "vendor": "GitLab",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "PRIVATE-TOKEN",
+    "location": "header"
+  },
+  "base_url": "https://gitlab.com/api/v4",
+  "actions": [
+    {
+      "id": "list_vulnerability_findings",
+      "name": "List Vulnerability Findings",
+      "description": "List vulnerability findings for a project with filtering by report type and severity",
+      "http_method": "GET",
+      "endpoint": "/projects/{id}/vulnerability_findings",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "integer",
+          "description": "Project ID",
+          "required": true,
+          "location": "path"
+        },
+        {
+          "name": "report_type",
+          "type": "string",
+          "description": "Filter by scanner type: sast, dast, dependency_scanning, container_scanning, secret_detection",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Filter by severity: critical, high, medium, low, info, unknown",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "scope",
+          "type": "string",
+          "description": "Filter by scope: dismissed, all",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "pipeline_id",
+          "type": "integer",
+          "description": "Filter by pipeline ID",
+          "required": false,
+          "location": "query"
+        }
+      ]
+    },
+    {
+      "id": "list_vulnerabilities",
+      "name": "List Project Vulnerabilities",
+      "description": "List confirmed vulnerabilities for a project",
+      "http_method": "GET",
+      "endpoint": "/projects/{id}/vulnerabilities",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "integer",
+          "description": "Project ID",
+          "required": true,
+          "location": "path"
+        },
+        {
+          "name": "state",
+          "type": "string",
+          "description": "Filter by state: detected, confirmed, resolved, dismissed",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Filter by severity: critical, high, medium, low, info, unknown",
+          "required": false,
+          "location": "query"
+        }
+      ]
+    },
+    {
+      "id": "get_vulnerability",
+      "name": "Get Vulnerability Details",
+      "description": "Retrieve details of a specific vulnerability",
+      "http_method": "GET",
+      "endpoint": "/vulnerabilities/{vulnerability_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "vulnerability_id",
+          "type": "integer",
+          "description": "Vulnerability ID",
+          "required": true,
+          "location": "path"
+        }
+      ]
+    },
+    {
+      "id": "list_projects",
+      "name": "List Projects",
+      "description": "List all projects accessible to the authenticated user",
+      "http_method": "GET",
+      "endpoint": "/projects",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "search",
+          "type": "string",
+          "description": "Search project by name",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "per_page",
+          "type": "integer",
+          "description": "Results per page (max 100)",
+          "required": false,
+          "location": "query"
+        }
+      ]
+    },
+    {
+      "id": "get_pipeline_security_report",
+      "name": "Get Pipeline Security Report",
+      "description": "Retrieve the security report summary for a specific pipeline",
+      "http_method": "GET",
+      "endpoint": "/projects/{id}/pipelines/{pipeline_id}/security_report_summary",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "integer",
+          "description": "Project ID",
+          "required": true,
+          "location": "path"
+        },
+        {
+          "name": "pipeline_id",
+          "type": "integer",
+          "description": "Pipeline ID",
+          "required": true,
+          "location": "path"
+        }
+      ]
+    }
+  ]
+}

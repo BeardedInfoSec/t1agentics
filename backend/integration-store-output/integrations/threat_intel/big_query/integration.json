@@ -1,0 +1,101 @@
+{
+  "id": "big_query",
+  "name": "Big Query",
+  "description": "This app allows running investigative actions against Google BigQuery",
+  "version": "2.1.6",
+  "category": "threat_intel",
+  "vendor": "Google",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "list_tables",
+      "name": "List Tables",
+      "description": "List Tables",
+      "http_method": "GET",
+      "endpoint": "/actions/list_tables",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "dataset",
+          "type": "string",
+          "description": "Only list tables in this dataset",
+          "required": false,
+          "contains": [
+            "bigquery dataset"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_results",
+      "name": "Get Results",
+      "description": "Get results from a job started with 'run query'",
+      "http_method": "GET",
+      "endpoint": "/actions/get_results",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "job_id",
+          "type": "string",
+          "description": "Job ID",
+          "required": true,
+          "contains": [
+            "bigquery job id"
+          ]
+        },
+        {
+          "name": "timeout",
+          "type": "number",
+          "description": "How long to wait for results",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "run_query",
+      "name": "Run Query",
+      "description": "Run a Query",
+      "http_method": "GET",
+      "endpoint": "/actions/run_query",
+      "action_type": "investigate",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Query to run",
+          "required": true,
+          "contains": [
+            "bigquery query"
+          ]
+        },
+        {
+          "name": "timeout",
+          "type": "number",
+          "description": "How long to wait for results",
+          "required": false
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Big Query",
+    "original_type": "information",
+    "converted_at": "2025-12-18T16:25:28.607918",
+    "source_version": "2.1.6"
+  }
+}

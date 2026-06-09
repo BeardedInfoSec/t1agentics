@@ -1,0 +1,137 @@
+{
+  "id": "mondoo",
+  "name": "Mondoo",
+  "description": "Infrastructure security and compliance platform scanning containers, Kubernetes, cloud, and OS for vulnerabilities and misconfigurations using policy-as-code",
+  "version": "1.0.0",
+  "category": "container_security",
+  "vendor": "Mondoo",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "header_name": "Authorization",
+    "prefix": "Bearer ",
+    "location": "header",
+    "description": "API token generated from Mondoo Console"
+  },
+  "base_url": "https://api.mondoo.com",
+  "actions": [
+    {
+      "id": "list_spaces",
+      "name": "List Spaces",
+      "description": "List all spaces (workspaces) in the organization",
+      "http_method": "GET",
+      "endpoint": "/spaces",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "org_id",
+          "type": "string",
+          "description": "Organization ID",
+          "required": true,
+          "location": "query"
+        }
+      ]
+    },
+    {
+      "id": "list_assets",
+      "name": "List Assets",
+      "description": "List all discovered assets including containers, images, and hosts",
+      "http_method": "GET",
+      "endpoint": "/spaces/{space_id}/assets",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "space_id",
+          "type": "string",
+          "description": "Space ID",
+          "required": true,
+          "location": "path"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Filter by asset type: container_image, k8s_cluster, k8s_pod, host",
+          "required": false,
+          "location": "query"
+        }
+      ]
+    },
+    {
+      "id": "get_asset_vulnerabilities",
+      "name": "Get Asset Vulnerabilities",
+      "description": "Retrieve vulnerabilities detected on a specific asset",
+      "http_method": "GET",
+      "endpoint": "/spaces/{space_id}/assets/{asset_mrn}/vulnerabilities",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "space_id",
+          "type": "string",
+          "description": "Space ID",
+          "required": true,
+          "location": "path"
+        },
+        {
+          "name": "asset_mrn",
+          "type": "string",
+          "description": "Asset MRN (Mondoo Resource Name)",
+          "required": true,
+          "location": "path"
+        }
+      ]
+    },
+    {
+      "id": "get_policy_scores",
+      "name": "Get Policy Scores",
+      "description": "Retrieve policy compliance scores for an asset",
+      "http_method": "GET",
+      "endpoint": "/spaces/{space_id}/assets/{asset_mrn}/scores",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "space_id",
+          "type": "string",
+          "description": "Space ID",
+          "required": true,
+          "location": "path"
+        },
+        {
+          "name": "asset_mrn",
+          "type": "string",
+          "description": "Asset MRN",
+          "required": true,
+          "location": "path"
+        }
+      ]
+    },
+    {
+      "id": "trigger_scan",
+      "name": "Trigger Asset Scan",
+      "description": "Trigger a vulnerability and policy scan for an asset",
+      "http_method": "POST",
+      "endpoint": "/spaces/{space_id}/assets/{asset_mrn}/scan",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "space_id",
+          "type": "string",
+          "description": "Space ID",
+          "required": true,
+          "location": "path"
+        },
+        {
+          "name": "asset_mrn",
+          "type": "string",
+          "description": "Asset MRN to scan",
+          "required": true,
+          "location": "path"
+        }
+      ]
+    }
+  ]
+}

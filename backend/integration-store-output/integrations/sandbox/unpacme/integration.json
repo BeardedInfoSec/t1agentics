@@ -1,0 +1,201 @@
+{
+  "id": "unpacme",
+  "name": "UnpacMe",
+  "description": "UnpacMe automated malware unpacking and binary analysis service that extracts packed, obfuscated, and encrypted payloads from PE executables for threat analysis and detection",
+  "version": "1.0.0",
+  "category": "sandbox",
+  "vendor": "Unpac.me",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header",
+    "prefix": "Key"
+  },
+  "base_url": "https://api.unpac.me/api/v1",
+  "actions": [
+    {
+      "id": "upload_file",
+      "name": "Upload File",
+      "description": "Submit a PE file (32-bit or 64-bit, max 100MB) for automated unpacking and payload extraction",
+      "http_method": "POST",
+      "endpoint": "/private/upload",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "file",
+          "type": "file",
+          "description": "PE file to unpack (supports raw PE or single-file ZIP archive, max 100MB)",
+          "required": true
+        }
+      ],
+      "observable_type": "hash"
+    },
+    {
+      "id": "get_unpack_status",
+      "name": "Get Unpack Status",
+      "description": "Check the current processing status of an unpacking submission",
+      "http_method": "GET",
+      "endpoint": "/private/status/{unpack_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "unpack_id",
+          "type": "string",
+          "description": "Unpack ID returned from the upload submission",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_unpack_results",
+      "name": "Get Unpack Results",
+      "description": "Retrieve the full unpacking results including extracted payloads, YARA matches, and file metadata",
+      "http_method": "GET",
+      "endpoint": "/private/results/{unpack_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "unpack_id",
+          "type": "string",
+          "description": "Unpack ID to retrieve results for",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_public_unpack_status",
+      "name": "Get Public Unpack Status",
+      "description": "Check the processing status of a public unpacking submission",
+      "http_method": "GET",
+      "endpoint": "/public/status/{unpack_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "unpack_id",
+          "type": "string",
+          "description": "Public unpack ID to check status for",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_public_unpack_results",
+      "name": "Get Public Unpack Results",
+      "description": "Retrieve unpacking results for a public submission",
+      "http_method": "GET",
+      "endpoint": "/public/results/{unpack_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "unpack_id",
+          "type": "string",
+          "description": "Public unpack ID to get results for",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "search_by_hash",
+      "name": "Search by Hash",
+      "description": "Search for parent submissions that contain a specific sample by its hash (SHA256, MD5, or SHA1)",
+      "http_method": "GET",
+      "endpoint": "/private/search/hash/{hash}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "hash",
+          "type": "string",
+          "description": "SHA256, MD5, or SHA1 hash to search for across all submissions",
+          "required": true
+        }
+      ],
+      "observable_type": "hash"
+    },
+    {
+      "id": "download_sample",
+      "name": "Download Sample",
+      "description": "Download a sample (original or extracted payload) by its hash",
+      "http_method": "GET",
+      "endpoint": "/private/download/{hash}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "hash",
+          "type": "string",
+          "description": "SHA256 hash of the sample to download",
+          "required": true
+        }
+      ],
+      "observable_type": "hash"
+    },
+    {
+      "id": "get_submission_history",
+      "name": "Get Submission History",
+      "description": "Retrieve the user's submission history with pagination",
+      "http_method": "GET",
+      "endpoint": "/private/history",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "cursor",
+          "type": "string",
+          "description": "Pagination cursor from previous response",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_unpacked_feed",
+      "name": "Get Unpacked Feed",
+      "description": "Retrieve the full feed of recently unpacked samples",
+      "http_method": "GET",
+      "endpoint": "/private/feed/unpacked",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "cursor",
+          "type": "string",
+          "description": "Pagination cursor for feed",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_feed_by_yara",
+      "name": "Get Feed by YARA",
+      "description": "Filter the unpacked feed by a specific YARA rule match",
+      "http_method": "GET",
+      "endpoint": "/private/feed/unpacked/yara/{yara_rule}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "yara_rule",
+          "type": "string",
+          "description": "YARA rule name to filter the feed by",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_user_access",
+      "name": "Get User Access",
+      "description": "Retrieve user account settings and API access information",
+      "http_method": "GET",
+      "endpoint": "/private/user/access",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    }
+  ]
+}

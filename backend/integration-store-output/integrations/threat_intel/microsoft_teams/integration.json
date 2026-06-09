@@ -1,0 +1,400 @@
+{
+  "id": "microsoft_teams_threat_intel",
+  "name": "Microsoft Teams",
+  "description": "This app integrates with Microsoft Teams to support various generic and investigative actions",
+  "version": "3.1.2",
+  "category": "threat_intel",
+  "vendor": "Microsoft",
+  "auth_type": "oauth2",
+  "auth_config": {
+    "type": "oauth2",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "https://login.microsoftonline.com",
+  "actions": [
+    {
+      "id": "get_admin_consent",
+      "name": "Get Admin Consent",
+      "description": "Get the admin consent for a non-admin user",
+      "http_method": "GET",
+      "endpoint": "/actions/get_admin_consent",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": []
+    },
+    {
+      "id": "list_users",
+      "name": "List Users",
+      "description": "List all users",
+      "http_method": "GET",
+      "endpoint": "/users",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "send_channel_message",
+      "name": "Send Channel Message",
+      "description": "Send a message to a channel of a group",
+      "http_method": "GET",
+      "endpoint": "/actions/send_channel_message",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "group_id",
+          "type": "string",
+          "description": "ID of group",
+          "required": true,
+          "contains": [
+            "ms teams group id"
+          ]
+        },
+        {
+          "name": "channel_id",
+          "type": "string",
+          "description": "ID of channel",
+          "required": true,
+          "contains": [
+            "ms teams channel id"
+          ]
+        },
+        {
+          "name": "message",
+          "type": "string",
+          "description": "Message to send (HTML is supported)",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "ask_question",
+      "name": "Ask Question",
+      "description": "Ask a question in a channel",
+      "http_method": "GET",
+      "endpoint": "/actions/ask_question",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "group_id",
+          "type": "string",
+          "description": "ID of group",
+          "required": true,
+          "contains": [
+            "ms teams group id"
+          ]
+        },
+        {
+          "name": "channel_id",
+          "type": "string",
+          "description": "ID of channel",
+          "required": true,
+          "contains": [
+            "ms teams channel id"
+          ]
+        },
+        {
+          "name": "message",
+          "type": "string",
+          "description": "Question text (Markdown is supported)",
+          "required": true
+        },
+        {
+          "name": "choices",
+          "type": "string",
+          "description": "Comma-separated list of possible answers (leave blank for a short-answer question)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_chats",
+      "name": "List Chats",
+      "description": "List chats for authenticated user",
+      "http_method": "GET",
+      "endpoint": "/me/chats",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "user",
+          "type": "string",
+          "description": "Filter chats containing specific user (by email or user id)",
+          "required": false
+        },
+        {
+          "name": "chat_type",
+          "type": "string",
+          "description": "Filter chats by type",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "send_direct_message",
+      "name": "Send Direct Message",
+      "description": "Send a direct message to a user",
+      "http_method": "GET",
+      "endpoint": "/actions/send_direct_message",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "user_id",
+          "type": "string",
+          "description": "ID of the user to send direct message to",
+          "required": true,
+          "contains": [
+            "ms teams user id"
+          ]
+        },
+        {
+          "name": "message",
+          "type": "string",
+          "description": "Message content to send",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "send_chat_message",
+      "name": "Send Chat Message",
+      "description": "Send a message to specific chat",
+      "http_method": "GET",
+      "endpoint": "/actions/send_chat_message",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "chat_id",
+          "type": "string",
+          "description": "ID of the chat to send message to",
+          "required": true,
+          "contains": [
+            "ms teams chat id"
+          ]
+        },
+        {
+          "name": "message",
+          "type": "string",
+          "description": "Message content to send",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_channels",
+      "name": "List Channels",
+      "description": "Lists all channels of a group",
+      "http_method": "GET",
+      "endpoint": "/teams/{group_id}/channels",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "group_id",
+          "type": "string",
+          "description": "ID of group",
+          "required": true,
+          "contains": [
+            "ms teams group id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_groups",
+      "name": "List Groups",
+      "description": "List all Azure Groups",
+      "http_method": "GET",
+      "endpoint": "/users",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "list_teams",
+      "name": "List Teams",
+      "description": "List all Microsoft Teams",
+      "http_method": "GET",
+      "endpoint": "/users",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "create_meeting",
+      "name": "Create Meeting",
+      "description": "Create a microsoft teams meeting",
+      "http_method": "GET",
+      "endpoint": "/actions/create_meeting",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "add_calendar_event",
+          "type": "boolean",
+          "description": "Create a calendar event for the meeting or not",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "subject",
+          "type": "string",
+          "description": "Subject of the meeting",
+          "required": false
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Description of the meeting",
+          "required": false
+        },
+        {
+          "name": "start_time",
+          "type": "string",
+          "description": "Date and Time to start the meeting",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "string",
+          "description": "Date and Time to end the meeting",
+          "required": false
+        },
+        {
+          "name": "attendees",
+          "type": "string",
+          "description": "Email-id of the users to send the meeting invitation",
+          "required": false,
+          "contains": [
+            "email"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_channel_message",
+      "name": "Get Channel Message",
+      "description": "Get message in a channel",
+      "http_method": "GET",
+      "endpoint": "/actions/get_channel_message",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "group_id",
+          "type": "string",
+          "description": "ID of group",
+          "required": true,
+          "contains": [
+            "ms teams group id"
+          ]
+        },
+        {
+          "name": "channel_id",
+          "type": "string",
+          "description": "ID of channel",
+          "required": true,
+          "contains": [
+            "ms teams channel id"
+          ]
+        },
+        {
+          "name": "message_id",
+          "type": "string",
+          "description": "ID of message",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_chat_message",
+      "name": "Get Chat Message",
+      "description": "Get message in a chat",
+      "http_method": "GET",
+      "endpoint": "/actions/get_chat_message",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "chat_id",
+          "type": "string",
+          "description": "ID of chat",
+          "required": true,
+          "contains": [
+            "ms teams chat id"
+          ]
+        },
+        {
+          "name": "message_id",
+          "type": "string",
+          "description": "ID of message",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_response",
+      "name": "Get Response Message",
+      "description": "Get response on message in a chat",
+      "http_method": "GET",
+      "endpoint": "/actions/get_response",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "chat_id",
+          "type": "string",
+          "description": "ID of chat",
+          "required": true,
+          "contains": [
+            "ms teams chat id"
+          ]
+        },
+        {
+          "name": "message_id",
+          "type": "string",
+          "description": "The ID of the message to be replied to",
+          "required": true
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Microsoft Teams",
+    "original_type": "information",
+    "converted_at": "2025-12-18T16:25:28.949059",
+    "source_version": "3.1.2"
+  }
+}

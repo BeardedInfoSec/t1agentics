@@ -1,0 +1,410 @@
+{
+  "id": "ms_graph_for_sharepoint",
+  "name": "MS Graph for SharePoint",
+  "description": "This app connects to SharePoint using the MS Graph API to support investigate and generic actions",
+  "version": "1.5.0",
+  "category": "threat_intel",
+  "vendor": "Microsoft",
+  "auth_type": "oauth2",
+  "auth_config": {
+    "type": "oauth2",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "https://graph.microsoft.com/v1.0",
+  "actions": [
+    {
+      "id": "copy_drive_item",
+      "name": "Copy Drive Item",
+      "description": "Using SharePoint Site ID app config value, and given source_drive_id, copy source_item_id into a folder identified with dest values",
+      "http_method": "GET",
+      "endpoint": "/actions/copy_drive_item",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "source_item_id",
+          "type": "string",
+          "description": "ID for drive item that needs to be copied",
+          "required": true,
+          "contains": [
+            "sharepoint drive item id"
+          ]
+        },
+        {
+          "name": "source_drive_id",
+          "type": "string",
+          "description": "Drive ID that contains the source item to copy. If no id is specified the default drive will be used",
+          "required": false,
+          "contains": [
+            "sharepoint drive id"
+          ]
+        },
+        {
+          "name": "dest_drive_id",
+          "type": "string",
+          "description": "Drive ID that contains target folder to copy item to. If no id is specified the default drive will be used",
+          "required": false,
+          "contains": [
+            "sharepoint drive id"
+          ]
+        },
+        {
+          "name": "dest_folder_id",
+          "type": "string",
+          "description": "ID of target folder to copy drive item to",
+          "required": true,
+          "contains": [
+            "sharepoint drive item id"
+          ]
+        },
+        {
+          "name": "file_name",
+          "type": "string",
+          "description": "Optional new folder/file name for the copy. If not provided will use the original name",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "create_folder",
+      "name": "Create Folder",
+      "description": "Create new Drive item Folder using SharePoint site in asset config and provided Parent Item ID",
+      "http_method": "GET",
+      "endpoint": "/items/{parent_id}/children",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "parent_item_id",
+          "type": "string",
+          "description": "Parent Drive Item ID",
+          "required": true,
+          "contains": [
+            "sharepoint drive item id"
+          ]
+        },
+        {
+          "name": "folder_name",
+          "type": "string",
+          "description": "Name of newly created folder",
+          "required": true
+        },
+        {
+          "name": "drive_id",
+          "type": "string",
+          "description": "ID of drive to create folder in. If no id is specified the default drive will be used",
+          "required": false,
+          "contains": [
+            "sharepoint drive id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_folder_items",
+      "name": "List Folder Items",
+      "description": "List items in a folder",
+      "http_method": "GET",
+      "endpoint": "/sites",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "drive_id",
+          "type": "string",
+          "description": "ID for drive that folder lives in. If no id is specified the default drive will be used",
+          "required": false,
+          "contains": [
+            "sharepoint drive id"
+          ]
+        },
+        {
+          "name": "folder_path",
+          "type": "string",
+          "description": "Path of the folder to query",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_drives",
+      "name": "List Drives",
+      "description": "Fetch the available drives (libraries) under a SharePoint site",
+      "http_method": "GET",
+      "endpoint": "/sites",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of drives to return",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_drive_children",
+      "name": "List Drive Children",
+      "description": "List the items in a drive folder by drive ID or search for a specific file name if provided",
+      "http_method": "GET",
+      "endpoint": "/sites",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "drive_id",
+          "type": "string",
+          "description": "ID of drive to list. If no id is specified the default drive will be queried",
+          "required": false,
+          "contains": [
+            "sharepoint drive id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_sites",
+      "name": "List Sites",
+      "description": "Fetch the details of the SharePoint sites",
+      "http_method": "GET",
+      "endpoint": "/sites",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of sites to return",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_lists",
+      "name": "List Lists",
+      "description": "Fetch the available lists under a SharePoint site",
+      "http_method": "GET",
+      "endpoint": "/sites/{site_id}/lists",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of sites to return",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_list",
+      "name": "Get List",
+      "description": "Retrieves a list from a SharePoint Site",
+      "http_method": "GET",
+      "endpoint": "/sites/{site_id}/lists/{list}",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "list",
+          "type": "string",
+          "description": "Title or ID of the list to retrieve",
+          "required": true,
+          "contains": [
+            "sharepoint list id",
+            "sharepoint list name"
+          ]
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of list items to return",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "add_item",
+      "name": "Add Item",
+      "description": "Add an item to a list on a SharePoint Site",
+      "http_method": "GET",
+      "endpoint": "/actions/add_item",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "list",
+          "type": "string",
+          "description": "Title or ID of the list to add an item",
+          "required": true,
+          "contains": [
+            "sharepoint list id",
+            "sharepoint list name"
+          ]
+        },
+        {
+          "name": "item",
+          "type": "string",
+          "description": "JSON string of item",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "update_item",
+      "name": "Update Item",
+      "description": "Update an item in a list on a SharePoint Site",
+      "http_method": "GET",
+      "endpoint": "/actions/update_item",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "list",
+          "type": "string",
+          "description": "Title or ID of the list to which the item belongs",
+          "required": true,
+          "contains": [
+            "sharepoint list id",
+            "sharepoint list name"
+          ]
+        },
+        {
+          "name": "item_id",
+          "type": "number",
+          "description": "ID of the item to update",
+          "required": true,
+          "contains": [
+            "sharepoint item id"
+          ]
+        },
+        {
+          "name": "item",
+          "type": "string",
+          "description": "JSON string of item",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_file",
+      "name": "Get File",
+      "description": "Retrieves a file from a SharePoint site",
+      "http_method": "GET",
+      "endpoint": "/root:/{path}/{file}",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "file_name",
+          "type": "string",
+          "description": "File name to retrieve",
+          "required": true
+        },
+        {
+          "name": "file_path",
+          "type": "string",
+          "description": "Folder path on site",
+          "required": true
+        },
+        {
+          "name": "drive_id",
+          "type": "string",
+          "description": "The file is searched in this drive. If no drive is specified, the default drive will be used",
+          "required": false,
+          "contains": [
+            "sharepoint drive id"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "remove_file",
+      "name": "Remove File",
+      "description": "Removes a file from a SharePoint site",
+      "http_method": "GET",
+      "endpoint": "/actions/remove_file",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "file_name",
+          "type": "string",
+          "description": "File name to remove",
+          "required": true
+        },
+        {
+          "name": "file_path",
+          "type": "string",
+          "description": "Folder path on site",
+          "required": true
+        },
+        {
+          "name": "drive_id",
+          "type": "string",
+          "description": "The file is searched in this drive. If no drive is specified, the default drive will be used",
+          "required": false
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "remove_folder",
+      "name": "Remove Folder",
+      "description": "Removes a folder from a SharePoint site",
+      "http_method": "GET",
+      "endpoint": "/actions/remove_folder",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "folder_path",
+          "type": "string",
+          "description": "Folder path on site",
+          "required": true
+        },
+        {
+          "name": "drive_id",
+          "type": "string",
+          "description": "The file is searched in this drive. If no drive is specified, the default drive will be used",
+          "required": false
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "MS Graph for SharePoint",
+    "original_type": "reputation",
+    "converted_at": "2025-12-18T16:25:28.992513",
+    "source_version": "1.5.0"
+  }
+}

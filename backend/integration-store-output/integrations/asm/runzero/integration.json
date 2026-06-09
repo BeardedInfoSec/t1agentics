@@ -1,0 +1,163 @@
+{
+  "id": "runzero",
+  "name": "runZero",
+  "description": "Network discovery and asset inventory platform combining active scanning, passive monitoring, and cloud integration to provide comprehensive visibility of all network-connected assets",
+  "version": "1.0.0",
+  "category": "asm",
+  "vendor": "runZero",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "location": "header"
+  },
+  "base_url": "https://console.runzero.com/api/v1.0",
+  "actions": [
+    {
+      "id": "list_assets",
+      "name": "List Assets",
+      "description": "Export discovered assets with their services, software, and vulnerability information",
+      "http_method": "GET",
+      "endpoint": "/export/org/assets.json",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "search",
+          "type": "string",
+          "description": "Search query to filter assets (e.g., 'type:server AND os:linux')",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "type": "string",
+          "description": "Comma-separated list of fields to include",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_asset",
+      "name": "Get Asset Details",
+      "description": "Retrieve detailed information about a specific asset by ID",
+      "http_method": "GET",
+      "endpoint": "/org/assets/{asset_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "asset_id",
+          "type": "string",
+          "description": "The unique identifier of the asset",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_services",
+      "name": "List Services",
+      "description": "Export discovered network services across all assets",
+      "http_method": "GET",
+      "endpoint": "/export/org/services.json",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "search",
+          "type": "string",
+          "description": "Search query to filter services",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_sites",
+      "name": "List Sites",
+      "description": "Retrieve configured sites (network segments) in the organization",
+      "http_method": "GET",
+      "endpoint": "/org/sites",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "list_scans",
+      "name": "List Scans",
+      "description": "Retrieve scan tasks and their execution status",
+      "http_method": "GET",
+      "endpoint": "/org/tasks",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "search",
+          "type": "string",
+          "description": "Search query to filter scan tasks",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "start_scan",
+      "name": "Start Scan",
+      "description": "Launch a new network discovery scan for a specific site",
+      "http_method": "PUT",
+      "endpoint": "/org/sites/{site_id}/scan",
+      "action_type": "action",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "site_id",
+          "type": "string",
+          "description": "The unique identifier of the site to scan",
+          "required": true
+        },
+        {
+          "name": "targets",
+          "type": "string",
+          "description": "Target IP ranges or CIDRs for the scan",
+          "required": false
+        },
+        {
+          "name": "scan_rate",
+          "type": "integer",
+          "description": "Packets per second scan rate",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_wireless",
+      "name": "List Wireless Assets",
+      "description": "Export discovered wireless network assets and access points",
+      "http_method": "GET",
+      "endpoint": "/export/org/wireless.json",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "search",
+          "type": "string",
+          "description": "Search query to filter wireless assets",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "search_domains",
+      "name": "Search Assets by Domain",
+      "description": "Search for assets associated with specific domains",
+      "http_method": "GET",
+      "endpoint": "/export/org/assets.json",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "search",
+          "type": "string",
+          "description": "Domain-based search query (e.g., 'domain:example.com')",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

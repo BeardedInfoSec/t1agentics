@@ -1,0 +1,1138 @@
+{
+  "id": "cofense_triage_v2_api",
+  "name": "Cofense Triage v2 API",
+  "description": "This app supports actions for Cofense Triage's version 2 API for faster bidirectional phishing analysis and response",
+  "version": "1.1.1",
+  "category": "threat_intel",
+  "vendor": "Cofense",
+  "auth_type": "oauth2",
+  "auth_config": {
+    "type": "oauth2",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "get_reports",
+      "name": "Get Reports",
+      "description": "Retrieve reports from the Cofense Triage Platform filtered based on the provided parameters",
+      "http_method": "GET",
+      "endpoint": "/api/public/v2/reports",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "location",
+          "type": "string",
+          "description": "Allows filtering the reports based on the location",
+          "required": false,
+          "contains": [
+            "cofensetriage report location"
+          ]
+        },
+        {
+          "name": "from_address",
+          "type": "string",
+          "description": "Allows filtering the reports based on the sender's email address of the reported email",
+          "required": false,
+          "contains": [
+            "email"
+          ]
+        },
+        {
+          "name": "reporter_email",
+          "type": "string",
+          "description": "Allows filtering the reports based on the reporter's email address",
+          "required": false,
+          "contains": [
+            "email"
+          ]
+        },
+        {
+          "name": "subject",
+          "type": "string",
+          "description": "Allows filtering the reports based on the subject of the reported email",
+          "required": false,
+          "contains": [
+            "cofensetriage report subject"
+          ]
+        },
+        {
+          "name": "match_priority",
+          "type": "number",
+          "description": "Allows filtering the result data set based on the highest priority of a rule matching the reported email",
+          "required": false,
+          "contains": [
+            "cofensetriage priority"
+          ]
+        },
+        {
+          "name": "category_id",
+          "type": "number",
+          "description": "Allows filtering the reports based on the category ID",
+          "required": false,
+          "contains": [
+            "cofensetriage category id"
+          ]
+        },
+        {
+          "name": "start_date",
+          "type": "string",
+          "description": "Allows filtering the reports updated on or after the provided date",
+          "required": false,
+          "contains": [
+            "date"
+          ]
+        },
+        {
+          "name": "end_date",
+          "type": "string",
+          "description": "Allows filtering the reports updated before the provided date",
+          "required": false,
+          "contains": [
+            "date"
+          ]
+        },
+        {
+          "name": "tags",
+          "type": "string",
+          "description": "Allows filtering the reports based on the list of comma-separated tags. If the tag value contains a comma, enclose it in double-quotes (Example: tag1,\"test,tag\",tag2)",
+          "required": false,
+          "contains": [
+            "cofensetriage tag"
+          ]
+        },
+        {
+          "name": "categorization_tags",
+          "type": "string",
+          "description": "Allows filtering the reports based on the list of comma-separated categorization tags",
+          "required": false,
+          "contains": [
+            "cofensetriage tag"
+          ]
+        },
+        {
+          "name": "sort",
+          "type": "string",
+          "description": "Allows sorting the reports based on the 'updated_at' date of the report",
+          "required": false,
+          "default": "oldest_first"
+        },
+        {
+          "name": "ingest_report",
+          "type": "boolean",
+          "description": "Allows ingestion of the report into the container",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "ingest_subfields",
+          "type": "boolean",
+          "description": "Allows ingestion of the fields relating to the report into the container",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "description": "Allows ingestion of data into the container(s) with the provided label. The label must be valid or the action will fail. Required if 'ingest_report' or 'ingest_subfields' is set",
+          "required": false
+        },
+        {
+          "name": "tenant",
+          "type": "string",
+          "description": "Allows creation of container(s) for the provided tenant ID or tenant name. The tenant must be valid or the action will fail. Required if 'ingest_report' or 'ingest_subfields' is set",
+          "required": false
+        },
+        {
+          "name": "cef_mapping",
+          "type": "string",
+          "description": "JSON dictionary represented as a serialized JSON string. Each key in the dictionary is a potential key name in an artifact that is to be renamed to the value",
+          "required": false
+        },
+        {
+          "name": "max_results",
+          "type": "number",
+          "description": "Maximum number of results to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "get_report",
+      "name": "Get Report",
+      "description": "Retrieve a report with the provided ID from the Cofense Triage Platform",
+      "http_method": "GET",
+      "endpoint": "/api/public/v2/reports",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "report_id",
+          "type": "number",
+          "description": "The ID of the report which is to be fetched",
+          "required": true,
+          "contains": [
+            "cofensetriage report id"
+          ]
+        },
+        {
+          "name": "ingest_report",
+          "type": "boolean",
+          "description": "Allow ingestion of the report into the container",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "ingest_subfields",
+          "type": "boolean",
+          "description": "Ingestion of the fields relating to the report into the container",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "description": "Allows ingestion of data into the container(s) with the provided label. The label must be valid or the action will fail. Required if 'ingest_report' or 'ingest_subfields' is set",
+          "required": false
+        },
+        {
+          "name": "tenant",
+          "type": "string",
+          "description": "Allows creation of container(s) for the provided tenant ID or tenant name. The tenant must be valid or the action will fail. Required if 'ingest_report' or 'ingest_subfields' is set",
+          "required": false
+        },
+        {
+          "name": "cef_mapping",
+          "type": "string",
+          "description": "JSON dictionary represented as a serialized JSON string. Each key in the dictionary is a potential key name in an artifact that is to be renamed to the value",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_email",
+      "name": "Get Email",
+      "description": "Downloads the raw email for the report that matches the specified report ID",
+      "http_method": "GET",
+      "endpoint": "/actions/get_email",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "report_id",
+          "type": "number",
+          "description": "The ID of the report",
+          "required": true,
+          "contains": [
+            "cofensetriage report id"
+          ]
+        },
+        {
+          "name": "download_method",
+          "type": "string",
+          "description": "Allows the user to download the email as an artifact or as a vaulted file",
+          "required": true,
+          "default": "artifact"
+        },
+        {
+          "name": "create_vaulted_file_artifact",
+          "type": "boolean",
+          "description": "If storing as a vaulted file, this parameter allows the user to create an artifact referencing that file",
+          "required": false,
+          "default": false
+        }
+      ],
+      "observable_type": "email"
+    },
+    {
+      "id": "get_categories",
+      "name": "Get Categories",
+      "description": "Retrieve categories from the Cofense Triage Platform filtered based on the provided parameters",
+      "http_method": "GET",
+      "endpoint": "/actions/get_categories",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Allows the user to fetch the categories with the name containing a specific string",
+          "required": false,
+          "contains": [
+            "cofensetriage category name"
+          ]
+        },
+        {
+          "name": "malicious",
+          "type": "boolean",
+          "description": "Allows the user to fetch the categories based on whether the category is used to classify malicious reports or not",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "max_results",
+          "type": "number",
+          "description": "Maximum number of results to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "get_responses",
+      "name": "Get Responses",
+      "description": "Retrieve responses from the Cofense Triage Platform. This action is supported for Cofense Triage with version older than 1.23",
+      "http_method": "GET",
+      "endpoint": "/actions/get_responses",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "max_results",
+          "type": "number",
+          "description": "Allows the user to limit the number of results",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "create_response",
+      "name": "Create Response",
+      "description": "Create a response. This action is supported for Cofense Triage with version older than 1.23",
+      "http_method": "GET",
+      "endpoint": "/actions/create_response",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Display name of the response sent to individuals",
+          "required": true
+        },
+        {
+          "name": "subject",
+          "type": "string",
+          "description": "Subject of the response",
+          "required": true
+        },
+        {
+          "name": "body",
+          "type": "string",
+          "description": "Body of the email",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Description of the response",
+          "required": false
+        },
+        {
+          "name": "to_reporter",
+          "type": "boolean",
+          "description": "To add the reporter to the response recipient list or not",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "to_other",
+          "type": "boolean",
+          "description": "To add the addresses specified in 'to_other_address' to the response recipient list or not",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "to_other_address",
+          "type": "string",
+          "description": "Comma-separated list of email addresses to send the response to",
+          "required": false,
+          "contains": [
+            "email"
+          ]
+        },
+        {
+          "name": "attach_original",
+          "type": "boolean",
+          "description": "To attach the original email to the response or not",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "cc_address",
+          "type": "string",
+          "description": "Comma-separated list of email addresses to CC the response to",
+          "required": false,
+          "contains": [
+            "email"
+          ]
+        },
+        {
+          "name": "bcc_address",
+          "type": "string",
+          "description": "Comma-separated list of email addresses to BCC the response to",
+          "required": false,
+          "contains": [
+            "email"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "categorize_report",
+      "name": "Categorize Report",
+      "description": "Categorize a report into the provided category",
+      "http_method": "GET",
+      "endpoint": "/api/public/v2/reports/{report_id}/categorize",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "report_id",
+          "type": "number",
+          "description": "The ID of the report",
+          "required": true,
+          "contains": [
+            "cofensetriage report id"
+          ]
+        },
+        {
+          "name": "category_id",
+          "type": "number",
+          "description": "The ID of the category",
+          "required": false,
+          "contains": [
+            "cofensetriage category id"
+          ]
+        },
+        {
+          "name": "category_name",
+          "type": "string",
+          "description": "The name of the category",
+          "required": false,
+          "contains": [
+            "cofensetriage category name"
+          ]
+        },
+        {
+          "name": "response_id",
+          "type": "number",
+          "description": "The ID of the response",
+          "required": false
+        },
+        {
+          "name": "categorization_tags",
+          "type": "string",
+          "description": "Allows the user to provide multiple tags to the report while categorizing it",
+          "required": false,
+          "contains": [
+            "cofensetriage tag"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_threat_indicators",
+      "name": "Get Threat Indicators",
+      "description": "Retrieve threat indicators from the Cofense Triage Platform filtered based on the provided parameters",
+      "http_method": "GET",
+      "endpoint": "/actions/get_threat_indicators",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "level",
+          "type": "string",
+          "description": "The level of the threat indicator",
+          "required": false,
+          "contains": [
+            "cofensetriage threat indicator level"
+          ]
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Type of the threat indicators",
+          "required": false,
+          "contains": [
+            "cofensetriage threat indicator type"
+          ]
+        },
+        {
+          "name": "source",
+          "type": "string",
+          "description": "Source of the threat indicators",
+          "required": false,
+          "contains": [
+            "cofensetriage threat indicator source"
+          ]
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "description": "Value of the threat indicators",
+          "required": false,
+          "contains": [
+            "sha256",
+            "md5",
+            "url",
+            "hash",
+            "domain",
+            "host name"
+          ]
+        },
+        {
+          "name": "start_date",
+          "type": "string",
+          "description": "Threat indicators updated on or after the provided date",
+          "required": false,
+          "contains": [
+            "date"
+          ]
+        },
+        {
+          "name": "end_date",
+          "type": "string",
+          "description": "Threat indicators updated before the provided date",
+          "required": false,
+          "contains": [
+            "date"
+          ]
+        },
+        {
+          "name": "sort",
+          "type": "string",
+          "description": "Sorting based on updated date of threat indicators",
+          "required": false,
+          "default": "oldest_first"
+        },
+        {
+          "name": "ingest_threat_indicator",
+          "type": "boolean",
+          "description": "Ingestion of threat indicator(s) into the container(s)",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "ingest_subfields",
+          "type": "boolean",
+          "description": "Allow ingestion of the fields relating to the threat indicator into the container",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "description": "Allows ingestion of data into the container(s) with the provided label. The label must be valid or the action will fail. Required if 'ingest_threat_indicator' or 'ingest_subfields' is set",
+          "required": false
+        },
+        {
+          "name": "tenant",
+          "type": "string",
+          "description": "Allows creation of container(s) for the provided tenant ID or tenant name. The tenant must be valid or the action will fail. Required if 'ingest_threat_indicator' or 'ingest_subfields' is set",
+          "required": false
+        },
+        {
+          "name": "cef_mapping",
+          "type": "string",
+          "description": "JSON dictionary represented as a serialized JSON string",
+          "required": false
+        },
+        {
+          "name": "max_results",
+          "type": "number",
+          "description": "Maximum number of results to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "create_threat_indicator",
+      "name": "Create Threat Indicator",
+      "description": "Create a threat indicator with the provided parameters",
+      "http_method": "GET",
+      "endpoint": "/actions/create_threat_indicator",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "level",
+          "type": "string",
+          "description": "The level of the threat indicator",
+          "required": true,
+          "contains": [
+            "cofensetriage threat indicator level"
+          ]
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Type of the threat indicator",
+          "required": true,
+          "contains": [
+            "cofensetriage threat indicator type"
+          ]
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "description": "Value of the threat indicator",
+          "required": true,
+          "contains": [
+            "sha256",
+            "md5",
+            "url",
+            "hostname",
+            "domain",
+            "hash"
+          ]
+        },
+        {
+          "name": "source",
+          "type": "string",
+          "description": "Source of the threat indicator",
+          "required": false,
+          "default": "Splunk_Phantom-UI",
+          "contains": [
+            "cofensetriage threat indicator source"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_reporters",
+      "name": "Get Reporters",
+      "description": "Retrieve reporters from the Cofense Triage Platform filtered based on the provided parameters",
+      "http_method": "GET",
+      "endpoint": "/api/public/v2/reports",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "vip",
+          "type": "boolean",
+          "description": "Allows searching for the VIP reporters",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "reputation_score",
+          "type": "string",
+          "description": "Allows searching for reporters having the provided reputation score. It allows a comma-separated list",
+          "required": false,
+          "contains": [
+            "cofensetriage reporter reputation score"
+          ]
+        },
+        {
+          "name": "email",
+          "type": "string",
+          "description": "Allows searching for the reporter with a specific email",
+          "required": false,
+          "contains": [
+            "email"
+          ]
+        },
+        {
+          "name": "sort",
+          "type": "string",
+          "description": "Allows sorting the reporters based on the ID",
+          "required": false,
+          "default": "oldest_first"
+        },
+        {
+          "name": "max_results",
+          "type": "number",
+          "description": "Maximum number of results to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "get_reporter",
+      "name": "Get Reporter",
+      "description": "Retrieve a reporter from the Cofense Triage Platform for the provided reporter ID",
+      "http_method": "GET",
+      "endpoint": "/api/public/v2/reports",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "reporter_id",
+          "type": "number",
+          "description": "The unique ID of the reporter",
+          "required": true,
+          "contains": [
+            "cofensetriage reporter id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_urls",
+      "name": "Get Urls",
+      "description": "Retrieve URLs from the Cofense Triage Platform filtered based on the provided parameters",
+      "http_method": "GET",
+      "endpoint": "/actions/get_urls",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "risk_score",
+          "type": "number",
+          "description": "Risk score of the URL",
+          "required": false,
+          "contains": [
+            "cofensetriage risk score"
+          ]
+        },
+        {
+          "name": "risk_score_operator",
+          "type": "string",
+          "description": "Operator to work with the risk score parameter",
+          "required": false,
+          "default": "eq"
+        },
+        {
+          "name": "url_value",
+          "type": "string",
+          "description": "Value of the URL to search for",
+          "required": false,
+          "contains": [
+            "url"
+          ]
+        },
+        {
+          "name": "start_date",
+          "type": "string",
+          "description": "Allows filtering the URLs updated on or after the provided date",
+          "required": false,
+          "contains": [
+            "date"
+          ]
+        },
+        {
+          "name": "end_date",
+          "type": "string",
+          "description": "Allows filtering the URLs updated before the provided date",
+          "required": false,
+          "contains": [
+            "date"
+          ]
+        },
+        {
+          "name": "sort",
+          "type": "string",
+          "description": "Allows sorting the URLs based on the 'updated_at' date",
+          "required": false,
+          "default": "oldest_first"
+        },
+        {
+          "name": "max_results",
+          "type": "number",
+          "description": "Maximum number of results to return",
+          "required": false,
+          "default": 100
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "get_url",
+      "name": "Get Url",
+      "description": "Retrieve a URL from the Cofense Triage Platform for the provided URL ID",
+      "http_method": "GET",
+      "endpoint": "/actions/get_url",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "url_id",
+          "type": "number",
+          "description": "ID of the URL",
+          "required": true,
+          "contains": [
+            "cofensetriage url id"
+          ]
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "get_comments",
+      "name": "Get Comments",
+      "description": "Retrieve comments from the Cofense Triage Platform filtered based on the provided parameters",
+      "http_method": "GET",
+      "endpoint": "/actions/get_comments",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "body_format",
+          "type": "string",
+          "description": "Allows filtering the comments based on the format of the comment body",
+          "required": false,
+          "contains": [
+            "cofensetriage comment body format"
+          ]
+        },
+        {
+          "name": "tags",
+          "type": "string",
+          "description": "Allows filtering the comments based on the list of comma-separated tags. If the tag value contains a comma, enclose it in double-quotes (Example: tag1,\"test,tag\",tag2)",
+          "required": false,
+          "contains": [
+            "cofensetriage tag"
+          ]
+        },
+        {
+          "name": "start_date",
+          "type": "string",
+          "description": "Allows filtering the comments updated on or after the provided date",
+          "required": false,
+          "contains": [
+            "date"
+          ]
+        },
+        {
+          "name": "end_date",
+          "type": "string",
+          "description": "Allows filtering the comments updated before the provided date",
+          "required": false,
+          "contains": [
+            "date"
+          ]
+        },
+        {
+          "name": "sort",
+          "type": "string",
+          "description": "Allows sorting the comments based on the 'updated_at' date of the comment",
+          "required": false,
+          "default": "oldest_first"
+        },
+        {
+          "name": "max_results",
+          "type": "number",
+          "description": "Maximum number of results to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "get_comment",
+      "name": "Get Comment",
+      "description": "Retrieve a comment from the Cofense Triage Platform for the provided comment ID",
+      "http_method": "GET",
+      "endpoint": "/actions/get_comment",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "comment_id",
+          "type": "number",
+          "description": "ID of the comment",
+          "required": true,
+          "contains": [
+            "cofensetriage comment id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_rules",
+      "name": "Get Rules",
+      "description": "Retrieve rules from the Cofense Triage Platform filtered based on the provided parameters",
+      "http_method": "GET",
+      "endpoint": "/actions/get_rules",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Allows filtering the rules based on the name",
+          "required": false,
+          "contains": [
+            "cofensetriage rule name"
+          ]
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Allows filtering the rules based on the description",
+          "required": false,
+          "contains": [
+            "cofensetriage rule description"
+          ]
+        },
+        {
+          "name": "priority",
+          "type": "number",
+          "description": "Allows filtering the rules based on the priority",
+          "required": false,
+          "contains": [
+            "cofensetriage priority"
+          ]
+        },
+        {
+          "name": "tags",
+          "type": "string",
+          "description": "Allows filtering the rules based on the list of comma-separated tags. If the tag value contains a comma, enclose it in double-quotes (Example: tag1,\"test,tag\",tag2)",
+          "required": false,
+          "contains": [
+            "cofensetriage tag"
+          ]
+        },
+        {
+          "name": "scope",
+          "type": "string",
+          "description": "Allows filtering the rules based on the scope",
+          "required": false,
+          "contains": [
+            "cofensetriage rule scope"
+          ]
+        },
+        {
+          "name": "author_name",
+          "type": "string",
+          "description": "Allows filtering the rules based on the author name",
+          "required": false,
+          "contains": [
+            "cofensetriage rule author name"
+          ]
+        },
+        {
+          "name": "rule_context",
+          "type": "string",
+          "description": "Allows filtering the rules based on the context",
+          "required": false,
+          "contains": [
+            "cofensetriage rule context"
+          ]
+        },
+        {
+          "name": "active",
+          "type": "boolean",
+          "description": "Allows filtering the rules based on the status",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "reports_count",
+          "type": "number",
+          "description": "Allows filtering the rules based on the number of reports the rule matched",
+          "required": false,
+          "contains": [
+            "cofensetriage rule reports count"
+          ]
+        },
+        {
+          "name": "reports_count_operator",
+          "type": "string",
+          "description": "Operator to work with the reports count parameter",
+          "required": false,
+          "default": "eq"
+        },
+        {
+          "name": "start_date",
+          "type": "string",
+          "description": "Allows filtering the rules updated on or after the provided date",
+          "required": false,
+          "contains": [
+            "date"
+          ]
+        },
+        {
+          "name": "end_date",
+          "type": "string",
+          "description": "Allows filtering the rules updated before the provided date",
+          "required": false,
+          "contains": [
+            "date"
+          ]
+        },
+        {
+          "name": "sort",
+          "type": "string",
+          "description": "Allows sorting the rules based on the 'updated_at' date of the rule",
+          "required": false,
+          "default": "oldest_first"
+        },
+        {
+          "name": "max_results",
+          "type": "number",
+          "description": "Maximum number of results to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "get_rule",
+      "name": "Get Rule",
+      "description": "Retrieve a rule from the Cofense Triage Platform for the provided rule ID",
+      "http_method": "GET",
+      "endpoint": "/actions/get_rule",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "rule_id",
+          "type": "number",
+          "description": "ID of the rule",
+          "required": true,
+          "contains": [
+            "cofensetriage rule id"
+          ]
+        },
+        {
+          "name": "ingest_report",
+          "type": "boolean",
+          "description": "Allows ingestion of the reports related to the rule into the container",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "ingest_subfields",
+          "type": "boolean",
+          "description": "Allows ingestion of fields relating to the report into the container",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "description": "Allows ingestion of data into the container(s) with the provided label. The label must be valid or the action will fail. Required if 'ingest_report' or 'ingest_subfields' is set",
+          "required": false
+        },
+        {
+          "name": "tenant",
+          "type": "string",
+          "description": "Allows creation of container(s) for the provided tenant ID or tenant name. The tenant must be valid or the action will fail. Required if 'ingest_report' or 'ingest_subfields' is set",
+          "required": false
+        },
+        {
+          "name": "cef_mapping",
+          "type": "string",
+          "description": "JSON dictionary represented as a serialized JSON string. Each key in the dictionary is a potential key name in an artifact that is to be renamed to the value",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_integration_submissions",
+      "name": "Get Integration Submissions",
+      "description": "Retrieve integration submissions from the Cofense Triage Platform filtered based on the provided parameters",
+      "http_method": "GET",
+      "endpoint": "/actions/get_integration_submissions",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "type",
+          "type": "string",
+          "description": "The type of integration submission",
+          "required": true
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "description": "The value of integration submission",
+          "required": true,
+          "contains": [
+            "hash",
+            "md5",
+            "sha256",
+            "url"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "on_poll",
+      "name": "On Poll",
+      "description": "Action handler for the on poll ingest functionality",
+      "http_method": "GET",
+      "endpoint": "/actions/on_poll",
+      "action_type": "ingest",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "container_count",
+          "type": "number",
+          "description": "Maximum number of containers to ingest",
+          "required": false
+        },
+        {
+          "name": "start_time",
+          "type": "number",
+          "description": "Parameter ignored in this app",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "number",
+          "description": "Parameter ignored in this app",
+          "required": false
+        },
+        {
+          "name": "artifact_count",
+          "type": "number",
+          "description": "Parameter ignored in this app",
+          "required": false
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Cofense Triage v2 API",
+    "original_type": "information",
+    "converted_at": "2025-12-18T16:25:28.686652",
+    "source_version": "1.1.1"
+  }
+}

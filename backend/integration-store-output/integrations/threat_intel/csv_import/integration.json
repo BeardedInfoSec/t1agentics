@@ -1,0 +1,96 @@
+{
+  "id": "csv_import",
+  "name": "CSV Import",
+  "description": "Ingest CSV files into Phantom",
+  "version": "1.1.1",
+  "category": "threat_intel",
+  "vendor": "Splunk",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "ingest_csv",
+      "name": "Ingest Csv",
+      "description": "Read contents of a CSV and create artifact",
+      "http_method": "GET",
+      "endpoint": "/actions/ingest_csv",
+      "action_type": "generic",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "vault_id",
+          "type": "string",
+          "description": "The vault_id for the csv",
+          "required": true,
+          "contains": [
+            "sha1",
+            "vault id"
+          ]
+        },
+        {
+          "name": "container_id",
+          "type": "number",
+          "description": "Create artifacts on given container ID",
+          "required": true
+        },
+        {
+          "name": "cef_column_headers",
+          "type": "string",
+          "description": "Comma separated list of the CEF columns (e.g. ip,port,type,comment)",
+          "required": true
+        },
+        {
+          "name": "artifact_name",
+          "type": "string",
+          "description": "Name for the artifact (e.g. IP Artifact)",
+          "required": true
+        },
+        {
+          "name": "artifact_label",
+          "type": "string",
+          "description": "Label for the artifact (e.g. IP_test)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "create_csv",
+      "name": "Csv From Artifacts",
+      "description": "Create the csv in the vault from the artifacts of container",
+      "http_method": "GET",
+      "endpoint": "/actions/create_csv",
+      "action_type": "generic",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "container_id",
+          "type": "number",
+          "description": "The container_id for the artifacts",
+          "required": true
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "The number of artifacts to retrieve",
+          "required": false,
+          "default": 1000
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "CSV Import",
+    "original_type": "information",
+    "converted_at": "2025-12-18T16:25:28.714439",
+    "source_version": "1.1.1"
+  }
+}

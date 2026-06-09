@@ -1,0 +1,181 @@
+{
+  "id": "imperva_data",
+  "name": "Imperva Data Security",
+  "description": "Integrates with Imperva (Thales) Data Activity Monitoring (DAM) REST API for database audit events, security policy management, and compliance monitoring across relational databases, mainframes, and data warehouses",
+  "version": "1.0.0",
+  "category": "database_security",
+  "vendor": "Imperva (Thales)",
+  "auth_type": "basic",
+  "auth_config": {
+    "type": "basic",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "https://{host}:8083/SecureSphere/api/v1",
+  "actions": [
+    {
+      "id": "list_audit_events",
+      "name": "List Audit Events",
+      "description": "Retrieve database audit events including SQL queries, access attempts, and policy violations",
+      "http_method": "GET",
+      "endpoint": "/conf/audit/events",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "startDate",
+          "type": "string",
+          "description": "Start date for audit event query (ISO 8601 format)",
+          "required": false
+        },
+        {
+          "name": "endDate",
+          "type": "string",
+          "description": "End date for audit event query (ISO 8601 format)",
+          "required": false
+        },
+        {
+          "name": "database",
+          "type": "string",
+          "description": "Filter by database name",
+          "required": false
+        },
+        {
+          "name": "user",
+          "type": "string",
+          "description": "Filter by database user",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of events to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "list_security_policies",
+      "name": "List Security Policies",
+      "description": "Retrieve all configured database security policies including audit, firewall, and assessment policies",
+      "http_method": "GET",
+      "endpoint": "/conf/policies",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "policyType",
+          "type": "string",
+          "description": "Filter by policy type (db-audit, db-security, assessment)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_policy_details",
+      "name": "Get Policy Details",
+      "description": "Retrieve detailed configuration of a specific security policy",
+      "http_method": "GET",
+      "endpoint": "/conf/policies/{policyName}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "policyName",
+          "type": "string",
+          "description": "Name of the security policy",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_data_sources",
+      "name": "List Data Sources",
+      "description": "Retrieve all monitored database servers and services registered in Imperva DAM",
+      "http_method": "GET",
+      "endpoint": "/conf/dbServices",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "siteName",
+          "type": "string",
+          "description": "Filter by site name",
+          "required": false
+        },
+        {
+          "name": "serverGroupName",
+          "type": "string",
+          "description": "Filter by server group name",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "search_activity",
+      "name": "Search Database Activity",
+      "description": "Search database activity logs for specific queries, users, or data access patterns",
+      "http_method": "POST",
+      "endpoint": "/conf/audit/search",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "SQL-like search query for activity logs",
+          "required": true
+        },
+        {
+          "name": "startDate",
+          "type": "string",
+          "description": "Start date for search (ISO 8601 format)",
+          "required": false
+        },
+        {
+          "name": "endDate",
+          "type": "string",
+          "description": "End date for search (ISO 8601 format)",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of results to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "list_alerts",
+      "name": "List Security Alerts",
+      "description": "Retrieve database security alerts triggered by policy violations or anomalous activity",
+      "http_method": "GET",
+      "endpoint": "/conf/alerts",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Filter by alert severity (high, medium, low)",
+          "required": false
+        },
+        {
+          "name": "startDate",
+          "type": "string",
+          "description": "Start date for alert query (ISO 8601 format)",
+          "required": false
+        },
+        {
+          "name": "endDate",
+          "type": "string",
+          "description": "End date for alert query (ISO 8601 format)",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

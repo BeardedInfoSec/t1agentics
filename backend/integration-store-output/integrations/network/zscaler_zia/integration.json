@@ -1,0 +1,172 @@
+{
+  "id": "zscaler_zia",
+  "name": "Zscaler Internet Access (ZIA)",
+  "description": "Zscaler Internet Access API for managing URL filtering, firewall policies, security policies, and threat monitoring in the Zscaler cloud",
+  "version": "1.0.0",
+  "category": "network",
+  "vendor": "Zscaler",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Cookie",
+    "location": "header",
+    "note": "Session-based authentication via /authenticatedSession endpoint using API key, username, and password"
+  },
+  "base_url": "https://zsapi.{cloud}.net/api/v1",
+  "actions": [
+    {
+      "id": "authenticate",
+      "name": "Authenticate",
+      "description": "Create an authenticated session for subsequent API calls",
+      "http_method": "POST",
+      "endpoint": "/authenticatedSession",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "apiKey",
+          "type": "string",
+          "description": "Obfuscated API key for authentication",
+          "required": true
+        },
+        {
+          "name": "username",
+          "type": "string",
+          "description": "Admin username",
+          "required": true
+        },
+        {
+          "name": "password",
+          "type": "string",
+          "description": "Admin password",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_url_filtering_rules",
+      "name": "List URL Filtering Rules",
+      "description": "Retrieve all URL filtering rules configured in ZIA",
+      "http_method": "GET",
+      "endpoint": "/webApplicationRules",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "create_url_filtering_rule",
+      "name": "Create URL Filtering Rule",
+      "description": "Create a new URL filtering rule to block or allow URL categories",
+      "http_method": "POST",
+      "endpoint": "/webApplicationRules",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "body",
+          "type": "object",
+          "description": "Rule definition including name, order, state, action (ALLOW/BLOCK/CAUTION), URL categories, and user/group assignments",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_url_categories",
+      "name": "List URL Categories",
+      "description": "Retrieve all URL categories (custom and predefined) for filtering policies",
+      "http_method": "GET",
+      "endpoint": "/urlCategories",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "create_custom_url_category",
+      "name": "Create Custom URL Category",
+      "description": "Create a custom URL category with specific URLs or domains to block",
+      "http_method": "POST",
+      "endpoint": "/urlCategories",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "body",
+          "type": "object",
+          "description": "Custom category including configuredName, urls (list of URLs/domains), and superCategory",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_firewall_rules",
+      "name": "List Firewall Rules",
+      "description": "Retrieve all cloud firewall rules configured in ZIA",
+      "http_method": "GET",
+      "endpoint": "/firewallRules",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "create_firewall_rule",
+      "name": "Create Firewall Rule",
+      "description": "Create a new cloud firewall rule for network-level traffic control",
+      "http_method": "POST",
+      "endpoint": "/firewallRules",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "body",
+          "type": "object",
+          "description": "Firewall rule including name, order, action (ALLOW/BLOCK_DROP/BLOCK_RESET), srcIps, destAddresses, and protocols",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_security_policy",
+      "name": "Get Security Policy",
+      "description": "Retrieve the security policy settings (malware, phishing, botnet protection)",
+      "http_method": "GET",
+      "endpoint": "/security",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "get_sandbox_report",
+      "name": "Get Sandbox Report",
+      "description": "Retrieve a cloud sandbox analysis report for a file hash",
+      "http_method": "GET",
+      "endpoint": "/sandbox/report/{md5_hash}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "md5_hash",
+          "type": "string",
+          "description": "MD5 hash of the file to retrieve the sandbox report for",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "activate_changes",
+      "name": "Activate Changes",
+      "description": "Activate pending configuration changes to make them effective",
+      "http_method": "POST",
+      "endpoint": "/status/activate",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Activation status: ACTIVE",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

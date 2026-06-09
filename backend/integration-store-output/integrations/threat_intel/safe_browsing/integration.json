@@ -1,0 +1,71 @@
+{
+  "id": "safe_browsing",
+  "name": "Safe Browsing",
+  "description": "This app Integrate with Google Safe Browsing to execute reputation-based actions",
+  "version": "2.0.8",
+  "category": "threat_intel",
+  "vendor": "Google",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "https://safebrowsing.googleapis.com/v4/",
+  "actions": [
+    {
+      "id": "url_reputation",
+      "name": "Url Reputation",
+      "description": "Determine the reputation of a URL",
+      "http_method": "GET",
+      "endpoint": "/actions/url_reputation",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "Determines the URL reputation",
+          "required": true,
+          "contains": [
+            "url",
+            "domain"
+          ]
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "domain_reputation",
+      "name": "Domain Reputation",
+      "description": "Determine the reputation of a domain",
+      "http_method": "GET",
+      "endpoint": "/actions/domain_reputation",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "domain",
+          "type": "string",
+          "description": "Determines the domain reputation",
+          "required": true,
+          "contains": [
+            "domain",
+            "url"
+          ]
+        }
+      ],
+      "observable_type": "domain"
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Safe Browsing",
+    "original_type": "information",
+    "converted_at": "2025-12-18T16:25:29.096154",
+    "source_version": "2.0.8"
+  }
+}

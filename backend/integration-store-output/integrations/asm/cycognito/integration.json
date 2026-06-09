@@ -1,0 +1,200 @@
+{
+  "id": "cycognito",
+  "name": "CyCognito",
+  "description": "Automated external exposure management platform using attacker-like reconnaissance to discover, test, and prioritize security risks across the entire external attack surface",
+  "version": "1.0.0",
+  "category": "asm",
+  "vendor": "CyCognito",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "location": "header"
+  },
+  "base_url": "https://api.cycognito.com/v1",
+  "actions": [
+    {
+      "id": "list_assets",
+      "name": "List Assets",
+      "description": "Retrieve discovered external assets including IPs, domains, web applications, and certificates",
+      "http_method": "GET",
+      "endpoint": "/assets",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "asset_type",
+          "type": "string",
+          "description": "Filter by asset type (ip, domain, webapp, cert)",
+          "required": false
+        },
+        {
+          "name": "count",
+          "type": "integer",
+          "description": "Maximum number of results to return",
+          "required": false
+        },
+        {
+          "name": "offset",
+          "type": "integer",
+          "description": "Number of results to skip for pagination",
+          "required": false
+        },
+        {
+          "name": "search",
+          "type": "string",
+          "description": "Search string to filter assets",
+          "required": false
+        },
+        {
+          "name": "sort_by",
+          "type": "string",
+          "description": "Field to sort by",
+          "required": false
+        },
+        {
+          "name": "sort_order",
+          "type": "string",
+          "description": "Sort order (asc, desc)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_asset",
+      "name": "Get Asset Details",
+      "description": "Retrieve detailed information about a specific asset including risk assessment and technologies",
+      "http_method": "GET",
+      "endpoint": "/assets/{asset_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "asset_id",
+          "type": "string",
+          "description": "The unique identifier of the asset",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_issues",
+      "name": "List Issues",
+      "description": "Retrieve security issues discovered across the attack surface with severity and category",
+      "http_method": "GET",
+      "endpoint": "/issues",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "issue_type",
+          "type": "string",
+          "description": "Filter by issue type",
+          "required": false
+        },
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Filter by severity (critical, high, medium, low)",
+          "required": false
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Filter by status (new, investigating, resolved)",
+          "required": false
+        },
+        {
+          "name": "count",
+          "type": "integer",
+          "description": "Maximum number of results to return",
+          "required": false
+        },
+        {
+          "name": "offset",
+          "type": "integer",
+          "description": "Number of results to skip for pagination",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_issue",
+      "name": "Get Issue Details",
+      "description": "Retrieve detailed information about a specific security issue including affected assets and remediation guidance",
+      "http_method": "GET",
+      "endpoint": "/issues/{issue_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "issue_id",
+          "type": "string",
+          "description": "The unique identifier of the issue",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "search_domains",
+      "name": "Search Domains",
+      "description": "Search for discovered domains and subdomains in the attack surface",
+      "http_method": "GET",
+      "endpoint": "/assets",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "asset_type",
+          "type": "string",
+          "description": "Set to 'domain' to filter for domain assets",
+          "required": true
+        },
+        {
+          "name": "search",
+          "type": "string",
+          "description": "Domain name search string",
+          "required": false
+        },
+        {
+          "name": "count",
+          "type": "integer",
+          "description": "Maximum number of results to return",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_risk_score",
+      "name": "Get Risk Score",
+      "description": "Retrieve the organization's overall external risk score and breakdown",
+      "http_method": "GET",
+      "endpoint": "/stats/risk",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "update_issue_status",
+      "name": "Update Issue Status",
+      "description": "Update the investigation status of a specific issue",
+      "http_method": "PUT",
+      "endpoint": "/issues/{issue_id}",
+      "action_type": "action",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "issue_id",
+          "type": "string",
+          "description": "The unique identifier of the issue",
+          "required": true
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "New status (investigating, resolved, risk_accepted)",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

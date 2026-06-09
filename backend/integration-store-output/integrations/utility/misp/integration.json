@@ -1,0 +1,322 @@
+{
+  "id": "misp_utility",
+  "name": "MISP",
+  "description": "Take action with Malware Information Sharing Platform",
+  "version": "2.2.7",
+  "category": "utility",
+  "vendor": "MISP",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "create_event",
+      "name": "Create Event",
+      "description": "Create a new event in MISP",
+      "http_method": "GET",
+      "endpoint": "/actions/create_event",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "distribution",
+          "type": "string",
+          "description": "Distribution level for sharing",
+          "required": true,
+          "default": "This Community Only"
+        },
+        {
+          "name": "threat_level_id",
+          "type": "string",
+          "description": "Threat level id",
+          "required": true,
+          "default": "Undefined"
+        },
+        {
+          "name": "analysis",
+          "type": "string",
+          "description": "Current stage of analysis for event",
+          "required": true,
+          "default": "Initial"
+        },
+        {
+          "name": "info",
+          "type": "string",
+          "description": "Information / Description for Event",
+          "required": true,
+          "default": "Event created by test"
+        },
+        {
+          "name": "add_attributes",
+          "type": "boolean",
+          "description": "Add attributes upon event creation",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "to_ids",
+          "type": "boolean",
+          "description": "Set 'to_IDS' flag=True in MISP",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "source_ips",
+          "type": "string",
+          "description": "Source IPs to be added as attributes",
+          "required": false,
+          "contains": [
+            "ip"
+          ]
+        },
+        {
+          "name": "dest_ips",
+          "type": "string",
+          "description": "Destination IPs to be added as attributes",
+          "required": false,
+          "contains": [
+            "ip"
+          ]
+        },
+        {
+          "name": "domains",
+          "type": "string",
+          "description": "Domains to be added as attributes",
+          "required": false,
+          "contains": [
+            "domain"
+          ]
+        },
+        {
+          "name": "source_emails",
+          "type": "string",
+          "description": "Source email addresses to be added as attributes",
+          "required": false,
+          "contains": [
+            "email"
+          ]
+        },
+        {
+          "name": "dest_emails",
+          "type": "string",
+          "description": "Destination email addresses to be added as attributes",
+          "required": false,
+          "contains": [
+            "email"
+          ]
+        },
+        {
+          "name": "urls",
+          "type": "string",
+          "description": "URLs to be added as attributes",
+          "required": false,
+          "contains": [
+            "url"
+          ]
+        },
+        {
+          "name": "tags",
+          "type": "string",
+          "description": "Comma separated list of tags",
+          "required": false
+        },
+        {
+          "name": "json",
+          "type": "string",
+          "description": "JSON key value list of attributes",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "add_attributes",
+      "name": "Update Event",
+      "description": "Add attributes / IOCs to an event in MISP",
+      "http_method": "GET",
+      "endpoint": "/actions/add_attributes",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "event_id",
+          "type": "number",
+          "description": "MISP event ID for adding attributes",
+          "required": true,
+          "contains": [
+            "misp event id"
+          ]
+        },
+        {
+          "name": "to_ids",
+          "type": "boolean",
+          "description": "Set 'to_IDS' flag=True in MISP",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "source_ips",
+          "type": "string",
+          "description": "Source IPs to be added as attributes",
+          "required": false,
+          "contains": [
+            "ip"
+          ]
+        },
+        {
+          "name": "dest_ips",
+          "type": "string",
+          "description": "Destination IPs to be added as attributes",
+          "required": false,
+          "contains": [
+            "ip"
+          ]
+        },
+        {
+          "name": "domains",
+          "type": "string",
+          "description": "Domains to be added as attributes",
+          "required": false,
+          "contains": [
+            "domain"
+          ]
+        },
+        {
+          "name": "source_emails",
+          "type": "string",
+          "description": "Source email addresses to be added as attributes",
+          "required": false,
+          "contains": [
+            "email"
+          ]
+        },
+        {
+          "name": "dest_emails",
+          "type": "string",
+          "description": "Destination email addresses to be added as attributes",
+          "required": false,
+          "contains": [
+            "email"
+          ]
+        },
+        {
+          "name": "urls",
+          "type": "string",
+          "description": "URLs to be added as attributes",
+          "required": false,
+          "contains": [
+            "url"
+          ]
+        },
+        {
+          "name": "tags",
+          "type": "string",
+          "description": "Comma separated list of tags (append to existing tags default)",
+          "required": false
+        },
+        {
+          "name": "replace_tags",
+          "type": "boolean",
+          "description": "Replace tags with new provided tags",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "json",
+          "type": "string",
+          "description": "JSON key value list of attributes",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "run_query",
+      "name": "Run Query",
+      "description": "Run a query to find events or attributes",
+      "http_method": "GET",
+      "endpoint": "/actions/run_query",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "controller",
+          "type": "string",
+          "description": "Search for events or attributes",
+          "required": true
+        },
+        {
+          "name": "max_results",
+          "type": "number",
+          "description": "Max results to return",
+          "required": false,
+          "default": 10
+        },
+        {
+          "name": "event_id",
+          "type": "string",
+          "description": "Comma seperated list of Event IDs",
+          "required": false,
+          "contains": [
+            "misp event id"
+          ]
+        },
+        {
+          "name": "tags",
+          "type": "string",
+          "description": "Comma seperated list of tags",
+          "required": false
+        },
+        {
+          "name": "other",
+          "type": "string",
+          "description": "Other search parameters, as a JSON object",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_event",
+      "name": "Get Attributes",
+      "description": "Get attributes for a specific event",
+      "http_method": "GET",
+      "endpoint": "/actions/get_event",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "event_id",
+          "type": "number",
+          "description": "An Event ID",
+          "required": true,
+          "contains": [
+            "misp event id"
+          ]
+        },
+        {
+          "name": "download_samples",
+          "type": "boolean",
+          "description": "Download malware samples to vault",
+          "required": false,
+          "default": false
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "MISP",
+    "original_type": "threat intel",
+    "converted_at": "2025-12-18T16:25:28.953559",
+    "source_version": "2.2.7"
+  }
+}

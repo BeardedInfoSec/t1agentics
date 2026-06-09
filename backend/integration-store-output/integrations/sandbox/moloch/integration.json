@@ -1,0 +1,128 @@
+{
+  "id": "moloch",
+  "name": "Moloch",
+  "description": "This app integrates with Moloch to support various investigative actions",
+  "version": "3.0.1",
+  "category": "sandbox",
+  "vendor": "Moloch",
+  "auth_type": "basic_auth",
+  "auth_config": {
+    "type": "basic_auth",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "get_pcap",
+      "name": "Get Pcap",
+      "description": "Download the pcap file from server and add it to the vault",
+      "http_method": "GET",
+      "endpoint": "/sessions.pcap",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "start_time",
+          "type": "number",
+          "description": "Start time in epoch",
+          "required": true
+        },
+        {
+          "name": "end_time",
+          "type": "number",
+          "description": "End time in epoch",
+          "required": true
+        },
+        {
+          "name": "source_ip",
+          "type": "string",
+          "description": "Source IP",
+          "required": false,
+          "contains": [
+            "ip"
+          ]
+        },
+        {
+          "name": "destination_ip",
+          "type": "string",
+          "description": "Destination IP",
+          "required": false,
+          "contains": [
+            "ip"
+          ]
+        },
+        {
+          "name": "hostname",
+          "type": "string",
+          "description": "Hostname",
+          "required": false,
+          "contains": [
+            "host name"
+          ]
+        },
+        {
+          "name": "custom_query",
+          "type": "string",
+          "description": "Custom query",
+          "required": false,
+          "contains": [
+            "moloch field"
+          ]
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of sessions to return (Default: 50)",
+          "required": false,
+          "default": 50
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "list_fields",
+      "name": "List Fields",
+      "description": "List all fields on which user can query",
+      "http_method": "GET",
+      "endpoint": "/fields/_search?size=1000",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "port",
+          "type": "number",
+          "description": "Elasticsearch port (Default: 9200)",
+          "required": false,
+          "default": 9200,
+          "contains": [
+            "port"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_files",
+      "name": "List Files",
+      "description": "List all pcap files",
+      "http_method": "GET",
+      "endpoint": "/file/list",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [],
+      "observable_type": "file_hash"
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Moloch",
+    "original_type": "sandbox",
+    "converted_at": "2025-12-18T16:25:28.957559",
+    "source_version": "3.0.1"
+  }
+}

@@ -1,0 +1,235 @@
+{
+  "id": "harmony_endpoint",
+  "name": "Check Point Harmony Endpoint",
+  "description": "Integrates with Check Point Harmony Endpoint Management API for endpoint security, anti-malware scanning, computer isolation, and remediation operations",
+  "version": "1.0.0",
+  "category": "edr",
+  "vendor": "Check Point",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "x-mgmt-api-token",
+    "location": "header"
+  },
+  "base_url": "https://cloudinfra-gw.portal.checkpoint.com/app/endpoint-web-mgmt/webmgmt/graphql",
+  "actions": [
+    {
+      "id": "list_computers",
+      "name": "List Computers",
+      "description": "Retrieve the list of managed computers with filtering by status, type, and group",
+      "http_method": "POST",
+      "endpoint": "/external/v1/computers",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "Filter expression for computer query",
+          "required": false
+        },
+        {
+          "name": "computer_types",
+          "type": "string",
+          "description": "Filter by computer type (desktop, laptop, server)",
+          "required": false
+        },
+        {
+          "name": "computer_deployment_status",
+          "type": "string",
+          "description": "Filter by deployment status",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of computers to return",
+          "required": false,
+          "default": 50
+        }
+      ],
+      "observable_type": "hostname"
+    },
+    {
+      "id": "get_computer",
+      "name": "Get Computer Details",
+      "description": "Retrieve detailed information about a specific computer by its ID",
+      "http_method": "POST",
+      "endpoint": "/external/v1/computers/{computer_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "computer_id",
+          "type": "string",
+          "description": "The unique identifier of the computer",
+          "required": true
+        }
+      ],
+      "observable_type": "hostname"
+    },
+    {
+      "id": "isolate_computer",
+      "name": "Isolate Computer",
+      "description": "Isolate one or more computers by denying all network access except to Check Point services",
+      "http_method": "POST",
+      "endpoint": "/external/v1/computers/isolate",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "computer_ids",
+          "type": "string",
+          "description": "JSON array of computer IDs to isolate",
+          "required": false
+        },
+        {
+          "name": "computer_names",
+          "type": "string",
+          "description": "JSON array of computer names to isolate",
+          "required": false
+        },
+        {
+          "name": "computer_ips",
+          "type": "string",
+          "description": "JSON array of computer IP addresses to isolate",
+          "required": false
+        }
+      ],
+      "observable_type": "hostname"
+    },
+    {
+      "id": "deisolate_computer",
+      "name": "Deisolate Computer",
+      "description": "Remove network isolation from one or more previously isolated computers",
+      "http_method": "POST",
+      "endpoint": "/external/v1/computers/deisolate",
+      "action_type": "correct",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "computer_ids",
+          "type": "string",
+          "description": "JSON array of computer IDs to deisolate",
+          "required": false
+        },
+        {
+          "name": "computer_names",
+          "type": "string",
+          "description": "JSON array of computer names to deisolate",
+          "required": false
+        }
+      ],
+      "observable_type": "hostname"
+    },
+    {
+      "id": "scan_computers",
+      "name": "Scan Computers",
+      "description": "Perform anti-malware scans on computers matching the given filter criteria",
+      "http_method": "POST",
+      "endpoint": "/external/v1/computers/scan",
+      "action_type": "correct",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "computer_ids",
+          "type": "string",
+          "description": "JSON array of computer IDs to scan",
+          "required": false
+        },
+        {
+          "name": "computer_names",
+          "type": "string",
+          "description": "JSON array of computer names to scan",
+          "required": false
+        },
+        {
+          "name": "computer_ips",
+          "type": "string",
+          "description": "JSON array of computer IPs to scan",
+          "required": false
+        }
+      ],
+      "observable_type": "hostname"
+    },
+    {
+      "id": "get_remediation_status",
+      "name": "Get Remediation Status",
+      "description": "Retrieve the current status of all remediation operations or a specific one",
+      "http_method": "GET",
+      "endpoint": "/external/v1/remediation",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "operation_id",
+          "type": "string",
+          "description": "Specific remediation operation ID (optional, returns all if not specified)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_remediation_results",
+      "name": "Get Remediation Results",
+      "description": "Retrieve the results of a completed remediation operation",
+      "http_method": "GET",
+      "endpoint": "/external/v1/remediation/{operation_id}/results",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "operation_id",
+          "type": "string",
+          "description": "The unique identifier of the remediation operation",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_rules",
+      "name": "List Policy Rules",
+      "description": "Retrieve the list of endpoint security policy rules with metadata",
+      "http_method": "GET",
+      "endpoint": "/external/v1/rules",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of rules to return",
+          "required": false,
+          "default": 50
+        }
+      ]
+    },
+    {
+      "id": "get_rule",
+      "name": "Get Rule Details",
+      "description": "Retrieve the metadata and settings of a specific policy rule",
+      "http_method": "GET",
+      "endpoint": "/external/v1/rules/{rule_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "rule_id",
+          "type": "string",
+          "description": "The unique identifier of the policy rule",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "install_policy",
+      "name": "Install Policy",
+      "description": "Push and install the current policy to all managed endpoints",
+      "http_method": "POST",
+      "endpoint": "/external/v1/policies/install",
+      "action_type": "correct",
+      "read_only": false,
+      "parameters": []
+    }
+  ]
+}

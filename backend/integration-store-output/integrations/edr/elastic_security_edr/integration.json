@@ -1,0 +1,293 @@
+{
+  "id": "elastic_security_edr",
+  "name": "Elastic Security EDR",
+  "description": "Integrates with Elastic Security (Elastic Defend) Kibana APIs for detection rules, alerts, host isolation, and endpoint management",
+  "version": "1.0.0",
+  "category": "edr",
+  "vendor": "Elastic",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "prefix": "ApiKey"
+  },
+  "base_url": "https://{kibana_host}:{port}",
+  "actions": [
+    {
+      "id": "list_detection_rules",
+      "name": "List Detection Rules",
+      "description": "Retrieve all detection rules with filtering and pagination",
+      "http_method": "GET",
+      "endpoint": "/api/detection_engine/rules/_find",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "per_page",
+          "type": "number",
+          "description": "Number of rules per page",
+          "required": false,
+          "default": 20
+        },
+        {
+          "name": "page",
+          "type": "number",
+          "description": "Page number for pagination",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "KQL filter to narrow results (e.g., alert.attributes.name: 'Suspicious')",
+          "required": false
+        },
+        {
+          "name": "sort_field",
+          "type": "string",
+          "description": "Field to sort by (e.g., enabled, name, updated_at)",
+          "required": false
+        },
+        {
+          "name": "sort_order",
+          "type": "string",
+          "description": "Sort order: asc or desc",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_detection_rule",
+      "name": "Get Detection Rule",
+      "description": "Retrieve a specific detection rule by its ID",
+      "http_method": "GET",
+      "endpoint": "/api/detection_engine/rules",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "The rule ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "create_detection_rule",
+      "name": "Create Detection Rule",
+      "description": "Create a new detection rule in the Elastic Security detection engine",
+      "http_method": "POST",
+      "endpoint": "/api/detection_engine/rules",
+      "action_type": "correct",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "The name of the detection rule",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Description of what the rule detects",
+          "required": true
+        },
+        {
+          "name": "risk_score",
+          "type": "number",
+          "description": "Risk score from 0 to 100",
+          "required": true
+        },
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Severity: low, medium, high, critical",
+          "required": true
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Rule type: query, eql, threshold, machine_learning, threat_match",
+          "required": true
+        },
+        {
+          "name": "query",
+          "type": "string",
+          "description": "The query string for the rule (KQL or EQL)",
+          "required": false
+        },
+        {
+          "name": "index",
+          "type": "string",
+          "description": "JSON array of index patterns to search",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "search_alerts",
+      "name": "Search Alerts",
+      "description": "Search detection alerts using Elasticsearch query DSL",
+      "http_method": "POST",
+      "endpoint": "/api/detection_engine/signals/search",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Elasticsearch query DSL as JSON string",
+          "required": true
+        },
+        {
+          "name": "size",
+          "type": "number",
+          "description": "Maximum number of alerts to return",
+          "required": false,
+          "default": 50
+        },
+        {
+          "name": "from",
+          "type": "number",
+          "description": "Starting offset for pagination",
+          "required": false,
+          "default": 0
+        }
+      ]
+    },
+    {
+      "id": "update_alert_status",
+      "name": "Update Alert Status",
+      "description": "Update the status of one or more detection alerts",
+      "http_method": "POST",
+      "endpoint": "/api/detection_engine/signals/status",
+      "action_type": "correct",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "signal_ids",
+          "type": "string",
+          "description": "JSON array of alert/signal IDs to update",
+          "required": true
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "New status: open, acknowledged, closed",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "isolate_host",
+      "name": "Isolate Host",
+      "description": "Isolate a host from the network using Elastic Defend endpoint response action",
+      "http_method": "POST",
+      "endpoint": "/api/endpoint/action/isolate",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "endpoint_ids",
+          "type": "string",
+          "description": "JSON array of endpoint agent IDs to isolate",
+          "required": true
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "Comment describing why the host is being isolated",
+          "required": false
+        }
+      ],
+      "observable_type": "hostname"
+    },
+    {
+      "id": "unisolate_host",
+      "name": "Release Host",
+      "description": "Release a previously isolated host and restore network connectivity",
+      "http_method": "POST",
+      "endpoint": "/api/endpoint/action/unisolate",
+      "action_type": "correct",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "endpoint_ids",
+          "type": "string",
+          "description": "JSON array of endpoint agent IDs to release",
+          "required": true
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "Comment describing why the host is being released",
+          "required": false
+        }
+      ],
+      "observable_type": "hostname"
+    },
+    {
+      "id": "kill_process",
+      "name": "Kill Process",
+      "description": "Terminate a process on a managed endpoint using Elastic Defend",
+      "http_method": "POST",
+      "endpoint": "/api/endpoint/action/kill-process",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "endpoint_ids",
+          "type": "string",
+          "description": "JSON array of endpoint agent IDs",
+          "required": true
+        },
+        {
+          "name": "parameters",
+          "type": "string",
+          "description": "JSON object with pid or entity_id of the process to kill",
+          "required": true
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "Comment describing why the process is being terminated",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_endpoints",
+      "name": "List Endpoints",
+      "description": "Retrieve the list of endpoints managed by Elastic Defend",
+      "http_method": "GET",
+      "endpoint": "/api/endpoint/metadata",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "page",
+          "type": "number",
+          "description": "Page number for pagination",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "pageSize",
+          "type": "number",
+          "description": "Number of results per page",
+          "required": false,
+          "default": 20
+        },
+        {
+          "name": "hostStatus",
+          "type": "string",
+          "description": "Filter by host status: healthy, offline, updating, inactive, unhealthy",
+          "required": false
+        }
+      ],
+      "observable_type": "hostname"
+    }
+  ]
+}

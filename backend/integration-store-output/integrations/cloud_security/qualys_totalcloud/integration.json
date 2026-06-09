@@ -1,0 +1,198 @@
+{
+  "id": "qualys_totalcloud",
+  "name": "Qualys TotalCloud",
+  "description": "Cloud-native security and compliance platform providing CSPM, CWP, and vulnerability management across AWS, Azure, and GCP via REST APIs",
+  "version": "1.0.0",
+  "category": "cloud_security",
+  "vendor": "Qualys",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "prefix": "Basic",
+    "location": "header",
+    "note": "Base64 encode username:password for Basic auth, or use Bearer token from API Gateway"
+  },
+  "base_url": "https://qualysapi.{platform}.qualys.com",
+  "actions": [
+    {
+      "id": "list_aws_connectors",
+      "name": "List AWS Connectors",
+      "description": "List all AWS cloud connectors configured for TotalCloud scanning",
+      "http_method": "GET",
+      "endpoint": "/cloudview-api/rest/v1/aws/connectors",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "pageNo",
+          "type": "number",
+          "description": "Page number for pagination",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "pageSize",
+          "type": "number",
+          "description": "Number of results per page",
+          "required": false,
+          "default": 50
+        }
+      ]
+    },
+    {
+      "id": "list_azure_connectors",
+      "name": "List Azure Connectors",
+      "description": "List all Azure cloud connectors configured for TotalCloud scanning",
+      "http_method": "GET",
+      "endpoint": "/cloudview-api/rest/v1/azure/connectors",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "pageNo",
+          "type": "number",
+          "description": "Page number for pagination",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "pageSize",
+          "type": "number",
+          "description": "Number of results per page",
+          "required": false,
+          "default": 50
+        }
+      ]
+    },
+    {
+      "id": "list_gcp_connectors",
+      "name": "List GCP Connectors",
+      "description": "List all GCP cloud connectors configured for TotalCloud scanning",
+      "http_method": "GET",
+      "endpoint": "/cloudview-api/rest/v1/gcp/connectors",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "pageNo",
+          "type": "number",
+          "description": "Page number for pagination",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "pageSize",
+          "type": "number",
+          "description": "Number of results per page",
+          "required": false,
+          "default": 50
+        }
+      ]
+    },
+    {
+      "id": "get_assessment_report",
+      "name": "Get Assessment Report",
+      "description": "Retrieve or create a compliance assessment report for cloud accounts",
+      "http_method": "POST",
+      "endpoint": "/cloudview-api/rest/v2/report/assessment/create",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "connectorId",
+          "type": "string",
+          "description": "Cloud connector ID to assess",
+          "required": true
+        },
+        {
+          "name": "controlIds",
+          "type": "array",
+          "description": "Array of control IDs to include in assessment",
+          "required": false
+        },
+        {
+          "name": "format",
+          "type": "string",
+          "description": "Report format (json, csv, pdf)",
+          "required": false,
+          "default": "json"
+        }
+      ]
+    },
+    {
+      "id": "list_evaluations",
+      "name": "List Evaluations",
+      "description": "List security control evaluations and their pass/fail status",
+      "http_method": "GET",
+      "endpoint": "/cloudview-api/rest/v1/evaluations",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "connectorId",
+          "type": "string",
+          "description": "Cloud connector ID",
+          "required": false
+        },
+        {
+          "name": "result",
+          "type": "string",
+          "description": "Filter by evaluation result (PASS, FAIL, ERROR)",
+          "required": false
+        },
+        {
+          "name": "pageNo",
+          "type": "number",
+          "description": "Page number",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "pageSize",
+          "type": "number",
+          "description": "Results per page",
+          "required": false,
+          "default": 50
+        }
+      ]
+    },
+    {
+      "id": "list_resources",
+      "name": "List Resources",
+      "description": "List cloud resources discovered and inventoried by TotalCloud",
+      "http_method": "GET",
+      "endpoint": "/cloudview-api/rest/v1/resources",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "connectorId",
+          "type": "string",
+          "description": "Cloud connector ID",
+          "required": false
+        },
+        {
+          "name": "resourceType",
+          "type": "string",
+          "description": "Filter by resource type",
+          "required": false
+        },
+        {
+          "name": "pageNo",
+          "type": "number",
+          "description": "Page number",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "pageSize",
+          "type": "number",
+          "description": "Results per page",
+          "required": false,
+          "default": 50
+        }
+      ]
+    }
+  ]
+}

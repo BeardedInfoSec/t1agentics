@@ -1,0 +1,301 @@
+{
+  "id": "forcepoint_web_security",
+  "name": "Forcepoint Web Security",
+  "description": "This app provides category management and blocking actions for the Forcepoint Web Security platform",
+  "version": "2.0.3",
+  "category": "network",
+  "vendor": "Forcepoint",
+  "auth_type": "basic_auth",
+  "auth_config": {
+    "type": "basic_auth",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "block_ip",
+      "name": "Block Ip",
+      "description": "Block IP or list of IPs by adding them to the supplied category",
+      "http_method": "POST",
+      "endpoint": "/actions/block_ip",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "IP or list of IPs to block",
+          "required": true,
+          "contains": [
+            "ip"
+          ]
+        },
+        {
+          "name": "category",
+          "type": "string",
+          "description": "Add the IP(s) to this category",
+          "required": true,
+          "default": "Phantom",
+          "contains": [
+            "forcepoint category"
+          ]
+        },
+        {
+          "name": "create_category",
+          "type": "boolean",
+          "description": "If the category does not exist, create it",
+          "required": false,
+          "default": true
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "block_url",
+      "name": "Block Url",
+      "description": "Block URL or list of URLs by adding them to the supplied category",
+      "http_method": "POST",
+      "endpoint": "/actions/block_url",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "URL or list of URLs to block",
+          "required": true,
+          "contains": [
+            "url",
+            "domain"
+          ]
+        },
+        {
+          "name": "category",
+          "type": "string",
+          "description": "Add the URL(s) to this category",
+          "required": true,
+          "default": "Phantom",
+          "contains": [
+            "forcepoint category"
+          ]
+        },
+        {
+          "name": "create_category",
+          "type": "boolean",
+          "description": "If the category does not exist, create it",
+          "required": false,
+          "default": true
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "unblock_ip",
+      "name": "Unblock Ip",
+      "description": "Unblock IP or list of IPs by removing them from the supplied category",
+      "http_method": "POST",
+      "endpoint": "/actions/unblock_ip",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "IP or list of IPs to unblock",
+          "required": true,
+          "contains": [
+            "ip"
+          ]
+        },
+        {
+          "name": "category",
+          "type": "string",
+          "description": "Category for which to remove the block (if empty, remove from all categories)",
+          "required": false,
+          "default": "Phantom",
+          "contains": [
+            "forcepoint category"
+          ]
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "unblock_url",
+      "name": "Unblock Url",
+      "description": "Unblock URL or list of URLs by removing them from the supplied category",
+      "http_method": "POST",
+      "endpoint": "/actions/unblock_url",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "URL or list of URLs to unblock",
+          "required": true,
+          "contains": [
+            "url",
+            "domain"
+          ]
+        },
+        {
+          "name": "category",
+          "type": "string",
+          "description": "Category for which to remove the block (if empty, remove from all categories)",
+          "required": false,
+          "default": "Phantom",
+          "contains": [
+            "forcepoint category"
+          ]
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "lookup_ip",
+      "name": "Lookup Ip",
+      "description": "Lookup the categories related to the IP or list of IPs",
+      "http_method": "GET",
+      "endpoint": "/actions/lookup_ip",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "IP or list of IPs to lookup",
+          "required": true,
+          "contains": [
+            "ip"
+          ]
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "lookup_url",
+      "name": "Lookup Url",
+      "description": "Lookup the categories related to the URL or list of URLs",
+      "http_method": "GET",
+      "endpoint": "categories/urls",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "URL or list of URLs to lookup",
+          "required": true,
+          "contains": [
+            "url"
+          ]
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "get_category",
+      "name": "Get Category",
+      "description": "Return the category list contents",
+      "http_method": "GET",
+      "endpoint": "/actions/get_category",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "category",
+          "type": "string",
+          "description": "Category name",
+          "required": true,
+          "contains": [
+            "forcepoint category"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_categories",
+      "name": "List Categories",
+      "description": "Return a list of all API-managed categories",
+      "http_method": "GET",
+      "endpoint": "categories",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "delete_category",
+      "name": "Delete Category",
+      "description": "Delete API-managed category",
+      "http_method": "GET",
+      "endpoint": "/actions/delete_category",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "category",
+          "type": "string",
+          "description": "Category name",
+          "required": true,
+          "contains": [
+            "forcepoint category"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "add_category",
+      "name": "Add Category",
+      "description": "Add API-managed category to Forcepoint",
+      "http_method": "GET",
+      "endpoint": "/actions/add_category",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "category",
+          "type": "string",
+          "description": "Category name, must be unique",
+          "required": true,
+          "contains": [
+            "forcepoint category"
+          ]
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Description of the category",
+          "required": false
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Forcepoint Web Security",
+    "original_type": "network security",
+    "converted_at": "2025-12-18T16:25:28.787646",
+    "source_version": "2.0.3"
+  }
+}

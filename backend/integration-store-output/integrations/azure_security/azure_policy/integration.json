@@ -1,0 +1,200 @@
+{
+  "id": "azure_policy",
+  "name": "Azure Policy",
+  "description": "Azure governance service for creating, assigning, and managing policies to enforce organizational standards and assess compliance at scale across Azure resources",
+  "version": "1.0.0",
+  "category": "azure_security",
+  "vendor": "Microsoft Azure",
+  "auth_type": "oauth2_client",
+  "auth_config": {
+    "type": "oauth2_client",
+    "token_url": "https://login.microsoftonline.com/{tenantId}/oauth2/v2.0/token",
+    "scope": "https://management.azure.com/.default",
+    "grant_type": "client_credentials"
+  },
+  "base_url": "https://management.azure.com",
+  "actions": [
+    {
+      "id": "list_policy_definitions",
+      "name": "List Policy Definitions",
+      "description": "List all policy definitions in a subscription including built-in and custom policies",
+      "http_method": "GET",
+      "endpoint": "/subscriptions/{subscriptionId}/providers/Microsoft.Authorization/policyDefinitions",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "subscriptionId",
+          "type": "string",
+          "description": "Azure subscription ID",
+          "required": true
+        },
+        {
+          "name": "api-version",
+          "type": "string",
+          "description": "API version",
+          "required": true,
+          "default": "2021-06-01"
+        },
+        {
+          "name": "$filter",
+          "type": "string",
+          "description": "OData filter expression (e.g., \"policyType eq 'Custom'\")",
+          "required": false
+        },
+        {
+          "name": "$top",
+          "type": "number",
+          "description": "Maximum definitions to return",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_policy_assignments",
+      "name": "List Policy Assignments",
+      "description": "List all policy assignments for a subscription",
+      "http_method": "GET",
+      "endpoint": "/subscriptions/{subscriptionId}/providers/Microsoft.Authorization/policyAssignments",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "subscriptionId",
+          "type": "string",
+          "description": "Azure subscription ID",
+          "required": true
+        },
+        {
+          "name": "api-version",
+          "type": "string",
+          "description": "API version",
+          "required": true,
+          "default": "2022-06-01"
+        },
+        {
+          "name": "$filter",
+          "type": "string",
+          "description": "OData filter expression",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_compliance_states",
+      "name": "List Compliance States",
+      "description": "List policy compliance states for all resources in a subscription",
+      "http_method": "POST",
+      "endpoint": "/subscriptions/{subscriptionId}/providers/Microsoft.PolicyInsights/policyStates/latest/queryResults",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "subscriptionId",
+          "type": "string",
+          "description": "Azure subscription ID",
+          "required": true
+        },
+        {
+          "name": "api-version",
+          "type": "string",
+          "description": "API version",
+          "required": true,
+          "default": "2024-10-01"
+        },
+        {
+          "name": "$filter",
+          "type": "string",
+          "description": "OData filter (e.g., \"complianceState eq 'NonCompliant'\")",
+          "required": false
+        },
+        {
+          "name": "$top",
+          "type": "number",
+          "description": "Maximum results to return",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "$orderby",
+          "type": "string",
+          "description": "Order by expression",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "summarize_compliance",
+      "name": "Summarize Compliance",
+      "description": "Get compliance summary across all policy assignments for a subscription",
+      "http_method": "POST",
+      "endpoint": "/subscriptions/{subscriptionId}/providers/Microsoft.PolicyInsights/policyStates/latest/summarize",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "subscriptionId",
+          "type": "string",
+          "description": "Azure subscription ID",
+          "required": true
+        },
+        {
+          "name": "api-version",
+          "type": "string",
+          "description": "API version",
+          "required": true,
+          "default": "2024-10-01"
+        },
+        {
+          "name": "$filter",
+          "type": "string",
+          "description": "OData filter expression",
+          "required": false
+        },
+        {
+          "name": "$top",
+          "type": "number",
+          "description": "Maximum policy assignments to return",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_policy_events",
+      "name": "List Policy Events",
+      "description": "List policy evaluation events for auditing and troubleshooting",
+      "http_method": "POST",
+      "endpoint": "/subscriptions/{subscriptionId}/providers/Microsoft.PolicyInsights/policyEvents/default/queryResults",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "subscriptionId",
+          "type": "string",
+          "description": "Azure subscription ID",
+          "required": true
+        },
+        {
+          "name": "api-version",
+          "type": "string",
+          "description": "API version",
+          "required": true,
+          "default": "2024-10-01"
+        },
+        {
+          "name": "$filter",
+          "type": "string",
+          "description": "OData filter expression",
+          "required": false
+        },
+        {
+          "name": "$top",
+          "type": "number",
+          "description": "Maximum events to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    }
+  ]
+}

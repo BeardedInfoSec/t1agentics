@@ -1,0 +1,286 @@
+{
+  "id": "virustotal_v3",
+  "name": "VirusTotal v3",
+  "description": "This app integrates with the VirusTotal cloud to implement investigative and reputation actions using v3 APIs",
+  "version": "1.8.5",
+  "category": "threat_intel",
+  "vendor": "VirusTotal",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "x-apikey",
+    "location": "header"
+  },
+  "base_url": "https://www.virustotal.com/api/v3/",
+  "documentation_url": "https://docs.virustotal.com/reference/overview",
+  "setup_instructions": "## Get a VirusTotal API key\n\nVirusTotal API access uses a per-account **API key**. The free public key is rate-limited (4 requests/min, 500/day); paid Premium keys lift the limits and unlock private scans.\n\n### 1. Create / sign in to a VirusTotal account\n1. Open https://www.virustotal.com/ and click **Sign in** (top right).\n2. Register with email, Google, or Microsoft. Verify your email if prompted.\n\n### 2. Copy the API key\n1. Click your avatar in the top right → **API Key**.\n2. Copy the long alphanumeric string shown under **Your API key**.\n\n### 3. Paste the key below\nPaste it in the **API Key** field. T1 sends it as the `x-apikey` request header automatically — no prefix needed.\n\nClick **Test Authentication** to confirm. The test calls `/users/<your-key>` and expects a 200.\n\n### Rate limits to know about\n- **Free tier**: 4 requests/minute, 500/day, 15.5K/month. T1 will surface a `QuotaExceededError` when you hit these — investigations may stall briefly during bursts.\n- **Premium**: agreed limits per contract (typically 1,000+/min) and access to `intelligence/`, `private/`, and live hunting endpoints.\n\n### Troubleshooting\n- **`401 Wrong API key`**: Key was rotated, deleted, or copied with whitespace. Re-copy from the VT account page.\n- **`429 Quota exceeded`**: You're past the per-minute or per-day limit. Wait, or upgrade to Premium.\n- **`403 Forbidden`** on `intelligence/` or `private/` endpoints: free keys cannot access these — Premium only.",
+  "actions": [
+    {
+      "id": "domain_reputation",
+      "name": "Domain Reputation",
+      "description": "Queries VirusTotal for domain info",
+      "http_method": "GET",
+      "endpoint": "domains/{domain}",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "domain",
+          "type": "string",
+          "description": "Domain to query",
+          "required": true,
+          "contains": [
+            "domain"
+          ]
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "file_reputation",
+      "name": "File Reputation",
+      "description": "Queries VirusTotal for file reputation info",
+      "http_method": "GET",
+      "endpoint": "files/{hash}",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "hash",
+          "type": "string",
+          "description": "File hash to query",
+          "required": true,
+          "contains": [
+            "hash",
+            "sha256",
+            "sha1",
+            "md5"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "get_file",
+      "name": "Get File",
+      "description": "Downloads a file from VirusTotal and adds it to the vault",
+      "http_method": "GET",
+      "endpoint": "files/{id}/download",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "hash",
+          "type": "string",
+          "description": "Hash of file to get",
+          "required": true,
+          "contains": [
+            "hash",
+            "sha256",
+            "sha1",
+            "md5"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "ip_reputation",
+      "name": "Ip Reputation",
+      "description": "Queries VirusTotal for IP info",
+      "http_method": "GET",
+      "endpoint": "ip_addresses/{ip}",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "IP to query",
+          "required": true,
+          "contains": [
+            "ip",
+            "ipv6"
+          ]
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "url_reputation",
+      "name": "Url Reputation",
+      "description": "Queries VirusTotal for URL info (run this action after running detonate url)",
+      "http_method": "GET",
+      "endpoint": "urls/{url_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "URL to query",
+          "required": true,
+          "contains": [
+            "url",
+            "domain"
+          ]
+        },
+        {
+          "name": "url_id",
+          "type": "string",
+          "description": "Base64-encoded URL (auto-generated from url parameter)",
+          "required": false,
+          "auto_encode": "base64_url"
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "detonate_url",
+      "name": "Detonate Url",
+      "description": "Load a URL to Virus Total and retrieve analysis results",
+      "http_method": "GET",
+      "endpoint": "/actions/detonate_url",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "URL to detonate",
+          "required": true,
+          "contains": [
+            "url",
+            "domain"
+          ]
+        },
+        {
+          "name": "wait_time",
+          "type": "number",
+          "description": "Number of seconds to wait",
+          "required": false
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "detonate_file",
+      "name": "Detonate File",
+      "description": "Upload a file to Virus Total and retrieve the analysis results",
+      "http_method": "GET",
+      "endpoint": "/actions/detonate_file",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "vault_id",
+          "type": "string",
+          "description": "The Vault ID of the file to scan",
+          "required": true,
+          "contains": [
+            "vault id",
+            "sha1"
+          ]
+        },
+        {
+          "name": "wait_time",
+          "type": "number",
+          "description": "Number of seconds to wait",
+          "required": false
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "get_report",
+      "name": "Get Report",
+      "description": "Get the results using the scan id from a detonate file or detonate url action",
+      "http_method": "GET",
+      "endpoint": "files",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "scan_id",
+          "type": "string",
+          "description": "Scan ID",
+          "required": true,
+          "contains": [
+            "virustotal scan id"
+          ]
+        },
+        {
+          "name": "wait_time",
+          "type": "number",
+          "description": "Number of seconds to wait",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_cached_entries",
+      "name": "Get Cached Entries",
+      "description": "Get listing of cached entries",
+      "http_method": "GET",
+      "endpoint": "/actions/get_cached_entries",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "clear_cache",
+      "name": "Clear Cache",
+      "description": "Clear all cached entries",
+      "http_method": "GET",
+      "endpoint": "/actions/clear_cache",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": []
+    },
+    {
+      "id": "get_quotas",
+      "name": "Get Quotas",
+      "description": "Retrieve user's API quota summary including daily, hourly, and monthly limits and usage details",
+      "http_method": "GET",
+      "endpoint": "users/{id}/overall_quotas",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "user_id",
+          "type": "string",
+          "description": "The username or API key to use to fetch quotas",
+          "required": true
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "VirusTotal v3",
+    "original_type": "reputation",
+    "converted_at": "2025-12-18T16:25:29.276434",
+    "source_version": "1.8.5"
+  }
+}

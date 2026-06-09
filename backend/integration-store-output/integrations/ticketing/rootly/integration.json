@@ -1,0 +1,107 @@
+{
+  "id": "rootly",
+  "name": "Rootly",
+  "description": "Integrates with Rootly REST API v1 for incident management, post-mortems, and operational reliability tracking",
+  "version": "1.0.0",
+  "category": "ticketing",
+  "vendor": "Rootly",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "https://api.rootly.com/v1",
+  "actions": [
+    {
+      "id": "create_incident",
+      "name": "Create Incident",
+      "description": "Create a new incident in Rootly",
+      "http_method": "POST",
+      "endpoint": "/incidents",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "title", "type": "string", "description": "Incident title", "required": true},
+        {"name": "summary", "type": "string", "description": "Incident summary", "required": false},
+        {"name": "severity_id", "type": "string", "description": "Severity ID", "required": false},
+        {"name": "incident_type_id", "type": "string", "description": "Incident type ID", "required": false},
+        {"name": "environment_ids", "type": "string", "description": "JSON array of environment IDs", "required": false},
+        {"name": "service_ids", "type": "string", "description": "JSON array of service IDs", "required": false},
+        {"name": "team_ids", "type": "string", "description": "JSON array of team IDs", "required": false},
+        {"name": "labels", "type": "string", "description": "JSON object of label key-value pairs", "required": false}
+      ]
+    },
+    {
+      "id": "get_incident",
+      "name": "Get Incident",
+      "description": "Retrieve details of a specific Rootly incident",
+      "http_method": "GET",
+      "endpoint": "/incidents/{incident_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "incident_id", "type": "string", "description": "Incident ID or slug", "required": true}
+      ]
+    },
+    {
+      "id": "update_incident",
+      "name": "Update Incident",
+      "description": "Update an existing Rootly incident",
+      "http_method": "PUT",
+      "endpoint": "/incidents/{incident_id}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "incident_id", "type": "string", "description": "Incident ID to update", "required": true},
+        {"name": "title", "type": "string", "description": "Updated title", "required": false},
+        {"name": "summary", "type": "string", "description": "Updated summary", "required": false},
+        {"name": "status", "type": "string", "description": "Updated status (started, mitigated, resolved, cancelled)", "required": false},
+        {"name": "severity_id", "type": "string", "description": "Updated severity ID", "required": false}
+      ]
+    },
+    {
+      "id": "list_incidents",
+      "name": "List Incidents",
+      "description": "List and filter Rootly incidents",
+      "http_method": "GET",
+      "endpoint": "/incidents",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "filter[status]", "type": "string", "description": "Filter by status (started, mitigated, resolved, cancelled)", "required": false},
+        {"name": "filter[severity_id]", "type": "string", "description": "Filter by severity ID", "required": false},
+        {"name": "filter[labels]", "type": "string", "description": "Filter by labels", "required": false},
+        {"name": "page[number]", "type": "number", "description": "Page number", "required": false, "default": 1},
+        {"name": "page[size]", "type": "number", "description": "Results per page", "required": false, "default": 20}
+      ]
+    },
+    {
+      "id": "create_timeline_event",
+      "name": "Create Timeline Event",
+      "description": "Add a timeline event to an incident",
+      "http_method": "POST",
+      "endpoint": "/incidents/{incident_id}/events",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "incident_id", "type": "string", "description": "Incident ID", "required": true},
+        {"name": "body", "type": "string", "description": "Event description", "required": true},
+        {"name": "occurred_at", "type": "string", "description": "When the event occurred (ISO 8601)", "required": false}
+      ]
+    },
+    {
+      "id": "resolve_incident",
+      "name": "Resolve Incident",
+      "description": "Resolve a Rootly incident",
+      "http_method": "PUT",
+      "endpoint": "/incidents/{incident_id}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "incident_id", "type": "string", "description": "Incident ID to resolve", "required": true},
+        {"name": "summary", "type": "string", "description": "Resolution summary", "required": false}
+      ]
+    }
+  ]
+}

@@ -1,0 +1,240 @@
+{
+  "id": "wallix_bastion",
+  "name": "Wallix Bastion",
+  "description": "Privileged access management through Wallix Bastion REST API for managing users, targets, sessions, accounts, and access authorizations",
+  "version": "1.0.0",
+  "category": "identity",
+  "vendor": "Wallix",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "header_prefix": "Bearer",
+    "location": "header"
+  },
+  "base_url": "https://{host}/api",
+  "actions": [
+    {
+      "id": "list_users",
+      "name": "List Users",
+      "description": "List all users defined in Wallix Bastion",
+      "http_method": "GET",
+      "endpoint": "/users",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "q",
+          "type": "string",
+          "description": "Search query for filtering users",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of results",
+          "required": false
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Offset for pagination",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_user",
+      "name": "Get User",
+      "description": "Retrieve details of a specific user",
+      "http_method": "GET",
+      "endpoint": "/users/{userName}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "userName",
+          "type": "string",
+          "description": "Username",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "disable_user",
+      "name": "Disable User",
+      "description": "Disable a user in Wallix Bastion",
+      "http_method": "PUT",
+      "endpoint": "/users/{userName}",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "userName",
+          "type": "string",
+          "description": "Username to disable",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_targets",
+      "name": "List Targets",
+      "description": "List all target devices managed by Bastion",
+      "http_method": "GET",
+      "endpoint": "/devices",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "q",
+          "type": "string",
+          "description": "Search query for filtering targets",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of results",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_target_accounts",
+      "name": "List Target Accounts",
+      "description": "List accounts on a specific target device",
+      "http_method": "GET",
+      "endpoint": "/devices/{deviceId}/accounts",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "deviceId",
+          "type": "string",
+          "description": "Target device ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_sessions",
+      "name": "List Sessions",
+      "description": "List all recorded privileged sessions",
+      "http_method": "GET",
+      "endpoint": "/sessions",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Filter by session status (current, closed)",
+          "required": false
+        },
+        {
+          "name": "from_date",
+          "type": "string",
+          "description": "Start date for filtering (ISO 8601)",
+          "required": false
+        },
+        {
+          "name": "to_date",
+          "type": "string",
+          "description": "End date for filtering (ISO 8601)",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of results",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_session",
+      "name": "Get Session Details",
+      "description": "Retrieve metadata of a specific session",
+      "http_method": "GET",
+      "endpoint": "/sessions/{sessionId}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "sessionId",
+          "type": "string",
+          "description": "Session ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "terminate_session",
+      "name": "Terminate Session",
+      "description": "Kill an active privileged session",
+      "http_method": "DELETE",
+      "endpoint": "/sessions/{sessionId}",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "sessionId",
+          "type": "string",
+          "description": "Session ID to terminate",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_session_rights",
+      "name": "Get Session Rights",
+      "description": "Get current user's session rights and authorizations",
+      "http_method": "GET",
+      "endpoint": "/sessions/rights",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "change_account_password",
+      "name": "Change Account Password",
+      "description": "Change the password or SSH key of a target account",
+      "http_method": "POST",
+      "endpoint": "/devices/{deviceId}/accounts/{accountId}/password",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "deviceId",
+          "type": "string",
+          "description": "Target device ID",
+          "required": true
+        },
+        {
+          "name": "accountId",
+          "type": "string",
+          "description": "Account ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_authorizations",
+      "name": "List Authorizations",
+      "description": "List all access authorizations defined in Bastion",
+      "http_method": "GET",
+      "endpoint": "/authorizations",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "q",
+          "type": "string",
+          "description": "Search query for authorizations",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,261 @@
+{
+  "id": "fireeye_ax",
+  "name": "Fireeye AX",
+  "description": "This app provides connectivity to the Fireeye Advanced Malware Analysis tool",
+  "version": "2.0.1",
+  "category": "sandbox",
+  "vendor": "Fireeye",
+  "auth_type": "basic_auth",
+  "auth_config": {
+    "type": "basic_auth",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "detonate_file",
+      "name": "Detonate File",
+      "description": "Run a file in the sandbox and retrieve the analysis results",
+      "http_method": "GET",
+      "endpoint": "submissions/file",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "vault_id",
+          "type": "string",
+          "description": "Vault ID of the file to detonate",
+          "required": true,
+          "contains": [
+            "pe file",
+            "pdf",
+            "flash",
+            "apk",
+            "jar",
+            "doc",
+            "xls",
+            "ppt"
+          ]
+        },
+        {
+          "name": "priority",
+          "type": "string",
+          "description": "Sets the analysis priority, default is Normal",
+          "required": true,
+          "default": "Normal"
+        },
+        {
+          "name": "analysis_type",
+          "type": "string",
+          "description": "Specifies the analysis mode",
+          "required": true,
+          "default": "Sandbox"
+        },
+        {
+          "name": "force",
+          "type": "boolean",
+          "description": "Perform an analysis on the file even if the file exactly matches an analysis that has already been performed on this file",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "prefetch",
+          "type": "boolean",
+          "description": "Determine the file target based on an internal determination rather than browsing to the target location",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "enable_vnc",
+          "type": "boolean",
+          "description": "Enable VNC while submitting on a Malware Analysis appliance, default is False",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "profile",
+          "type": "string",
+          "description": "Select the Malware Analysis profile to use for analysis",
+          "required": true,
+          "default": "win10x64"
+        },
+        {
+          "name": "application",
+          "type": "string",
+          "description": "Specifies the ID of the application to be used for the analysis",
+          "required": true,
+          "default": "Auto"
+        },
+        {
+          "name": "timeout",
+          "type": "number",
+          "description": "Specifies the timeout period for the analysis in seconds",
+          "required": true,
+          "default": 500
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "detonate_url",
+      "name": "Detonate Url",
+      "description": "Run a URL in the sandbox",
+      "http_method": "GET",
+      "endpoint": "/actions/detonate_url",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "urls",
+          "type": "string",
+          "description": "URL(s) to detonate. Comma-separated list allowed",
+          "required": true,
+          "contains": [
+            "url"
+          ]
+        },
+        {
+          "name": "priority",
+          "type": "string",
+          "description": "Sets the analysis priority, default is Normal",
+          "required": true,
+          "default": "Normal"
+        },
+        {
+          "name": "analysis_type",
+          "type": "string",
+          "description": "Specifies the analysis mode",
+          "required": true,
+          "default": "Sandbox"
+        },
+        {
+          "name": "force",
+          "type": "boolean",
+          "description": "Perform an analysis on the file even if the file exactly matches an analysis that has already been performed on this file",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "prefetch",
+          "type": "boolean",
+          "description": "Determine the file target based on an internal determination rather than browsing to the target location",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "enable_vnc",
+          "type": "boolean",
+          "description": "Enable VNC while submitting on a Malware Analysis appliance, default is False",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "profile",
+          "type": "string",
+          "description": "Select the Malware Analysis profile to use for analysis",
+          "required": true,
+          "default": "win10x64"
+        },
+        {
+          "name": "application",
+          "type": "string",
+          "description": "Specifies the ID of the application to be used for the analysis",
+          "required": true,
+          "default": "Auto"
+        },
+        {
+          "name": "timeout",
+          "type": "number",
+          "description": "Specifies the timeout period for the analysis in seconds",
+          "required": true,
+          "default": 500
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "get_report",
+      "name": "Get Report",
+      "description": "Get results of an already completed detonation",
+      "http_method": "GET",
+      "endpoint": "/actions/get_report",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Detonation ID to get the report of",
+          "required": true,
+          "contains": [
+            "fireeyeax submission id"
+          ]
+        },
+        {
+          "name": "extended",
+          "type": "boolean",
+          "description": "Get additional information from the console about this report",
+          "required": false,
+          "default": false
+        }
+      ]
+    },
+    {
+      "id": "save_artifacts",
+      "name": "Save Artifacts",
+      "description": "Save a ZIP file of the detonation report to the Vault",
+      "http_method": "GET",
+      "endpoint": "artifacts/{uuid}",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "uuid",
+          "type": "string",
+          "description": "UUID of detonation to get the results of",
+          "required": true,
+          "contains": [
+            "fireeyeax submission uuid"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_status",
+      "name": "Get Status",
+      "description": "Gets the status of a detonation report",
+      "http_method": "GET",
+      "endpoint": "submissions/status/{submission_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Submission ID of the detonation report to get the status of",
+          "required": true,
+          "contains": [
+            "fireeyeax submission id"
+          ]
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Fireeye AX",
+    "original_type": "sandbox",
+    "converted_at": "2025-12-18T16:25:28.776139",
+    "source_version": "2.0.1"
+  }
+}

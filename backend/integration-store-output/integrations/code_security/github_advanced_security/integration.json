@@ -1,0 +1,220 @@
+{
+  "id": "github_advanced_security",
+  "name": "GitHub Advanced Security",
+  "description": "GitHub native security features including code scanning (CodeQL SAST), secret scanning, and Dependabot vulnerability alerts",
+  "version": "1.0.0",
+  "category": "code_security",
+  "vendor": "GitHub (Microsoft)",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "header_name": "Authorization",
+    "prefix": "Bearer ",
+    "location": "header"
+  },
+  "base_url": "https://api.github.com",
+  "actions": [
+    {
+      "id": "list_code_scanning_alerts",
+      "name": "List Code Scanning Alerts",
+      "description": "List code scanning (SAST) alerts for a repository",
+      "http_method": "GET",
+      "endpoint": "/repos/{owner}/{repo}/code-scanning/alerts",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "owner",
+          "type": "string",
+          "description": "Repository owner (user or organization)",
+          "required": true,
+          "location": "path"
+        },
+        {
+          "name": "repo",
+          "type": "string",
+          "description": "Repository name",
+          "required": true,
+          "location": "path"
+        },
+        {
+          "name": "state",
+          "type": "string",
+          "description": "Alert state: open, closed, dismissed, fixed",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Severity: critical, high, medium, low, warning, note, error",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "tool_name",
+          "type": "string",
+          "description": "Tool that generated alerts (e.g., CodeQL)",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "per_page",
+          "type": "integer",
+          "description": "Results per page (max 100)",
+          "required": false,
+          "location": "query"
+        }
+      ]
+    },
+    {
+      "id": "get_code_scanning_alert",
+      "name": "Get Code Scanning Alert",
+      "description": "Get details of a specific code scanning alert",
+      "http_method": "GET",
+      "endpoint": "/repos/{owner}/{repo}/code-scanning/alerts/{alert_number}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "owner",
+          "type": "string",
+          "description": "Repository owner",
+          "required": true,
+          "location": "path"
+        },
+        {
+          "name": "repo",
+          "type": "string",
+          "description": "Repository name",
+          "required": true,
+          "location": "path"
+        },
+        {
+          "name": "alert_number",
+          "type": "integer",
+          "description": "Alert number",
+          "required": true,
+          "location": "path"
+        }
+      ]
+    },
+    {
+      "id": "list_secret_scanning_alerts",
+      "name": "List Secret Scanning Alerts",
+      "description": "List secret scanning alerts for a repository",
+      "http_method": "GET",
+      "endpoint": "/repos/{owner}/{repo}/secret-scanning/alerts",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "owner",
+          "type": "string",
+          "description": "Repository owner",
+          "required": true,
+          "location": "path"
+        },
+        {
+          "name": "repo",
+          "type": "string",
+          "description": "Repository name",
+          "required": true,
+          "location": "path"
+        },
+        {
+          "name": "state",
+          "type": "string",
+          "description": "Alert state: open, resolved",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "secret_type",
+          "type": "string",
+          "description": "Filter by secret type (e.g., github_personal_access_token)",
+          "required": false,
+          "location": "query"
+        }
+      ]
+    },
+    {
+      "id": "list_dependabot_alerts",
+      "name": "List Dependabot Alerts",
+      "description": "List Dependabot vulnerability alerts for a repository",
+      "http_method": "GET",
+      "endpoint": "/repos/{owner}/{repo}/dependabot/alerts",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "owner",
+          "type": "string",
+          "description": "Repository owner",
+          "required": true,
+          "location": "path"
+        },
+        {
+          "name": "repo",
+          "type": "string",
+          "description": "Repository name",
+          "required": true,
+          "location": "path"
+        },
+        {
+          "name": "state",
+          "type": "string",
+          "description": "Alert state: auto_dismissed, dismissed, fixed, open",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Severity: low, medium, high, critical",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "ecosystem",
+          "type": "string",
+          "description": "Package ecosystem: composer, go, maven, npm, nuget, pip, pub, rubygems, rust",
+          "required": false,
+          "location": "query"
+        }
+      ]
+    },
+    {
+      "id": "list_org_code_scanning_alerts",
+      "name": "List Organization Code Scanning Alerts",
+      "description": "List code scanning alerts across all repositories in an organization",
+      "http_method": "GET",
+      "endpoint": "/orgs/{org}/code-scanning/alerts",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "org",
+          "type": "string",
+          "description": "Organization name",
+          "required": true,
+          "location": "path"
+        },
+        {
+          "name": "state",
+          "type": "string",
+          "description": "Alert state: open, closed, dismissed, fixed",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Severity filter",
+          "required": false,
+          "location": "query"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,148 @@
+{
+  "id": "fortigate_network",
+  "name": "FortiGate",
+  "description": "This app supports a variety of containment and investigative actions on the FortiGate Firewall",
+  "version": "2.2.3",
+  "category": "network",
+  "vendor": "Fortinet",
+  "auth_type": "basic_auth",
+  "auth_config": {
+    "type": "basic_auth",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "/api/v2",
+  "actions": [
+    {
+      "id": "block_ip",
+      "name": "Block Ip",
+      "description": "Block an IP",
+      "http_method": "POST",
+      "endpoint": "/actions/block_ip",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "IP to block",
+          "required": true,
+          "contains": [
+            "ip"
+          ]
+        },
+        {
+          "name": "address_type",
+          "type": "string",
+          "description": "Address type of IP (source, destination)",
+          "required": false,
+          "default": "dstaddr"
+        },
+        {
+          "name": "policy",
+          "type": "string",
+          "description": "IPv4 policy name",
+          "required": true,
+          "contains": [
+            "fortigate policy"
+          ]
+        },
+        {
+          "name": "vdom",
+          "type": "string",
+          "description": "Virtual domain",
+          "required": false,
+          "contains": [
+            "fortigate vdom"
+          ]
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "unblock_ip",
+      "name": "Unblock Ip",
+      "description": "Unblock an IP",
+      "http_method": "POST",
+      "endpoint": "/actions/unblock_ip",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "IP to unblock",
+          "required": true,
+          "contains": [
+            "ip"
+          ]
+        },
+        {
+          "name": "address_type",
+          "type": "string",
+          "description": "Address type of IP (source, destination)",
+          "required": false,
+          "default": "dstaddr"
+        },
+        {
+          "name": "policy",
+          "type": "string",
+          "description": "IPv4 policy name",
+          "required": true,
+          "contains": [
+            "fortigate policy"
+          ]
+        },
+        {
+          "name": "vdom",
+          "type": "string",
+          "description": "Virtual domain",
+          "required": false,
+          "contains": [
+            "fortigate vdom"
+          ]
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "list_policies",
+      "name": "List Policies",
+      "description": "List configured IPv4 policies",
+      "http_method": "GET",
+      "endpoint": "/actions/list_policies",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "vdom",
+          "type": "string",
+          "description": "Virtual domain",
+          "required": false,
+          "contains": [
+            "fortigate vdom"
+          ]
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of policies to be fetched (Default: 100)",
+          "required": false,
+          "default": 100
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "FortiGate",
+    "original_type": "firewall",
+    "converted_at": "2025-12-18T16:25:28.792645",
+    "source_version": "2.2.3"
+  }
+}

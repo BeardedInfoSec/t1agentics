@@ -1,0 +1,347 @@
+{
+  "id": "cylanceprotect",
+  "name": "CylancePROTECT",
+  "description": "This app supports the various investigative, containment, and corrective actions on CylancePROTECT",
+  "version": "2.0.6",
+  "category": "edr",
+  "vendor": "Cylance",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "https://protectapi{}.cylance.com",
+  "actions": [
+    {
+      "id": "list_endpoints",
+      "name": "List Endpoints",
+      "description": "List all the endpoints/sensors configured on the device",
+      "http_method": "GET",
+      "endpoint": "/actions/list_endpoints",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Number of results to fetch",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_threats",
+      "name": "List Threats",
+      "description": "Get a list of threats on the specific device",
+      "http_method": "GET",
+      "endpoint": "/actions/get_threats",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "unique_device_id",
+          "type": "string",
+          "description": "ID of the device to fetch threats",
+          "required": true,
+          "contains": [
+            "cylance device id"
+          ]
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Number of results to fetch",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_system_info",
+      "name": "Get System Info",
+      "description": "Get information about an endpoint",
+      "http_method": "GET",
+      "endpoint": "/actions/get_system_info",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "unique_device_id",
+          "type": "string",
+          "description": "ID of the device to get info",
+          "required": true,
+          "contains": [
+            "cylance device id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "hunt_file",
+      "name": "Hunt File",
+      "description": "Hunt a file on the network using the hash",
+      "http_method": "GET",
+      "endpoint": "/actions/hunt_file",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "hash",
+          "type": "string",
+          "description": "SHA256 hash of the file to hunt",
+          "required": true,
+          "contains": [
+            "sha256"
+          ]
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Number of results to fetch",
+          "required": false
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "get_global_list",
+      "name": "Get Global List",
+      "description": "Retrieve the hashes for the given type of list",
+      "http_method": "GET",
+      "endpoint": "/actions/get_global_list",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "list_type_id",
+          "type": "string",
+          "description": "List type of which the threat belongs to",
+          "required": true
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Number of results to fetch",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "unblock_hash",
+      "name": "Unblock Hash",
+      "description": "Unblock a file hash",
+      "http_method": "POST",
+      "endpoint": "/actions/unblock_hash",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "hash",
+          "type": "string",
+          "description": "SHA256 hash for the threat",
+          "required": true,
+          "contains": [
+            "sha256"
+          ]
+        },
+        {
+          "name": "list_type",
+          "type": "string",
+          "description": "List type to which the threat belongs",
+          "required": true
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "block_hash",
+      "name": "Block Hash",
+      "description": "Block a file hash",
+      "http_method": "POST",
+      "endpoint": "/actions/block_hash",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "hash",
+          "type": "string",
+          "description": "SHA256 hash for the threat",
+          "required": true,
+          "contains": [
+            "sha256"
+          ]
+        },
+        {
+          "name": "reason",
+          "type": "string",
+          "description": "Reason why the file was added to the list",
+          "required": true
+        },
+        {
+          "name": "list_type",
+          "type": "string",
+          "description": "List type to which the threat belongs",
+          "required": true
+        },
+        {
+          "name": "category",
+          "type": "string",
+          "description": "Category for GlobalSafe list type",
+          "required": false,
+          "default": "None"
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "get_file",
+      "name": "Get File",
+      "description": "Download a file to the vault",
+      "http_method": "GET",
+      "endpoint": "/actions/get_file",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "hash",
+          "type": "string",
+          "description": "SHA256 hash of file to download",
+          "required": true,
+          "contains": [
+            "sha256"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "get_file_info",
+      "name": "Get File Info",
+      "description": "Get information about a file",
+      "http_method": "GET",
+      "endpoint": "/actions/get_file_info",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "hash",
+          "type": "string",
+          "description": "SHA256 hash of file",
+          "required": true,
+          "contains": [
+            "sha256"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "update_zone",
+      "name": "Update Zone",
+      "description": "Update the details of a zone",
+      "http_method": "GET",
+      "endpoint": "/actions/update_zone",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "unique_zone_id",
+          "type": "string",
+          "description": "Zone ID to update info of",
+          "required": true,
+          "contains": [
+            "cylance zone id"
+          ]
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Name of the zone to be updated",
+          "required": true,
+          "contains": [
+            "cylance zone name"
+          ]
+        },
+        {
+          "name": "policy_id",
+          "type": "string",
+          "description": "Unique ID of the policy to be assigned to the zone",
+          "required": true,
+          "contains": [
+            "cylance policy id"
+          ]
+        },
+        {
+          "name": "criticality",
+          "type": "string",
+          "description": "Criticality of the zone to be updated",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_policies",
+      "name": "List Policies",
+      "description": "Get a list of tenant policies",
+      "http_method": "GET",
+      "endpoint": "/actions/get_policies",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Number of results to fetch",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_zones",
+      "name": "List Zones",
+      "description": "Get a list of tenant zones",
+      "http_method": "GET",
+      "endpoint": "/actions/get_zones",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Number of results to fetch",
+          "required": false
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "CylancePROTECT",
+    "original_type": "endpoint",
+    "converted_at": "2025-12-18T16:25:28.722447",
+    "source_version": "2.0.6"
+  }
+}

@@ -1,0 +1,235 @@
+{
+  "id": "delinea_secret_server",
+  "name": "Delinea Secret Server",
+  "description": "Privileged access and secret management through Delinea Secret Server REST API for managing secrets, folders, users, and audit trails",
+  "version": "1.0.0",
+  "category": "identity",
+  "vendor": "Delinea",
+  "auth_type": "oauth2_client",
+  "auth_config": {
+    "type": "oauth2_client",
+    "token_url": "https://{host}/SecretServer/oauth2/token",
+    "grant_type": "password"
+  },
+  "base_url": "https://{host}/SecretServer/api/v2",
+  "actions": [
+    {
+      "id": "list_secrets",
+      "name": "List Secrets",
+      "description": "Search and list secrets in the vault",
+      "http_method": "GET",
+      "endpoint": "/secrets",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "filter.searchText",
+          "type": "string",
+          "description": "Search text to filter secrets",
+          "required": false
+        },
+        {
+          "name": "filter.folderId",
+          "type": "number",
+          "description": "Filter by folder ID",
+          "required": false
+        },
+        {
+          "name": "filter.includeSubFolders",
+          "type": "boolean",
+          "description": "Include secrets in subfolders",
+          "required": false
+        },
+        {
+          "name": "take",
+          "type": "number",
+          "description": "Maximum number of results",
+          "required": false
+        },
+        {
+          "name": "skip",
+          "type": "number",
+          "description": "Number of records to skip for pagination",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_secret",
+      "name": "Get Secret",
+      "description": "Retrieve details of a specific secret",
+      "http_method": "GET",
+      "endpoint": "/secrets/{id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "number",
+          "description": "Secret ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_secret_field",
+      "name": "Get Secret Field",
+      "description": "Retrieve a specific field value from a secret (e.g., password)",
+      "http_method": "GET",
+      "endpoint": "/secrets/{id}/fields/{slug}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "number",
+          "description": "Secret ID",
+          "required": true
+        },
+        {
+          "name": "slug",
+          "type": "string",
+          "description": "Field slug name (e.g., password, username)",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "change_password",
+      "name": "Change Password",
+      "description": "Trigger a remote password change for a secret",
+      "http_method": "POST",
+      "endpoint": "/secrets/{id}/change-password",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "number",
+          "description": "Secret ID",
+          "required": true
+        },
+        {
+          "name": "newPassword",
+          "type": "string",
+          "description": "New password value (optional, auto-generated if not provided)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "checkout_secret",
+      "name": "Check Out Secret",
+      "description": "Check out a secret to gain exclusive access",
+      "http_method": "POST",
+      "endpoint": "/secrets/{id}/check-out",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "number",
+          "description": "Secret ID to check out",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "checkin_secret",
+      "name": "Check In Secret",
+      "description": "Check in a previously checked-out secret",
+      "http_method": "POST",
+      "endpoint": "/secrets/{id}/check-in",
+      "action_type": "correct",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "number",
+          "description": "Secret ID to check in",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_folders",
+      "name": "List Folders",
+      "description": "List all secret folders in the vault",
+      "http_method": "GET",
+      "endpoint": "/folders",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "filter.searchText",
+          "type": "string",
+          "description": "Search text for folder names",
+          "required": false
+        },
+        {
+          "name": "filter.parentFolderId",
+          "type": "number",
+          "description": "Filter by parent folder ID",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_users",
+      "name": "List Users",
+      "description": "List all users in Secret Server",
+      "http_method": "GET",
+      "endpoint": "/users",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "filter.searchText",
+          "type": "string",
+          "description": "Search text for user names",
+          "required": false
+        },
+        {
+          "name": "filter.includeInactive",
+          "type": "boolean",
+          "description": "Include inactive users",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "disable_user",
+      "name": "Disable User",
+      "description": "Disable a user account in Secret Server",
+      "http_method": "PATCH",
+      "endpoint": "/users/{userId}",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "userId",
+          "type": "number",
+          "description": "User ID to disable",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_secret_audit",
+      "name": "Get Secret Audit",
+      "description": "Retrieve audit trail for a specific secret",
+      "http_method": "GET",
+      "endpoint": "/secrets/{id}/audits",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "number",
+          "description": "Secret ID",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

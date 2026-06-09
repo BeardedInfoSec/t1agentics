@@ -1,0 +1,154 @@
+{
+  "id": "crowdstrike_falcon_surface",
+  "name": "CrowdStrike Falcon Surface",
+  "description": "Adversary-driven external attack surface management using 24/7 internet scanning to discover and assess unknown internet-facing assets with advanced attribution techniques",
+  "version": "1.0.0",
+  "category": "asm",
+  "vendor": "CrowdStrike",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "oauth2_client_credentials",
+    "token_url": "https://api.crowdstrike.com/oauth2/token",
+    "location": "header"
+  },
+  "base_url": "https://api.crowdstrike.com",
+  "actions": [
+    {
+      "id": "list_external_assets",
+      "name": "List External Assets",
+      "description": "Retrieve discovered external-facing assets including IPs, domains, and services",
+      "http_method": "GET",
+      "endpoint": "/fem/queries/external-assets/v1",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "FQL filter expression for asset search",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "description": "Maximum number of asset IDs to return",
+          "required": false
+        },
+        {
+          "name": "offset",
+          "type": "integer",
+          "description": "Starting index for pagination",
+          "required": false
+        },
+        {
+          "name": "sort",
+          "type": "string",
+          "description": "Sort expression for results ordering",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_external_assets",
+      "name": "Get External Asset Details",
+      "description": "Retrieve detailed information for one or more external assets by their IDs",
+      "http_method": "GET",
+      "endpoint": "/fem/entities/external-assets/v1",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "ids",
+          "type": "array",
+          "description": "One or more asset IDs to retrieve details for",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_external_exposures",
+      "name": "List External Exposures",
+      "description": "Retrieve security exposures and risks found across external assets",
+      "http_method": "GET",
+      "endpoint": "/fem/queries/external-exposures/v1",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "FQL filter for exposure search",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "description": "Maximum number of results to return",
+          "required": false
+        },
+        {
+          "name": "offset",
+          "type": "integer",
+          "description": "Starting index for pagination",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "search_domains",
+      "name": "Search Domains",
+      "description": "Search for discovered domains and subdomains in the external attack surface",
+      "http_method": "GET",
+      "endpoint": "/fem/queries/external-assets/v1",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "FQL filter for domain search (e.g., asset_type:'DOMAIN'+name:'example.com')",
+          "required": true
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "description": "Maximum number of results to return",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_risk_score",
+      "name": "Get Risk Score",
+      "description": "Retrieve the overall external risk score and risk factors for the organization",
+      "http_method": "GET",
+      "endpoint": "/fem/entities/risk-score/v1",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "list_findings",
+      "name": "List Findings",
+      "description": "Retrieve security findings including misconfigurations, exposed services, and vulnerabilities",
+      "http_method": "GET",
+      "endpoint": "/fem/queries/findings/v1",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "FQL filter for findings",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "description": "Maximum number of results to return",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

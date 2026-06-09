@@ -1,27 +1,159 @@
 {
   "id": "greynoise",
   "name": "GreyNoise",
-  "description": "Integration with GreyNoise for security operations",
+  "description": "GreyNoise identifies Internet-wide scanners, bots, and background noise to help analysts focus on targeted threats. It classifies IPs as benign scanners, malicious actors, or business services.",
   "version": "1.0.0",
   "category": "threat_intel",
-  "vendor": "GreyNoise",
-  "auth_type": "api_key",
+  "vendor": "GreyNoise Intelligence",
+  "auth_type": "custom_header",
   "auth_config": {
-    "type": "api_key",
+    "type": "custom_header",
     "header_name": "key",
     "location": "header"
   },
-  "base_url": "https://api.greynoise.io/v3",
+  "base_url": "https://api.greynoise.io",
   "actions": [
     {
-      "id": "check_ip",
-      "name": "IP Context",
+      "id": "ip_lookup",
+      "name": "IP Lookup",
+      "description": "Get full context for an IP address including classification (benign, malicious, unknown), scanner details, tags, CVEs targeted, operating system, and business service intelligence.",
       "http_method": "GET",
-      "endpoint": "/community/{ip}",
+      "endpoint": "/v3/ip/{ip}",
+      "action_type": "investigate",
       "read_only": true,
-      "cacheable": true,
-      "cache_ttl_days": 1,
-      "description": "Get context about an IP - is it scanning the internet or targeting you specifically?",
+      "parameters": [
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "The IP address to look up",
+          "required": true,
+          "contains": ["ip"]
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "ip_quick_lookup",
+      "name": "IP Quick Lookup",
+      "description": "Quickly check whether an IP is seen scanning the Internet with a minimal response payload including noise status and classification.",
+      "http_method": "GET",
+      "endpoint": "/v3/ip/{ip}?quick=true",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "The IP address to look up",
+          "required": true,
+          "contains": ["ip"]
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "ip_multi_lookup",
+      "name": "IP Multi Lookup",
+      "description": "Look up multiple IP addresses in a single request (up to 10,000 IPs). Returns context data for each IP in the GreyNoise dataset.",
+      "http_method": "POST",
+      "endpoint": "/v3/ip",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "ips",
+          "type": "array",
+          "description": "Array of IP addresses to look up (max 10,000)",
+          "required": true,
+          "contains": ["ip"]
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "community_ip_lookup",
+      "name": "Community IP Lookup",
+      "description": "Free community endpoint to check if an IP has been observed mass-scanning the Internet. Returns noise status, classification, and last-seen timestamp.",
+      "http_method": "GET",
+      "endpoint": "/v3/community/{ip}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "The IP address to look up",
+          "required": true,
+          "contains": ["ip"]
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "gnql_query",
+      "name": "GNQL Query",
+      "description": "Search the GreyNoise dataset using the GreyNoise Query Language (GNQL). Supports filters like classification, tags, CVEs, organizations, ports, and protocols.",
+      "http_method": "GET",
+      "endpoint": "/v3/gnql",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "GNQL query string (e.g., 'classification:malicious tags:\"RDP Scanner\"')",
+          "required": true
+        },
+        {
+          "name": "size",
+          "type": "integer",
+          "description": "Number of results to return per page",
+          "required": false
+        },
+        {
+          "name": "scroll",
+          "type": "string",
+          "description": "Scroll token for paginating through results",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "ip_timeline",
+      "name": "IP Timeline",
+      "description": "Retrieve the activity timeline for a specific IP address showing when it was observed scanning and what activity was detected over time.",
+      "http_method": "GET",
+      "endpoint": "/v3/noise/ips/{ip}/timeline",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "The IP address to get timeline for",
+          "required": true,
+          "contains": ["ip"]
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "ip_similarity",
+      "name": "IP Similarity",
+      "description": "Find IPs with similar scanning behavior and characteristics to a given IP address.",
+      "http_method": "GET",
+      "endpoint": "/v3/similarity/ips/{ip}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "The IP address to find similar IPs for",
+          "required": true,
+          "contains": ["ip"]
+        }
+      ],
       "observable_type": "ip"
     }
   ]

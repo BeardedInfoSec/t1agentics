@@ -1,0 +1,439 @@
+{
+  "id": "carbon_black_defense_v2",
+  "name": "Carbon Black Defense V2",
+  "description": "This app integrates with an instance of Carbon Black defense to run investigative and generic actions",
+  "version": "1.0.1",
+  "category": "edr",
+  "vendor": "Carbon Black",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "list_devices",
+      "name": "List Devices",
+      "description": "List devices connected to CB Defense",
+      "http_method": "GET",
+      "endpoint": "/actions/list_devices",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "start",
+          "type": "number",
+          "description": "Number of first result to return",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of results to return",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "update_device",
+      "name": "Update Device",
+      "description": "Change the policy of a device connected to CB Defense",
+      "http_method": "GET",
+      "endpoint": "/actions/update_device",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "device_id",
+          "type": "string",
+          "description": "ID of device to update",
+          "required": true,
+          "contains": [
+            "cb defense device id"
+          ]
+        },
+        {
+          "name": "policy_id",
+          "type": "string",
+          "description": "ID of policy to assign to device",
+          "required": true,
+          "contains": [
+            "cb defense policy id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_policies",
+      "name": "List Policies",
+      "description": "List policies that exist on CB Defense",
+      "http_method": "GET",
+      "endpoint": "/actions/list_policies",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "create_policy",
+      "name": "Add Policy",
+      "description": "Create a new policy on CB Defense",
+      "http_method": "GET",
+      "endpoint": "/actions/create_policy",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Name",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Description",
+          "required": true
+        },
+        {
+          "name": "priority",
+          "type": "string",
+          "description": "Priority Level",
+          "required": true,
+          "default": "MEDIUM"
+        },
+        {
+          "name": "json_fields",
+          "type": "string",
+          "description": "Other configuration fields in JSON format. Defaults to '{\"sensor_settings\": []}' if left empty",
+          "required": false,
+          "default": "{\"sensor_settings\": []}"
+        }
+      ]
+    },
+    {
+      "id": "delete_policy",
+      "name": "Delete Policy",
+      "description": "Delete a policy on CB Defense",
+      "http_method": "GET",
+      "endpoint": "/actions/delete_policy",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "ID",
+          "required": true,
+          "contains": [
+            "cb defense policy id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "add_rule",
+      "name": "Add Rule",
+      "description": "Add a rule to a policy on CB Defense",
+      "http_method": "GET",
+      "endpoint": "/actions/add_rule",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "ID",
+          "required": true,
+          "contains": [
+            "cb defense policy id"
+          ]
+        },
+        {
+          "name": "rules",
+          "type": "string",
+          "description": "JSON dictionary containing rules configuration",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "delete_rule",
+      "name": "Delete Rule",
+      "description": "Delete a rule from a policy on CB Defense",
+      "http_method": "GET",
+      "endpoint": "/actions/delete_rule",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "policy_id",
+          "type": "string",
+          "description": "Policy ID",
+          "required": true,
+          "contains": [
+            "cb defense policy id"
+          ]
+        },
+        {
+          "name": "rule_id",
+          "type": "string",
+          "description": "Rule ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_processes",
+      "name": "List Processes",
+      "description": "List processes that match supplied filter criteria",
+      "http_method": "GET",
+      "endpoint": "/actions/list_processes",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "IP",
+          "required": false,
+          "contains": [
+            "ip",
+            "ipv6"
+          ]
+        },
+        {
+          "name": "host_name",
+          "type": "string",
+          "description": "Host Name",
+          "required": false,
+          "contains": [
+            "host name"
+          ]
+        },
+        {
+          "name": "owner",
+          "type": "string",
+          "description": "Owner",
+          "required": false
+        },
+        {
+          "name": "search_span",
+          "type": "string",
+          "description": "Number of days back to search",
+          "required": false
+        },
+        {
+          "name": "start",
+          "type": "number",
+          "description": "Number of first result to return",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of results to return",
+          "required": false
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "list_events",
+      "name": "List Events",
+      "description": "List events that match supplied filter criteria",
+      "http_method": "GET",
+      "endpoint": "/actions/list_events",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "IP",
+          "required": false,
+          "contains": [
+            "ip",
+            "ipv6"
+          ]
+        },
+        {
+          "name": "host_name",
+          "type": "string",
+          "description": "Host Name",
+          "required": false,
+          "contains": [
+            "host name"
+          ]
+        },
+        {
+          "name": "hash",
+          "type": "string",
+          "description": "SHA-256 Hash",
+          "required": false,
+          "contains": [
+            "hash",
+            "sha256"
+          ]
+        },
+        {
+          "name": "application",
+          "type": "string",
+          "description": "Application Name",
+          "required": false
+        },
+        {
+          "name": "event_type",
+          "type": "string",
+          "description": "Event Type",
+          "required": false
+        },
+        {
+          "name": "owner",
+          "type": "string",
+          "description": "Owner",
+          "required": false
+        },
+        {
+          "name": "search_span",
+          "type": "string",
+          "description": "Number of days back to search",
+          "required": false
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "get_event",
+      "name": "Get Event",
+      "description": "Get information about an event",
+      "http_method": "GET",
+      "endpoint": "/actions/get_event",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Event ID",
+          "required": true,
+          "contains": [
+            "cb defense event id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_alert",
+      "name": "Get Alert",
+      "description": "Get information about an alert",
+      "http_method": "GET",
+      "endpoint": "/actions/get_alert",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Alert ID/Legacy alert ID",
+          "required": true,
+          "contains": [
+            "cb defense alert id",
+            "cb defense legacy alert id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_notifications",
+      "name": "Get Notifications",
+      "description": "Get notifications from CB Defense",
+      "http_method": "GET",
+      "endpoint": "/actions/get_notifications",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "update_policy",
+      "name": "Update Policy",
+      "description": "Updates an existing policy on the Carbon Black Defense server",
+      "http_method": "GET",
+      "endpoint": "/actions/update_policy",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "policy",
+          "type": "string",
+          "description": "JSON object containing the policy details (see https://developer.carbonblack.com/reference/carbon-black-cloud/platform/latest/policy-service/#update-policy)",
+          "required": true
+        },
+        {
+          "name": "policy_id",
+          "type": "number",
+          "description": "The ID of the policy to replace. This ID must match the ID in the request URL",
+          "required": true,
+          "contains": [
+            "cb defense policy id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_policy",
+      "name": "Get Policy",
+      "description": "Retrieves an existing policy from the Carbon Black Defense server",
+      "http_method": "GET",
+      "endpoint": "/actions/get_policy",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "policy_id",
+          "type": "number",
+          "description": "The ID of the policy to retrieve",
+          "required": true,
+          "contains": [
+            "cb defense policy id"
+          ]
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Carbon Black Defense V2",
+    "original_type": "endpoint",
+    "converted_at": "2025-12-18T16:25:28.626916",
+    "source_version": "1.0.1"
+  }
+}

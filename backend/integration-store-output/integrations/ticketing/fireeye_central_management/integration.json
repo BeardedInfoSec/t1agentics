@@ -1,0 +1,318 @@
+{
+  "id": "fireeye_central_management",
+  "name": "FireEye Central Management",
+  "description": "This app provides investigative actions for FireEye Central Management",
+  "version": "1.1.0",
+  "category": "ticketing",
+  "vendor": "FireEye",
+  "auth_type": "basic_auth",
+  "auth_config": {
+    "type": "basic_auth",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "/wsapis/v2.0.0/",
+  "actions": [
+    {
+      "id": "on_poll",
+      "name": "On Poll",
+      "description": "Ingest alerts from CM",
+      "http_method": "GET",
+      "endpoint": "/actions/on_poll",
+      "action_type": "ingest",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "start_time",
+          "type": "number",
+          "description": "Parameter ignored in this app",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "number",
+          "description": "Parameter ignored in this app",
+          "required": false
+        },
+        {
+          "name": "container_id",
+          "type": "string",
+          "description": "Parameter ignored in this app",
+          "required": false
+        },
+        {
+          "name": "container_count",
+          "type": "number",
+          "description": "Maximum containers to create",
+          "required": false
+        },
+        {
+          "name": "artifact_count",
+          "type": "number",
+          "description": "Parameter ignored in this app",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_quarantined_emails",
+      "name": "List Quarantined Emails",
+      "description": "Retrieves information about quarantined emails",
+      "http_method": "GET",
+      "endpoint": "/actions/list_quarantined_emails",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "start_time",
+          "type": "string",
+          "description": "Start Time",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "string",
+          "description": "End Time",
+          "required": false
+        },
+        {
+          "name": "from",
+          "type": "string",
+          "description": "From",
+          "required": false
+        },
+        {
+          "name": "subject",
+          "type": "string",
+          "description": "Subject",
+          "required": false
+        },
+        {
+          "name": "appliance_id",
+          "type": "string",
+          "description": "Appliance ID",
+          "required": false,
+          "contains": [
+            "fireeye cm appliance id"
+          ]
+        }
+      ],
+      "observable_type": "email"
+    },
+    {
+      "id": "release_quarantined_emails",
+      "name": "Release Quarantined Emails",
+      "description": "Releases and deletes quarantined emails",
+      "http_method": "GET",
+      "endpoint": "/actions/release_quarantined_emails",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "queue_ids",
+          "type": "string",
+          "description": "Comma-separated list of Queue IDs of the quarantined emails to be released",
+          "required": true,
+          "contains": [
+            "fireeye cm email queue ids"
+          ]
+        },
+        {
+          "name": "sensor_name",
+          "type": "string",
+          "description": "The sensor display name",
+          "required": true
+        }
+      ],
+      "observable_type": "email"
+    },
+    {
+      "id": "get_quarantined_email",
+      "name": "Get Quarantined Email",
+      "description": "Save an individual quarantined email to vault",
+      "http_method": "GET",
+      "endpoint": "/actions/get_quarantined_email",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "queue_id",
+          "type": "string",
+          "description": "Queue ID of the quarantined email",
+          "required": true,
+          "contains": [
+            "fireeye cm email queue"
+          ]
+        },
+        {
+          "name": "sensor_name",
+          "type": "string",
+          "description": "The sensor display name",
+          "required": true
+        }
+      ],
+      "observable_type": "email"
+    },
+    {
+      "id": "get_alert",
+      "name": "Get Alert",
+      "description": "Retrive details about an individual alert",
+      "http_method": "GET",
+      "endpoint": "/actions/get_alert",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "ID / UUID of the alert to retrieve",
+          "required": true,
+          "contains": [
+            "fireeye cm alert id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_alerts",
+      "name": "List Alerts",
+      "description": "Retrieve alerts based on provided filters",
+      "http_method": "GET",
+      "endpoint": "/actions/list_alerts",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "start_time",
+          "type": "string",
+          "description": "Specifies the start time of the search. This filter is used with the duration filter and cannot be specified with an end_time filter at the same time",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "string",
+          "description": "Specifies the end time of the search. This filter is used with the duration filter and cannot be specified with an start_time filter at the same time",
+          "required": false
+        },
+        {
+          "name": "duration",
+          "type": "string",
+          "description": "Specifies the time interval to search",
+          "required": true,
+          "default": "48_hours"
+        },
+        {
+          "name": "info_level",
+          "type": "string",
+          "description": "Specifies the level of information to be returned",
+          "required": true,
+          "default": "normal"
+        },
+        {
+          "name": "callback_domain",
+          "type": "string",
+          "description": "Filter for alerts that include callbacks to the specified domain",
+          "required": false,
+          "contains": [
+            "domain"
+          ]
+        },
+        {
+          "name": "file_name",
+          "type": "string",
+          "description": "Filter for alerts with a malware file with a given name",
+          "required": false,
+          "contains": [
+            "file name"
+          ]
+        },
+        {
+          "name": "malware_name",
+          "type": "string",
+          "description": "Filter for alerts with a malware with a given name",
+          "required": false
+        },
+        {
+          "name": "malware_type",
+          "type": "string",
+          "description": "Filter for alerts with a malware with a given type",
+          "required": false
+        },
+        {
+          "name": "md5",
+          "type": "string",
+          "description": "Filter for alerts with a given md5 hash",
+          "required": false,
+          "contains": [
+            "md5",
+            "hash"
+          ]
+        },
+        {
+          "name": "recipient_email",
+          "type": "string",
+          "description": "Filter for alerts with a given recipient email",
+          "required": false,
+          "contains": [
+            "email"
+          ]
+        },
+        {
+          "name": "sender_email",
+          "type": "string",
+          "description": "Filter for alerts with a given sender email",
+          "required": false,
+          "contains": [
+            "email"
+          ]
+        },
+        {
+          "name": "src_ip",
+          "type": "string",
+          "description": "Filter for alerts with a given source ip",
+          "required": false,
+          "contains": [
+            "ip"
+          ]
+        },
+        {
+          "name": "dst_ip",
+          "type": "string",
+          "description": "Filter for alerts with a given destination ip",
+          "required": false,
+          "contains": [
+            "ip"
+          ]
+        },
+        {
+          "name": "url",
+          "type": "string",
+          "description": "Filter for alerts with a given url",
+          "required": false,
+          "contains": [
+            "url"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    }
+  ],
+  "source_metadata": {
+    "original_name": "FireEye Central Management",
+    "original_type": "ticketing",
+    "converted_at": "2025-12-18T16:25:28.777641",
+    "source_version": "1.1.0"
+  }
+}

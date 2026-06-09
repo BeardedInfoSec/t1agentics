@@ -1,0 +1,169 @@
+{
+  "id": "pulsedive",
+  "name": "Pulsedive",
+  "description": "Pulsedive is a free community threat intelligence platform that provides indicator enrichment, threat analysis, and IOC feeds. It aggregates data from multiple OSINT feeds and enriches indicators with risk scoring, WHOIS, DNS, SSL, and HTTP data.",
+  "version": "1.0.0",
+  "category": "threat_intel",
+  "vendor": "Pulsedive",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "param_name": "key",
+    "location": "query"
+  },
+  "base_url": "https://pulsedive.com/api",
+  "actions": [
+    {
+      "id": "get_indicator_by_value",
+      "name": "Get Indicator by Value",
+      "description": "Retrieve enrichment data for a specific indicator (IP, domain, or URL) including risk score, threats, feeds, WHOIS, DNS, SSL, HTTP data, and related indicators.",
+      "http_method": "GET",
+      "endpoint": "/info.php",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "indicator",
+          "type": "string",
+          "description": "The indicator value to look up (IP, domain, or URL)",
+          "required": true,
+          "contains": ["ip", "domain", "url"]
+        },
+        {
+          "name": "pretty",
+          "type": "integer",
+          "description": "Set to 1 for pretty-printed JSON output",
+          "required": false
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "get_indicator_by_id",
+      "name": "Get Indicator by ID",
+      "description": "Retrieve enrichment data for an indicator using its Pulsedive numeric ID.",
+      "http_method": "GET",
+      "endpoint": "/info.php",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "iid",
+          "type": "integer",
+          "description": "The Pulsedive indicator ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_indicator_properties",
+      "name": "Get Indicator Properties",
+      "description": "Retrieve detailed properties for an indicator including DNS records, WHOIS data, SSL certificates, HTTP response data, and geo information.",
+      "http_method": "GET",
+      "endpoint": "/info.php",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "iid",
+          "type": "integer",
+          "description": "The Pulsedive indicator ID",
+          "required": true
+        },
+        {
+          "name": "get",
+          "type": "string",
+          "description": "Set to 'properties' to retrieve indicator properties",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_threat_by_id",
+      "name": "Get Threat by ID",
+      "description": "Retrieve threat information including name, category, risk level, description, and associated indicators.",
+      "http_method": "GET",
+      "endpoint": "/info.php",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "tid",
+          "type": "integer",
+          "description": "The Pulsedive threat ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_threat_by_name",
+      "name": "Get Threat by Name",
+      "description": "Look up a threat by its name to get category, risk level, description, MITRE ATT&CK mappings, and associated indicators.",
+      "http_method": "GET",
+      "endpoint": "/info.php",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "threat",
+          "type": "string",
+          "description": "The threat name to look up (e.g., 'Zeus', 'Emotet')",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "explore_indicators",
+      "name": "Explore Indicators",
+      "description": "Search and explore indicators in the Pulsedive database using the Explore query language with boolean logic across risk, type, feed, threat, and attribute fields.",
+      "http_method": "GET",
+      "endpoint": "/explore.php",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "q",
+          "type": "string",
+          "description": "Explore query string (e.g., 'risk:critical type:ip feed:blocklist.de')",
+          "required": true
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "description": "Maximum number of results to return (default: 100)",
+          "required": false
+        },
+        {
+          "name": "page",
+          "type": "integer",
+          "description": "Page number for pagination",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "scan_indicator",
+      "name": "Scan Indicator",
+      "description": "Submit an IP, domain, or URL for on-demand passive or active scanning to retrieve fresh enrichment data.",
+      "http_method": "POST",
+      "endpoint": "/analyze.php",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "value",
+          "type": "string",
+          "description": "The indicator value to scan (IP, domain, or URL)",
+          "required": true,
+          "contains": ["ip", "domain", "url"]
+        },
+        {
+          "name": "probe",
+          "type": "integer",
+          "description": "Set to 1 for active scan, 0 for passive only (default: 0)",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

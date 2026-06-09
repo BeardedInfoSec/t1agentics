@@ -1,0 +1,171 @@
+{
+  "id": "aws_security_hub",
+  "name": "AWS Security Hub",
+  "description": "AWS service providing a comprehensive view of security alerts and compliance status across AWS accounts, aggregating findings from multiple security services",
+  "version": "1.0.0",
+  "category": "aws_security",
+  "vendor": "Amazon Web Services",
+  "auth_type": "aws",
+  "auth_config": {
+    "type": "aws",
+    "service": "securityhub",
+    "signing_version": "v4"
+  },
+  "base_url": "https://securityhub.{region}.amazonaws.com",
+  "actions": [
+    {
+      "id": "get_findings",
+      "name": "Get Findings",
+      "description": "Retrieve Security Hub findings with optional filters for severity, status, and resource type",
+      "http_method": "POST",
+      "endpoint": "/findings",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "Filters",
+          "type": "object",
+          "description": "ASFF filter criteria (e.g., {\"SeverityLabel\": [{\"Value\": \"CRITICAL\", \"Comparison\": \"EQUALS\"}]})",
+          "required": false
+        },
+        {
+          "name": "SortCriteria",
+          "type": "array",
+          "description": "Sort criteria array (e.g., [{\"Field\": \"SeverityLabel\", \"SortOrder\": \"desc\"}])",
+          "required": false
+        },
+        {
+          "name": "MaxResults",
+          "type": "number",
+          "description": "Maximum findings to return (1-100)",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "NextToken",
+          "type": "string",
+          "description": "Pagination token for next page",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_insights",
+      "name": "Get Insights",
+      "description": "Retrieve Security Hub managed and custom insights showing grouped findings",
+      "http_method": "GET",
+      "endpoint": "/insights",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "InsightArns",
+          "type": "array",
+          "description": "Array of insight ARNs to retrieve",
+          "required": false
+        },
+        {
+          "name": "MaxResults",
+          "type": "number",
+          "description": "Maximum insights to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "get_insight_results",
+      "name": "Get Insight Results",
+      "description": "Retrieve the results for a specific Security Hub insight",
+      "http_method": "GET",
+      "endpoint": "/insights/results/{InsightArn+}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "InsightArn",
+          "type": "string",
+          "description": "The ARN of the insight to retrieve results for",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_enabled_standards",
+      "name": "Get Enabled Standards",
+      "description": "List enabled security standards and their status",
+      "http_method": "GET",
+      "endpoint": "/standards/subscriptions",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "MaxResults",
+          "type": "number",
+          "description": "Maximum standards to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "get_standards_control_results",
+      "name": "Get Standards Control Results",
+      "description": "Retrieve security control evaluation results for enabled standards",
+      "http_method": "GET",
+      "endpoint": "/standards/controls/{StandardsSubscriptionArn+}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "StandardsSubscriptionArn",
+          "type": "string",
+          "description": "ARN of the standards subscription",
+          "required": true
+        },
+        {
+          "name": "MaxResults",
+          "type": "number",
+          "description": "Maximum controls to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "batch_update_findings",
+      "name": "Batch Update Findings",
+      "description": "Update findings in Security Hub with workflow status, severity, or note",
+      "http_method": "PATCH",
+      "endpoint": "/findings/batchupdate",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "FindingIdentifiers",
+          "type": "array",
+          "description": "Array of finding identifiers [{\"Id\": \"...\", \"ProductArn\": \"...\"}]",
+          "required": true
+        },
+        {
+          "name": "Workflow",
+          "type": "object",
+          "description": "Workflow update (e.g., {\"Status\": \"RESOLVED\"})",
+          "required": false
+        },
+        {
+          "name": "Note",
+          "type": "object",
+          "description": "Note to add (e.g., {\"Text\": \"...\", \"UpdatedBy\": \"...\"})",
+          "required": false
+        },
+        {
+          "name": "Severity",
+          "type": "object",
+          "description": "Severity update (e.g., {\"Label\": \"LOW\"})",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

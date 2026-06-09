@@ -1,0 +1,231 @@
+{
+  "id": "gatewatcher",
+  "name": "Gatewatcher NDR",
+  "description": "Multi-engine NDR platform combining static analysis, machine learning, and AI to detect known, unknown, and zero-day threats across network traffic",
+  "version": "1.0.0",
+  "category": "ndr",
+  "vendor": "Gatewatcher",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header",
+    "prefix": "Bearer"
+  },
+  "base_url": "https://{host}/api/v1",
+  "actions": [
+    {
+      "id": "get_alerts",
+      "name": "Get Alerts",
+      "description": "Retrieve security alerts from Gatewatcher NDR platform",
+      "http_method": "GET",
+      "endpoint": "/alerts",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "start_date",
+          "type": "string",
+          "description": "Start date filter in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "end_date",
+          "type": "string",
+          "description": "End date filter in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Filter by severity level (low, medium, high, critical)",
+          "required": false
+        },
+        {
+          "name": "risk_score_min",
+          "type": "number",
+          "description": "Minimum risk score to filter alerts",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of alerts to return",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Offset for pagination",
+          "required": false,
+          "default": 0
+        }
+      ]
+    },
+    {
+      "id": "get_alert_details",
+      "name": "Get Alert Details",
+      "description": "Retrieve detailed information about a specific alert",
+      "http_method": "GET",
+      "endpoint": "/alerts/{alert_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "alert_id",
+          "type": "string",
+          "description": "The alert ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_events",
+      "name": "Get Events",
+      "description": "Retrieve network events detected by Gatewatcher analysis engines",
+      "http_method": "GET",
+      "endpoint": "/events",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "start_date",
+          "type": "string",
+          "description": "Start date filter in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "end_date",
+          "type": "string",
+          "description": "End date filter in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "engine",
+          "type": "string",
+          "description": "Filter by detection engine (sigflow, malcore, dga, codebreaker)",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of events to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "get_malware_analysis",
+      "name": "Get Malware Analysis",
+      "description": "Retrieve malware analysis results from Codebreaker engine",
+      "http_method": "GET",
+      "endpoint": "/malware/analysis",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "sha256",
+          "type": "string",
+          "description": "SHA256 hash of the file to look up",
+          "required": false
+        },
+        {
+          "name": "start_date",
+          "type": "string",
+          "description": "Start date in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "end_date",
+          "type": "string",
+          "description": "End date in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of results to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "get_dga_detections",
+      "name": "Get DGA Detections",
+      "description": "Retrieve Domain Generation Algorithm detections from ML engine",
+      "http_method": "GET",
+      "endpoint": "/dga/detections",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "start_date",
+          "type": "string",
+          "description": "Start date in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "end_date",
+          "type": "string",
+          "description": "End date in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of detections to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "get_gcenter_status",
+      "name": "Get GCenter Status",
+      "description": "Retrieve GCenter management appliance status and health information",
+      "http_method": "GET",
+      "endpoint": "/system/status",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "retrohunt",
+      "name": "Run Retro Hunt",
+      "description": "Perform retroactive threat hunting across historical network data",
+      "http_method": "POST",
+      "endpoint": "/retrohunt",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "indicator",
+          "type": "string",
+          "description": "IOC value to hunt for (IP, domain, hash, URL)",
+          "required": true
+        },
+        {
+          "name": "indicator_type",
+          "type": "string",
+          "description": "Type of indicator (ip, domain, md5, sha256, url)",
+          "required": true
+        },
+        {
+          "name": "start_date",
+          "type": "string",
+          "description": "Start date for retro hunt period",
+          "required": false
+        },
+        {
+          "name": "end_date",
+          "type": "string",
+          "description": "End date for retro hunt period",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

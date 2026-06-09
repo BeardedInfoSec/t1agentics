@@ -1,0 +1,122 @@
+{
+  "id": "cloudflare",
+  "name": "Cloudflare",
+  "description": "This app integrates with Cloudflare Firewall to support containment and investigative actions",
+  "version": "1.0.0",
+  "category": "network",
+  "vendor": "Cloudflare",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "block_ip",
+      "name": "Block Ip",
+      "description": "Block an IP",
+      "http_method": "POST",
+      "endpoint": "/actions/block_ip",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "IP to block",
+          "required": true,
+          "contains": [
+            "ip"
+          ]
+        },
+        {
+          "name": "domain_name",
+          "type": "string",
+          "description": "Domain name (exact match)",
+          "required": true
+        },
+        {
+          "name": "rule_descr",
+          "type": "string",
+          "description": "Firewall rule name",
+          "required": false,
+          "default": "Phantom Block IP"
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "update_rule",
+      "name": "Update Rule",
+      "description": "Update a firewall rule",
+      "http_method": "GET",
+      "endpoint": "/actions/update_rule",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "rule_name",
+          "type": "string",
+          "description": "Firewall rule name (case-insensitive exact match)",
+          "required": true
+        },
+        {
+          "name": "domain_name",
+          "type": "string",
+          "description": "Domain name (exact match)",
+          "required": true
+        },
+        {
+          "name": "action",
+          "type": "string",
+          "description": "Action to apply",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "block_useragent",
+      "name": "Block Useragent",
+      "description": "Deny access to reported UserAgent",
+      "http_method": "POST",
+      "endpoint": "/actions/block_useragent",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "user_agent",
+          "type": "string",
+          "description": "UserAgent to block",
+          "required": true
+        },
+        {
+          "name": "domain_name",
+          "type": "string",
+          "description": "Domain name (exact match)",
+          "required": true
+        },
+        {
+          "name": "rule_descr",
+          "type": "string",
+          "description": "Firewall rule name",
+          "required": false,
+          "default": "Phantom Block UserAgent"
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Cloudflare",
+    "original_type": "network security",
+    "converted_at": "2025-12-18T16:25:28.675652",
+    "source_version": "1.0.0"
+  }
+}

@@ -1,0 +1,317 @@
+{
+  "id": "infoblox_ddi",
+  "name": "Infoblox DDI",
+  "description": "This app supports various containment and investigative actions on Infoblox Grid Manager",
+  "version": "2.1.5",
+  "category": "network",
+  "vendor": "Infoblox",
+  "auth_type": "basic_auth",
+  "auth_config": {
+    "type": "basic_auth",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "/wapi/v2.3.1",
+  "actions": [
+    {
+      "id": "list_network_view",
+      "name": "List Network View",
+      "description": "List available network views",
+      "http_method": "GET",
+      "endpoint": "/actions/list_network_view",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "get_network_info",
+      "name": "Get Network Info",
+      "description": "List available networks",
+      "http_method": "GET",
+      "endpoint": "/actions/get_network_info",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "IP or IP network (CIDR notation)",
+          "required": false,
+          "contains": [
+            "ip"
+          ]
+        },
+        {
+          "name": "network_view",
+          "type": "string",
+          "description": "Network view",
+          "required": false,
+          "contains": [
+            "infoblox view"
+          ]
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "get_system_info",
+      "name": "Get System Info",
+      "description": "Get the leases for the given IP/domain",
+      "http_method": "GET",
+      "endpoint": "/actions/get_system_info",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "ip_hostname",
+          "type": "string",
+          "description": "IP/Hostname",
+          "required": true,
+          "contains": [
+            "ip",
+            "host name"
+          ]
+        },
+        {
+          "name": "network_view",
+          "type": "string",
+          "description": "Network view",
+          "required": false,
+          "default": "default",
+          "contains": [
+            "infoblox view"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "unblock_ip",
+      "name": "Unblock Ip",
+      "description": "Unblock an IP",
+      "http_method": "POST",
+      "endpoint": "/actions/unblock_ip",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "IP/CIDR to unblock",
+          "required": true,
+          "contains": [
+            "ip"
+          ]
+        },
+        {
+          "name": "rp_zone",
+          "type": "string",
+          "description": "FQDN of response policy zone",
+          "required": true,
+          "contains": [
+            "infoblox rpz"
+          ]
+        },
+        {
+          "name": "network_view",
+          "type": "string",
+          "description": "Network view",
+          "required": false,
+          "default": "default",
+          "contains": [
+            "infoblox view"
+          ]
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "block_ip",
+      "name": "Block Ip",
+      "description": "Block an IP",
+      "http_method": "POST",
+      "endpoint": "/actions/block_ip",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "IP/CIDR to block",
+          "required": true,
+          "contains": [
+            "ip"
+          ]
+        },
+        {
+          "name": "rp_zone",
+          "type": "string",
+          "description": "FQDN of response policy zone",
+          "required": true,
+          "contains": [
+            "infoblox rpz"
+          ]
+        },
+        {
+          "name": "network_view",
+          "type": "string",
+          "description": "Network view",
+          "required": false,
+          "default": "default",
+          "contains": [
+            "infoblox view"
+          ]
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "Comment (maximum 256 characters)",
+          "required": false
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "unblock_domain",
+      "name": "Unblock Domain",
+      "description": "Unblock a domain",
+      "http_method": "POST",
+      "endpoint": "/actions/unblock_domain",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "domain",
+          "type": "string",
+          "description": "Domain to unblock",
+          "required": true,
+          "contains": [
+            "domain",
+            "url"
+          ]
+        },
+        {
+          "name": "rp_zone",
+          "type": "string",
+          "description": "FQDN of response policy zone",
+          "required": true,
+          "contains": [
+            "infoblox rpz"
+          ]
+        },
+        {
+          "name": "network_view",
+          "type": "string",
+          "description": "Network view",
+          "required": false,
+          "default": "default",
+          "contains": [
+            "infoblox view"
+          ]
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "block_domain",
+      "name": "Block Domain",
+      "description": "Block a domain",
+      "http_method": "POST",
+      "endpoint": "/actions/block_domain",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "domain",
+          "type": "string",
+          "description": "Domain to block",
+          "required": true,
+          "contains": [
+            "domain",
+            "url"
+          ]
+        },
+        {
+          "name": "rp_zone",
+          "type": "string",
+          "description": "FQDN of response policy zone",
+          "required": true,
+          "contains": [
+            "infoblox rpz"
+          ]
+        },
+        {
+          "name": "network_view",
+          "type": "string",
+          "description": "Network view",
+          "required": false,
+          "default": "default",
+          "contains": [
+            "infoblox view"
+          ]
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "Comment (maximum 256 characters)",
+          "required": false
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "list_rpz",
+      "name": "List Rpz",
+      "description": "List details of Response Policy Zones",
+      "http_method": "GET",
+      "endpoint": "/actions/list_rpz",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "network_view",
+          "type": "string",
+          "description": "Network view",
+          "required": false,
+          "default": "default",
+          "contains": [
+            "infoblox view"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_hosts",
+      "name": "List Hosts",
+      "description": "List available hosts",
+      "http_method": "GET",
+      "endpoint": "/actions/list_hosts",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Infoblox DDI",
+    "original_type": "network security",
+    "converted_at": "2025-12-18T16:25:28.865671",
+    "source_version": "2.1.5"
+  }
+}

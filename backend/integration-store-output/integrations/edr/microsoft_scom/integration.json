@@ -1,0 +1,101 @@
+{
+  "id": "microsoft_scom",
+  "name": "Microsoft SCOM",
+  "description": "This app integrates with Microsoft System Center Operations Manager (SCOM) to execute investigative actions",
+  "version": "2.2.6",
+  "category": "edr",
+  "vendor": "Microsoft",
+  "auth_type": "basic_auth",
+  "auth_config": {
+    "type": "basic_auth",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "list_endpoints",
+      "name": "List Endpoints",
+      "description": "List all the endpoints/sensors configured on the device",
+      "http_method": "GET",
+      "endpoint": "/actions/list_endpoints",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "domain",
+          "type": "string",
+          "description": "Domain",
+          "required": false,
+          "contains": [
+            "domain"
+          ]
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "list_alerts",
+      "name": "List Alerts",
+      "description": "List all active alerts",
+      "http_method": "GET",
+      "endpoint": "/actions/list_alerts",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "computer_name",
+          "type": "string",
+          "description": "Computer Name (Primary Management Server Name of endpoint)",
+          "required": false,
+          "contains": [
+            "host name"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_device_info",
+      "name": "Get Device Info",
+      "description": "Get information about device",
+      "http_method": "GET",
+      "endpoint": "/actions/get_device_info",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "IP address",
+          "required": false,
+          "contains": [
+            "ip",
+            "ipv6"
+          ]
+        },
+        {
+          "name": "computer_name",
+          "type": "string",
+          "description": "Computer name",
+          "required": false,
+          "contains": [
+            "host name"
+          ]
+        }
+      ],
+      "observable_type": "ip"
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Microsoft SCOM",
+    "original_type": "endpoint",
+    "converted_at": "2025-12-18T16:25:28.945060",
+    "source_version": "2.2.6"
+  }
+}

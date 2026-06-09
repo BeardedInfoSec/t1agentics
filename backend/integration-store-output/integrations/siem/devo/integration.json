@@ -1,0 +1,177 @@
+{
+  "id": "devo",
+  "name": "Devo",
+  "description": "Integrates with Devo Security Data Platform for log querying, alert retrieval, search job management, and data ingestion via the Devo REST API",
+  "version": "1.0.0",
+  "category": "siem",
+  "vendor": "Devo",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "header_name": "Authorization",
+    "prefix": "Bearer",
+    "location": "header"
+  },
+  "base_url": "https://apiv2-{region}.devo.com",
+  "actions": [
+    {
+      "id": "query_logs",
+      "name": "Query Logs",
+      "description": "Execute a LINQ query against Devo data tables",
+      "http_method": "POST",
+      "endpoint": "/search/query",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "LINQ query string (e.g., from siem.logtrust.alert.info select *)",
+          "required": true
+        },
+        {
+          "name": "from",
+          "type": "number",
+          "description": "Start time in epoch milliseconds",
+          "required": true
+        },
+        {
+          "name": "to",
+          "type": "number",
+          "description": "End time in epoch milliseconds",
+          "required": true
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of results to return",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "mode",
+          "type": "object",
+          "description": "Response mode configuration (type: json/csv/tsv)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_alerts",
+      "name": "Get Alerts",
+      "description": "Retrieve alerts from the siem.logtrust.alert.info table",
+      "http_method": "POST",
+      "endpoint": "/search/query",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "LINQ query targeting alert table (default: from siem.logtrust.alert.info)",
+          "required": true,
+          "default": "from siem.logtrust.alert.info select *"
+        },
+        {
+          "name": "from",
+          "type": "number",
+          "description": "Start time in epoch milliseconds",
+          "required": true
+        },
+        {
+          "name": "to",
+          "type": "number",
+          "description": "End time in epoch milliseconds",
+          "required": true
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum alerts to return",
+          "required": false,
+          "default": 50
+        }
+      ]
+    },
+    {
+      "id": "create_search_job",
+      "name": "Create Search Job",
+      "description": "Create an asynchronous search job for long-running queries",
+      "http_method": "POST",
+      "endpoint": "/search/job",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "LINQ query string",
+          "required": true
+        },
+        {
+          "name": "from",
+          "type": "number",
+          "description": "Start time in epoch milliseconds",
+          "required": true
+        },
+        {
+          "name": "to",
+          "type": "number",
+          "description": "End time in epoch milliseconds",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_job_status",
+      "name": "Get Job Status",
+      "description": "Check the status of a running search job",
+      "http_method": "GET",
+      "endpoint": "/search/job/{jobId}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "jobId",
+          "type": "string",
+          "description": "Job ID to check status for",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "stop_job",
+      "name": "Stop Search Job",
+      "description": "Stop a running search job",
+      "http_method": "DELETE",
+      "endpoint": "/search/job/{jobId}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "jobId",
+          "type": "string",
+          "description": "Job ID to stop",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_tables",
+      "name": "List Tables",
+      "description": "List available data tables in Devo",
+      "http_method": "GET",
+      "endpoint": "/search/tables",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "nameFilter",
+          "type": "string",
+          "description": "Filter tables by name pattern",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

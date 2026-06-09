@@ -1,0 +1,896 @@
+{
+  "id": "cisco_secure_email_and_web_manager",
+  "name": "Cisco Secure Email and Web Manager",
+  "description": "App integration for Cisco SMA, Secure Email and Web Manager",
+  "version": "1.0.4",
+  "category": "threat_intel",
+  "vendor": "Cisco",
+  "auth_type": "basic_auth",
+  "auth_config": {
+    "type": "basic_auth",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "search_spam_quarantine_messages",
+      "name": "Search Spam Quarantine",
+      "description": "Search for messages in the spam quarantine",
+      "http_method": "GET",
+      "endpoint": "/actions/search_spam_quarantine_messages",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "start_date",
+          "type": "string",
+          "description": "Start date, recommended in ISO format, but most formats accepted (ex: 2001-05-08T08:45:01)",
+          "required": true
+        },
+        {
+          "name": "end_date",
+          "type": "string",
+          "description": "End date, recommended in ISO format, but most formats accepted (ex: 2001-05-08T08:45:01)",
+          "required": true
+        },
+        {
+          "name": "order_by",
+          "type": "string",
+          "description": "Field to sort results by",
+          "required": false
+        },
+        {
+          "name": "order_direction",
+          "type": "string",
+          "description": "Sort direction",
+          "required": false
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Number of records to skip/offset",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Max number of records to return",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "envelope_recipient_filter_operator",
+          "type": "string",
+          "description": "Operator for envelope recipient filter",
+          "required": false
+        },
+        {
+          "name": "envelope_recipient_filter_value",
+          "type": "string",
+          "description": "Value for envelope recipient filter",
+          "required": false
+        },
+        {
+          "name": "filter_by",
+          "type": "string",
+          "description": "Field to filter by",
+          "required": false
+        },
+        {
+          "name": "filter_operator",
+          "type": "string",
+          "description": "Operator for general filter",
+          "required": false
+        },
+        {
+          "name": "filter_value",
+          "type": "string",
+          "description": "Value for general filter",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "search_general_quarantine_messages",
+      "name": "Search Quarantine",
+      "description": "Search for messages in Policy, Virus, Outbreak, and other quarantines",
+      "http_method": "GET",
+      "endpoint": "/actions/search_general_quarantine_messages",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "start_date",
+          "type": "string",
+          "description": "Start date, recommended in ISO format, but most formats accepted (ex: 2001-05-08T08:45:01)",
+          "required": true
+        },
+        {
+          "name": "end_date",
+          "type": "string",
+          "description": "End date, recommended in ISO format, but most formats accepted (ex: 2001-05-08T08:45:01)",
+          "required": true
+        },
+        {
+          "name": "quarantines",
+          "type": "string",
+          "description": "Comma-separated list of quarantines to search (Outbreak, Virus, File+Analysis, Unclassified, Policy, <user defined quarantine>)",
+          "required": true
+        },
+        {
+          "name": "subject_filter_by",
+          "type": "string",
+          "description": "How to filter the subject",
+          "required": false
+        },
+        {
+          "name": "subject_filter_value",
+          "type": "string",
+          "description": "Value to filter subject by",
+          "required": false
+        },
+        {
+          "name": "originating_esa_ip",
+          "type": "string",
+          "description": "IP address of the ESA that processed the message",
+          "required": false,
+          "contains": [
+            "ip"
+          ]
+        },
+        {
+          "name": "attachment_name",
+          "type": "string",
+          "description": "Filter by attachment name",
+          "required": false
+        },
+        {
+          "name": "attachment_size_filter_by",
+          "type": "string",
+          "description": "How to filter attachment size",
+          "required": false
+        },
+        {
+          "name": "attachment_size_from",
+          "type": "number",
+          "description": "Starting size in KB (for range/less_than)",
+          "required": false
+        },
+        {
+          "name": "attachment_size_to",
+          "type": "number",
+          "description": "Ending size in KB (for range/more_than)",
+          "required": false
+        },
+        {
+          "name": "order_by",
+          "type": "string",
+          "description": "Field to sort results by",
+          "required": false
+        },
+        {
+          "name": "order_direction",
+          "type": "string",
+          "description": "Sort direction",
+          "required": false
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Number of records to skip",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of records to return",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "envelope_recipient_filter_by",
+          "type": "string",
+          "description": "How to filter envelope recipient",
+          "required": false
+        },
+        {
+          "name": "envelope_recipient_filter_value",
+          "type": "string",
+          "description": "Value to filter envelope recipient by",
+          "required": false
+        },
+        {
+          "name": "envelope_sender_filter_by",
+          "type": "string",
+          "description": "How to filter envelope sender",
+          "required": false
+        },
+        {
+          "name": "envelope_sender_filter_value",
+          "type": "string",
+          "description": "Value to filter envelope sender by",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_spam_quarantine_message_details",
+      "name": "Get Spam Message",
+      "description": "Retrieve details of a spam quarantined message",
+      "http_method": "GET",
+      "endpoint": "/actions/get_spam_quarantine_message_details",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "message_id",
+          "type": "string",
+          "description": "Message ID (mid) to retrieve details for",
+          "required": true,
+          "contains": [
+            "cisco sma message id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_general_quarantine_message_details",
+      "name": "Get Quarantine Message",
+      "description": "Retrieves details of a message from general quarantine",
+      "http_method": "GET",
+      "endpoint": "/actions/get_general_quarantine_message_details",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "message_id",
+          "type": "string",
+          "description": "Message ID to retrieve details for",
+          "required": true,
+          "contains": [
+            "cisco sma message id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "release_spam_message",
+      "name": "Release Spam Message",
+      "description": "Release a spam quarantined message",
+      "http_method": "GET",
+      "endpoint": "/actions/release_spam_message",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "message_id",
+          "type": "string",
+          "description": "Message ID (mid) to release",
+          "required": true,
+          "contains": [
+            "cisco sma message id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "release_general_quarantine_message",
+      "name": "Release Quarantine Message",
+      "description": "Release a message from Policy, Virus, Outbreak, or other quarantines",
+      "http_method": "GET",
+      "endpoint": "/actions/release_general_quarantine_message",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "message_id",
+          "type": "string",
+          "description": "Message ID (mid) to release",
+          "required": true,
+          "contains": [
+            "cisco sma message id"
+          ]
+        },
+        {
+          "name": "quarantine_name",
+          "type": "string",
+          "description": "Name of quarantine to release from (Outbreak, Virus, File+Analysis, Unclassified, Policy, <user defined quarantine>)",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "delete_spam_message",
+      "name": "Delete Spam Message",
+      "description": "Delete a spam quarantined message",
+      "http_method": "GET",
+      "endpoint": "/actions/delete_spam_message",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "message_id",
+          "type": "string",
+          "description": "Message ID (mid) to delete",
+          "required": true,
+          "contains": [
+            "cisco sma message id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "delete_general_quarantine_message",
+      "name": "Delete Quarantine Message",
+      "description": "Delete a message from Policy, Virus, Outbreak, or other quarantines",
+      "http_method": "GET",
+      "endpoint": "/actions/delete_general_quarantine_message",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "message_id",
+          "type": "string",
+          "description": "Message ID (mid) to delete",
+          "required": true,
+          "contains": [
+            "cisco sma message id"
+          ]
+        },
+        {
+          "name": "quarantine_name",
+          "type": "string",
+          "description": "Name of quarantine to delete from (Outbreak, Virus, File+Analysis, Unclassified, Policy, <user defined quarantine>)",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "search_tracking_messages",
+      "name": "Search Tracking Messages",
+      "description": "Search for messages in message tracking",
+      "http_method": "GET",
+      "endpoint": "/sma/api/v2.0/message-tracking/messages",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "start_date",
+          "type": "string",
+          "description": "Start date, recommended in ISO format, but most formats accepted (ex: 2001-05-08T08:45:01)",
+          "required": true
+        },
+        {
+          "name": "end_date",
+          "type": "string",
+          "description": "End date, recommended in ISO format, but most formats accepted (ex: 2001-05-08T08:45:01)",
+          "required": true
+        },
+        {
+          "name": "search_option",
+          "type": "string",
+          "description": "Search option type",
+          "required": false,
+          "default": "messages"
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Number of records to skip",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of records to return",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "cisco_host",
+          "type": "string",
+          "description": "Specific appliance to search",
+          "required": false,
+          "default": "All_Hosts"
+        },
+        {
+          "name": "sender_ip",
+          "type": "string",
+          "description": "Sender IP address to search for",
+          "required": false,
+          "contains": [
+            "ip"
+          ]
+        },
+        {
+          "name": "sender_filter_operator",
+          "type": "string",
+          "description": "Envelope sender filter operator",
+          "required": false
+        },
+        {
+          "name": "sender_filter_value",
+          "type": "string",
+          "description": "Envelope sender filter value",
+          "required": false,
+          "contains": [
+            "email"
+          ]
+        },
+        {
+          "name": "recipient_filter_operator",
+          "type": "string",
+          "description": "Envelope recipient filter operator",
+          "required": false
+        },
+        {
+          "name": "recipient_filter_value",
+          "type": "string",
+          "description": "Envelope recipient filter value",
+          "required": false,
+          "contains": [
+            "email"
+          ]
+        },
+        {
+          "name": "subject_filter_operator",
+          "type": "string",
+          "description": "Subject filter operator",
+          "required": false
+        },
+        {
+          "name": "subject_filter_value",
+          "type": "string",
+          "description": "Subject filter value",
+          "required": false
+        },
+        {
+          "name": "attachment_name_operator",
+          "type": "string",
+          "description": "Attachment name filter operator",
+          "required": false
+        },
+        {
+          "name": "attachment_name_value",
+          "type": "string",
+          "description": "Attachment name filter value",
+          "required": false,
+          "contains": [
+            "file name"
+          ]
+        },
+        {
+          "name": "file_sha_256",
+          "type": "string",
+          "description": "SHA256 hash to search for",
+          "required": false,
+          "contains": [
+            "sha256"
+          ]
+        },
+        {
+          "name": "message_id_header",
+          "type": "string",
+          "description": "Message ID header to search for",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_message_tracking_details",
+      "name": "Get Tracking Details",
+      "description": "Retrieve detailed tracking information for a message",
+      "http_method": "GET",
+      "endpoint": "/sma/api/v2.0/message-tracking/details",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "message_id",
+          "type": "string",
+          "description": "Message ID (mid) to retrieve details for",
+          "required": true,
+          "contains": [
+            "cisco sma message id"
+          ]
+        },
+        {
+          "name": "serial_number",
+          "type": "string",
+          "description": "Appliance serial number",
+          "required": true
+        },
+        {
+          "name": "icid",
+          "type": "string",
+          "description": "Incoming Connection ID",
+          "required": false
+        },
+        {
+          "name": "start_date",
+          "type": "string",
+          "description": "Start date, recommended in ISO format, but most formats accepted (ex: 2001-05-08T08:45:01)",
+          "required": false
+        },
+        {
+          "name": "end_date",
+          "type": "string",
+          "description": "End date, recommended in ISO format, but most formats accepted (ex: 2001-05-08T08:45:01)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "search_list",
+      "name": "Search List",
+      "description": "Search safelist or blocklist entries",
+      "http_method": "GET",
+      "endpoint": "/sma/api/v2.0/quarantine/safelist",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "list_type",
+          "type": "string",
+          "description": "Type of list to search",
+          "required": true,
+          "default": "safelist"
+        },
+        {
+          "name": "view_by",
+          "type": "string",
+          "description": "View entries by sender or recipient",
+          "required": false,
+          "default": "recipient"
+        },
+        {
+          "name": "order_by",
+          "type": "string",
+          "description": "Field to sort results by",
+          "required": false,
+          "default": "recipient"
+        },
+        {
+          "name": "order_direction",
+          "type": "string",
+          "description": "Sort direction",
+          "required": false,
+          "default": "desc"
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Number of records to skip/offset",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Max number of records to return",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "search",
+          "type": "string",
+          "description": "Search term (only supported when order_by=recipient)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "add_list_entry",
+      "name": "Add List Entry",
+      "description": "Add an entry to the spam quarantine safelist or blocklist",
+      "http_method": "GET",
+      "endpoint": "/sma/api/v2.0/quarantine/safelist",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "list_type",
+          "type": "string",
+          "description": "Type of list to add entry to",
+          "required": true,
+          "default": "safelist"
+        },
+        {
+          "name": "view_by",
+          "type": "string",
+          "description": "Add entry by sender or recipient",
+          "required": false,
+          "default": "recipient"
+        },
+        {
+          "name": "recipient_addresses",
+          "type": "string",
+          "description": "Recipient email addresses (comma-separated if multiple) - Required with view_by=recipient",
+          "required": false
+        },
+        {
+          "name": "sender_list",
+          "type": "string",
+          "description": "Sender addresses or domains (comma-separated if multiple) - Required with view_by=recipient",
+          "required": false
+        },
+        {
+          "name": "sender_addresses",
+          "type": "string",
+          "description": "Sender addresses or domains (comma-separated if multiple) - Required with view_by=sender",
+          "required": false
+        },
+        {
+          "name": "recipient_list",
+          "type": "string",
+          "description": "Recipient email addresses (comma-separated if multiple) - Required with view_by=sender",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "edit_list_entry",
+      "name": "Edit List Entry",
+      "description": "Edit an entry in the spam quarantine safelist or blocklist",
+      "http_method": "GET",
+      "endpoint": "/sma/api/v2.0/quarantine/safelist",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "list_type",
+          "type": "string",
+          "description": "Type of list to edit entry in",
+          "required": true,
+          "default": "safelist"
+        },
+        {
+          "name": "view_by",
+          "type": "string",
+          "description": "Edit entry by sender or recipient",
+          "required": false,
+          "default": "recipient"
+        },
+        {
+          "name": "recipient_addresses",
+          "type": "string",
+          "description": "Recipient email addresses (comma-separated if multiple) - Required with view_by=recipient",
+          "required": false
+        },
+        {
+          "name": "sender_list",
+          "type": "string",
+          "description": "Sender addresses or domains (comma-separated if multiple) - Required with view_by=recipient",
+          "required": false
+        },
+        {
+          "name": "sender_addresses",
+          "type": "string",
+          "description": "Sender addresses or domains (comma-separated if multiple) - Required with view_by=sender",
+          "required": false
+        },
+        {
+          "name": "recipient_list",
+          "type": "string",
+          "description": "Recipient email addresses (comma-separated if multiple) - Required with view_by=sender",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "delete_list_entry",
+      "name": "Delete List Entry",
+      "description": "Delete an entry from the spam quarantine safelist or blocklist",
+      "http_method": "GET",
+      "endpoint": "/sma/api/v2.0/quarantine/safelist",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "list_type",
+          "type": "string",
+          "description": "Type of list to delete entry from",
+          "required": true,
+          "default": "safelist"
+        },
+        {
+          "name": "view_by",
+          "type": "string",
+          "description": "Delete entry by sender or recipient",
+          "required": false,
+          "default": "recipient"
+        },
+        {
+          "name": "recipient_list",
+          "type": "string",
+          "description": "Recipient email addresses (comma-separated if multiple) - Required with view_by=recipient",
+          "required": false
+        },
+        {
+          "name": "sender_list",
+          "type": "string",
+          "description": "Sender addresses or domains (comma-separated if multiple) - Required with view_by=sender",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_statistics_report",
+      "name": "Get Statistics Report",
+      "description": "Retrieve statistical reports",
+      "http_method": "GET",
+      "endpoint": "/actions/get_statistics_report",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "start_date",
+          "type": "string",
+          "description": "Start date, recommended in ISO format, but most formats accepted (ex: 2001-05-08T08:45:01)",
+          "required": true
+        },
+        {
+          "name": "end_date",
+          "type": "string",
+          "description": "End date, recommended in ISO format, but most formats accepted (ex: 2001-05-08T08:45:01)",
+          "required": true
+        },
+        {
+          "name": "report_type",
+          "type": "string",
+          "description": "Type of report to retrieve",
+          "required": true
+        },
+        {
+          "name": "device_type",
+          "type": "string",
+          "description": "Type of device",
+          "required": true,
+          "default": "esa"
+        },
+        {
+          "name": "counter",
+          "type": "string",
+          "description": "Counter group",
+          "required": false
+        },
+        {
+          "name": "query_type",
+          "type": "string",
+          "description": "Type of query",
+          "required": false
+        },
+        {
+          "name": "order_by",
+          "type": "string",
+          "description": "Attribute by which to order the results",
+          "required": false
+        },
+        {
+          "name": "order_direction",
+          "type": "string",
+          "description": "Sort direction",
+          "required": false
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Number of records to skip/offset",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Max number of records to return",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "top",
+          "type": "number",
+          "description": "Number of top records to return",
+          "required": false
+        },
+        {
+          "name": "filter_value",
+          "type": "string",
+          "description": "Value to filter by",
+          "required": false
+        },
+        {
+          "name": "filter_by",
+          "type": "string",
+          "description": "Field to filter by",
+          "required": false
+        },
+        {
+          "name": "filter_operator",
+          "type": "string",
+          "description": "Filter operator",
+          "required": false
+        },
+        {
+          "name": "device_group_name",
+          "type": "string",
+          "description": "Name of device group",
+          "required": false
+        },
+        {
+          "name": "device_name",
+          "type": "string",
+          "description": "Name of device",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "download_attachment",
+      "name": "Download Attachment",
+      "description": "Download attachment from a message",
+      "http_method": "GET",
+      "endpoint": "/sma/api/v2.0/quarantine/messages/attachment",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "message_id",
+          "type": "string",
+          "description": "Message ID (mid) of message",
+          "required": true,
+          "contains": [
+            "cisco sma message id"
+          ]
+        },
+        {
+          "name": "attachment_id",
+          "type": "string",
+          "description": "ID of attachment to download",
+          "required": true
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Cisco Secure Email and Web Manager",
+    "original_type": "information",
+    "converted_at": "2025-12-18T16:25:28.658441",
+    "source_version": "1.0.4"
+  }
+}

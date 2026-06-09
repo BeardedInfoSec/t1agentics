@@ -1,0 +1,245 @@
+{
+  "id": "rapid7_insightidr",
+  "name": "Rapid7 InsightIDR",
+  "description": "Integrates with Rapid7 InsightIDR for investigation management, alert triage, log search, detection rule management, and asset investigation via the InsightIDR REST API",
+  "version": "1.0.0",
+  "category": "siem",
+  "vendor": "Rapid7",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "X-Api-Key",
+    "location": "header"
+  },
+  "base_url": "https://{region}.api.insight.rapid7.com",
+  "actions": [
+    {
+      "id": "list_investigations",
+      "name": "List Investigations",
+      "description": "Retrieve investigations from InsightIDR with optional status and time filtering",
+      "http_method": "GET",
+      "endpoint": "/idr/v2/investigations",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "statuses",
+          "type": "string",
+          "description": "Comma-separated investigation statuses (OPEN, INVESTIGATING, WAITING, CLOSED)",
+          "required": false
+        },
+        {
+          "name": "start_time",
+          "type": "string",
+          "description": "Start time filter in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "string",
+          "description": "End time filter in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "size",
+          "type": "number",
+          "description": "Number of results per page",
+          "required": false,
+          "default": 50
+        },
+        {
+          "name": "index",
+          "type": "number",
+          "description": "Page index for pagination",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "sources",
+          "type": "string",
+          "description": "Filter by investigation source (ALERT, USER, HUNT)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_investigation",
+      "name": "Get Investigation",
+      "description": "Retrieve details of a specific investigation by ID",
+      "http_method": "GET",
+      "endpoint": "/idr/v2/investigations/{investigationId}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "investigationId",
+          "type": "string",
+          "description": "Investigation ID (RRNA format)",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "update_investigation",
+      "name": "Update Investigation",
+      "description": "Update the status, priority, or disposition of an investigation",
+      "http_method": "PATCH",
+      "endpoint": "/idr/v2/investigations/{investigationId}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "investigationId",
+          "type": "string",
+          "description": "Investigation ID to update",
+          "required": true
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "New status (OPEN, INVESTIGATING, WAITING, CLOSED)",
+          "required": false
+        },
+        {
+          "name": "priority",
+          "type": "string",
+          "description": "New priority (LOW, MEDIUM, HIGH, CRITICAL)",
+          "required": false
+        },
+        {
+          "name": "disposition",
+          "type": "string",
+          "description": "Disposition when closing (BENIGN, MALICIOUS, NOT_APPLICABLE, UNDECIDED)",
+          "required": false
+        },
+        {
+          "name": "assignee_email",
+          "type": "string",
+          "description": "Email of the user to assign investigation to",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_alerts",
+      "name": "List Alerts",
+      "description": "Retrieve alerts from InsightIDR with filtering options",
+      "http_method": "GET",
+      "endpoint": "/idr/v2/alerts",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "statuses",
+          "type": "string",
+          "description": "Comma-separated alert statuses",
+          "required": false
+        },
+        {
+          "name": "start_time",
+          "type": "string",
+          "description": "Start time in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "string",
+          "description": "End time in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "size",
+          "type": "number",
+          "description": "Page size",
+          "required": false,
+          "default": 50
+        }
+      ]
+    },
+    {
+      "id": "search_logs",
+      "name": "Search Logs",
+      "description": "Execute a LEQL (Log Entry Query Language) search across InsightIDR log sets",
+      "http_method": "POST",
+      "endpoint": "/log_search/query/logs/{logSetId}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "logSetId",
+          "type": "string",
+          "description": "Log set ID to search in",
+          "required": true
+        },
+        {
+          "name": "query",
+          "type": "string",
+          "description": "LEQL query string",
+          "required": true
+        },
+        {
+          "name": "from",
+          "type": "number",
+          "description": "Start time in epoch milliseconds",
+          "required": true
+        },
+        {
+          "name": "to",
+          "type": "number",
+          "description": "End time in epoch milliseconds",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_detection_rules",
+      "name": "List Detection Rules",
+      "description": "List all detection rules configured in InsightIDR",
+      "http_method": "GET",
+      "endpoint": "/idr/v2/detection_rules",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "size",
+          "type": "number",
+          "description": "Number of rules per page",
+          "required": false,
+          "default": 50
+        },
+        {
+          "name": "index",
+          "type": "number",
+          "description": "Page index",
+          "required": false,
+          "default": 0
+        }
+      ]
+    },
+    {
+      "id": "search_assets",
+      "name": "Search Assets",
+      "description": "Search for assets in InsightIDR by hostname, IP, or MAC address",
+      "http_method": "GET",
+      "endpoint": "/idr/v1/assets/_search",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "search",
+          "type": "string",
+          "description": "Search term (hostname, IP, or MAC)",
+          "required": true
+        },
+        {
+          "name": "size",
+          "type": "number",
+          "description": "Maximum results to return",
+          "required": false,
+          "default": 20
+        }
+      ],
+      "observable_type": "ip"
+    }
+  ]
+}

@@ -1,0 +1,150 @@
+{
+  "id": "sophos_firewall",
+  "name": "Sophos Firewall",
+  "description": "Sophos Firewall API for managing firewall rules, IP hosts, network objects, and security configuration via XML-based API controller",
+  "version": "1.0.0",
+  "category": "firewall",
+  "vendor": "Sophos",
+  "auth_type": "basic",
+  "auth_config": {
+    "type": "basic",
+    "header_name": "Authorization",
+    "location": "query",
+    "note": "Credentials passed as query parameters (username and password) with XML request body"
+  },
+  "base_url": "https://{host}:4444/webconsole/APIController",
+  "actions": [
+    {
+      "id": "get_firewall_rules",
+      "name": "Get Firewall Rules",
+      "description": "Retrieve all firewall rules configured on the Sophos Firewall",
+      "http_method": "GET",
+      "endpoint": "?type=config&page=FirewallRule",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "Filter criteria to narrow results (e.g., =, !=, like)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "create_firewall_rule",
+      "name": "Create Firewall Rule",
+      "description": "Create a new firewall rule with source, destination, and action",
+      "http_method": "POST",
+      "endpoint": "?type=config&page=FirewallRule",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "body",
+          "type": "object",
+          "description": "XML body defining rule name, policy type, source zone/network, destination zone/network, services, and action (accept/drop/reject)",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_ip_hosts",
+      "name": "Get IP Hosts",
+      "description": "Retrieve all IP host objects configured on the firewall",
+      "http_method": "GET",
+      "endpoint": "?type=config&page=IPHost",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "Filter criteria for IP host objects",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "create_ip_host",
+      "name": "Create IP Host",
+      "description": "Create a new IP host object for use in firewall rules (block IP)",
+      "http_method": "POST",
+      "endpoint": "?type=config&page=IPHost",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "body",
+          "type": "object",
+          "description": "XML body defining IP host name, type (IP, Network, IPRange), IP address, and subnet",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "delete_ip_host",
+      "name": "Delete IP Host",
+      "description": "Delete an IP host object from the firewall",
+      "http_method": "POST",
+      "endpoint": "?type=config&page=IPHost",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Name of the IP host object to remove",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_ip_host_groups",
+      "name": "Get IP Host Groups",
+      "description": "Retrieve all IP host group objects",
+      "http_method": "GET",
+      "endpoint": "?type=config&page=IPHostGroup",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "get_services",
+      "name": "Get Services",
+      "description": "Retrieve all service objects (port definitions)",
+      "http_method": "GET",
+      "endpoint": "?type=config&page=Services",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "get_zones",
+      "name": "Get Zones",
+      "description": "Retrieve all security zones configured on the firewall",
+      "http_method": "GET",
+      "endpoint": "?type=config&page=Zone",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "get_logs",
+      "name": "Get Firewall Logs",
+      "description": "Retrieve firewall traffic and event logs",
+      "http_method": "GET",
+      "endpoint": "?type=log&page=FirewallLog",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "Filter criteria for log entries",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

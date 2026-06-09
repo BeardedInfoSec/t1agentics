@@ -1,0 +1,197 @@
+{
+  "id": "mandiant_threat_intel",
+  "name": "Mandiant Threat Intelligence",
+  "description": "Integrate with the Mandiant Threat Intelligence API v4 to search indicators, threat actors, malware families, campaigns, and vulnerability intelligence",
+  "version": "1.0.0",
+  "category": "threat_intel",
+  "vendor": "Mandiant (Google Cloud)",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "token_url": "https://api.intelligence.mandiant.com/token",
+    "note": "Obtain bearer token via POST to /token with API key ID and secret key using x-www-form-urlencoded grant_type=client_credentials"
+  },
+  "base_url": "https://api.intelligence.mandiant.com/v4",
+  "actions": [
+    {
+      "id": "lookup_indicator",
+      "name": "Lookup Indicator",
+      "description": "Search for an indicator of compromise (IP, domain, URL, or hash) in Mandiant threat intelligence",
+      "http_method": "GET",
+      "endpoint": "/indicator/{type}/{value}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Indicator type: ipv4, fqdn, url, md5, sha1, sha256",
+          "required": true
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "description": "Indicator value to look up",
+          "required": true,
+          "contains": ["ip", "domain", "url", "md5", "sha1", "sha256"]
+        }
+      ]
+    },
+    {
+      "id": "search_indicators",
+      "name": "Search Indicators",
+      "description": "Search Mandiant indicator database with filters for type, confidence, and date ranges",
+      "http_method": "POST",
+      "endpoint": "/indicator",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "start_epoch",
+          "type": "number",
+          "description": "Start date as epoch timestamp",
+          "required": false
+        },
+        {
+          "name": "end_epoch",
+          "type": "number",
+          "description": "End date as epoch timestamp",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of results to return (default 25, max 1000)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "lookup_threat_actor",
+      "name": "Lookup Threat Actor",
+      "description": "Retrieve detailed intelligence on a threat actor by name (e.g., APT29, UNC3782)",
+      "http_method": "GET",
+      "endpoint": "/actor/{actor_name}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "actor_name",
+          "type": "string",
+          "description": "Threat actor name to look up (3-30 characters, e.g. apt43, UNC3782)",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "lookup_malware_family",
+      "name": "Lookup Malware Family",
+      "description": "Retrieve intelligence on a malware family including capabilities, associated actors, and indicators",
+      "http_method": "GET",
+      "endpoint": "/malware/{malware_name}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "malware_name",
+          "type": "string",
+          "description": "Malware family name to look up",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "lookup_vulnerability",
+      "name": "Lookup Vulnerability",
+      "description": "Retrieve Mandiant vulnerability intelligence for a CVE including exploitation status and risk rating",
+      "http_method": "GET",
+      "endpoint": "/vulnerability/{cve_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "cve_id",
+          "type": "string",
+          "description": "CVE ID to look up (e.g. CVE-2021-44228)",
+          "required": true,
+          "contains": ["cve"]
+        }
+      ]
+    },
+    {
+      "id": "lookup_campaign",
+      "name": "Lookup Campaign",
+      "description": "Retrieve intelligence on a Mandiant-tracked threat campaign",
+      "http_method": "GET",
+      "endpoint": "/campaign/{campaign_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "campaign_id",
+          "type": "string",
+          "description": "Mandiant campaign ID to look up",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_reports",
+      "name": "List Reports",
+      "description": "Retrieve a list of Mandiant intelligence reports with optional filters",
+      "http_method": "GET",
+      "endpoint": "/report",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "start_epoch",
+          "type": "number",
+          "description": "Start date as epoch timestamp",
+          "required": false
+        },
+        {
+          "name": "end_epoch",
+          "type": "number",
+          "description": "End date as epoch timestamp",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of results (default 25)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "search_mandiant",
+      "name": "Search Mandiant",
+      "description": "Full-text search across Mandiant threat intelligence data including actors, malware, campaigns, and reports",
+      "http_method": "GET",
+      "endpoint": "/search",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Search query string",
+          "required": true
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Entity type filter (indicator, actor, malware, vulnerability, campaign, report)",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of results",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

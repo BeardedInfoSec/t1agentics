@@ -1,0 +1,155 @@
+{
+  "id": "securonix_soar",
+  "name": "Securonix SOAR",
+  "description": "Securonix security operations and response platform for incident management, threat actions, and automated security workflows via the SNYPR REST API.",
+  "version": "1.0.0",
+  "category": "soar",
+  "vendor": "Securonix",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "token",
+    "location": "query"
+  },
+  "base_url": "https://{host}/Snypr/ws",
+  "actions": [
+    {
+      "id": "generate_token",
+      "name": "Generate Token",
+      "description": "Generate an authentication token for API access.",
+      "http_method": "GET",
+      "endpoint": "/token/generate",
+      "action_type": "generic",
+      "read_only": true,
+      "parameters": [
+        {"name": "username", "type": "string", "description": "Securonix username.", "required": true},
+        {"name": "password", "type": "string", "description": "Securonix password.", "required": true}
+      ]
+    },
+    {
+      "id": "list_incidents",
+      "name": "List Incidents",
+      "description": "Retrieve a list of incidents with optional filtering.",
+      "http_method": "GET",
+      "endpoint": "/incident/get",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "from", "type": "string", "description": "Start date (MM/dd/yyyy HH:mm:ss).", "required": true},
+        {"name": "to", "type": "string", "description": "End date (MM/dd/yyyy HH:mm:ss).", "required": true},
+        {"name": "rangeType", "type": "string", "description": "Date range type: 'updated' or 'created'.", "required": false},
+        {"name": "status", "type": "string", "description": "Filter by status.", "required": false},
+        {"name": "max", "type": "integer", "description": "Maximum results to return.", "required": false},
+        {"name": "offset", "type": "integer", "description": "Starting offset.", "required": false}
+      ]
+    },
+    {
+      "id": "get_incident",
+      "name": "Get Incident",
+      "description": "Retrieve details of a specific incident.",
+      "http_method": "GET",
+      "endpoint": "/incident/get",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "incidentId", "type": "string", "description": "The incident ID.", "required": true}
+      ]
+    },
+    {
+      "id": "create_incident",
+      "name": "Create Incident",
+      "description": "Create a new incident from violation data.",
+      "http_method": "POST",
+      "endpoint": "/incident/create",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "violationName", "type": "string", "description": "Name of the violation/incident.", "required": true},
+        {"name": "resourceName", "type": "string", "description": "Resource associated with the incident.", "required": false},
+        {"name": "entityType", "type": "string", "description": "Entity type (e.g., 'Users', 'Activityaccount').", "required": false},
+        {"name": "entityName", "type": "string", "description": "Entity name.", "required": false},
+        {"name": "criticality", "type": "string", "description": "Criticality level: 'Low', 'Medium', 'High', 'Critical'.", "required": false},
+        {"name": "assignTo", "type": "string", "description": "User or group to assign the incident.", "required": false}
+      ]
+    },
+    {
+      "id": "update_incident",
+      "name": "Update Incident",
+      "description": "Perform an action on an incident (update status, assignee, etc.).",
+      "http_method": "POST",
+      "endpoint": "/incident/actions",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "incidentId", "type": "string", "description": "The incident ID.", "required": true},
+        {"name": "actionName", "type": "string", "description": "Action to perform (e.g., 'Assign to Analyst', 'Mark as Concern').", "required": true},
+        {"name": "assignTo", "type": "string", "description": "User to assign to (for assignment actions).", "required": false}
+      ]
+    },
+    {
+      "id": "close_incident",
+      "name": "Close Incident",
+      "description": "Close an incident with a resolution action.",
+      "http_method": "POST",
+      "endpoint": "/incident/actions",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "incidentId", "type": "string", "description": "The incident ID to close.", "required": true},
+        {"name": "actionName", "type": "string", "description": "Set to 'Close Incident'.", "required": true},
+        {"name": "comment", "type": "string", "description": "Closing comment.", "required": false}
+      ]
+    },
+    {
+      "id": "add_comment",
+      "name": "Add Comment",
+      "description": "Add a comment to an incident.",
+      "http_method": "POST",
+      "endpoint": "/incident/actions",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "incidentId", "type": "string", "description": "The incident ID.", "required": true},
+        {"name": "actionName", "type": "string", "description": "Set to 'Add Comment'.", "required": true},
+        {"name": "comment", "type": "string", "description": "Comment text.", "required": true}
+      ]
+    },
+    {
+      "id": "get_incident_workflow",
+      "name": "Get Incident Workflow",
+      "description": "Retrieve the workflow/playbook status for an incident.",
+      "http_method": "GET",
+      "endpoint": "/incident/workflow",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "incidentId", "type": "string", "description": "The incident ID.", "required": true}
+      ]
+    },
+    {
+      "id": "list_watchlists",
+      "name": "List Watchlists",
+      "description": "Retrieve available watchlists for entity monitoring.",
+      "http_method": "GET",
+      "endpoint": "/watchlist/getWatchlists",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "add_to_watchlist",
+      "name": "Add to Watchlist",
+      "description": "Add an entity to a watchlist.",
+      "http_method": "POST",
+      "endpoint": "/watchlist/addEntityToWatchlist",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "watchlistName", "type": "string", "description": "Name of the watchlist.", "required": true},
+        {"name": "entityId", "type": "string", "description": "Entity identifier to add.", "required": true},
+        {"name": "entityType", "type": "string", "description": "Entity type.", "required": true},
+        {"name": "expirationDate", "type": "string", "description": "Expiration date for the watchlist entry.", "required": false}
+      ]
+    }
+  ]
+}

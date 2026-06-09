@@ -1,0 +1,144 @@
+{
+  "id": "shuffle_soar",
+  "name": "Shuffle SOAR",
+  "description": "Open-source security automation platform supporting OpenAPI-based integrations, visual workflow building, and automated security operations.",
+  "version": "1.0.0",
+  "category": "soar",
+  "vendor": "Shuffle",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header",
+    "token_prefix": "Bearer"
+  },
+  "base_url": "https://{host}/api/v1",
+  "actions": [
+    {
+      "id": "list_workflows",
+      "name": "List Workflows",
+      "description": "Retrieve a list of all workflows.",
+      "http_method": "GET",
+      "endpoint": "/workflows",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "get_workflow",
+      "name": "Get Workflow",
+      "description": "Retrieve details of a specific workflow.",
+      "http_method": "GET",
+      "endpoint": "/workflows/{workflow_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "workflow_id", "type": "string", "description": "The workflow ID.", "required": true}
+      ]
+    },
+    {
+      "id": "create_workflow",
+      "name": "Create Workflow",
+      "description": "Create a new workflow.",
+      "http_method": "POST",
+      "endpoint": "/workflows",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "name", "type": "string", "description": "Workflow name.", "required": true},
+        {"name": "description", "type": "string", "description": "Workflow description.", "required": false},
+        {"name": "actions", "type": "array", "description": "Array of action configurations.", "required": false},
+        {"name": "triggers", "type": "array", "description": "Array of trigger configurations.", "required": false},
+        {"name": "branches", "type": "array", "description": "Array of branch connections between actions.", "required": false}
+      ]
+    },
+    {
+      "id": "execute_workflow",
+      "name": "Execute Workflow",
+      "description": "Execute/trigger a workflow manually or via API.",
+      "http_method": "POST",
+      "endpoint": "/workflows/{workflow_id}/execute",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "workflow_id", "type": "string", "description": "The workflow ID to execute.", "required": true},
+        {"name": "execution_argument", "type": "string", "description": "Input argument/data for the execution.", "required": false},
+        {"name": "start", "type": "string", "description": "Starting action ID within the workflow.", "required": false}
+      ]
+    },
+    {
+      "id": "get_execution",
+      "name": "Get Execution",
+      "description": "Retrieve results and status of a workflow execution.",
+      "http_method": "GET",
+      "endpoint": "/streams/results/{execution_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "execution_id", "type": "string", "description": "The execution ID.", "required": true}
+      ]
+    },
+    {
+      "id": "list_executions",
+      "name": "List Executions",
+      "description": "Retrieve all executions for a workflow.",
+      "http_method": "GET",
+      "endpoint": "/workflows/{workflow_id}/executions",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "workflow_id", "type": "string", "description": "The workflow ID.", "required": true}
+      ]
+    },
+    {
+      "id": "list_apps",
+      "name": "List Apps",
+      "description": "Retrieve a list of available apps/integrations.",
+      "http_method": "GET",
+      "endpoint": "/apps",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "get_app",
+      "name": "Get App",
+      "description": "Retrieve details of a specific app.",
+      "http_method": "GET",
+      "endpoint": "/apps/{app_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "app_id", "type": "string", "description": "The app ID.", "required": true}
+      ]
+    },
+    {
+      "id": "update_workflow",
+      "name": "Update Workflow",
+      "description": "Update an existing workflow configuration.",
+      "http_method": "PUT",
+      "endpoint": "/workflows/{workflow_id}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "workflow_id", "type": "string", "description": "The workflow ID to update.", "required": true},
+        {"name": "name", "type": "string", "description": "Updated workflow name.", "required": false},
+        {"name": "description", "type": "string", "description": "Updated description.", "required": false},
+        {"name": "actions", "type": "array", "description": "Updated action configurations.", "required": false},
+        {"name": "triggers", "type": "array", "description": "Updated trigger configurations.", "required": false}
+      ]
+    },
+    {
+      "id": "delete_workflow",
+      "name": "Delete Workflow",
+      "description": "Delete a workflow.",
+      "http_method": "DELETE",
+      "endpoint": "/workflows/{workflow_id}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "workflow_id", "type": "string", "description": "The workflow ID to delete.", "required": true}
+      ]
+    }
+  ]
+}

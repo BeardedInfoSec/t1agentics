@@ -1,0 +1,164 @@
+{
+  "id": "gitlab",
+  "name": "GitLab",
+  "description": "This app integrates with a GitLab instance to perform various lookups and execute CI/CD pipelines",
+  "version": "2.0.1",
+  "category": "devops",
+  "vendor": "GitLab",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "http://{0}/api/v4",
+  "actions": [
+    {
+      "id": "list_users",
+      "name": "List Users",
+      "description": "List all the users in the GitLab instance",
+      "http_method": "GET",
+      "endpoint": "/users",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "list_projects",
+      "name": "List Projects",
+      "description": "List all the projects in the GitLab instance",
+      "http_method": "GET",
+      "endpoint": "/projects",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "list_branches",
+      "name": "List Branches",
+      "description": "List the branches of a GitLab project",
+      "http_method": "GET",
+      "endpoint": "/actions/list_branches",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "project_id",
+          "type": "number",
+          "description": "The ID of the GitLab project",
+          "required": true,
+          "contains": [
+            "gitlab project id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "create_trigger",
+      "name": "Create Trigger",
+      "description": "Create a new pipeline trigger for a GitLab project",
+      "http_method": "GET",
+      "endpoint": "/actions/create_trigger",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "project_id",
+          "type": "number",
+          "description": "The ID of the GitLab project",
+          "required": true,
+          "contains": [
+            "gitlab project id"
+          ]
+        },
+        {
+          "name": "trigger_name",
+          "type": "string",
+          "description": "The name of the new trigger",
+          "required": true,
+          "contains": [
+            "gitlab trigger"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_triggers",
+      "name": "List Triggers",
+      "description": "List the pipeline triggers of a GitLab project",
+      "http_method": "GET",
+      "endpoint": "/actions/list_triggers",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "project_id",
+          "type": "number",
+          "description": "The ID of the GitLab project",
+          "required": true,
+          "contains": [
+            "gitlab project id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "run_pipeline",
+      "name": "Run Pipeline",
+      "description": "Execute a pipeline on a particular branch of a project",
+      "http_method": "GET",
+      "endpoint": "/actions/run_pipeline",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "project_id",
+          "type": "number",
+          "description": "The ID of the GitLab project",
+          "required": true,
+          "contains": [
+            "gitlab project id"
+          ]
+        },
+        {
+          "name": "trigger_token",
+          "type": "string",
+          "description": "The trigger token required for executing a pipeline",
+          "required": true,
+          "contains": [
+            "gitlab trigger"
+          ]
+        },
+        {
+          "name": "branch",
+          "type": "string",
+          "description": "The branch containing the .gitlab-ci.yml file to run. Defaults to 'master'",
+          "required": true,
+          "default": "master",
+          "contains": [
+            "branch name"
+          ]
+        }
+      ],
+      "observable_type": "ip"
+    }
+  ],
+  "source_metadata": {
+    "original_name": "GitLab",
+    "original_type": "devops",
+    "converted_at": "2025-12-18T16:25:28.812654",
+    "source_version": "2.0.1"
+  }
+}

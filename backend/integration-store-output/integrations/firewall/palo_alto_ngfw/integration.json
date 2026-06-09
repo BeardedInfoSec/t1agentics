@@ -1,0 +1,284 @@
+{
+  "id": "palo_alto_ngfw",
+  "name": "Palo Alto Networks NGFW",
+  "description": "Next-Generation Firewall management via PAN-OS REST API for security policy, address objects, and traffic monitoring",
+  "version": "1.0.0",
+  "category": "firewall",
+  "vendor": "Palo Alto Networks",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "X-PAN-KEY",
+    "location": "query",
+    "query_param_name": "key"
+  },
+  "base_url": "https://{host}/restapi/v10.2",
+  "actions": [
+    {
+      "id": "list_security_rules",
+      "name": "List Security Rules",
+      "description": "Retrieve all security policy rules from the firewall",
+      "http_method": "GET",
+      "endpoint": "/Policies/SecurityRules",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "location",
+          "type": "string",
+          "description": "Configuration location (vsys, panorama, or device-group)",
+          "required": true
+        },
+        {
+          "name": "vsys",
+          "type": "string",
+          "description": "Virtual system name (e.g., vsys1)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_security_rule",
+      "name": "Get Security Rule",
+      "description": "Retrieve a specific security policy rule by name",
+      "http_method": "GET",
+      "endpoint": "/Policies/SecurityRules",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Name of the security rule to retrieve",
+          "required": true
+        },
+        {
+          "name": "location",
+          "type": "string",
+          "description": "Configuration location (vsys, panorama, or device-group)",
+          "required": true
+        },
+        {
+          "name": "vsys",
+          "type": "string",
+          "description": "Virtual system name (e.g., vsys1)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "create_security_rule",
+      "name": "Create Security Rule",
+      "description": "Create a new security policy rule on the firewall",
+      "http_method": "POST",
+      "endpoint": "/Policies/SecurityRules",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Name of the new security rule",
+          "required": true
+        },
+        {
+          "name": "location",
+          "type": "string",
+          "description": "Configuration location (vsys, panorama, or device-group)",
+          "required": true
+        },
+        {
+          "name": "vsys",
+          "type": "string",
+          "description": "Virtual system name (e.g., vsys1)",
+          "required": false
+        },
+        {
+          "name": "body",
+          "type": "object",
+          "description": "Rule configuration including source, destination, action, application, and service",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_address_objects",
+      "name": "List Address Objects",
+      "description": "Retrieve all address objects configured on the firewall",
+      "http_method": "GET",
+      "endpoint": "/Objects/Addresses",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "location",
+          "type": "string",
+          "description": "Configuration location (vsys, panorama, or device-group)",
+          "required": true
+        },
+        {
+          "name": "vsys",
+          "type": "string",
+          "description": "Virtual system name (e.g., vsys1)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "create_address_object",
+      "name": "Create Address Object",
+      "description": "Create a new address object (used for blocking IPs or defining network objects)",
+      "http_method": "POST",
+      "endpoint": "/Objects/Addresses",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Name of the address object",
+          "required": true
+        },
+        {
+          "name": "location",
+          "type": "string",
+          "description": "Configuration location (vsys, panorama, or device-group)",
+          "required": true
+        },
+        {
+          "name": "vsys",
+          "type": "string",
+          "description": "Virtual system name (e.g., vsys1)",
+          "required": false
+        },
+        {
+          "name": "body",
+          "type": "object",
+          "description": "Address object definition including ip-netmask, ip-range, or fqdn",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "delete_address_object",
+      "name": "Delete Address Object",
+      "description": "Delete an address object from the firewall configuration",
+      "http_method": "DELETE",
+      "endpoint": "/Objects/Addresses",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Name of the address object to delete",
+          "required": true
+        },
+        {
+          "name": "location",
+          "type": "string",
+          "description": "Configuration location (vsys, panorama, or device-group)",
+          "required": true
+        },
+        {
+          "name": "vsys",
+          "type": "string",
+          "description": "Virtual system name",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_address_groups",
+      "name": "List Address Groups",
+      "description": "Retrieve all address groups from the firewall",
+      "http_method": "GET",
+      "endpoint": "/Objects/AddressGroups",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "location",
+          "type": "string",
+          "description": "Configuration location (vsys, panorama, or device-group)",
+          "required": true
+        },
+        {
+          "name": "vsys",
+          "type": "string",
+          "description": "Virtual system name",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_traffic_logs",
+      "name": "Get Traffic Logs",
+      "description": "Retrieve traffic logs from the firewall for analysis",
+      "http_method": "GET",
+      "endpoint": "/Log/Traffic",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "direction",
+          "type": "string",
+          "description": "Log direction filter (forward or backward)",
+          "required": false
+        },
+        {
+          "name": "nlogs",
+          "type": "integer",
+          "description": "Number of log entries to return",
+          "required": false
+        },
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Filter query for log entries (e.g., addr.src in 10.0.0.0/8)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_threat_logs",
+      "name": "Get Threat Logs",
+      "description": "Retrieve threat prevention logs from the firewall",
+      "http_method": "GET",
+      "endpoint": "/Log/Threat",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "nlogs",
+          "type": "integer",
+          "description": "Number of log entries to return",
+          "required": false
+        },
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Filter query for threat log entries",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "commit_configuration",
+      "name": "Commit Configuration",
+      "description": "Commit pending configuration changes to the firewall",
+      "http_method": "POST",
+      "endpoint": "/Operations/CommitConfig",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "body",
+          "type": "object",
+          "description": "Commit options including force and partial commit settings",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

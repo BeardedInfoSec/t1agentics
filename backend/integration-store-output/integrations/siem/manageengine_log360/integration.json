@@ -1,0 +1,205 @@
+{
+  "id": "manageengine_log360",
+  "name": "ManageEngine Log360",
+  "description": "Integrates with ManageEngine Log360 for alert profile management, log search, incident investigation, and compliance reporting via the Log360 REST API",
+  "version": "1.0.0",
+  "category": "siem",
+  "vendor": "Zoho (ManageEngine)",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "AUTHTOKEN",
+    "location": "header"
+  },
+  "base_url": "https://{host}:8095/RestAPI",
+  "actions": [
+    {
+      "id": "get_alerts",
+      "name": "Get Alerts",
+      "description": "Retrieve security alerts from Log360",
+      "http_method": "POST",
+      "endpoint": "/v1/alerts",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "fromTime",
+          "type": "string",
+          "description": "Start time for alert retrieval (yyyy-MM-dd HH:mm:ss)",
+          "required": false
+        },
+        {
+          "name": "toTime",
+          "type": "string",
+          "description": "End time for alert retrieval",
+          "required": false
+        },
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Filter by severity (Critical, High, Medium, Low)",
+          "required": false
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Filter by alert status (New, Acknowledged, Resolved)",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum alerts to return",
+          "required": false,
+          "default": 50
+        }
+      ]
+    },
+    {
+      "id": "get_alert_profiles",
+      "name": "Get Alert Profiles",
+      "description": "Retrieve metadata about all alert profiles configured in Log360",
+      "http_method": "POST",
+      "endpoint": "/v1/meta/alert_profiles",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "search_logs",
+      "name": "Search Logs",
+      "description": "Execute a log search query in Log360",
+      "http_method": "POST",
+      "endpoint": "/v1/search",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Search query string",
+          "required": true
+        },
+        {
+          "name": "fromTime",
+          "type": "string",
+          "description": "Start time (yyyy-MM-dd HH:mm:ss)",
+          "required": true
+        },
+        {
+          "name": "toTime",
+          "type": "string",
+          "description": "End time (yyyy-MM-dd HH:mm:ss)",
+          "required": true
+        },
+        {
+          "name": "logSource",
+          "type": "string",
+          "description": "Log source to search in",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum results to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "get_incidents",
+      "name": "Get Incidents",
+      "description": "Retrieve security incidents from Log360",
+      "http_method": "GET",
+      "endpoint": "/v1/incidents",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "fromTime",
+          "type": "string",
+          "description": "Start time for incident retrieval",
+          "required": false
+        },
+        {
+          "name": "toTime",
+          "type": "string",
+          "description": "End time for incident retrieval",
+          "required": false
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Filter by incident status",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum incidents to return",
+          "required": false,
+          "default": 50
+        }
+      ]
+    },
+    {
+      "id": "update_alert",
+      "name": "Update Alert",
+      "description": "Update alert status or assign to an analyst",
+      "http_method": "PUT",
+      "endpoint": "/v1/alerts/{alertId}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "alertId",
+          "type": "string",
+          "description": "Alert ID to update",
+          "required": true
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "New status (Acknowledged, Resolved)",
+          "required": false
+        },
+        {
+          "name": "assignee",
+          "type": "string",
+          "description": "User to assign alert to",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_compliance_reports",
+      "name": "Get Compliance Reports",
+      "description": "Retrieve compliance report data from Log360",
+      "http_method": "GET",
+      "endpoint": "/v1/reports/compliance",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "standard",
+          "type": "string",
+          "description": "Compliance standard (PCI-DSS, HIPAA, SOX, GDPR, FISMA)",
+          "required": false
+        },
+        {
+          "name": "fromTime",
+          "type": "string",
+          "description": "Start time for the report",
+          "required": false
+        },
+        {
+          "name": "toTime",
+          "type": "string",
+          "description": "End time for the report",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

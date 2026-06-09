@@ -1,0 +1,222 @@
+{
+  "id": "recorded_future",
+  "name": "Recorded Future",
+  "description": "Integrate with Recorded Future to enrich indicators with risk scores, evidence, and threat context from the world's largest intelligence collection",
+  "version": "1.0.0",
+  "category": "threat_intel",
+  "vendor": "Recorded Future (Mastercard)",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "X-RFToken",
+    "location": "header"
+  },
+  "base_url": "https://api.recordedfuture.com/v2",
+  "actions": [
+    {
+      "id": "lookup_ip",
+      "name": "Lookup IP Address",
+      "description": "Enrich an IP address with Recorded Future risk score, risk rules, and threat context",
+      "http_method": "GET",
+      "endpoint": "/ip/{value}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "value",
+          "type": "string",
+          "description": "IP address to look up",
+          "required": true,
+          "contains": ["ip"]
+        },
+        {
+          "name": "fields",
+          "type": "string",
+          "description": "Comma-separated list of fields to return (e.g. intelCard,risk,sightings,threatLists,analystNotes)",
+          "required": false
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "lookup_domain",
+      "name": "Lookup Domain",
+      "description": "Enrich a domain with Recorded Future risk score, risk rules, and threat context",
+      "http_method": "GET",
+      "endpoint": "/domain/{value}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "value",
+          "type": "string",
+          "description": "Domain to look up",
+          "required": true,
+          "contains": ["domain"]
+        },
+        {
+          "name": "fields",
+          "type": "string",
+          "description": "Comma-separated list of fields to return",
+          "required": false
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "lookup_hash",
+      "name": "Lookup File Hash",
+      "description": "Enrich a file hash with Recorded Future risk score, malware context, and threat associations",
+      "http_method": "GET",
+      "endpoint": "/hash/{value}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "value",
+          "type": "string",
+          "description": "File hash (MD5, SHA-1, or SHA-256) to look up",
+          "required": true,
+          "contains": ["hash", "md5", "sha1", "sha256"]
+        },
+        {
+          "name": "fields",
+          "type": "string",
+          "description": "Comma-separated list of fields to return",
+          "required": false
+        }
+      ],
+      "observable_type": "hash"
+    },
+    {
+      "id": "lookup_url",
+      "name": "Lookup URL",
+      "description": "Enrich a URL with Recorded Future risk score and threat context",
+      "http_method": "GET",
+      "endpoint": "/url/{value}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "value",
+          "type": "string",
+          "description": "URL to look up (URL-encoded)",
+          "required": true,
+          "contains": ["url"]
+        },
+        {
+          "name": "fields",
+          "type": "string",
+          "description": "Comma-separated list of fields to return",
+          "required": false
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "lookup_vulnerability",
+      "name": "Lookup Vulnerability",
+      "description": "Enrich a CVE with Recorded Future risk score, exploit status, and trending intelligence",
+      "http_method": "GET",
+      "endpoint": "/vulnerability/{value}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "value",
+          "type": "string",
+          "description": "CVE ID to look up (e.g. CVE-2021-44228)",
+          "required": true,
+          "contains": ["cve"]
+        },
+        {
+          "name": "fields",
+          "type": "string",
+          "description": "Comma-separated list of fields to return",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "search_alerts",
+      "name": "Search Alerts",
+      "description": "Search Recorded Future alerts triggered by configured alert rules",
+      "http_method": "GET",
+      "endpoint": "/alert/search",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "triggered",
+          "type": "string",
+          "description": "Time range for triggered alerts (e.g. [2024-01-01T00:00:00.000Z,])",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of results to return",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "lookup_malware",
+      "name": "Lookup Malware",
+      "description": "Retrieve intelligence on a malware family from Recorded Future",
+      "http_method": "GET",
+      "endpoint": "/malware/{value}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "value",
+          "type": "string",
+          "description": "Malware name or Recorded Future entity ID",
+          "required": true
+        },
+        {
+          "name": "fields",
+          "type": "string",
+          "description": "Comma-separated list of fields to return",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "search_indicators",
+      "name": "Search Indicators",
+      "description": "Search for indicators matching specified risk rules and thresholds in Recorded Future",
+      "http_method": "GET",
+      "endpoint": "/indicator/search",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "riskScore",
+          "type": "string",
+          "description": "Minimum risk score filter (e.g. [65,100])",
+          "required": false
+        },
+        {
+          "name": "riskRule",
+          "type": "string",
+          "description": "Risk rule to filter by",
+          "required": false
+        },
+        {
+          "name": "list",
+          "type": "string",
+          "description": "Threat list ID to filter by",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of results (default 10, max 1000)",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,176 @@
+{
+  "id": "randori",
+  "name": "IBM Security Randori Recon",
+  "description": "Continuous attack surface management that discovers external-facing assets from an adversary's perspective, providing target temptation scoring and automated asset attribution",
+  "version": "1.0.0",
+  "category": "asm",
+  "vendor": "IBM",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "location": "header"
+  },
+  "base_url": "https://app.randori.io/api/v1",
+  "actions": [
+    {
+      "id": "list_targets",
+      "name": "List Targets",
+      "description": "Retrieve discovered external targets with temptation scores indicating attacker attractiveness",
+      "http_method": "GET",
+      "endpoint": "/targets",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "sort",
+          "type": "string",
+          "description": "Sort field (e.g., '-target_temptation' for descending temptation score)",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "description": "Maximum number of results to return",
+          "required": false
+        },
+        {
+          "name": "offset",
+          "type": "integer",
+          "description": "Number of results to skip for pagination",
+          "required": false
+        },
+        {
+          "name": "q",
+          "type": "string",
+          "description": "Query filter for target search",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_target",
+      "name": "Get Target Details",
+      "description": "Retrieve detailed information about a specific target including services, technologies, and attack paths",
+      "http_method": "GET",
+      "endpoint": "/targets/{target_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "target_id",
+          "type": "string",
+          "description": "The unique identifier of the target",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_hostnames",
+      "name": "List Hostnames",
+      "description": "Retrieve discovered hostnames and domains in the attack surface",
+      "http_method": "GET",
+      "endpoint": "/hostnames",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "limit",
+          "type": "integer",
+          "description": "Maximum number of results to return",
+          "required": false
+        },
+        {
+          "name": "offset",
+          "type": "integer",
+          "description": "Number of results to skip for pagination",
+          "required": false
+        },
+        {
+          "name": "q",
+          "type": "string",
+          "description": "Query filter for hostname search",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_ips",
+      "name": "List IP Addresses",
+      "description": "Retrieve discovered IP addresses associated with the external attack surface",
+      "http_method": "GET",
+      "endpoint": "/ips",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "limit",
+          "type": "integer",
+          "description": "Maximum number of results to return",
+          "required": false
+        },
+        {
+          "name": "offset",
+          "type": "integer",
+          "description": "Number of results to skip for pagination",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_services",
+      "name": "List Services",
+      "description": "Retrieve discovered services running on external assets",
+      "http_method": "GET",
+      "endpoint": "/services",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "limit",
+          "type": "integer",
+          "description": "Maximum number of results to return",
+          "required": false
+        },
+        {
+          "name": "q",
+          "type": "string",
+          "description": "Query filter for service search",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_risk_score",
+      "name": "Get Risk Score",
+      "description": "Retrieve the organization's overall attack surface risk score",
+      "http_method": "GET",
+      "endpoint": "/stats/risk",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "list_findings",
+      "name": "List Findings",
+      "description": "Retrieve security findings including exposures, misconfigurations, and vulnerabilities",
+      "http_method": "GET",
+      "endpoint": "/findings",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Filter by finding severity",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "description": "Maximum number of results to return",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

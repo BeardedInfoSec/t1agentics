@@ -1,0 +1,97 @@
+{
+  "id": "splunk_oncall",
+  "name": "Splunk On-Call",
+  "description": "Integrates with Splunk On-Call (formerly VictorOps) REST API for incident management, on-call scheduling, and alert routing",
+  "version": "1.0.0",
+  "category": "ticketing",
+  "vendor": "Splunk (Cisco)",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "X-VO-Api-Id",
+    "location": "header"
+  },
+  "base_url": "https://api.victorops.com/api-public/v1",
+  "actions": [
+    {
+      "id": "create_incident",
+      "name": "Create Incident",
+      "description": "Create a new incident in Splunk On-Call",
+      "http_method": "POST",
+      "endpoint": "/incidents",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "summary", "type": "string", "description": "Incident summary", "required": true},
+        {"name": "details", "type": "string", "description": "Detailed incident description", "required": false},
+        {"name": "userName", "type": "string", "description": "Username creating the incident", "required": true},
+        {"name": "targets", "type": "string", "description": "JSON array of escalation policy targets", "required": false},
+        {"name": "isMultiResponder", "type": "boolean", "description": "Enable multi-responder mode", "required": false, "default": false}
+      ]
+    },
+    {
+      "id": "get_incident",
+      "name": "Get Incident",
+      "description": "Retrieve details of a specific incident",
+      "http_method": "GET",
+      "endpoint": "/incidents/{incident_number}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "incident_number", "type": "string", "description": "Incident number", "required": true}
+      ]
+    },
+    {
+      "id": "list_incidents",
+      "name": "List Incidents",
+      "description": "List current and recent incidents",
+      "http_method": "GET",
+      "endpoint": "/incidents",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "currentPhase", "type": "string", "description": "Filter by phase (triggered, acknowledged, resolved)", "required": false}
+      ]
+    },
+    {
+      "id": "acknowledge_incident",
+      "name": "Acknowledge Incident",
+      "description": "Acknowledge one or more incidents",
+      "http_method": "PATCH",
+      "endpoint": "/incidents/ack",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "incidentNames", "type": "string", "description": "JSON array of incident numbers to acknowledge", "required": true},
+        {"name": "userName", "type": "string", "description": "Username acknowledging the incidents", "required": true},
+        {"name": "message", "type": "string", "description": "Acknowledgement message", "required": false}
+      ]
+    },
+    {
+      "id": "resolve_incident",
+      "name": "Resolve Incident",
+      "description": "Resolve one or more incidents",
+      "http_method": "PATCH",
+      "endpoint": "/incidents/resolve",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "incidentNames", "type": "string", "description": "JSON array of incident numbers to resolve", "required": true},
+        {"name": "userName", "type": "string", "description": "Username resolving the incidents", "required": true},
+        {"name": "message", "type": "string", "description": "Resolution message", "required": false}
+      ]
+    },
+    {
+      "id": "get_oncall",
+      "name": "Get On-Call",
+      "description": "Get the current on-call users for a team",
+      "http_method": "GET",
+      "endpoint": "/oncall/current",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "teamSlug", "type": "string", "description": "Team slug to filter on-call for", "required": false}
+      ]
+    }
+  ]
+}

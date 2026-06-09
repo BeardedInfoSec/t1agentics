@@ -1,0 +1,143 @@
+{
+  "id": "digital_guardian",
+  "name": "Digital Guardian",
+  "description": "Integrates with Fortra Digital Guardian Analytics and Reporting Cloud (ARC) REST API for exporting events, alerts, and data classification information",
+  "version": "1.0.0",
+  "category": "dlp",
+  "vendor": "Fortra",
+  "auth_type": "oauth2_client",
+  "auth_config": {
+    "type": "oauth2_client",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "https://{tenant}.digitalguardian.com/rest/api/v1",
+  "actions": [
+    {
+      "id": "export_events",
+      "name": "Export Events",
+      "description": "Export DLP events from ARC using the Export API with bookmark-based pagination for incremental data retrieval",
+      "http_method": "GET",
+      "endpoint": "/export/{exportProfile}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "exportProfile",
+          "type": "string",
+          "description": "Name of the export profile to use for data retrieval",
+          "required": true
+        },
+        {
+          "name": "format",
+          "type": "string",
+          "description": "Export format (json, json_table, json_flattened_table)",
+          "required": false,
+          "default": "json"
+        },
+        {
+          "name": "bookmark",
+          "type": "string",
+          "description": "Bookmark value to resume export from a previous position",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "acknowledge_export",
+      "name": "Acknowledge Export",
+      "description": "Advance the bookmark value after successfully processing exported data to prevent re-retrieval",
+      "http_method": "POST",
+      "endpoint": "/export/{exportProfile}/ack",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "exportProfile",
+          "type": "string",
+          "description": "Name of the export profile",
+          "required": true
+        },
+        {
+          "name": "bookmark",
+          "type": "string",
+          "description": "Bookmark value to acknowledge",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_alerts",
+      "name": "List Alerts",
+      "description": "Retrieve DLP alerts from the ARC platform with optional filtering",
+      "http_method": "GET",
+      "endpoint": "/alerts",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "startTime",
+          "type": "string",
+          "description": "Start time for alert query (ISO 8601 format)",
+          "required": false
+        },
+        {
+          "name": "endTime",
+          "type": "string",
+          "description": "End time for alert query (ISO 8601 format)",
+          "required": false
+        },
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Filter by alert severity (critical, high, medium, low)",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of alerts to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "get_alert_details",
+      "name": "Get Alert Details",
+      "description": "Retrieve detailed information about a specific DLP alert",
+      "http_method": "GET",
+      "endpoint": "/alerts/{alertId}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "alertId",
+          "type": "string",
+          "description": "Unique identifier of the alert",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_policies",
+      "name": "List Policies",
+      "description": "Retrieve all DLP policies configured in the Digital Guardian platform",
+      "http_method": "GET",
+      "endpoint": "/policies",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "list_watchlists",
+      "name": "List Watchlists",
+      "description": "Retrieve configured watchlists used for data classification and monitoring",
+      "http_method": "GET",
+      "endpoint": "/watchlists",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    }
+  ]
+}

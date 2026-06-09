@@ -1,0 +1,690 @@
+{
+  "id": "google_vault",
+  "name": "Google Vault",
+  "description": "This app supports the actions to perform eDiscovery and provide a compliance solution for G Suite, allowing customers to retain, hold, search, and export their data",
+  "version": "2.1.2",
+  "category": "ticketing",
+  "vendor": "Google",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "list_matters",
+      "name": "List Matters",
+      "description": "List all open, closed, and deleted matters",
+      "http_method": "GET",
+      "endpoint": "/actions/list_matters",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "state",
+          "type": "string",
+          "description": "Type of matters to be retrieved",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of matters to return",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "create_matter",
+      "name": "Create Matter",
+      "description": "Create a matter with OPEN state",
+      "http_method": "GET",
+      "endpoint": "/actions/create_matter",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Matter name",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Matter description",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_matter",
+      "name": "Get Matter",
+      "description": "Fetch information for the given matter ID",
+      "http_method": "GET",
+      "endpoint": "/actions/get_matter",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "matter_id",
+          "type": "string",
+          "description": "Matter ID",
+          "required": true,
+          "contains": [
+            "gsvault matter id"
+          ]
+        },
+        {
+          "name": "view",
+          "type": "string",
+          "description": "View of matter",
+          "required": false,
+          "default": "BASIC"
+        }
+      ]
+    },
+    {
+      "id": "close_matter",
+      "name": "Close Matter",
+      "description": "Move a matter to the CLOSED state",
+      "http_method": "GET",
+      "endpoint": "/actions/close_matter",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "matter_id",
+          "type": "string",
+          "description": "Matter ID",
+          "required": true,
+          "contains": [
+            "gsvault matter id"
+          ]
+        },
+        {
+          "name": "delete_all_holds",
+          "type": "boolean",
+          "description": "Delete all holds",
+          "required": false,
+          "default": true
+        }
+      ]
+    },
+    {
+      "id": "delete_matter",
+      "name": "Delete Matter",
+      "description": "Move a matter to the DELETED state",
+      "http_method": "GET",
+      "endpoint": "/actions/delete_matter",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "matter_id",
+          "type": "string",
+          "description": "Matter ID",
+          "required": true,
+          "contains": [
+            "gsvault matter id"
+          ]
+        },
+        {
+          "name": "delete_all_holds",
+          "type": "boolean",
+          "description": "Delete all holds",
+          "required": false,
+          "default": true
+        }
+      ]
+    },
+    {
+      "id": "reopen_matter",
+      "name": "Reopen Matter",
+      "description": "Reopens a matter to move it from CLOSED to OPEN state",
+      "http_method": "GET",
+      "endpoint": "/actions/reopen_matter",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "matter_id",
+          "type": "string",
+          "description": "Matter ID",
+          "required": true,
+          "contains": [
+            "gsvault matter id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "restore_matter",
+      "name": "Restore Matter",
+      "description": "Restores a matter to move it from DELETED to CLOSED state",
+      "http_method": "GET",
+      "endpoint": "/actions/restore_matter",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "matter_id",
+          "type": "string",
+          "description": "Matter ID",
+          "required": true,
+          "contains": [
+            "gsvault matter id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_holds",
+      "name": "List Holds",
+      "description": "List all holds for the given matter ID",
+      "http_method": "GET",
+      "endpoint": "/actions/list_holds",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "matter_id",
+          "type": "string",
+          "description": "Matter ID",
+          "required": true,
+          "contains": [
+            "gsvault matter id"
+          ]
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of holds to return",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "create_hold",
+      "name": "Create Hold",
+      "description": "Create a hold within the given matter ID",
+      "http_method": "GET",
+      "endpoint": "/actions/create_hold",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Hold name",
+          "required": true
+        },
+        {
+          "name": "matter_id",
+          "type": "string",
+          "description": "Matter ID",
+          "required": true,
+          "contains": [
+            "gsvault matter id"
+          ]
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Type of the hold",
+          "required": true
+        },
+        {
+          "name": "search_method",
+          "type": "string",
+          "description": "Scope of search",
+          "required": true
+        },
+        {
+          "name": "org_unit_id",
+          "type": "string",
+          "description": "Organization ID",
+          "required": false,
+          "contains": [
+            "gsvault org unit id"
+          ]
+        },
+        {
+          "name": "user_email_ids",
+          "type": "string",
+          "description": "Comma-separated list of user emails",
+          "required": false,
+          "contains": [
+            "gsvault user email ids",
+            "email"
+          ]
+        },
+        {
+          "name": "group_account_ids",
+          "type": "string",
+          "description": "Comma-separated list of group IDs",
+          "required": false,
+          "contains": [
+            "gsvault group account ids"
+          ]
+        },
+        {
+          "name": "terms",
+          "type": "string",
+          "description": "Conditions to be met for a message to be covered by this hold",
+          "required": false
+        },
+        {
+          "name": "start_time",
+          "type": "string",
+          "description": "Start time (%Y-%m-%dT%H:%M:%SZ)",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "string",
+          "description": "End time (%Y-%m-%dT%H:%M:%SZ)",
+          "required": false
+        },
+        {
+          "name": "include_shared_drive_files",
+          "type": "boolean",
+          "description": "Include files from associated shared drives",
+          "required": false,
+          "default": false
+        }
+      ]
+    },
+    {
+      "id": "delete_hold",
+      "name": "Delete Hold",
+      "description": "Delete a hold",
+      "http_method": "GET",
+      "endpoint": "/actions/delete_hold",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "matter_id",
+          "type": "string",
+          "description": "Matter ID",
+          "required": true,
+          "contains": [
+            "gsvault matter id"
+          ]
+        },
+        {
+          "name": "hold_id",
+          "type": "string",
+          "description": "Hold ID",
+          "required": true,
+          "contains": [
+            "gsvault hold id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "remove_held_account",
+      "name": "Remove Held Account",
+      "description": "Remove held account from the given hold ID",
+      "http_method": "GET",
+      "endpoint": "/actions/remove_held_account",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "matter_id",
+          "type": "string",
+          "description": "Matter ID",
+          "required": true,
+          "contains": [
+            "gsvault matter id"
+          ]
+        },
+        {
+          "name": "hold_id",
+          "type": "string",
+          "description": "Hold ID",
+          "required": true,
+          "contains": [
+            "gsvault hold id"
+          ]
+        },
+        {
+          "name": "account_id",
+          "type": "string",
+          "description": "User or group account ID",
+          "required": true,
+          "contains": [
+            "gsvault user account id",
+            "gsvault group account id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "add_held_account",
+      "name": "Add Held Account",
+      "description": "Add held account to the given hold ID",
+      "http_method": "GET",
+      "endpoint": "/actions/add_held_account",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "matter_id",
+          "type": "string",
+          "description": "Matter ID",
+          "required": true,
+          "contains": [
+            "gsvault matter id"
+          ]
+        },
+        {
+          "name": "hold_id",
+          "type": "string",
+          "description": "Hold ID",
+          "required": true,
+          "contains": [
+            "gsvault hold id"
+          ]
+        },
+        {
+          "name": "account_id",
+          "type": "string",
+          "description": "User or group account ID",
+          "required": true,
+          "contains": [
+            "gsvault user account id",
+            "gsvault group account id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_exports",
+      "name": "List Exports",
+      "description": "List all exports for the given matter ID",
+      "http_method": "GET",
+      "endpoint": "/actions/list_exports",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "matter_id",
+          "type": "string",
+          "description": "Matter ID",
+          "required": true,
+          "contains": [
+            "gsvault matter id"
+          ]
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of exports to return",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_export",
+      "name": "Get Export",
+      "description": "Get information of an export from the given matter ID",
+      "http_method": "GET",
+      "endpoint": "/actions/get_export",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "matter_id",
+          "type": "string",
+          "description": "Matter ID",
+          "required": true,
+          "contains": [
+            "gsvault matter id"
+          ]
+        },
+        {
+          "name": "export_id",
+          "type": "string",
+          "description": "Export ID",
+          "required": true,
+          "contains": [
+            "gsvault export id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "create_export",
+      "name": "Create Export",
+      "description": "Perform a search based on the provided criteria and create an export for the search results",
+      "http_method": "GET",
+      "endpoint": "/actions/create_export",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Export name",
+          "required": true
+        },
+        {
+          "name": "matter_id",
+          "type": "string",
+          "description": "Matter ID",
+          "required": true,
+          "contains": [
+            "gsvault matter id"
+          ]
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Type of export",
+          "required": true
+        },
+        {
+          "name": "data_scope",
+          "type": "string",
+          "description": "Scope of data to be exported",
+          "required": true
+        },
+        {
+          "name": "search_method",
+          "type": "string",
+          "description": "Scope of search",
+          "required": true
+        },
+        {
+          "name": "org_unit_id",
+          "type": "string",
+          "description": "Organization ID",
+          "required": false,
+          "contains": [
+            "gsvault org unit id"
+          ]
+        },
+        {
+          "name": "email_ids",
+          "type": "string",
+          "description": "Comma-separated list of email IDs (user or group)",
+          "required": false,
+          "contains": [
+            "gsvault user email ids",
+            "gsvault group email ids",
+            "email"
+          ]
+        },
+        {
+          "name": "shared_drive_ids",
+          "type": "string",
+          "description": "Comma-separated list of shared drive IDs",
+          "required": false,
+          "contains": [
+            "gsvault shared drive ids"
+          ]
+        },
+        {
+          "name": "start_time",
+          "type": "string",
+          "description": "Start time (%Y-%m-%dT%H:%M:%SZ)",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "string",
+          "description": "End time (%Y-%m-%dT%H:%M:%SZ)",
+          "required": false
+        },
+        {
+          "name": "time_zone",
+          "type": "string",
+          "description": "Time zone for the export",
+          "required": false
+        },
+        {
+          "name": "terms",
+          "type": "string",
+          "description": "Terms",
+          "required": false
+        },
+        {
+          "name": "version_date",
+          "type": "string",
+          "description": "Version date (%Y-%m-%dT%H:%M:%SZ)",
+          "required": false
+        },
+        {
+          "name": "data_region",
+          "type": "string",
+          "description": "Data region",
+          "required": false
+        },
+        {
+          "name": "exclude_drafts",
+          "type": "boolean",
+          "description": "Exclude drafts",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "export_format",
+          "type": "string",
+          "description": "Export format",
+          "required": false
+        },
+        {
+          "name": "show_confidential_mode_content",
+          "type": "boolean",
+          "description": "Show confidential mode content",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "include_shared_drives",
+          "type": "boolean",
+          "description": "Include results from shared drives",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "include_access_info",
+          "type": "boolean",
+          "description": "Include access level information for users with indirect access to files (this may increase export duration)",
+          "required": false,
+          "default": false
+        }
+      ]
+    },
+    {
+      "id": "list_organizations",
+      "name": "List Organizations",
+      "description": "List all organizations",
+      "http_method": "GET",
+      "endpoint": "/actions/list_organizations",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of organizations to return",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_groups",
+      "name": "List Groups",
+      "description": "List all groups of a domain",
+      "http_method": "GET",
+      "endpoint": "/actions/list_groups",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "domain",
+          "type": "string",
+          "description": "Domain name",
+          "required": true,
+          "contains": [
+            "domain"
+          ]
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of groups to return",
+          "required": false
+        }
+      ],
+      "observable_type": "domain"
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Google Vault",
+    "original_type": "ticketing",
+    "converted_at": "2025-12-18T16:25:28.831657",
+    "source_version": "2.1.2"
+  }
+}

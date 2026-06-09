@@ -1,0 +1,181 @@
+{
+  "id": "trend_micro_cloud_one",
+  "name": "Trend Micro Cloud One",
+  "description": "Comprehensive cloud security platform including Conformity (CSPM), Workload Security (CWPP), Container Security, and File Storage Security via REST APIs",
+  "version": "1.0.0",
+  "category": "cloud_security",
+  "vendor": "Trend Micro",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "prefix": "ApiKey",
+    "location": "header",
+    "note": "Use API key from Cloud One console with api-version header set to v1"
+  },
+  "base_url": "https://conformity.{region}.cloudone.trendmicro.com/api",
+  "actions": [
+    {
+      "id": "list_checks",
+      "name": "List Checks",
+      "description": "Retrieve compliance checks across cloud accounts with severity and category filters",
+      "http_method": "GET",
+      "endpoint": "/checks",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "filter[riskLevels]",
+          "type": "string",
+          "description": "Comma-separated risk levels (EXTREME, VERY_HIGH, HIGH, MEDIUM, LOW)",
+          "required": false
+        },
+        {
+          "name": "filter[statuses]",
+          "type": "string",
+          "description": "Comma-separated statuses (SUCCESS, FAILURE)",
+          "required": false
+        },
+        {
+          "name": "filter[accountIds]",
+          "type": "string",
+          "description": "Comma-separated cloud account IDs",
+          "required": false
+        },
+        {
+          "name": "filter[categories]",
+          "type": "string",
+          "description": "Comma-separated categories (security, cost-optimisation, reliability, performance-efficiency, operational-excellence)",
+          "required": false
+        },
+        {
+          "name": "page[size]",
+          "type": "number",
+          "description": "Number of results per page (max 1000)",
+          "required": false,
+          "default": 200
+        },
+        {
+          "name": "page[number]",
+          "type": "number",
+          "description": "Page number for pagination",
+          "required": false,
+          "default": 0
+        }
+      ]
+    },
+    {
+      "id": "get_check_details",
+      "name": "Get Check Details",
+      "description": "Get detailed information about a specific compliance check",
+      "http_method": "GET",
+      "endpoint": "/checks/{checkId}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "checkId",
+          "type": "string",
+          "description": "The unique identifier of the check",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_accounts",
+      "name": "List Accounts",
+      "description": "List all cloud accounts registered in Cloud One Conformity",
+      "http_method": "GET",
+      "endpoint": "/accounts",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "get_account_compliance",
+      "name": "Get Account Compliance",
+      "description": "Retrieve compliance summary and score for a specific cloud account",
+      "http_method": "GET",
+      "endpoint": "/accounts/{accountId}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "accountId",
+          "type": "string",
+          "description": "Cloud account ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_profiles",
+      "name": "List Profiles",
+      "description": "List compliance profiles and their associated rules",
+      "http_method": "GET",
+      "endpoint": "/profiles",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "list_workload_computers",
+      "name": "List Workload Computers",
+      "description": "List protected workload computers and their security module status",
+      "http_method": "GET",
+      "endpoint": "/computers",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "expand",
+          "type": "string",
+          "description": "Expand additional details (e.g., securityProfile, computerSettings)",
+          "required": false
+        },
+        {
+          "name": "overrides",
+          "type": "boolean",
+          "description": "Include override information",
+          "required": false,
+          "default": false
+        }
+      ]
+    },
+    {
+      "id": "suppress_check",
+      "name": "Suppress Check",
+      "description": "Suppress a specific compliance check finding with a note",
+      "http_method": "PATCH",
+      "endpoint": "/checks/{checkId}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "checkId",
+          "type": "string",
+          "description": "The unique identifier of the check to suppress",
+          "required": true
+        },
+        {
+          "name": "suppressed",
+          "type": "boolean",
+          "description": "Whether to suppress the check",
+          "required": true
+        },
+        {
+          "name": "suppressedUntil",
+          "type": "number",
+          "description": "Epoch timestamp for when suppression expires",
+          "required": false
+        },
+        {
+          "name": "note",
+          "type": "string",
+          "description": "Reason for suppression",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

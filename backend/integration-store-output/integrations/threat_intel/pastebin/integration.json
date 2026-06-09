@@ -1,0 +1,96 @@
+{
+  "id": "pastebin",
+  "name": "PasteBin",
+  "description": "This app integrates with PasteBin to perform investigative and generic actions",
+  "version": "2.0.4",
+  "category": "threat_intel",
+  "vendor": "PasteBin",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "get_data",
+      "name": "Get Data",
+      "description": "Download, parse, and save a paste from PasteBin",
+      "http_method": "GET",
+      "endpoint": "/actions/get_data",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "paste_url",
+          "type": "string",
+          "description": "PasteBin URL to fetch the data",
+          "required": true,
+          "contains": [
+            "url"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "create_paste",
+      "name": "Create Paste",
+      "description": "Create a paste from PasteBin",
+      "http_method": "GET",
+      "endpoint": "/actions/create_paste",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "paste_text",
+          "type": "string",
+          "description": "PasteBin text to paste",
+          "required": true
+        },
+        {
+          "name": "paste_title",
+          "type": "string",
+          "description": "PasteBin title to paste",
+          "required": false
+        },
+        {
+          "name": "paste_format",
+          "type": "string",
+          "description": "PasteBin format to paste",
+          "required": false
+        },
+        {
+          "name": "paste_exposure",
+          "type": "string",
+          "description": "PasteBin paste to be marked as public, private, or unlisted",
+          "required": false,
+          "default": "Public"
+        },
+        {
+          "name": "paste_expiration",
+          "type": "string",
+          "description": "PasteBin paste expiration time",
+          "required": false,
+          "default": "Never"
+        },
+        {
+          "name": "paste_as_user",
+          "type": "boolean",
+          "description": "Paste as user",
+          "required": false
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "PasteBin",
+    "original_type": "information",
+    "converted_at": "2025-12-18T16:25:29.030061",
+    "source_version": "2.0.4"
+  }
+}

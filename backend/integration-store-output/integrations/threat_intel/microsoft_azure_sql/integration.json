@@ -1,0 +1,111 @@
+{
+  "id": "microsoft_azure_sql",
+  "name": "Microsoft Azure SQL",
+  "description": "This app supports investigative actions against a Microsoft Azure SQL Server",
+  "version": "3.0.3",
+  "category": "threat_intel",
+  "vendor": "Microsoft",
+  "auth_type": "basic_auth",
+  "auth_config": {
+    "type": "basic_auth",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "list_tables",
+      "name": "List Tables",
+      "description": "Lists all the tables in the database connected to your asset",
+      "http_method": "GET",
+      "endpoint": "/actions/list_tables",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "table_schema",
+          "type": "string",
+          "description": "Returns the tables only belonging to this schema",
+          "required": false,
+          "contains": [
+            "azuresql table schema"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_columns",
+      "name": "List Columns",
+      "description": "Lists all the columns of a table existing within the database connected to your asset",
+      "http_method": "GET",
+      "endpoint": "/actions/list_columns",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "table_name",
+          "type": "string",
+          "description": "Returns the columns belonging to this table",
+          "required": true,
+          "contains": [
+            "azuresql table name"
+          ]
+        },
+        {
+          "name": "table_schema",
+          "type": "string",
+          "description": "Table Schema",
+          "required": false,
+          "contains": [
+            "azuresql table schema"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "run_query",
+      "name": "Run Query",
+      "description": "Run a query against a table or tables in the database",
+      "http_method": "GET",
+      "endpoint": "/actions/run_query",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Query string",
+          "required": true,
+          "contains": [
+            "sql query"
+          ]
+        },
+        {
+          "name": "format_vars",
+          "type": "string",
+          "description": "Comma separated list of variables",
+          "required": false
+        },
+        {
+          "name": "no_commit",
+          "type": "boolean",
+          "description": "Do not commit changes to the Database",
+          "required": false,
+          "default": false
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Microsoft Azure SQL",
+    "original_type": "information",
+    "converted_at": "2025-12-18T16:25:28.932549",
+    "source_version": "3.0.3"
+  }
+}

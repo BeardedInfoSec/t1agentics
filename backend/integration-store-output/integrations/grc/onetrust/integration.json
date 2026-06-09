@@ -1,0 +1,100 @@
+{
+  "id": "onetrust",
+  "name": "OneTrust",
+  "description": "Integrates with OneTrust REST API for privacy compliance, risk assessments, consent management, and data governance operations",
+  "version": "1.0.0",
+  "category": "grc",
+  "vendor": "OneTrust",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "ApiKey",
+    "location": "header"
+  },
+  "base_url": "https://{hostname}/api",
+  "actions": [
+    {
+      "id": "list_assessments",
+      "name": "List Assessments",
+      "description": "List privacy impact assessments and risk assessments",
+      "http_method": "GET",
+      "endpoint": "/assessment/v2/assessments",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "page", "type": "number", "description": "Page number (0-indexed)", "required": false, "default": 0},
+        {"name": "size", "type": "number", "description": "Results per page", "required": false, "default": 20},
+        {"name": "status", "type": "string", "description": "Filter by status (IN_PROGRESS, UNDER_REVIEW, APPROVED, REJECTED)", "required": false}
+      ]
+    },
+    {
+      "id": "get_assessment",
+      "name": "Get Assessment",
+      "description": "Retrieve details of a specific assessment including questions and responses",
+      "http_method": "GET",
+      "endpoint": "/assessment/v2/assessments/{assessment_id}/export",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "assessment_id", "type": "string", "description": "Assessment ID", "required": true},
+        {"name": "excludeSkippedQuestions", "type": "boolean", "description": "Exclude skipped questions from export", "required": false, "default": false}
+      ]
+    },
+    {
+      "id": "list_risks",
+      "name": "List Risks",
+      "description": "List identified risks and their treatment plans",
+      "http_method": "GET",
+      "endpoint": "/risk/v2/risks",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "page", "type": "number", "description": "Page number", "required": false, "default": 0},
+        {"name": "size", "type": "number", "description": "Results per page", "required": false, "default": 20},
+        {"name": "riskLevel", "type": "string", "description": "Filter by risk level (LOW, MEDIUM, HIGH, VERY_HIGH)", "required": false}
+      ]
+    },
+    {
+      "id": "list_data_subjects",
+      "name": "List Data Subject Requests",
+      "description": "List data subject access requests (DSARs)",
+      "http_method": "GET",
+      "endpoint": "/datasubject/v3/requests",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "page", "type": "number", "description": "Page number", "required": false, "default": 0},
+        {"name": "size", "type": "number", "description": "Results per page", "required": false, "default": 20},
+        {"name": "status", "type": "string", "description": "Filter by request status", "required": false}
+      ]
+    },
+    {
+      "id": "list_incidents",
+      "name": "List Privacy Incidents",
+      "description": "List data breach and privacy incident records",
+      "http_method": "GET",
+      "endpoint": "/incident/v2/incidents",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "page", "type": "number", "description": "Page number", "required": false, "default": 0},
+        {"name": "size", "type": "number", "description": "Results per page", "required": false, "default": 20},
+        {"name": "status", "type": "string", "description": "Filter by status", "required": false}
+      ]
+    },
+    {
+      "id": "list_vendors",
+      "name": "List Vendors",
+      "description": "List third-party vendor records and their risk profiles",
+      "http_method": "GET",
+      "endpoint": "/vendorrisk/v2/vendors",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "page", "type": "number", "description": "Page number", "required": false, "default": 0},
+        {"name": "size", "type": "number", "description": "Results per page", "required": false, "default": 20},
+        {"name": "riskLevel", "type": "string", "description": "Filter by vendor risk level", "required": false}
+      ]
+    }
+  ]
+}

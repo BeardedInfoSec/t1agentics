@@ -1,0 +1,260 @@
+{
+  "id": "aws_lambda",
+  "name": "AWS Lambda",
+  "description": "This app integrates with AWS Lambda to perform lambda functions",
+  "version": "2.2.9",
+  "category": "devops",
+  "vendor": "AWS",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "remove_permission",
+      "name": "Remove Permission",
+      "description": "Revokes function-use permission from an AWS service or another account",
+      "http_method": "POST",
+      "endpoint": "/actions/remove_permission",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "function_name",
+          "type": "string",
+          "description": "The name of the Lambda function, version, or alias. The following name formats are accepted: function name, function ARN, and partial ARN",
+          "required": true,
+          "contains": [
+            "lambda function name",
+            "lambda function arn"
+          ]
+        },
+        {
+          "name": "statement_id",
+          "type": "string",
+          "description": "Statement identifier of the permission to remove",
+          "required": true
+        },
+        {
+          "name": "qualifier",
+          "type": "string",
+          "description": "Specify a version or alias to remove permissions to a published version of the function",
+          "required": false
+        },
+        {
+          "name": "revision_id",
+          "type": "string",
+          "description": "Only update the policy if the revision ID matches the ID that's specified. Use this option to avoid modifying a function policy that has changed since you last read it",
+          "required": false
+        },
+        {
+          "name": "credentials",
+          "type": "string",
+          "description": "Assumed role credentials",
+          "required": false,
+          "contains": [
+            "aws credentials"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "invoke_lambda",
+      "name": "Invoke Lambda",
+      "description": "Invoke an AWS Lambda function",
+      "http_method": "GET",
+      "endpoint": "/actions/invoke_lambda",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "function_name",
+          "type": "string",
+          "description": "The name of the AWS Lambda function, version, or alias. The following name formats are accepted: function name, function ARN, and partial ARN",
+          "required": true,
+          "contains": [
+            "lambda function name",
+            "lambda function arn"
+          ]
+        },
+        {
+          "name": "invocation_type",
+          "type": "string",
+          "description": "Invocation type",
+          "required": false,
+          "default": "RequestResponse"
+        },
+        {
+          "name": "log_type",
+          "type": "string",
+          "description": "Set to 'Tail' to include the execution log in the response",
+          "required": false,
+          "default": "None"
+        },
+        {
+          "name": "client_context",
+          "type": "string",
+          "description": "The JSON that you want to provide to your Lambda function in the context object",
+          "required": false
+        },
+        {
+          "name": "payload",
+          "type": "string",
+          "description": "The JSON that you want to provide to your Lambda function as input",
+          "required": false
+        },
+        {
+          "name": "qualifier",
+          "type": "string",
+          "description": "Specify a version or alias to invoke a published version of the function",
+          "required": false
+        },
+        {
+          "name": "credentials",
+          "type": "string",
+          "description": "Assumed role credentials",
+          "required": false,
+          "contains": [
+            "aws credentials"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_functions",
+      "name": "List Functions",
+      "description": "List available AWS Lambda functions, with the version-specific configuration for each",
+      "http_method": "GET",
+      "endpoint": "/actions/list_functions",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "function_version",
+          "type": "string",
+          "description": "Set to 'ALL' to include entries for all published versions of each function",
+          "required": false
+        },
+        {
+          "name": "next_token",
+          "type": "string",
+          "description": "Specify the pagination token returned by previous request to retrieve next page of results",
+          "required": false,
+          "contains": [
+            "lambda next token"
+          ]
+        },
+        {
+          "name": "max_items",
+          "type": "number",
+          "description": "A value between 1 and 50 to limit the number of functions to be returned",
+          "required": false
+        },
+        {
+          "name": "credentials",
+          "type": "string",
+          "description": "Assumed role credentials",
+          "required": false,
+          "contains": [
+            "aws credentials"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "add_permission",
+      "name": "Add Permission",
+      "description": "Grants an AWS service or another account permission to use a function",
+      "http_method": "GET",
+      "endpoint": "/actions/add_permission",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "function_name",
+          "type": "string",
+          "description": "The name of the Lambda function, version, or alias. The following name formats are accepted: function name, function ARN, and partial ARN",
+          "required": true,
+          "contains": [
+            "lambda function name",
+            "lambda function arn"
+          ]
+        },
+        {
+          "name": "statement_id",
+          "type": "string",
+          "description": "A statement identifier that differentiates the statement from others in the same policy",
+          "required": true
+        },
+        {
+          "name": "action",
+          "type": "string",
+          "description": "The action that the principal can use on the function. For example, lambda:InvokeFunction or lambda:GetFunction",
+          "required": true
+        },
+        {
+          "name": "principal",
+          "type": "string",
+          "description": "The AWS service or account that invokes the function. If you specify a service, use SourceArn or SourceAccount to limit who can invoke the function through that service",
+          "required": true
+        },
+        {
+          "name": "source_arn",
+          "type": "string",
+          "description": "For AWS services, the ARN of the AWS resource that invokes the function. For example, an Amazon S3 bucket or Amazon SNS topic",
+          "required": false
+        },
+        {
+          "name": "source_account",
+          "type": "string",
+          "description": "For AWS services, the ID of the account that owns the resource. Use this instead of SourceArn to grant permission to resources that are owned by another account (for example, all of an account's Amazon S3 buckets). Or use it together with SourceArn to ensure that the resource is owned by the specified account. For example, an Amazon S3 bucket could be deleted by its owner and recreated by another account",
+          "required": false
+        },
+        {
+          "name": "event_source_token",
+          "type": "string",
+          "description": "For Alexa Smart Home functions, a token that must be supplied by the invoker",
+          "required": false
+        },
+        {
+          "name": "qualifier",
+          "type": "string",
+          "description": "Specify a version or alias to add permissions to a published version of the function",
+          "required": false
+        },
+        {
+          "name": "revision_id",
+          "type": "string",
+          "description": "Only accepts the function's $LATEST revision ID. Use this option to avoid modifying a function policy that has changed since you last read it",
+          "required": false
+        },
+        {
+          "name": "credentials",
+          "type": "string",
+          "description": "Assumed role credentials",
+          "required": false,
+          "contains": [
+            "aws credentials"
+          ]
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "AWS Lambda",
+    "original_type": "devops",
+    "converted_at": "2025-12-18T16:25:28.586073",
+    "source_version": "2.2.9"
+  }
+}

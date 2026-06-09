@@ -1,0 +1,518 @@
+{
+  "id": "ssh",
+  "name": "SSH",
+  "description": "This app supports executing various endpoint-based investigative and containment actions on an SSH endpoint",
+  "version": "2.4.9",
+  "category": "edr",
+  "vendor": "Generic",
+  "auth_type": "basic_auth",
+  "auth_config": {
+    "type": "basic_auth",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "ssh_execute_command",
+      "name": "Execute Program",
+      "description": "Executes a program on the remote machine",
+      "http_method": "GET",
+      "endpoint": "/actions/ssh_execute_command",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "ip_hostname",
+          "type": "string",
+          "description": "Hostname/IP to execute command on",
+          "required": true,
+          "contains": [
+            "ip",
+            "host name"
+          ]
+        },
+        {
+          "name": "command",
+          "type": "string",
+          "description": "Command to be executed on endpoint",
+          "required": false
+        },
+        {
+          "name": "script_file",
+          "type": "string",
+          "description": "Local path to shell script",
+          "required": false
+        },
+        {
+          "name": "timeout",
+          "type": "number",
+          "description": "Seconds before timeout. If an invalid value or 0 is entered, the timeout specified in the asset configuration will be used (default: 0)",
+          "required": false,
+          "default": 0
+        }
+      ]
+    },
+    {
+      "id": "ssh_list_conn",
+      "name": "List Connections",
+      "description": "Lists all the network connections. Requires root privileges. Requires netstat to be installed",
+      "http_method": "GET",
+      "endpoint": "/actions/ssh_list_conn",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "ip_hostname",
+          "type": "string",
+          "description": "Hostname/IP to list network connections on",
+          "required": true,
+          "contains": [
+            "ip",
+            "host name"
+          ]
+        },
+        {
+          "name": "local_addr",
+          "type": "string",
+          "description": "Local IP to filter on",
+          "required": false,
+          "contains": [
+            "ip"
+          ]
+        },
+        {
+          "name": "local_port",
+          "type": "number",
+          "description": "Local port to match",
+          "required": false,
+          "contains": [
+            "port"
+          ]
+        },
+        {
+          "name": "remote_addr",
+          "type": "string",
+          "description": "Remote IP to filter on",
+          "required": false,
+          "contains": [
+            "ip"
+          ]
+        },
+        {
+          "name": "remote_port",
+          "type": "number",
+          "description": "Remote port to match",
+          "required": false,
+          "contains": [
+            "port"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ssh_block_ip",
+      "name": "Block Ip",
+      "description": "Add an iptables rule to the Linux server. Requires root privileges. Not supported on OS X",
+      "http_method": "POST",
+      "endpoint": "/actions/ssh_block_ip",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "ip_hostname",
+          "type": "string",
+          "description": "Hostname/IP to add firewall rule to",
+          "required": true,
+          "contains": [
+            "ip",
+            "host name"
+          ]
+        },
+        {
+          "name": "remote_ip",
+          "type": "string",
+          "description": "Remote IP to block",
+          "required": false,
+          "contains": [
+            "ip",
+            "host name"
+          ]
+        },
+        {
+          "name": "remote_port",
+          "type": "number",
+          "description": "Remote port to block",
+          "required": false,
+          "contains": [
+            "port"
+          ]
+        },
+        {
+          "name": "protocol",
+          "type": "string",
+          "description": "Protocol to block",
+          "required": true
+        },
+        {
+          "name": "direction",
+          "type": "string",
+          "description": "Inbound or outbound",
+          "required": true
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "Leave a comment",
+          "required": false
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "ssh_list_fw_rules",
+      "name": "List Firewall Rules",
+      "description": "Lists the rules in iptables. Requires root privileges. Not supported on OS X",
+      "http_method": "GET",
+      "endpoint": "/actions/ssh_list_fw_rules",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "ip_hostname",
+          "type": "string",
+          "description": "Hostname/IP to list firewall rules on",
+          "required": true,
+          "contains": [
+            "ip",
+            "host name"
+          ]
+        },
+        {
+          "name": "protocol",
+          "type": "string",
+          "description": "Protocol to match",
+          "required": false
+        },
+        {
+          "name": "port",
+          "type": "number",
+          "description": "Port to match",
+          "required": false,
+          "contains": [
+            "port"
+          ]
+        },
+        {
+          "name": "chain",
+          "type": "string",
+          "description": "Chain to match (INPUT, OUTPUT, etc.)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "ssh_delete_fw_rule",
+      "name": "Delete Firewall Rule",
+      "description": "Delete a firewall rule. Requires root privileges. Not supported on OS X",
+      "http_method": "POST",
+      "endpoint": "/actions/ssh_delete_fw_rule",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "ip_hostname",
+          "type": "string",
+          "description": "Hostname/IP of endpoint",
+          "required": true,
+          "contains": [
+            "ip",
+            "host name"
+          ]
+        },
+        {
+          "name": "chain",
+          "type": "string",
+          "description": "Name of chain (INPUT, OUTPUT, etc.)",
+          "required": true
+        },
+        {
+          "name": "number",
+          "type": "number",
+          "description": "Number of rule to delete",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "ssh_reboot_server",
+      "name": "Reboot System",
+      "description": "Reboot the endpoint (Requires root privileges)",
+      "http_method": "POST",
+      "endpoint": "/actions/ssh_reboot_server",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "ip_hostname",
+          "type": "string",
+          "description": "Hostname/IP of server to reboot",
+          "required": true,
+          "contains": [
+            "ip",
+            "host name"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ssh_shutdown_server",
+      "name": "Shutdown System",
+      "description": "Shutdown the endpoint(Requires root privileges)",
+      "http_method": "POST",
+      "endpoint": "/actions/ssh_shutdown_server",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "ip_hostname",
+          "type": "string",
+          "description": "Hostname/IP of server to shutdown",
+          "required": true,
+          "contains": [
+            "ip",
+            "host name"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ssh_kill_process",
+      "name": "Terminate Process",
+      "description": "Terminate a process (Requires root privileges)",
+      "http_method": "POST",
+      "endpoint": "/actions/ssh_kill_process",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "ip_hostname",
+          "type": "string",
+          "description": "Hostname/IP of endpoint",
+          "required": true,
+          "contains": [
+            "ip",
+            "host name"
+          ]
+        },
+        {
+          "name": "pid",
+          "type": "number",
+          "description": "PID of process to terminate",
+          "required": true,
+          "contains": [
+            "pid"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ssh_logout_user",
+      "name": "Logoff User",
+      "description": "Logout a user on endpoint (Requires root privileges)",
+      "http_method": "POST",
+      "endpoint": "/actions/ssh_logout_user",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "ip_hostname",
+          "type": "string",
+          "description": "Hostname/IP of endpoint",
+          "required": true,
+          "contains": [
+            "ip",
+            "host name"
+          ]
+        },
+        {
+          "name": "user_name",
+          "type": "string",
+          "description": "Name of user to logout",
+          "required": true,
+          "contains": [
+            "user name"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ssh_list_processes",
+      "name": "List Processes",
+      "description": "List processes on endpoint",
+      "http_method": "GET",
+      "endpoint": "/actions/ssh_list_processes",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "ip_hostname",
+          "type": "string",
+          "description": "Hostname/IP of endpoint",
+          "required": true,
+          "contains": [
+            "ip",
+            "host name"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_disk_usage",
+      "name": "Get Disk Usage",
+      "description": "Retrieve disk usage from endpoint",
+      "http_method": "GET",
+      "endpoint": "/actions/get_disk_usage",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "ip_hostname",
+          "type": "string",
+          "description": "Hostname/IP to execute command on",
+          "required": true,
+          "contains": [
+            "ip",
+            "host name"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_memory_usage",
+      "name": "Get Memory Usage",
+      "description": "Retrieve memory usage from endpoint",
+      "http_method": "GET",
+      "endpoint": "/actions/get_memory_usage",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "ip_hostname",
+          "type": "string",
+          "description": "Hostname/IP to execute command on",
+          "required": true,
+          "contains": [
+            "ip",
+            "host name"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ssh_get_file",
+      "name": "Get File",
+      "description": "Retrieve a file from the endpoint and save it to the vault",
+      "http_method": "GET",
+      "endpoint": "/actions/ssh_get_file",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "ip_hostname",
+          "type": "string",
+          "description": "Hostname/IP to execute command on",
+          "required": true,
+          "contains": [
+            "ip",
+            "host name"
+          ]
+        },
+        {
+          "name": "file_path",
+          "type": "string",
+          "description": "Full path of the file to download (include filename)",
+          "required": true,
+          "contains": [
+            "file path"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "ssh_put_file",
+      "name": "Put File",
+      "description": "Put a file from the vault to another location",
+      "http_method": "GET",
+      "endpoint": "/actions/ssh_put_file",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "ip_hostname",
+          "type": "string",
+          "description": "Hostname/IP to execute command on",
+          "required": true,
+          "contains": [
+            "ip",
+            "host name"
+          ]
+        },
+        {
+          "name": "vault_id",
+          "type": "string",
+          "description": "Vault ID of file",
+          "required": true,
+          "contains": [
+            "vault id"
+          ]
+        },
+        {
+          "name": "file_destination",
+          "type": "string",
+          "description": "File destination path (exclude filename)",
+          "required": true,
+          "contains": [
+            "file path"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    }
+  ],
+  "source_metadata": {
+    "original_name": "SSH",
+    "original_type": "endpoint",
+    "converted_at": "2025-12-18T16:25:29.175433",
+    "source_version": "2.4.9"
+  }
+}

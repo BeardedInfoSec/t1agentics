@@ -1,0 +1,468 @@
+{
+  "id": "cisco_ise",
+  "name": "Cisco ISE",
+  "description": "This app implements investigative and containment actions on a Cisco ISE device",
+  "version": "3.2.1",
+  "category": "network",
+  "vendor": "Cisco Systems",
+  "auth_type": "basic_auth",
+  "auth_config": {
+    "type": "basic_auth",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "list_endpoints",
+      "name": "List Endpoints",
+      "description": "List the endpoints configured on the system",
+      "http_method": "GET",
+      "endpoint": "/ise/mnt/Session/AuthList/null/null",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "mac_address",
+          "type": "string",
+          "description": "Mac Address to filter on (6 bytes, colon separated)",
+          "required": false,
+          "contains": [
+            "mac address"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_endpoint",
+      "name": "Get Device Info",
+      "description": "Get information about a specific endpoint",
+      "http_method": "GET",
+      "endpoint": "/actions/get_endpoint",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "endpoint_id",
+          "type": "string",
+          "description": "ISE Endpoint ID for device",
+          "required": true,
+          "contains": [
+            "ise endpoint id",
+            "ise resource id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "update_endpoint",
+      "name": "Update Device Info",
+      "description": "Update information or attributes for a specific endpoint",
+      "http_method": "POST",
+      "endpoint": "/actions/update_endpoint",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "endpoint_id",
+          "type": "string",
+          "description": "ISE Endpoint ID for device",
+          "required": true,
+          "contains": [
+            "ise endpoint id",
+            "ise resource id"
+          ]
+        },
+        {
+          "name": "ph_0",
+          "type": "string",
+          "description": "Placeholder",
+          "required": false
+        },
+        {
+          "name": "attribute",
+          "type": "string",
+          "description": "Attribute to update for the Endpoint",
+          "required": false
+        },
+        {
+          "name": "attribute_value",
+          "type": "string",
+          "description": "Value to put in the attribute for the Endpoint",
+          "required": false
+        },
+        {
+          "name": "custom_attribute",
+          "type": "string",
+          "description": "Custom attribute to update for the Endpoint",
+          "required": false
+        },
+        {
+          "name": "custom_attribute_value",
+          "type": "string",
+          "description": "Value to put in the custom attribute for the Endpoint",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_sessions",
+      "name": "List Sessions",
+      "description": "List the sessions currently available on the Monitoring node",
+      "http_method": "GET",
+      "endpoint": "/ise/mnt/Session/AuthList/null/null",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "terminate_session",
+      "name": "Terminate Session",
+      "description": "Terminate sessions",
+      "http_method": "POST",
+      "endpoint": "/actions/terminate_session",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "macaddress",
+          "type": "string",
+          "description": "MAC address of device to terminate sessions of",
+          "required": true,
+          "contains": [
+            "mac address"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_resources",
+      "name": "List Resources",
+      "description": "Lists all the resources configured on the system of a particular resource",
+      "http_method": "GET",
+      "endpoint": "/ise/mnt/Session/AuthList/null/null",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "resource",
+          "type": "string",
+          "description": "Resource type of the resources to fetch",
+          "required": true
+        },
+        {
+          "name": "max_results",
+          "type": "number",
+          "description": "Total number of observables to return",
+          "required": false,
+          "default": 1000
+        }
+      ]
+    },
+    {
+      "id": "get_resources",
+      "name": "Get Resources",
+      "description": "Get the information about resource if resource_id is provided. Fetch the list of resources match with the key-value filter",
+      "http_method": "GET",
+      "endpoint": "/actions/get_resources",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "resource",
+          "type": "string",
+          "description": "Resource type of the resource to fetch",
+          "required": true
+        },
+        {
+          "name": "resource_id",
+          "type": "string",
+          "description": "Resource ID",
+          "required": false,
+          "contains": [
+            "ise resource id"
+          ]
+        },
+        {
+          "name": "key",
+          "type": "string",
+          "description": "Key",
+          "required": false
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "description": "Value",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "delete_resource",
+      "name": "Delete Resource",
+      "description": "Delete a resource",
+      "http_method": "GET",
+      "endpoint": "/actions/delete_resource",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "resource",
+          "type": "string",
+          "description": "Resource type of the resource to be deleted",
+          "required": true
+        },
+        {
+          "name": "resource_id",
+          "type": "string",
+          "description": "Resource ID",
+          "required": true,
+          "contains": [
+            "ise resource id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "create_resource",
+      "name": "Create Resource",
+      "description": "Create a resource",
+      "http_method": "GET",
+      "endpoint": "/actions/create_resource",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "resource",
+          "type": "string",
+          "description": "Resource type of the resource to be created",
+          "required": true
+        },
+        {
+          "name": "resource_json",
+          "type": "string",
+          "description": "JSON which contains all values needed to create a resource",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "update_resource",
+      "name": "Update Resource",
+      "description": "Update a resource",
+      "http_method": "GET",
+      "endpoint": "/actions/update_resource",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "resource",
+          "type": "string",
+          "description": "Resource type of the resource to be created",
+          "required": true
+        },
+        {
+          "name": "resource_id",
+          "type": "string",
+          "description": "ID of resource",
+          "required": true,
+          "contains": [
+            "ise resource id"
+          ]
+        },
+        {
+          "name": "key",
+          "type": "string",
+          "description": "Key of resource which needs to be updated",
+          "required": true
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "description": "New value of key",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "apply_policy",
+      "name": "Apply Policy",
+      "description": "Apply policy on selected Ip address or MAC address",
+      "http_method": "GET",
+      "endpoint": "/actions/apply_policy",
+      "action_type": "investigate",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "policy_name",
+          "type": "string",
+          "description": "Policy Name",
+          "required": true
+        },
+        {
+          "name": "ip_mac_address",
+          "type": "string",
+          "description": "MAC or IP Address of the device",
+          "required": true,
+          "contains": [
+            "mac address",
+            "ip"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "clear_policy",
+      "name": "Clear Policy",
+      "description": "Clear policy on selected Ip address or MAC address",
+      "http_method": "GET",
+      "endpoint": "/actions/clear_policy",
+      "action_type": "investigate",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "policy_name",
+          "type": "string",
+          "description": "Policy Name",
+          "required": true
+        },
+        {
+          "name": "ip_mac_address",
+          "type": "string",
+          "description": "MAC or IP Address of the device",
+          "required": true,
+          "contains": [
+            "mac address",
+            "ip"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_policies",
+      "name": "List Policies",
+      "description": "Lists all the ANC policies available",
+      "http_method": "GET",
+      "endpoint": "/ise/mnt/Session/AuthList/null/null",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "add_policy",
+      "name": "Add Policy",
+      "description": "Add a new ANC Policy",
+      "http_method": "GET",
+      "endpoint": "/actions/add_policy",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Policy Name",
+          "required": true,
+          "default": false
+        },
+        {
+          "name": "action_type",
+          "type": "string",
+          "description": "Policy action type",
+          "required": true,
+          "default": "QUARANTINE"
+        }
+      ]
+    },
+    {
+      "id": "delete_policy",
+      "name": "Delete Policy",
+      "description": "Delete a policy",
+      "http_method": "GET",
+      "endpoint": "/actions/delete_policy",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "policy_name",
+          "type": "string",
+          "description": "Policy Name",
+          "required": true,
+          "contains": [
+            "ise policy id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_anc_endpoints",
+      "name": "List Anc Endpoints",
+      "description": "List the endpoints with anc configured on the system",
+      "http_method": "GET",
+      "endpoint": "/ise/mnt/Session/AuthList/null/null",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "get_anc_endpoint",
+      "name": "Anc Device Info",
+      "description": "Get information about a specific endpoint with assigned anc policy",
+      "http_method": "GET",
+      "endpoint": "/actions/get_anc_endpoint",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "endpoint_id",
+          "type": "string",
+          "description": "ISE Endpoint ID for device",
+          "required": true,
+          "contains": [
+            "ise endpoint id",
+            "ise resource id"
+          ]
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Cisco ISE",
+    "original_type": "network security",
+    "converted_at": "2025-12-18T16:25:28.654441",
+    "source_version": "3.2.1"
+  }
+}

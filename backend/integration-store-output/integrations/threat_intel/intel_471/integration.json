@@ -1,0 +1,257 @@
+{
+  "id": "intel_471",
+  "name": "Intel 471 TITAN",
+  "description": "Integrate with Intel 471 TITAN platform to search IOCs, threat actors, malware intelligence, vulnerability reports, and YARA rules from underground sources",
+  "version": "1.0.0",
+  "category": "threat_intel",
+  "vendor": "Intel 471",
+  "auth_type": "basic",
+  "auth_config": {
+    "type": "basic",
+    "note": "HTTP Basic authentication with username and API key (as password)"
+  },
+  "base_url": "https://api.intel471.com/v1",
+  "actions": [
+    {
+      "id": "search_iocs",
+      "name": "Search IOCs",
+      "description": "Search Intel 471 indicators of compromise by type, date range, and associated threats",
+      "http_method": "GET",
+      "endpoint": "/iocs",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "ioc",
+          "type": "string",
+          "description": "IOC value to search for (IP, domain, hash, URL, email)",
+          "required": false,
+          "contains": ["ip", "domain", "hash", "url", "email"]
+        },
+        {
+          "name": "iocType",
+          "type": "string",
+          "description": "IOC type filter (ip, domain, url, hash, email)",
+          "required": false
+        },
+        {
+          "name": "from",
+          "type": "string",
+          "description": "Start date filter (epoch milliseconds)",
+          "required": false
+        },
+        {
+          "name": "until",
+          "type": "string",
+          "description": "End date filter (epoch milliseconds)",
+          "required": false
+        },
+        {
+          "name": "sort",
+          "type": "string",
+          "description": "Sort order: earliest or latest",
+          "required": false
+        },
+        {
+          "name": "count",
+          "type": "number",
+          "description": "Maximum number of results to return (max 100)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "search_reports",
+      "name": "Search Intelligence Reports",
+      "description": "Search Intel 471 intelligence reports including spot reports, information reports, and situation reports",
+      "http_method": "GET",
+      "endpoint": "/reports",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "report",
+          "type": "string",
+          "description": "Free text search query for report content",
+          "required": false
+        },
+        {
+          "name": "subject",
+          "type": "string",
+          "description": "Report subject filter",
+          "required": false
+        },
+        {
+          "name": "from",
+          "type": "string",
+          "description": "Start date filter (epoch milliseconds)",
+          "required": false
+        },
+        {
+          "name": "until",
+          "type": "string",
+          "description": "End date filter (epoch milliseconds)",
+          "required": false
+        },
+        {
+          "name": "count",
+          "type": "number",
+          "description": "Maximum number of results",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "search_actors",
+      "name": "Search Threat Actors",
+      "description": "Search Intel 471 threat actor profiles from underground monitoring",
+      "http_method": "GET",
+      "endpoint": "/actors",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "actor",
+          "type": "string",
+          "description": "Actor handle or name to search",
+          "required": false
+        },
+        {
+          "name": "from",
+          "type": "string",
+          "description": "Start date filter (epoch milliseconds)",
+          "required": false
+        },
+        {
+          "name": "until",
+          "type": "string",
+          "description": "End date filter (epoch milliseconds)",
+          "required": false
+        },
+        {
+          "name": "count",
+          "type": "number",
+          "description": "Maximum number of results",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "search_malware_reports",
+      "name": "Search Malware Reports",
+      "description": "Search Intel 471 malware intelligence reports for details on malware families and variants",
+      "http_method": "GET",
+      "endpoint": "/malwareReports",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "malwareFamily",
+          "type": "string",
+          "description": "Malware family name to search",
+          "required": false
+        },
+        {
+          "name": "from",
+          "type": "string",
+          "description": "Start date filter (epoch milliseconds)",
+          "required": false
+        },
+        {
+          "name": "until",
+          "type": "string",
+          "description": "End date filter (epoch milliseconds)",
+          "required": false
+        },
+        {
+          "name": "count",
+          "type": "number",
+          "description": "Maximum number of results",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "search_vulnerabilities",
+      "name": "Search Vulnerabilities",
+      "description": "Search Intel 471 vulnerability intelligence including underground chatter and exploitation context",
+      "http_method": "GET",
+      "endpoint": "/cve/reports",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "cveReport",
+          "type": "string",
+          "description": "CVE ID to search for (e.g. CVE-2021-44228)",
+          "required": false,
+          "contains": ["cve"]
+        },
+        {
+          "name": "from",
+          "type": "string",
+          "description": "Start date filter (epoch milliseconds)",
+          "required": false
+        },
+        {
+          "name": "count",
+          "type": "number",
+          "description": "Maximum number of results",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "search_yara",
+      "name": "Search YARA Rules",
+      "description": "Search Intel 471 YARA rules for malware detection signatures",
+      "http_method": "GET",
+      "endpoint": "/yara",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "yaraName",
+          "type": "string",
+          "description": "YARA rule name to search",
+          "required": false
+        },
+        {
+          "name": "malwareFamily",
+          "type": "string",
+          "description": "Filter YARA rules by malware family",
+          "required": false
+        },
+        {
+          "name": "count",
+          "type": "number",
+          "description": "Maximum number of results",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "stream_indicators",
+      "name": "Stream Indicators",
+      "description": "Stream Intel 471 malware indicators for continuous feed ingestion into SIEM/SOAR",
+      "http_method": "GET",
+      "endpoint": "/indicators/stream",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "from",
+          "type": "string",
+          "description": "Start date filter (epoch milliseconds)",
+          "required": false
+        },
+        {
+          "name": "count",
+          "type": "number",
+          "description": "Maximum number of results per request",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

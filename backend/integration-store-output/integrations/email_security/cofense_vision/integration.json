@@ -1,0 +1,828 @@
+{
+  "id": "cofense_vision",
+  "name": "Cofense Vision",
+  "description": "This app implements investigative and generic actions to quarantine emails, manage IOCs, search messages, download messages and their attachments",
+  "version": "1.0.1",
+  "category": "email_security",
+  "vendor": "Cofense",
+  "auth_type": "oauth2",
+  "auth_config": {
+    "type": "oauth2",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "/api/v4",
+  "actions": [
+    {
+      "id": "get_message_metadata",
+      "name": "Get Message Metadata",
+      "description": "Retrieves the metadata of the message that matches the specified internet message ID and recipient email address",
+      "http_method": "GET",
+      "endpoint": "/actions/get_message_metadata",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "internet_message_id",
+          "type": "string",
+          "description": "Unique identifier of the email, enclosed in angle brackets",
+          "required": true,
+          "contains": [
+            "cofense vision internet message id"
+          ]
+        },
+        {
+          "name": "recipient_address",
+          "type": "string",
+          "description": "Recipient address of the email",
+          "required": true,
+          "contains": [
+            "email"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_message",
+      "name": "Get Message",
+      "description": "Fetches full content of an email and saves it as a zip file to the Vault",
+      "http_method": "GET",
+      "endpoint": "/actions/get_message",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "internet_message_id",
+          "type": "string",
+          "description": "Unique identifier of the email, enclosed in angle brackets",
+          "required": true,
+          "contains": [
+            "cofense vision internet message id"
+          ]
+        },
+        {
+          "name": "recipient_address",
+          "type": "string",
+          "description": "Recipient address of the email",
+          "required": true,
+          "contains": [
+            "email"
+          ]
+        },
+        {
+          "name": "password",
+          "type": "string",
+          "description": "Password to protect the zip file",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_message_attachment",
+      "name": "Get Message Attachment",
+      "description": "Fetches an attachment by using its MD5 or SHA256 hash and saves it to the Vault",
+      "http_method": "GET",
+      "endpoint": "/actions/get_message_attachment",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "md5",
+          "type": "string",
+          "description": "Hex-encoded string that represents an attachment's MD5 hash",
+          "required": false,
+          "contains": [
+            "md5"
+          ]
+        },
+        {
+          "name": "sha256",
+          "type": "string",
+          "description": "Hex-encoded string that represents an attachment's SHA256 hash",
+          "required": false,
+          "contains": [
+            "sha256"
+          ]
+        },
+        {
+          "name": "filename",
+          "type": "string",
+          "description": "File name including the extension to give to the file",
+          "required": true
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "list_quarantine_jobs",
+      "name": "List Quarantine Jobs",
+      "description": "Fetches a list of matching quarantine jobs",
+      "http_method": "GET",
+      "endpoint": "/actions/list_quarantine_jobs",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "page",
+          "type": "number",
+          "description": "Start page of the results. The value must be a positive integer or 0",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "size",
+          "type": "number",
+          "description": "Number of results per page. The value must be a positive integer up to 2000",
+          "required": false,
+          "default": 50
+        },
+        {
+          "name": "sort",
+          "type": "string",
+          "description": "The name-value pair defining the order of the response. Comma separated values are supported",
+          "required": false
+        },
+        {
+          "name": "exclude_quarantine_emails",
+          "type": "boolean",
+          "description": "Whether to remove (true) or not remove (false) quarantined emails from the response",
+          "required": false
+        },
+        {
+          "name": "include_status",
+          "type": "string",
+          "description": "Filters quarantine jobs by including emails with the specified status. Supports comma-separated values",
+          "required": false
+        },
+        {
+          "name": "exclude_status",
+          "type": "string",
+          "description": "Filters quarantine jobs by excluding emails with the specified status. Supports comma-separated values",
+          "required": false
+        },
+        {
+          "name": "iocs",
+          "type": "string",
+          "description": "Unique MD5 hash identifier of one or more IOCs. Comma separated values are supported",
+          "required": false,
+          "contains": [
+            "md5",
+            "cofense vision ioc id"
+          ]
+        },
+        {
+          "name": "sources",
+          "type": "string",
+          "description": "One or more configured IOC sources. Comma separated values are supported",
+          "required": false,
+          "contains": [
+            "cofense vision source"
+          ]
+        },
+        {
+          "name": "modified_date_after",
+          "type": "string",
+          "description": "Emails modified after this date and time. The date and time must be in UTC",
+          "required": false
+        },
+        {
+          "name": "auto_quarantine",
+          "type": "boolean",
+          "description": "Whether to list only auto quarantine jobs (true) or both (false)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "create_quarantine_job",
+      "name": "Create Quarantine Job",
+      "description": "Creates a new quarantine job",
+      "http_method": "GET",
+      "endpoint": "/actions/create_quarantine_job",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "quarantine_emails",
+          "type": "string",
+          "description": "A comma-separated string of quarantine emails, specifying the recipient address and internet message ID of the email",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "restore_quarantine_job",
+      "name": "Restore Quarantine Job",
+      "description": "Restores emails quarantined by the job identified by the ID",
+      "http_method": "GET",
+      "endpoint": "/actions/restore_quarantine_job",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "number",
+          "description": "ID of the quarantine job in cofense vision to be restored",
+          "required": true,
+          "contains": [
+            "cofense vision quarantine job id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_message_searches",
+      "name": "List Message Searches",
+      "description": "Retrieves the list of searches",
+      "http_method": "GET",
+      "endpoint": "/actions/list_message_searches",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "page",
+          "type": "number",
+          "description": "The start page of the results. The value must be a positive integer or 0",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "size",
+          "type": "number",
+          "description": "The number of results to retrieve per page. The value must be a positive integer up to 2000",
+          "required": false,
+          "default": 50
+        },
+        {
+          "name": "sort",
+          "type": "string",
+          "description": "The name-value pair defining the order of the response. Comma separated values are supported",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_message_search",
+      "name": "Get Message Search",
+      "description": "Retrieves the search identified by an ID",
+      "http_method": "GET",
+      "endpoint": "/actions/get_message_search",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "number",
+          "description": "The unique ID that cofense vision has assigned to a search",
+          "required": true,
+          "contains": [
+            "cofense vision search id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_quarantine_job",
+      "name": "Get Quarantine Job",
+      "description": "Retrieves quarantine job identified by the ID",
+      "http_method": "GET",
+      "endpoint": "/actions/get_quarantine_job",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "number",
+          "description": "ID of the quarantine job in cofense vision to be retrieved",
+          "required": true,
+          "contains": [
+            "cofense vision quarantine job id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "approve_quarantine_job",
+      "name": "Approve Quarantine Job",
+      "description": "Approves the quarantine job identified by the ID. When the Auto Quarantine feature is configured to require manual approvals, this endpoint can approve the pending quarantine jobs",
+      "http_method": "GET",
+      "endpoint": "/actions/approve_quarantine_job",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "number",
+          "description": "ID of the quarantine job in cofense vision to be approved",
+          "required": true,
+          "contains": [
+            "cofense vision quarantine job id"
+          ]
+        },
+        {
+          "name": "message_count",
+          "type": "number",
+          "description": "Number of emails containing IOC matches to be quarantined",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "delete_quarantine_job",
+      "name": "Delete Quarantine Job",
+      "description": "Deletes the quarantine job identified by the ID",
+      "http_method": "GET",
+      "endpoint": "/actions/delete_quarantine_job",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "number",
+          "description": "ID of the quarantine job in cofense vision to be deleted",
+          "required": true,
+          "contains": [
+            "cofense vision quarantine job id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_message_search_results",
+      "name": "Get Messagesearch Results",
+      "description": "Retrieves the results for the search identified by the search ID",
+      "http_method": "GET",
+      "endpoint": "/actions/get_message_search_results",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "number",
+          "description": "The unique ID that cofense vision has assigned to a search",
+          "required": true,
+          "contains": [
+            "cofense vision search id"
+          ]
+        },
+        {
+          "name": "page",
+          "type": "number",
+          "description": "Start page of the results. The value must be a positive integer or 0",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "size",
+          "type": "number",
+          "description": "Number of results to fetch per page. The value must be a positive integer up to 2000",
+          "required": false,
+          "default": 50
+        },
+        {
+          "name": "sort",
+          "type": "string",
+          "description": "The name-value pair defining the order of the response. Comma separated values are supported",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "delete_ioc",
+      "name": "Delete Ioc",
+      "description": "Deletes a single active or expired IOC from the local IOC Repository",
+      "http_method": "GET",
+      "endpoint": "/actions/delete_ioc",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "The MD5 ID of the IOC to be deleted",
+          "required": true,
+          "contains": [
+            "md5",
+            "cofense vision ioc id"
+          ]
+        },
+        {
+          "name": "source",
+          "type": "string",
+          "description": "A single IOC source value, to fetch the IOCs added or modified by that particular source",
+          "required": true,
+          "contains": [
+            "cofense vision source"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "stop_quarantine_job",
+      "name": "Stop Quarantine Job",
+      "description": "Issues a request to stop the quarantine job identified by ID",
+      "http_method": "GET",
+      "endpoint": "/actions/stop_quarantine_job",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "number",
+          "description": "ID of the quarantine job in cofense vision to be stopped",
+          "required": true,
+          "contains": [
+            "cofense vision quarantine job id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "create_message_search",
+      "name": "Create Message Search",
+      "description": "Creates a new search based on the user-specified filters",
+      "http_method": "GET",
+      "endpoint": "/actions/create_message_search",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "subjects",
+          "type": "string",
+          "description": "A comma-separated string of subjects to create a search for an email's subject. Max 3 values are allowed",
+          "required": false
+        },
+        {
+          "name": "senders",
+          "type": "string",
+          "description": "A comma-separated string of senders to create a search for an email's sender. Max 3 values are allowed",
+          "required": false
+        },
+        {
+          "name": "attachment_names",
+          "type": "string",
+          "description": "A comma-separated string of attachment names to create a search for an email's attachments. Max 3 values are allowed",
+          "required": false
+        },
+        {
+          "name": "attachment_hash_match_criteria",
+          "type": "string",
+          "description": "The type of matching performed on the hashes specified in the attachment_hashes argument. Allowed values are ANY and ALL",
+          "required": false,
+          "default": "ANY"
+        },
+        {
+          "name": "attachment_hashes",
+          "type": "string",
+          "description": "A comma-separated string of attachment hashes to create a search for an email's attachment hashes. Supported format: hashtype1:hashvalue1. Example : md5:938c2cc0dcc05f2b68c4287040cfcf71. Max 3 values are allowed",
+          "required": false
+        },
+        {
+          "name": "attachment_mime_types",
+          "type": "string",
+          "description": "A comma-separated string of MIME types to create a search for an email's attachment MIME type. Max 3 values are allowed",
+          "required": false
+        },
+        {
+          "name": "attachment_exclude_mime_types",
+          "type": "string",
+          "description": "A comma-separated string of MIME types to create a search for excluding an email's attachment MIME type. Max 3 values are allowed",
+          "required": false
+        },
+        {
+          "name": "domain_match_criteria",
+          "type": "string",
+          "description": "The type of matching to perform on the domains specified in the domains argument. Allowed values ANY and ALL",
+          "required": false,
+          "default": "ANY"
+        },
+        {
+          "name": "domains",
+          "type": "string",
+          "description": "A comma-separated string of domains to create a search for domains in an email's body or its attachment. Max 3 values are allowed",
+          "required": false
+        },
+        {
+          "name": "headers",
+          "type": "string",
+          "description": "A comma-separated string of key-value pairs, defining the additional criteria to search for in the email header. Max 3 values are allowed",
+          "required": false
+        },
+        {
+          "name": "internet_message_id",
+          "type": "string",
+          "description": "The unique identifier of the email, enclosed in angle brackets. This argument is case-sensitive",
+          "required": false,
+          "contains": [
+            "cofense vision internet message id"
+          ]
+        },
+        {
+          "name": "partial_ingest",
+          "type": "boolean",
+          "description": "Whether to create a search with partially ingested emails (true) or without partially ingested emails (false)",
+          "required": false
+        },
+        {
+          "name": "received_after_date",
+          "type": "string",
+          "description": "Date and time to create a search for emails which are received on or after the specified UTC date and time",
+          "required": false
+        },
+        {
+          "name": "received_before_date",
+          "type": "string",
+          "description": "Date and time to create a search for emails which are received before or on the specified UTC date and time",
+          "required": false
+        },
+        {
+          "name": "recipient",
+          "type": "string",
+          "description": "Create a search with the specified recipient. Supports one or more wildcard characters (*) in any position of a recipient's email address",
+          "required": false
+        },
+        {
+          "name": "url",
+          "type": "string",
+          "description": "Create a search with the specified url. Supports one or more wildcard characters (*) in any position of the URL",
+          "required": false
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "get_last_ioc",
+      "name": "Get Last Ioc",
+      "description": "Retrieves the last updated IOC from the local IOC Repository. It may return an active or an expired IOC",
+      "http_method": "GET",
+      "endpoint": "/actions/get_last_ioc",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "source",
+          "type": "string",
+          "description": "A single IOC source value, to fetch the IOCs added or modified by that particular source",
+          "required": true,
+          "contains": [
+            "cofense vision source"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "update_iocs",
+      "name": "Update Iocs",
+      "description": "Updates one or more IOCs stored in the local IOC repository",
+      "http_method": "GET",
+      "endpoint": "/actions/update_iocs",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "source",
+          "type": "string",
+          "description": "Single IOC source",
+          "required": true,
+          "contains": [
+            "cofense vision source"
+          ]
+        },
+        {
+          "name": "iocs_json",
+          "type": "string",
+          "description": "List of JSON data containing IOC detail to be updated in the IOC local repository",
+          "required": false
+        },
+        {
+          "name": "threat_type",
+          "type": "string",
+          "description": "Type of IOC",
+          "required": false
+        },
+        {
+          "name": "threat_value",
+          "type": "string",
+          "description": "Actual value of the IOC to match in the email",
+          "required": false,
+          "contains": [
+            "cofense vision threat value",
+            "domain",
+            "md5",
+            "sha256",
+            "url"
+          ]
+        },
+        {
+          "name": "threat_level",
+          "type": "string",
+          "description": "The severity of the IOC",
+          "required": false
+        },
+        {
+          "name": "source_id",
+          "type": "string",
+          "description": "Unique identifier assigned by the IOC source",
+          "required": false
+        },
+        {
+          "name": "created_at",
+          "type": "string",
+          "description": "The UTC date and time the IOC source included the IOC for the first time",
+          "required": false
+        },
+        {
+          "name": "updated_at",
+          "type": "string",
+          "description": "The UTC date and time the IOC source last updated the IOC",
+          "required": false
+        },
+        {
+          "name": "requested_expiration",
+          "type": "string",
+          "description": "Expiration date and time for this IOC in UTC",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "update_ioc",
+      "name": "Update Ioc",
+      "description": "Updates the IOC identified by its unique MD5 ID",
+      "http_method": "GET",
+      "endpoint": "/actions/update_ioc",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "The ID of the IOC to be updated",
+          "required": true,
+          "contains": [
+            "md5",
+            "cofense vision ioc id"
+          ]
+        },
+        {
+          "name": "expires_at",
+          "type": "string",
+          "description": "Expiration date and time of the IOC in UTC",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_iocs",
+      "name": "List Iocs",
+      "description": "Lists the IOCs stored in the local IOC Repository",
+      "http_method": "GET",
+      "endpoint": "/actions/list_iocs",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "source",
+          "type": "string",
+          "description": "A single IOC source value",
+          "required": true,
+          "contains": [
+            "cofense vision source"
+          ]
+        },
+        {
+          "name": "since",
+          "type": "string",
+          "description": "Include only IOCs that were added to the repository after the given UTC date",
+          "required": false
+        },
+        {
+          "name": "page",
+          "type": "number",
+          "description": "Start page of the results. The value must be a positive integer or 0",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "size",
+          "type": "number",
+          "description": "Number of results to fetch per page. The value must be a positive integer up to 2000",
+          "required": false,
+          "default": 50
+        },
+        {
+          "name": "sort",
+          "type": "string",
+          "description": "The name-value pair defining the order of the response. Comma separated values are supported",
+          "required": false
+        },
+        {
+          "name": "include_expired",
+          "type": "boolean",
+          "description": "Whether to include expired IOCs (true) or not include expired IOCs (false)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_ioc",
+      "name": "Get Ioc",
+      "description": "Retrieves the IOC identified by its unique MD5 ID",
+      "http_method": "GET",
+      "endpoint": "/actions/get_ioc",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "The MD5 ID of the IOC",
+          "required": true,
+          "contains": [
+            "md5",
+            "cofense vision ioc id"
+          ]
+        },
+        {
+          "name": "source",
+          "type": "string",
+          "description": "A single IOC source value, to fetch the IOCs added or modified by that particular source",
+          "required": true,
+          "contains": [
+            "cofense vision source"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_searchable_headers",
+      "name": "List Searchable Headers",
+      "description": "Retrieves a list of configured header keys that can be used to create a message search",
+      "http_method": "GET",
+      "endpoint": "/actions/list_searchable_headers",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "download_logs",
+      "name": "Download Logs",
+      "description": "Downloads the log files for all Cofense Vision components",
+      "http_method": "GET",
+      "endpoint": "/actions/download_logs",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Cofense Vision",
+    "original_type": "email",
+    "converted_at": "2025-12-18T16:25:28.691987",
+    "source_version": "1.0.1"
+  }
+}

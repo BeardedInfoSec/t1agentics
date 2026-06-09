@@ -1,0 +1,175 @@
+{
+  "id": "jupiterone",
+  "name": "JupiterOne",
+  "description": "Cyber asset analysis and governance platform providing comprehensive asset visibility, relationship mapping, compliance monitoring, and security posture management via graph-based data model",
+  "version": "1.0.0",
+  "category": "asm",
+  "vendor": "JupiterOne",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "header_name": "Authorization",
+    "additional_headers": {
+      "JupiterOne-Account": "{account_id}"
+    },
+    "location": "header"
+  },
+  "base_url": "https://graphql.us.jupiterone.io",
+  "actions": [
+    {
+      "id": "query_assets",
+      "name": "Query Assets",
+      "description": "Execute a J1QL query to search and retrieve assets, entities, and their relationships",
+      "http_method": "POST",
+      "endpoint": "/",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "J1QL query string (e.g., 'FIND Host WITH publicIpAddress != undefined')",
+          "required": true
+        },
+        {
+          "name": "variables",
+          "type": "object",
+          "description": "Variables to pass to the query",
+          "required": false
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "description": "Pagination cursor for next page of results",
+          "required": false
+        },
+        {
+          "name": "includeDeleted",
+          "type": "boolean",
+          "description": "Include recently deleted entities in results",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_entities",
+      "name": "List Entities",
+      "description": "Retrieve entities of a specific type from the asset graph",
+      "http_method": "POST",
+      "endpoint": "/",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "J1QL query targeting specific entity types (e.g., 'FIND aws_instance')",
+          "required": true
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "description": "Pagination cursor",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_entity",
+      "name": "Get Entity Details",
+      "description": "Retrieve detailed properties and relationships for a specific entity",
+      "http_method": "POST",
+      "endpoint": "/",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "J1QL query to fetch a specific entity by key (e.g., 'FIND * WITH _key = \"entity-key\"')",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_findings",
+      "name": "List Findings",
+      "description": "Retrieve security findings including vulnerabilities and compliance violations",
+      "http_method": "POST",
+      "endpoint": "/",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "J1QL query for findings (e.g., 'FIND Finding WITH severity = \"critical\"')",
+          "required": true
+        },
+        {
+          "name": "cursor",
+          "type": "string",
+          "description": "Pagination cursor",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_integrations",
+      "name": "List Integrations",
+      "description": "Retrieve configured integration instances and their sync status",
+      "http_method": "POST",
+      "endpoint": "/",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "GraphQL query for integration instances",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_alerts",
+      "name": "List Alert Rules",
+      "description": "Retrieve configured alert rules and their recent triggers",
+      "http_method": "POST",
+      "endpoint": "/",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "GraphQL query for alert rules",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "create_entity",
+      "name": "Create Entity",
+      "description": "Create a new entity in the JupiterOne graph",
+      "http_method": "POST",
+      "endpoint": "/",
+      "action_type": "action",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "mutation",
+          "type": "string",
+          "description": "GraphQL mutation for creating an entity",
+          "required": true
+        },
+        {
+          "name": "variables",
+          "type": "object",
+          "description": "Entity properties including _type, _class, displayName, and custom properties",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

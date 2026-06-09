@@ -1,0 +1,181 @@
+{
+  "id": "netskope",
+  "name": "Netskope",
+  "description": "Netskope Cloud Security REST API v2 for managing security policies, retrieving alerts and events, URL lists, and client management",
+  "version": "1.0.0",
+  "category": "network",
+  "vendor": "Netskope",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Netskope-Api-Token",
+    "location": "header"
+  },
+  "base_url": "https://{tenant}.goskope.com/api/v2",
+  "actions": [
+    {
+      "id": "get_alerts",
+      "name": "Get Alerts",
+      "description": "Retrieve security alerts including DLP, malware, policy violations, and compromised credentials",
+      "http_method": "GET",
+      "endpoint": "/events/data/alert",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Alert type: uba, securityassessment, quarantine, remediation, policy, malware, malsite, compromisedcredential, ctep, dlp, watchlist",
+          "required": false
+        },
+        {
+          "name": "timeperiod",
+          "type": "integer",
+          "description": "Time period in seconds to query alerts for",
+          "required": false
+        },
+        {
+          "name": "starttime",
+          "type": "integer",
+          "description": "Start time as epoch timestamp",
+          "required": false
+        },
+        {
+          "name": "endtime",
+          "type": "integer",
+          "description": "End time as epoch timestamp",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_events",
+      "name": "Get Events",
+      "description": "Retrieve security events including application, network, page, and audit events",
+      "http_method": "GET",
+      "endpoint": "/events/dataexport/events/{event_type}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "event_type",
+          "type": "string",
+          "description": "Event type: application, audit, connection, incident, infrastructure, network, page",
+          "required": true
+        },
+        {
+          "name": "starttime",
+          "type": "integer",
+          "description": "Start time as epoch timestamp",
+          "required": false
+        },
+        {
+          "name": "endtime",
+          "type": "integer",
+          "description": "End time as epoch timestamp",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_url_lists",
+      "name": "List URL Lists",
+      "description": "Retrieve all URL lists used in web policies for blocking or allowing",
+      "http_method": "GET",
+      "endpoint": "/policy/urllist",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "update_url_list",
+      "name": "Update URL List",
+      "description": "Update a URL list to add or remove URLs for policy enforcement (block domains)",
+      "http_method": "PUT",
+      "endpoint": "/policy/urllist/{list_id}",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "list_id",
+          "type": "string",
+          "description": "ID of the URL list to update",
+          "required": true
+        },
+        {
+          "name": "body",
+          "type": "object",
+          "description": "Updated URL list including name and urls array",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "create_url_list",
+      "name": "Create URL List",
+      "description": "Create a new URL list for use in blocking or policy enforcement",
+      "http_method": "POST",
+      "endpoint": "/policy/urllist",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "body",
+          "type": "object",
+          "description": "URL list definition including name, type, and urls array",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_clients",
+      "name": "List Clients",
+      "description": "Retrieve information about Netskope Client installations and status",
+      "http_method": "GET",
+      "endpoint": "/clients",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Search query for filtering clients",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_steering_config",
+      "name": "Get Steering Configuration",
+      "description": "Retrieve client steering configuration and profiles",
+      "http_method": "GET",
+      "endpoint": "/steering/config",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "get_incidents",
+      "name": "Get DLP Incidents",
+      "description": "Retrieve Data Loss Prevention incidents and policy violation details",
+      "http_method": "GET",
+      "endpoint": "/events/dataexport/events/incident",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "starttime",
+          "type": "integer",
+          "description": "Start time as epoch timestamp",
+          "required": false
+        },
+        {
+          "name": "endtime",
+          "type": "integer",
+          "description": "End time as epoch timestamp",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,191 @@
+{
+  "id": "cortex_xsoar",
+  "name": "Cortex XSOAR",
+  "description": "Palo Alto Networks SOAR platform (formerly Demisto) for security orchestration, incident management, playbook automation, and threat response coordination.",
+  "version": "1.0.0",
+  "category": "soar",
+  "vendor": "Palo Alto Networks",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "https://{host}/xsoar/api",
+  "actions": [
+    {
+      "id": "create_incident",
+      "name": "Create Incident",
+      "description": "Create a new incident in Cortex XSOAR.",
+      "http_method": "POST",
+      "endpoint": "/incident",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "name", "type": "string", "description": "Incident name/title.", "required": true},
+        {"name": "type", "type": "string", "description": "Incident type (e.g., 'Phishing', 'Malware', 'Access').", "required": true},
+        {"name": "severity", "type": "integer", "description": "Severity level: 0 (Unknown), 1 (Low), 2 (Medium), 3 (High), 4 (Critical).", "required": false},
+        {"name": "owner", "type": "string", "description": "Username of the incident owner.", "required": false},
+        {"name": "labels", "type": "array", "description": "Array of label objects with 'type' and 'value' fields.", "required": false},
+        {"name": "details", "type": "string", "description": "Incident details/description.", "required": false},
+        {"name": "customFields", "type": "object", "description": "Object with custom field key-value pairs.", "required": false},
+        {"name": "phase", "type": "string", "description": "Investigation phase.", "required": false},
+        {"name": "playbookId", "type": "string", "description": "Playbook ID to auto-run on creation.", "required": false}
+      ]
+    },
+    {
+      "id": "search_incidents",
+      "name": "Search Incidents",
+      "description": "Search and filter incidents using a query.",
+      "http_method": "POST",
+      "endpoint": "/incidents/search",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "filter", "type": "object", "description": "Filter object with query conditions.", "required": false},
+        {"name": "page", "type": "integer", "description": "Page number (0-based).", "required": false},
+        {"name": "size", "type": "integer", "description": "Number of results per page.", "required": false},
+        {"name": "sort", "type": "array", "description": "Array of sort objects with 'field' and 'asc' properties.", "required": false}
+      ]
+    },
+    {
+      "id": "get_incident",
+      "name": "Get Incident",
+      "description": "Retrieve details of a specific incident by ID.",
+      "http_method": "GET",
+      "endpoint": "/incident/{id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "id", "type": "string", "description": "The incident ID.", "required": true}
+      ]
+    },
+    {
+      "id": "update_incident",
+      "name": "Update Incident",
+      "description": "Update an existing incident's fields and properties.",
+      "http_method": "POST",
+      "endpoint": "/incident",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "id", "type": "string", "description": "Incident ID to update.", "required": true},
+        {"name": "name", "type": "string", "description": "Updated incident name.", "required": false},
+        {"name": "severity", "type": "integer", "description": "Updated severity level.", "required": false},
+        {"name": "status", "type": "integer", "description": "Status: 0 (Active), 1 (Done), 2 (Archive).", "required": false},
+        {"name": "owner", "type": "string", "description": "Updated incident owner.", "required": false},
+        {"name": "closeReason", "type": "string", "description": "Reason for closing (e.g., 'Resolved', 'False Positive', 'Duplicate').", "required": false},
+        {"name": "closeNotes", "type": "string", "description": "Notes explaining closure.", "required": false},
+        {"name": "customFields", "type": "object", "description": "Updated custom fields.", "required": false}
+      ]
+    },
+    {
+      "id": "close_incident",
+      "name": "Close Incident",
+      "description": "Close an incident with a reason and optional notes.",
+      "http_method": "POST",
+      "endpoint": "/incident",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "id", "type": "string", "description": "Incident ID to close.", "required": true},
+        {"name": "status", "type": "integer", "description": "Set to 1 (Done) to close.", "required": true},
+        {"name": "closeReason", "type": "string", "description": "Close reason: 'Resolved', 'False Positive', 'Duplicate', 'Other'.", "required": true},
+        {"name": "closeNotes", "type": "string", "description": "Notes explaining the closure.", "required": false}
+      ]
+    },
+    {
+      "id": "run_playbook",
+      "name": "Run Playbook",
+      "description": "Execute a playbook on a specific incident investigation.",
+      "http_method": "POST",
+      "endpoint": "/incident/{id}/playbook/{playbookId}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "id", "type": "string", "description": "The incident ID.", "required": true},
+        {"name": "playbookId", "type": "string", "description": "The playbook ID to execute.", "required": true}
+      ]
+    },
+    {
+      "id": "get_playbook_status",
+      "name": "Get Playbook Status",
+      "description": "Get the status of a running playbook investigation.",
+      "http_method": "GET",
+      "endpoint": "/inv-playbook/{investigationId}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "investigationId", "type": "string", "description": "The investigation (incident) ID.", "required": true}
+      ]
+    },
+    {
+      "id": "execute_command",
+      "name": "Execute Command",
+      "description": "Execute a command in an investigation and return results synchronously.",
+      "http_method": "POST",
+      "endpoint": "/entry/execute/sync",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "investigationId", "type": "string", "description": "Investigation ID to execute in.", "required": true},
+        {"name": "data", "type": "string", "description": "The command to execute (e.g., '!ip ip=8.8.8.8').", "required": true}
+      ]
+    },
+    {
+      "id": "create_entry",
+      "name": "Create Entry",
+      "description": "Create a new war room entry (note/comment) in an investigation.",
+      "http_method": "POST",
+      "endpoint": "/entry",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "investigationId", "type": "string", "description": "Investigation ID to add entry to.", "required": true},
+        {"name": "data", "type": "string", "description": "Markdown content for the entry.", "required": true}
+      ]
+    },
+    {
+      "id": "add_evidence",
+      "name": "Add Evidence",
+      "description": "Add evidence/indicator to an incident.",
+      "http_method": "POST",
+      "endpoint": "/evidence",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "incidentId", "type": "string", "description": "Incident ID to add evidence to.", "required": true},
+        {"name": "description", "type": "string", "description": "Description of the evidence.", "required": true},
+        {"name": "data", "type": "string", "description": "Evidence data content.", "required": true},
+        {"name": "tags", "type": "array", "description": "Tags for the evidence.", "required": false}
+      ]
+    },
+    {
+      "id": "search_indicators",
+      "name": "Search Indicators",
+      "description": "Search for indicators of compromise (IOCs) in the threat intelligence database.",
+      "http_method": "POST",
+      "endpoint": "/indicators/search",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "filter", "type": "object", "description": "Filter object with query conditions.", "required": false},
+        {"name": "page", "type": "integer", "description": "Page number (0-based).", "required": false},
+        {"name": "size", "type": "integer", "description": "Number of results per page.", "required": false}
+      ]
+    },
+    {
+      "id": "list_playbooks",
+      "name": "List Playbooks",
+      "description": "Retrieve a list of all available playbooks.",
+      "http_method": "POST",
+      "endpoint": "/playbook/search",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "page", "type": "integer", "description": "Page number.", "required": false},
+        {"name": "size", "type": "integer", "description": "Results per page.", "required": false}
+      ]
+    }
+  ]
+}

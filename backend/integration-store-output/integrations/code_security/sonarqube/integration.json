@@ -1,0 +1,178 @@
+{
+  "id": "sonarqube",
+  "name": "SonarQube",
+  "description": "Continuous code quality and security analysis platform for SAST, detecting bugs, vulnerabilities, and code smells",
+  "version": "1.0.0",
+  "category": "code_security",
+  "vendor": "SonarSource",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "header_name": "Authorization",
+    "prefix": "Bearer ",
+    "location": "header"
+  },
+  "base_url": "https://{host}/api",
+  "actions": [
+    {
+      "id": "search_issues",
+      "name": "Search Issues",
+      "description": "Search for code issues including bugs, vulnerabilities, and code smells with filtering",
+      "http_method": "GET",
+      "endpoint": "/issues/search",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "componentKeys",
+          "type": "string",
+          "description": "Comma-separated list of project keys",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "severities",
+          "type": "string",
+          "description": "Comma-separated severity levels: INFO, MINOR, MAJOR, CRITICAL, BLOCKER",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "types",
+          "type": "string",
+          "description": "Issue types: CODE_SMELL, BUG, VULNERABILITY, SECURITY_HOTSPOT",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "statuses",
+          "type": "string",
+          "description": "Issue statuses: OPEN, CONFIRMED, REOPENED, RESOLVED, CLOSED",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "ps",
+          "type": "integer",
+          "description": "Page size (max 500)",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "p",
+          "type": "integer",
+          "description": "Page number (1-based)",
+          "required": false,
+          "location": "query"
+        }
+      ]
+    },
+    {
+      "id": "search_projects",
+      "name": "Search Projects",
+      "description": "Search for projects by name or key",
+      "http_method": "GET",
+      "endpoint": "/projects/search",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "q",
+          "type": "string",
+          "description": "Search query to filter projects by name or key",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "ps",
+          "type": "integer",
+          "description": "Page size (max 500)",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "p",
+          "type": "integer",
+          "description": "Page number",
+          "required": false,
+          "location": "query"
+        }
+      ]
+    },
+    {
+      "id": "get_measures",
+      "name": "Get Component Measures",
+      "description": "Retrieve quality measures for a project component (e.g., vulnerabilities count, coverage, code smells)",
+      "http_method": "GET",
+      "endpoint": "/measures/component",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "component",
+          "type": "string",
+          "description": "Project or component key",
+          "required": true,
+          "location": "query"
+        },
+        {
+          "name": "metricKeys",
+          "type": "string",
+          "description": "Comma-separated metric keys (e.g., vulnerabilities, bugs, code_smells, coverage, security_rating)",
+          "required": true,
+          "location": "query"
+        }
+      ]
+    },
+    {
+      "id": "get_security_hotspots",
+      "name": "Search Security Hotspots",
+      "description": "Search for security hotspots in projects that require manual review",
+      "http_method": "GET",
+      "endpoint": "/hotspots/search",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "projectKey",
+          "type": "string",
+          "description": "Project key to search hotspots for",
+          "required": true,
+          "location": "query"
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Hotspot status filter: TO_REVIEW, REVIEWED",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "ps",
+          "type": "integer",
+          "description": "Page size",
+          "required": false,
+          "location": "query"
+        }
+      ]
+    },
+    {
+      "id": "get_quality_gate_status",
+      "name": "Get Quality Gate Status",
+      "description": "Retrieve the quality gate status for a project",
+      "http_method": "GET",
+      "endpoint": "/qualitygates/project_status",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "projectKey",
+          "type": "string",
+          "description": "Project key",
+          "required": true,
+          "location": "query"
+        }
+      ]
+    }
+  ]
+}

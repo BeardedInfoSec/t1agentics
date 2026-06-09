@@ -1,0 +1,410 @@
+{
+  "id": "airlock_digital",
+  "name": "Airlock Digital",
+  "description": "This app provides investigative, containment, and management actions for Airlock Digital's Execution Control & Allow listing endpoint product",
+  "version": "2.0.1",
+  "category": "edr",
+  "vendor": "Airlock",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "unblock_hash",
+      "name": "Unblock Hash",
+      "description": "Unblock (remove) hashes from one or more Blocklist policies",
+      "http_method": "POST",
+      "endpoint": "/actions/unblock_hash",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "hash",
+          "type": "string",
+          "description": "Hash(SHA256) of file(s) to unblock",
+          "required": true,
+          "contains": [
+            "sha256"
+          ]
+        },
+        {
+          "name": "blocklistid",
+          "type": "string",
+          "description": "Remove hash(es) from a specific blocklist by specifying the ID, or leave this blank to remove it from all blocklists",
+          "required": false,
+          "contains": [
+            "airlockdigital blocklistid"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "disallow_hash",
+      "name": "Disallow Hash",
+      "description": "Disallow (remove) hashes from one or more Application Captures",
+      "http_method": "POST",
+      "endpoint": "/actions/disallow_hash",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "hash",
+          "type": "string",
+          "description": "Hash(SHA256) of file(s) to disallow",
+          "required": true,
+          "contains": [
+            "sha256"
+          ]
+        },
+        {
+          "name": "applicationid",
+          "type": "string",
+          "description": "Remove hash(es) from a specific Application Capture by specifying the ID, or leave this blank to remove it from all Application Captures",
+          "required": false,
+          "contains": [
+            "airlockdigital applicationid"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "list_identifiers",
+      "name": "List Identifiers",
+      "description": "Gathers a list of identifiers which are required for referencing groups, applications, baselines, or blocklists in other actions",
+      "http_method": "GET",
+      "endpoint": "/hash/blocklist/remove/all",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "policy_type",
+          "type": "string",
+          "description": "The type can be group, application, baseline, or blocklist",
+          "required": true,
+          "contains": [
+            "airlockdigital policytype"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_policy",
+      "name": "List Policy",
+      "description": "List the policy configuration of a specified group",
+      "http_method": "GET",
+      "endpoint": "/hash/blocklist/remove/all",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "group_id",
+          "type": "string",
+          "description": "The Group ID of the group you want to retrieve policy configuration from",
+          "required": true,
+          "contains": [
+            "airlockdigital groupid"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "move_endpoints",
+      "name": "Move Endpoint",
+      "description": "Moves an endpoint from one group to another",
+      "http_method": "GET",
+      "endpoint": "/actions/move_endpoints",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "group_id",
+          "type": "string",
+          "description": "A destination Group ID can be obtained from the list identifiers endpoint",
+          "required": true,
+          "contains": [
+            "airlockdigital groupid"
+          ]
+        },
+        {
+          "name": "agent_id",
+          "type": "string",
+          "description": "Agent ID can be obtained from the list endpoints action",
+          "required": true,
+          "contains": [
+            "airlockdigital agentid"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "allow_hash",
+      "name": "Allow Hash",
+      "description": "Allow (add) hashes in an Application Capture policy",
+      "http_method": "POST",
+      "endpoint": "/actions/allow_hash",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "hash",
+          "type": "string",
+          "description": "Hash(SHA256) of file(s) to allow in an Application Capture",
+          "required": true,
+          "contains": [
+            "sha256"
+          ]
+        },
+        {
+          "name": "applicationid",
+          "type": "string",
+          "description": "Allow hash(es) in a specific Application Capture by specifying the ID",
+          "required": true,
+          "contains": [
+            "airlockdigital applicationid"
+          ]
+        },
+        {
+          "name": "path",
+          "type": "string",
+          "description": "Specify a file path that represents the hash of the file you are adding. If you don't want to do this, use the default however this parameter is required for the population of file repository entries in Airlock. Note that the path must be escaped",
+          "required": true,
+          "default": "C:\\\\phantom\\\\hash.dll",
+          "contains": [
+            "file path"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "block_hash",
+      "name": "Block Hash",
+      "description": "Block (add) hashes in a Blocklist policy",
+      "http_method": "POST",
+      "endpoint": "/actions/block_hash",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "hash",
+          "type": "string",
+          "description": "Hash(SHA256) of file(s) to ban/block",
+          "required": true,
+          "contains": [
+            "sha256"
+          ]
+        },
+        {
+          "name": "blocklistid",
+          "type": "string",
+          "description": "Blocklist ID",
+          "required": true,
+          "contains": [
+            "airlockdigital blocklistid"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "list_endpoints",
+      "name": "List Endpoints",
+      "description": "List all the registered agents",
+      "http_method": "GET",
+      "endpoint": "/hash/blocklist/remove/all",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "hostname",
+          "type": "string",
+          "description": "Host Name",
+          "required": false,
+          "default": "all",
+          "contains": [
+            "host name"
+          ]
+        },
+        {
+          "name": "domain",
+          "type": "string",
+          "description": "Domain Name",
+          "required": false,
+          "contains": [
+            "domain"
+          ]
+        },
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "IP Address",
+          "required": false,
+          "contains": [
+            "ip"
+          ]
+        },
+        {
+          "name": "username",
+          "type": "string",
+          "description": "Username",
+          "required": false,
+          "contains": [
+            "user name"
+          ]
+        },
+        {
+          "name": "status",
+          "type": "number",
+          "description": "Status of device",
+          "required": false,
+          "contains": [
+            "airlockdigital devicestatus"
+          ]
+        },
+        {
+          "name": "agentid",
+          "type": "string",
+          "description": "Agent ID",
+          "required": false,
+          "contains": [
+            "airlockdigital agentid"
+          ]
+        },
+        {
+          "name": "groupid",
+          "type": "string",
+          "description": "Group ID",
+          "required": false,
+          "contains": [
+            "airlockdigital groupid"
+          ]
+        },
+        {
+          "name": "os",
+          "type": "string",
+          "description": "Operating System",
+          "required": false,
+          "contains": [
+            "airlockdigital operatingsystem"
+          ]
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "otp_revoke",
+      "name": "Revoke Otp",
+      "description": "Revoke the One Time Password",
+      "http_method": "GET",
+      "endpoint": "/otp/revoke",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "otpid",
+          "type": "string",
+          "description": "The ID of the OTP Code you want to revoke",
+          "required": true,
+          "contains": [
+            "airlockdigital otpid"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "otp_retrieve",
+      "name": "Retrieve Otp",
+      "description": "Retrieve the One Time Password",
+      "http_method": "GET",
+      "endpoint": "/otp/retrieve",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "agentid",
+          "type": "string",
+          "description": "Agent ID can be found using /agent/find, this will be the unique ID of a computer",
+          "required": true,
+          "contains": [
+            "airlockdigital agentid"
+          ]
+        },
+        {
+          "name": "purpose",
+          "type": "string",
+          "description": "Purpose of requesting the OTP Code",
+          "required": true,
+          "default": "Requested by Splunk Phantom Action",
+          "contains": [
+            "airlockdigital otpreason"
+          ]
+        },
+        {
+          "name": "duration",
+          "type": "string",
+          "description": "Duration of OTP Code",
+          "required": true,
+          "default": "15m",
+          "contains": [
+            "airlockdigital otpduration"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lookup_hash",
+      "name": "Lookup Hash",
+      "description": "Lookup SHA256 hash",
+      "http_method": "GET",
+      "endpoint": "/hash/blocklist/remove/all",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "hash",
+          "type": "string",
+          "description": "Hash(SHA256) to lookup",
+          "required": true,
+          "contains": [
+            "sha256"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Airlock Digital",
+    "original_type": "endpoint",
+    "converted_at": "2025-12-18T16:25:28.551558",
+    "source_version": "2.0.1"
+  }
+}

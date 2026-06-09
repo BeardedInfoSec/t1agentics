@@ -1,0 +1,606 @@
+{
+  "id": "threatq",
+  "name": "ThreatQ",
+  "description": "Integrates a variety of ThreatQ services into Splunk SOAR",
+  "version": "2.4.0",
+  "category": "threat_intel",
+  "vendor": "ThreatQuotient",
+  "auth_type": "basic_auth",
+  "auth_config": {
+    "type": "basic_auth",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "query_indicators",
+      "name": "Query Indicators",
+      "description": "Query ThreatQ for indicator context",
+      "http_method": "GET",
+      "endpoint": "/actions/query_indicators",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "indicator_list",
+          "type": "string",
+          "description": "A comma-separated or line-separated list of indicator values",
+          "required": true,
+          "contains": [
+            "domain",
+            "ip",
+            "email",
+            "url",
+            "hash",
+            "sha256",
+            "string",
+            "file name",
+            "file path",
+            "host name",
+            "md5",
+            "process name",
+            "sha1",
+            "user name"
+          ]
+        },
+        {
+          "name": "exact",
+          "type": "boolean",
+          "description": "Do we want to find an exact match or an approximate match?",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "with_all_relationships",
+          "type": "boolean",
+          "description": "Should we fetch all relationships with this action?",
+          "required": false,
+          "default": false
+        }
+      ]
+    },
+    {
+      "id": "create_indicators",
+      "name": "Create Indicators",
+      "description": "Create indicators within ThreatQ",
+      "http_method": "GET",
+      "endpoint": "/actions/create_indicators",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "indicator_list",
+          "type": "string",
+          "description": "A comma-separated or line-separated list of indicators and indicator type (optional) name/value pairs (e.g.: IP Address: 1.1.1.1)",
+          "required": true,
+          "contains": [
+            "domain",
+            "ip",
+            "email",
+            "url",
+            "hash",
+            "sha256",
+            "string",
+            "file name",
+            "file path",
+            "host name",
+            "md5",
+            "process name",
+            "sha1",
+            "user name"
+          ]
+        },
+        {
+          "name": "indicator_status",
+          "type": "string",
+          "description": "The default status for the indicators uploaded to ThreatQ",
+          "required": false,
+          "default": "Active"
+        }
+      ]
+    },
+    {
+      "id": "create_adversaries",
+      "name": "Create Adversaries",
+      "description": "Create adversaries within ThreatQ",
+      "http_method": "GET",
+      "endpoint": "/actions/create_adversaries",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "adversary_list",
+          "type": "string",
+          "description": "A comma-separated or line-separated list of adversary names",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "create_custom_objects",
+      "name": "Create Custom Objects",
+      "description": "Create custom objects within ThreatQ",
+      "http_method": "GET",
+      "endpoint": "/actions/create_custom_objects",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "object_list",
+          "type": "string",
+          "description": "A comma-separated or line-separated list of custom object values",
+          "required": true
+        },
+        {
+          "name": "object_type",
+          "type": "string",
+          "description": "The object type of the specified list values",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "add_attribute",
+      "name": "Add Attribute",
+      "description": "Adds an attribute to objects in ThreatQ",
+      "http_method": "GET",
+      "endpoint": "/actions/add_attribute",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "object_list",
+          "type": "string",
+          "description": "A comma-separated or line-separated list of object values",
+          "required": true
+        },
+        {
+          "name": "object_type",
+          "type": "string",
+          "description": "The object type of the specified list values",
+          "required": true
+        },
+        {
+          "name": "attribute_name",
+          "type": "string",
+          "description": "The name of the attribute in ThreatQ",
+          "required": true
+        },
+        {
+          "name": "attribute_value",
+          "type": "string",
+          "description": "The value fo the attribute in ThreatQ",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "add_comment",
+      "name": "Add Comment",
+      "description": "Adds a comment to objects in ThreatQ",
+      "http_method": "GET",
+      "endpoint": "/actions/add_comment",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "object_list",
+          "type": "string",
+          "description": "A comma-separated or line-separated list of object values",
+          "required": true
+        },
+        {
+          "name": "object_type",
+          "type": "string",
+          "description": "The object type of the specified list values",
+          "required": true
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "The comment to add to the objects",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "add_tag",
+      "name": "Add Tag",
+      "description": "Adds a tag to objects in ThreatQ",
+      "http_method": "GET",
+      "endpoint": "/actions/add_tag",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "object_list",
+          "type": "string",
+          "description": "A comma-separated or line-separated list of object values",
+          "required": true
+        },
+        {
+          "name": "object_type",
+          "type": "string",
+          "description": "The object type of the specified list values",
+          "required": true
+        },
+        {
+          "name": "tag",
+          "type": "string",
+          "description": "The tag to add to the objects",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "set_indicator_status",
+      "name": "Set Indicator Status",
+      "description": "Set a status for a given list of indicators",
+      "http_method": "GET",
+      "endpoint": "/actions/set_indicator_status",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "indicator_list",
+          "type": "string",
+          "description": "A comma-separated or line-separated list of indicators and indicator type (optional) name/value pairs (e.g.: IP Address: 1.1.1.1)",
+          "required": true,
+          "contains": [
+            "domain",
+            "ip",
+            "email",
+            "url",
+            "hash",
+            "sha256",
+            "string",
+            "file name",
+            "file path",
+            "host name",
+            "md5",
+            "process name",
+            "sha1",
+            "user name"
+          ]
+        },
+        {
+          "name": "indicator_status",
+          "type": "string",
+          "description": "The status to give to the list of indicators",
+          "required": true,
+          "default": "Active"
+        }
+      ]
+    },
+    {
+      "id": "create_task",
+      "name": "Create Task",
+      "description": "Create a task within ThreatQ",
+      "http_method": "GET",
+      "endpoint": "/actions/create_task",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "task_prefix",
+          "type": "string",
+          "description": "Prefix for the task name",
+          "required": false,
+          "default": "Investigate Event"
+        },
+        {
+          "name": "task_name",
+          "type": "string",
+          "description": "Task name",
+          "required": true
+        },
+        {
+          "name": "assigned_to",
+          "type": "string",
+          "description": "ThreatQ user to assign the task to",
+          "required": false
+        },
+        {
+          "name": "task_status",
+          "type": "string",
+          "description": "Task status in ThreatQ",
+          "required": true
+        },
+        {
+          "name": "task_priority",
+          "type": "string",
+          "description": "Task priority in ThreatQ",
+          "required": true
+        },
+        {
+          "name": "task_description",
+          "type": "string",
+          "description": "Task description in ThreatQ",
+          "required": false
+        },
+        {
+          "name": "indicator_list",
+          "type": "string",
+          "description": "List of indicator values (use format node)",
+          "required": false,
+          "contains": [
+            "domain",
+            "ip",
+            "email",
+            "url",
+            "hash",
+            "sha256",
+            "string",
+            "file name",
+            "file path",
+            "host name",
+            "md5",
+            "process name",
+            "sha1",
+            "user name"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "create_event",
+      "name": "Create Event",
+      "description": "Create an event within ThreatQ",
+      "http_method": "GET",
+      "endpoint": "/actions/create_event",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "event_type",
+          "type": "string",
+          "description": "The event type in ThreatQ",
+          "required": true,
+          "default": "Incident"
+        },
+        {
+          "name": "indicator_list",
+          "type": "string",
+          "description": "List of comma-separated or line-separated indicator",
+          "required": false,
+          "contains": [
+            "domain",
+            "ip",
+            "email",
+            "url",
+            "hash",
+            "sha256",
+            "string",
+            "file name",
+            "file path",
+            "host name",
+            "md5",
+            "process name",
+            "sha1",
+            "user name"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "start_investigation",
+      "name": "Start Investigation",
+      "description": "Start an investigation within ThreatQ",
+      "http_method": "GET",
+      "endpoint": "/actions/start_investigation",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "investigation_name",
+          "type": "string",
+          "description": "The investigation name",
+          "required": true
+        },
+        {
+          "name": "investigation_priority",
+          "type": "string",
+          "description": "The investigation's priority",
+          "required": true
+        },
+        {
+          "name": "investigation_visibility",
+          "type": "string",
+          "description": "The investigation's sharing status",
+          "required": true
+        },
+        {
+          "name": "investigation_description",
+          "type": "string",
+          "description": "The investigation's description",
+          "required": false
+        },
+        {
+          "name": "indicator_list",
+          "type": "string",
+          "description": "List of comma-separated or line-separated indicator",
+          "required": true,
+          "contains": [
+            "domain",
+            "ip",
+            "email",
+            "url",
+            "hash",
+            "sha256",
+            "string",
+            "file name",
+            "file path",
+            "host name",
+            "md5",
+            "process name",
+            "sha1",
+            "user name"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "upload_spearphish",
+      "name": "Upload Spearphish",
+      "description": "Upload a spearphish attempt to ThreatQ",
+      "http_method": "GET",
+      "endpoint": "/actions/upload_spearphish",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "vault_id",
+          "type": "string",
+          "description": "The Vault ID for the spearphish email file",
+          "required": true,
+          "contains": [
+            "vault id"
+          ]
+        },
+        {
+          "name": "indicator_status",
+          "type": "string",
+          "description": "Default indicator status. If none selected, Review is used",
+          "required": false,
+          "default": "Review"
+        }
+      ]
+    },
+    {
+      "id": "upload_file",
+      "name": "Upload File",
+      "description": "Upload (and parse) a file to ThreatQ",
+      "http_method": "GET",
+      "endpoint": "/actions/upload_file",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "vault_id",
+          "type": "string",
+          "description": "The Vault ID for the file to upload",
+          "required": true,
+          "contains": [
+            "vault id"
+          ]
+        },
+        {
+          "name": "parse_for_indicators",
+          "type": "boolean",
+          "description": "Whether or not to parse the file for indicators",
+          "required": true
+        },
+        {
+          "name": "indicator_status",
+          "type": "string",
+          "description": "Default indicator status. If none selected, Review is used",
+          "required": false,
+          "default": "Review"
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "get_related_objects",
+      "name": "Get Related Objects",
+      "description": "Query ThreatQ for an object's relationships",
+      "http_method": "GET",
+      "endpoint": "/actions/get_related_objects",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "object_list",
+          "type": "string",
+          "description": "A comma-separated or line-separated list of custom object values",
+          "required": true
+        },
+        {
+          "name": "object_type",
+          "type": "string",
+          "description": "The object type of the specified list values",
+          "required": true
+        },
+        {
+          "name": "related_object_type",
+          "type": "string",
+          "description": "The object type of the relationships you want to find",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "create_signature",
+      "name": "Create Signature",
+      "description": "Create a signature within ThreatQ",
+      "http_method": "GET",
+      "endpoint": "/actions/create_signature",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "signature_name",
+          "type": "string",
+          "description": "The name for the signature uploaded to ThreatQ",
+          "required": true
+        },
+        {
+          "name": "signature_value",
+          "type": "string",
+          "description": "The value for the signature uploaded to ThreatQ",
+          "required": true
+        },
+        {
+          "name": "signature_type",
+          "type": "string",
+          "description": "The type for the signature uploaded to ThreatQ",
+          "required": true
+        },
+        {
+          "name": "signature_status",
+          "type": "string",
+          "description": "The status for the signature uploaded to ThreatQ",
+          "required": true,
+          "default": "Active"
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "ThreatQ",
+    "original_type": "information",
+    "converted_at": "2025-12-18T16:25:29.229408",
+    "source_version": "2.4.0"
+  }
+}

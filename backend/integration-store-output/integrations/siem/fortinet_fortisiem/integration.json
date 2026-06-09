@@ -1,0 +1,176 @@
+{
+  "id": "fortinet_fortisiem",
+  "name": "Fortinet FortiSIEM",
+  "description": "Integrates with FortiSIEM for incident retrieval, event querying, CMDB management, and dashboard monitoring via the FortiSIEM REST API",
+  "version": "1.0.0",
+  "category": "siem",
+  "vendor": "Fortinet",
+  "auth_type": "basic",
+  "auth_config": {
+    "type": "basic",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "https://{host}/phoenix/rest",
+  "actions": [
+    {
+      "id": "get_incidents",
+      "name": "Get Incidents",
+      "description": "Retrieve incidents from FortiSIEM with optional time range filtering",
+      "http_method": "GET",
+      "endpoint": "/pub/incident",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "timeFrom",
+          "type": "number",
+          "description": "Start time in epoch milliseconds",
+          "required": false
+        },
+        {
+          "name": "timeTo",
+          "type": "number",
+          "description": "End time in epoch milliseconds",
+          "required": false
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Filter by incident status",
+          "required": false
+        },
+        {
+          "name": "size",
+          "type": "number",
+          "description": "Number of incidents to return",
+          "required": false,
+          "default": 50
+        }
+      ]
+    },
+    {
+      "id": "get_incident_details",
+      "name": "Get Incident Details",
+      "description": "Retrieve details for a specific incident by ID",
+      "http_method": "GET",
+      "endpoint": "/pub/incident/{incidentId}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "incidentId",
+          "type": "number",
+          "description": "Incident ID to retrieve",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "submit_event_query",
+      "name": "Submit Event Query",
+      "description": "Submit an XML-based event query to FortiSIEM and get a query ID for polling",
+      "http_method": "POST",
+      "endpoint": "/query/eventQuery",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "queryXml",
+          "type": "string",
+          "description": "XML-formatted query definition",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "poll_query_progress",
+      "name": "Poll Query Progress",
+      "description": "Check the progress/status of a submitted event query",
+      "http_method": "GET",
+      "endpoint": "/query/progress/{queryId}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "queryId",
+          "type": "string",
+          "description": "Query ID returned from submit_event_query",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_query_results",
+      "name": "Get Query Results",
+      "description": "Retrieve results of a completed event query",
+      "http_method": "GET",
+      "endpoint": "/query/results/{queryId}/{begin}/{end}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "queryId",
+          "type": "string",
+          "description": "Query ID to retrieve results for",
+          "required": true
+        },
+        {
+          "name": "begin",
+          "type": "number",
+          "description": "Beginning index of results",
+          "required": true,
+          "default": 0
+        },
+        {
+          "name": "end",
+          "type": "number",
+          "description": "Ending index of results",
+          "required": true,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "get_cmdb_devices",
+      "name": "Get CMDB Devices",
+      "description": "Retrieve devices from the FortiSIEM CMDB",
+      "http_method": "GET",
+      "endpoint": "/cmdbDeviceInfo/devices",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "includeDetails",
+          "type": "boolean",
+          "description": "Include full device details",
+          "required": false,
+          "default": false
+        }
+      ]
+    },
+    {
+      "id": "clear_incident",
+      "name": "Clear Incident",
+      "description": "Clear or close an incident in FortiSIEM",
+      "http_method": "POST",
+      "endpoint": "/pub/incident/{incidentId}/clear",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "incidentId",
+          "type": "number",
+          "description": "Incident ID to clear",
+          "required": true
+        },
+        {
+          "name": "comments",
+          "type": "string",
+          "description": "Comments for clearing the incident",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

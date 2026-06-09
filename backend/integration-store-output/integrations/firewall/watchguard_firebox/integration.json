@@ -1,0 +1,156 @@
+{
+  "id": "watchguard_firebox",
+  "name": "WatchGuard Firebox",
+  "description": "WatchGuard Firebox Management API for managing firewall policies, address lists, and security services via WatchGuard Cloud",
+  "version": "1.0.0",
+  "category": "firewall",
+  "vendor": "WatchGuard",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "header_name": "Authorization",
+    "location": "header",
+    "token_prefix": "Bearer"
+  },
+  "base_url": "https://api.watchguard.com/rest/firebox/v1",
+  "actions": [
+    {
+      "id": "list_firewall_policies",
+      "name": "List Firewall Policies",
+      "description": "Retrieve all firewall policies configured on the Firebox",
+      "http_method": "GET",
+      "endpoint": "/policies",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "limit",
+          "type": "integer",
+          "description": "Maximum number of policies to return",
+          "required": false
+        },
+        {
+          "name": "start_after",
+          "type": "string",
+          "description": "Pagination cursor for next page",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_firewall_policy",
+      "name": "Get Firewall Policy",
+      "description": "Retrieve a specific firewall policy by ID",
+      "http_method": "GET",
+      "endpoint": "/policies/{policy_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "policy_id",
+          "type": "string",
+          "description": "ID of the policy to retrieve",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "create_firewall_policy",
+      "name": "Create Firewall Policy",
+      "description": "Create a new firewall policy on the Firebox",
+      "http_method": "POST",
+      "endpoint": "/policies",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "body",
+          "type": "object",
+          "description": "Policy configuration including name, type, source, destination, services, and action",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_blocked_sites",
+      "name": "List Blocked Sites",
+      "description": "Retrieve the blocked sites list configured on the Firebox",
+      "http_method": "GET",
+      "endpoint": "/blocked-sites",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "add_blocked_site",
+      "name": "Add Blocked Site",
+      "description": "Add an IP address, subnet, or hostname to the blocked sites list",
+      "http_method": "POST",
+      "endpoint": "/blocked-sites",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "body",
+          "type": "object",
+          "description": "Blocked site entry including type (ip, subnet, hostname) and value",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "remove_blocked_site",
+      "name": "Remove Blocked Site",
+      "description": "Remove an entry from the blocked sites list",
+      "http_method": "DELETE",
+      "endpoint": "/blocked-sites/{entry_id}",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "entry_id",
+          "type": "string",
+          "description": "ID of the blocked site entry to remove",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_aliases",
+      "name": "List Aliases",
+      "description": "Retrieve all alias objects (address groups) on the Firebox",
+      "http_method": "GET",
+      "endpoint": "/aliases",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "get_system_info",
+      "name": "Get System Info",
+      "description": "Retrieve Firebox system information including model, firmware, and serial number",
+      "http_method": "GET",
+      "endpoint": "/system/info",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "get_traffic_monitor",
+      "name": "Get Traffic Monitor",
+      "description": "Retrieve real-time traffic monitoring data from the Firebox",
+      "http_method": "GET",
+      "endpoint": "/traffic-monitor",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "limit",
+          "type": "integer",
+          "description": "Maximum number of entries to return",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,271 @@
+{
+  "id": "sophos_intercept_x",
+  "name": "Sophos Intercept X",
+  "description": "Integrates with Sophos Central APIs for endpoint protection, alert management, endpoint isolation, and tamper protection configuration",
+  "version": "1.0.0",
+  "category": "edr",
+  "vendor": "Sophos",
+  "auth_type": "oauth2_client",
+  "auth_config": {
+    "type": "oauth2_client",
+    "token_url": "https://id.sophos.com/api/v2/oauth2/token"
+  },
+  "base_url": "https://api.central.sophos.com",
+  "actions": [
+    {
+      "id": "list_alerts",
+      "name": "List Alerts",
+      "description": "Retrieve alerts from Sophos Central with filtering options",
+      "http_method": "GET",
+      "endpoint": "/common/v1/alerts",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "pageSize",
+          "type": "number",
+          "description": "Maximum number of alerts to return per page",
+          "required": false,
+          "default": 50
+        },
+        {
+          "name": "pageFromKey",
+          "type": "string",
+          "description": "Key for next page pagination",
+          "required": false
+        },
+        {
+          "name": "from",
+          "type": "string",
+          "description": "Start date-time for alert query (ISO 8601)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_alert",
+      "name": "Get Alert",
+      "description": "Retrieve details of a specific alert by its ID",
+      "http_method": "GET",
+      "endpoint": "/common/v1/alerts/{alert_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "alert_id",
+          "type": "string",
+          "description": "The unique identifier of the alert",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "update_alert",
+      "name": "Update Alert",
+      "description": "Take action on an alert such as acknowledging or resolving it",
+      "http_method": "POST",
+      "endpoint": "/common/v1/alerts/{alert_id}/actions",
+      "action_type": "correct",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "alert_id",
+          "type": "string",
+          "description": "The unique identifier of the alert",
+          "required": true
+        },
+        {
+          "name": "action",
+          "type": "string",
+          "description": "Action to take: acknowledge, cleanPua, authPua, clean",
+          "required": true
+        },
+        {
+          "name": "message",
+          "type": "string",
+          "description": "Optional message for the action",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_endpoints",
+      "name": "List Endpoints",
+      "description": "Retrieve a list of managed endpoints (computers and servers)",
+      "http_method": "GET",
+      "endpoint": "/endpoint/v1/endpoints",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "pageSize",
+          "type": "number",
+          "description": "Maximum number of endpoints to return per page",
+          "required": false,
+          "default": 50
+        },
+        {
+          "name": "pageFromKey",
+          "type": "string",
+          "description": "Key for next page pagination",
+          "required": false
+        },
+        {
+          "name": "healthStatus",
+          "type": "string",
+          "description": "Filter by health status: good, suspicious, bad, unknown",
+          "required": false
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Filter by endpoint type: computer, server",
+          "required": false
+        },
+        {
+          "name": "search",
+          "type": "string",
+          "description": "Search term for hostname, IP address, or associated person",
+          "required": false
+        }
+      ],
+      "observable_type": "hostname"
+    },
+    {
+      "id": "get_endpoint",
+      "name": "Get Endpoint Details",
+      "description": "Retrieve detailed information about a specific endpoint",
+      "http_method": "GET",
+      "endpoint": "/endpoint/v1/endpoints/{endpoint_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "endpoint_id",
+          "type": "string",
+          "description": "The unique identifier of the endpoint",
+          "required": true
+        }
+      ],
+      "observable_type": "hostname"
+    },
+    {
+      "id": "isolate_endpoint",
+      "name": "Isolate Endpoint",
+      "description": "Isolate one or more endpoints from the network",
+      "http_method": "POST",
+      "endpoint": "/endpoint/v1/endpoints/isolation",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "enabled",
+          "type": "boolean",
+          "description": "Set to true to isolate, false to remove isolation",
+          "required": true
+        },
+        {
+          "name": "ids",
+          "type": "string",
+          "description": "JSON array of endpoint IDs to isolate",
+          "required": true
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "Comment describing the reason for isolation",
+          "required": false
+        }
+      ],
+      "observable_type": "hostname"
+    },
+    {
+      "id": "scan_endpoint",
+      "name": "Scan Endpoint",
+      "description": "Trigger an on-demand scan on a specific endpoint",
+      "http_method": "POST",
+      "endpoint": "/endpoint/v1/endpoints/{endpoint_id}/scans",
+      "action_type": "correct",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "endpoint_id",
+          "type": "string",
+          "description": "The unique identifier of the endpoint to scan",
+          "required": true
+        }
+      ],
+      "observable_type": "hostname"
+    },
+    {
+      "id": "get_tamper_protection",
+      "name": "Get Tamper Protection Status",
+      "description": "Retrieve the tamper protection status and password for an endpoint",
+      "http_method": "GET",
+      "endpoint": "/endpoint/v1/endpoints/{endpoint_id}/tamper-protection",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "endpoint_id",
+          "type": "string",
+          "description": "The unique identifier of the endpoint",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_allowed_items",
+      "name": "List Allowed Items",
+      "description": "Retrieve the list of allowed items (exclusions) in the environment",
+      "http_method": "GET",
+      "endpoint": "/endpoint/v1/settings/allowed-items",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "pageSize",
+          "type": "number",
+          "description": "Maximum number of items to return per page",
+          "required": false,
+          "default": 50
+        },
+        {
+          "name": "pageFromKey",
+          "type": "string",
+          "description": "Key for next page pagination",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "add_allowed_item",
+      "name": "Add Allowed Item",
+      "description": "Add a new item to the allowed list (exclusion) for a specific property type",
+      "http_method": "POST",
+      "endpoint": "/endpoint/v1/settings/allowed-items",
+      "action_type": "correct",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Type of property to allow: sha256, path, certificateSigner, detectionId",
+          "required": true
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "description": "The value of the item to allow",
+          "required": true
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "Comment explaining why the item is allowed",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,220 @@
+{
+  "id": "cortex_xpanse",
+  "name": "Cortex Xpanse",
+  "description": "Active attack surface management solution providing continuous internet asset discovery, risk assessment, and automated remediation of exposures across the entire external attack surface",
+  "version": "1.0.0",
+  "category": "asm",
+  "vendor": "Palo Alto Networks",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "header_format": "{api_key_id}:{api_key}",
+    "location": "header"
+  },
+  "base_url": "https://api-{fqdn}/public_api/v1",
+  "actions": [
+    {
+      "id": "list_external_services",
+      "name": "List External Services",
+      "description": "Retrieve a list of discovered external-facing services and their risk assessment",
+      "http_method": "POST",
+      "endpoint": "/assets/get_external_services",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "request_data",
+          "type": "object",
+          "description": "Request body containing filters and search parameters",
+          "required": false
+        },
+        {
+          "name": "search_from",
+          "type": "integer",
+          "description": "Starting index for pagination",
+          "required": false
+        },
+        {
+          "name": "search_to",
+          "type": "integer",
+          "description": "Ending index for pagination",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_external_service",
+      "name": "Get External Service Details",
+      "description": "Retrieve detailed information about a specific external service including configuration and exposures",
+      "http_method": "POST",
+      "endpoint": "/assets/get_external_service",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "service_id",
+          "type": "string",
+          "description": "The unique identifier of the external service",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_domain_assets",
+      "name": "List Domain Assets",
+      "description": "Retrieve discovered domain assets in the attack surface",
+      "http_method": "POST",
+      "endpoint": "/assets/get_external_exposures/domain",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "search_from",
+          "type": "integer",
+          "description": "Starting index for pagination",
+          "required": false
+        },
+        {
+          "name": "search_to",
+          "type": "integer",
+          "description": "Ending index for pagination",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_ip_range_assets",
+      "name": "List IP Range Assets",
+      "description": "Retrieve discovered IP range assets in the attack surface",
+      "http_method": "POST",
+      "endpoint": "/assets/get_external_ip_address_range",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "search_from",
+          "type": "integer",
+          "description": "Starting index for pagination",
+          "required": false
+        },
+        {
+          "name": "search_to",
+          "type": "integer",
+          "description": "Ending index for pagination",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_issues",
+      "name": "List Issues",
+      "description": "Retrieve all security issues and exposures found across the attack surface",
+      "http_method": "POST",
+      "endpoint": "/issues/get_issues",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "request_data",
+          "type": "object",
+          "description": "Request body with filters for issue type, severity, and status",
+          "required": false
+        },
+        {
+          "name": "search_from",
+          "type": "integer",
+          "description": "Starting index for pagination",
+          "required": false
+        },
+        {
+          "name": "search_to",
+          "type": "integer",
+          "description": "Ending index for pagination",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_issue_updates",
+      "name": "Get Issue Updates",
+      "description": "Retrieve updates and changes to issues including status transitions and remediation actions",
+      "http_method": "POST",
+      "endpoint": "/issues/get_all_issue_updates",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "request_data",
+          "type": "object",
+          "description": "Request body with time range and filter criteria",
+          "required": false
+        },
+        {
+          "name": "include",
+          "type": "string",
+          "description": "Set to 'issue' to include full issue information in response",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_incidents",
+      "name": "List Incidents",
+      "description": "Retrieve security incidents generated from attack surface findings",
+      "http_method": "POST",
+      "endpoint": "/incidents/get_incidents",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "request_data",
+          "type": "object",
+          "description": "Request body with filter criteria",
+          "required": false
+        },
+        {
+          "name": "search_from",
+          "type": "integer",
+          "description": "Starting index for pagination",
+          "required": false
+        },
+        {
+          "name": "search_to",
+          "type": "integer",
+          "description": "Ending index for pagination",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "update_issue",
+      "name": "Update Issue",
+      "description": "Update the status or assignee of a specific issue",
+      "http_method": "POST",
+      "endpoint": "/issues/update_issue",
+      "action_type": "action",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "issue_id",
+          "type": "string",
+          "description": "The unique identifier of the issue to update",
+          "required": true
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "New status for the issue",
+          "required": false
+        },
+        {
+          "name": "assignee",
+          "type": "string",
+          "description": "Email of the user to assign the issue to",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,268 @@
+{
+  "id": "extrahop_revealx",
+  "name": "ExtraHop RevealX",
+  "description": "Cloud-native network detection and response platform providing real-time visibility, detection, and response across hybrid environments",
+  "version": "1.0.0",
+  "category": "ndr",
+  "vendor": "ExtraHop",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header",
+    "prefix": "Bearer"
+  },
+  "base_url": "https://{host}/api/v1",
+  "actions": [
+    {
+      "id": "get_detections",
+      "name": "Get Detections",
+      "description": "Retrieve detections matching specified filter criteria",
+      "http_method": "POST",
+      "endpoint": "/detections/search",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "filter",
+          "type": "object",
+          "description": "Filter object specifying detection search criteria",
+          "required": false
+        },
+        {
+          "name": "from",
+          "type": "number",
+          "description": "Start time in epoch milliseconds",
+          "required": false
+        },
+        {
+          "name": "until",
+          "type": "number",
+          "description": "End time in epoch milliseconds",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of detections to return",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Number of detections to skip for pagination",
+          "required": false,
+          "default": 0
+        }
+      ]
+    },
+    {
+      "id": "get_detection",
+      "name": "Get Detection Details",
+      "description": "Retrieve detailed information about a specific detection by ID",
+      "http_method": "GET",
+      "endpoint": "/detections/{id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "number",
+          "description": "The detection ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "search_devices",
+      "name": "Search Devices",
+      "description": "Search for devices matching specified criteria",
+      "http_method": "POST",
+      "endpoint": "/devices/search",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "filter",
+          "type": "object",
+          "description": "Filter criteria for device search",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of devices to return",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Number of devices to skip for pagination",
+          "required": false,
+          "default": 0
+        }
+      ]
+    },
+    {
+      "id": "get_device",
+      "name": "Get Device Details",
+      "description": "Retrieve detailed information about a specific device",
+      "http_method": "GET",
+      "endpoint": "/devices/{id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "number",
+          "description": "The device ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "search_records",
+      "name": "Search Records",
+      "description": "Search network flow records and transaction records",
+      "http_method": "POST",
+      "endpoint": "/records/search",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "from",
+          "type": "number",
+          "description": "Start time in epoch milliseconds",
+          "required": true
+        },
+        {
+          "name": "until",
+          "type": "number",
+          "description": "End time in epoch milliseconds",
+          "required": true
+        },
+        {
+          "name": "filter",
+          "type": "object",
+          "description": "Filter criteria for record search",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of records to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "get_alerts",
+      "name": "Get Alerts",
+      "description": "Retrieve alert rules configured in ExtraHop",
+      "http_method": "GET",
+      "endpoint": "/alerts",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "get_metrics",
+      "name": "Get Metrics",
+      "description": "Retrieve metrics for a specific device or network object",
+      "http_method": "POST",
+      "endpoint": "/metrics",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "cycle",
+          "type": "string",
+          "description": "Aggregation period (auto, 30sec, 5min, 1hr, 24hr)",
+          "required": true
+        },
+        {
+          "name": "from",
+          "type": "number",
+          "description": "Start time in epoch milliseconds",
+          "required": true
+        },
+        {
+          "name": "until",
+          "type": "number",
+          "description": "End time in epoch milliseconds",
+          "required": true
+        },
+        {
+          "name": "metric_category",
+          "type": "string",
+          "description": "The metric category to retrieve",
+          "required": true
+        },
+        {
+          "name": "object_ids",
+          "type": "array",
+          "description": "Array of object IDs to get metrics for",
+          "required": true
+        },
+        {
+          "name": "object_type",
+          "type": "string",
+          "description": "The type of object (device, network, etc.)",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "update_detection",
+      "name": "Update Detection",
+      "description": "Update the status or assignee of a detection",
+      "http_method": "PATCH",
+      "endpoint": "/detections/{id}",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "number",
+          "description": "The detection ID",
+          "required": true
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "New status (new, in_progress, closed, acknowledged)",
+          "required": false
+        },
+        {
+          "name": "assignee",
+          "type": "string",
+          "description": "Username to assign the detection to",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_device_groups",
+      "name": "Get Device Groups",
+      "description": "Retrieve all device groups defined in the system",
+      "http_method": "GET",
+      "endpoint": "/devicegroups",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "get_activity_map",
+      "name": "Get Activity Map",
+      "description": "Retrieve network activity map data for visualization",
+      "http_method": "GET",
+      "endpoint": "/activitymaps",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    }
+  ]
+}

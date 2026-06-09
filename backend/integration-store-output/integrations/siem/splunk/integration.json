@@ -1,37 +1,291 @@
 {
   "id": "splunk",
   "name": "Splunk",
-  "description": "Integration with Splunk for security operations",
-  "version": "1.0.0",
+  "description": "This app integrates with Splunk to update data on the device, in addition to investigate and ingestion actions",
+  "version": "2.20.2",
   "category": "siem",
-  "vendor": "Splunk",
-  "auth_type": "bearer_token",
+  "vendor": "Splunk Inc.",
+  "auth_type": "basic_auth",
   "auth_config": {
-    "type": "bearer_token",
+    "type": "basic_auth",
     "header_name": "Authorization",
     "location": "header"
   },
   "base_url": "",
   "actions": [
     {
-      "id": "search",
-      "name": "Run Search",
-      "http_method": "POST",
-      "endpoint": "/services/search/jobs",
+      "id": "get_host_events",
+      "name": "Get Host Events",
+      "description": "Get events pertaining to a host that have occurred in the last 'N' days",
+      "http_method": "GET",
+      "endpoint": "/actions/get_host_events",
+      "action_type": "investigate",
       "read_only": true,
-      "cacheable": false,
-      "cache_ttl_days": 30,
-      "description": "Run a Splunk search query"
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "ip_hostname",
+          "type": "string",
+          "description": "Hostname/IP to search the events of",
+          "required": true,
+          "contains": [
+            "ip",
+            "host name"
+          ]
+        },
+        {
+          "name": "last_n_days",
+          "type": "number",
+          "description": "Number of days ago",
+          "required": false
+        }
+      ]
     },
     {
-      "id": "send_event",
-      "name": "Send Event to HEC",
-      "http_method": "POST",
-      "endpoint": "/services/collector/event",
+      "id": "on_poll",
+      "name": "On Poll",
+      "description": "Ingest logs from the Splunk instance",
+      "http_method": "GET",
+      "endpoint": "/actions/on_poll",
+      "action_type": "ingest",
       "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "container_id",
+          "type": "number",
+          "description": "Parameter ignored in this app",
+          "required": false
+        },
+        {
+          "name": "start_time",
+          "type": "number",
+          "description": "Parameter ignored in this app",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "number",
+          "description": "Parameter ignored in this app",
+          "required": false
+        },
+        {
+          "name": "container_count",
+          "type": "number",
+          "description": "Maximum number of events to query for",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "artifact_count",
+          "type": "number",
+          "description": "Parameter ignored in this app",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "run_query",
+      "name": "Run Query",
+      "description": "Run a search query on the Splunk device. Please escape any quotes that are part of the query string",
+      "http_method": "GET",
+      "endpoint": "/actions/run_query",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "command",
+          "type": "string",
+          "description": "Beginning command (in Splunk Processing Language)",
+          "required": false,
+          "default": "search"
+        },
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Query to run (in Splunk Processing Language)",
+          "required": true,
+          "contains": [
+            "splunk query"
+          ]
+        },
+        {
+          "name": "display",
+          "type": "string",
+          "description": "Display fields (comma-separated)",
+          "required": false
+        },
+        {
+          "name": "parse_only",
+          "type": "boolean",
+          "description": "Parse only",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "add_raw_field",
+          "type": "boolean",
+          "description": "Ingest _raw field data",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "attach_result",
+          "type": "boolean",
+          "description": "Attach result to the vault",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "start_time",
+          "type": "string",
+          "description": "Earliest time modifier",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "string",
+          "description": "Latest time modifier",
+          "required": false
+        },
+        {
+          "name": "search_mode",
+          "type": "string",
+          "description": "Search mode",
+          "required": false,
+          "default": "smart"
+        }
+      ]
+    },
+    {
+      "id": "update_event",
+      "name": "Update Event",
+      "description": "Update a notable event",
+      "http_method": "GET",
+      "endpoint": "/actions/update_event",
+      "action_type": "generic",
+      "read_only": false,
       "cacheable": false,
-      "cache_ttl_days": 30,
-      "description": "Send an event to Splunk via HTTP Event Collector"
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "event_ids",
+          "type": "string",
+          "description": "Event ID to update",
+          "required": true,
+          "contains": [
+            "splunk notable event id"
+          ]
+        },
+        {
+          "name": "owner",
+          "type": "string",
+          "description": "New owner for the event",
+          "required": false
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "New status for the event",
+          "required": false
+        },
+        {
+          "name": "integer_status",
+          "type": "number",
+          "description": "Integer representing custom status value",
+          "required": false
+        },
+        {
+          "name": "urgency",
+          "type": "string",
+          "description": "New urgency for the event",
+          "required": false
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "New comment for the event",
+          "required": false
+        },
+        {
+          "name": "disposition",
+          "type": "string",
+          "description": "New disposition field",
+          "required": false
+        },
+        {
+          "name": "integer_disposition",
+          "type": "number",
+          "description": "Integer representing custom disposition value",
+          "required": false
+        },
+        {
+          "name": "wait_for_confirmation",
+          "type": "boolean",
+          "description": "Validate event_ids",
+          "required": false,
+          "default": false
+        }
+      ]
+    },
+    {
+      "id": "post_data",
+      "name": "Post Data",
+      "description": "Post data to Splunk",
+      "http_method": "GET",
+      "endpoint": "/actions/post_data",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "data",
+          "type": "string",
+          "description": "Data to post",
+          "required": true
+        },
+        {
+          "name": "host",
+          "type": "string",
+          "description": "Host for event",
+          "required": false,
+          "contains": [
+            "ip",
+            "host name"
+          ]
+        },
+        {
+          "name": "index",
+          "type": "string",
+          "description": "Index to send event to",
+          "required": false
+        },
+        {
+          "name": "source",
+          "type": "string",
+          "description": "Source for event",
+          "required": false,
+          "default": "Phantom"
+        },
+        {
+          "name": "source_type",
+          "type": "string",
+          "description": "Type of source for event",
+          "required": false,
+          "default": "Automation/Orchestration Platform"
+        }
+      ]
     }
-  ]
+  ],
+  "source_metadata": {
+    "original_name": "Splunk",
+    "original_type": "siem",
+    "converted_at": "2025-12-18T16:25:29.170928",
+    "source_version": "2.20.2"
+  }
 }

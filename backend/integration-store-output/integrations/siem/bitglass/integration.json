@@ -1,0 +1,314 @@
+{
+  "id": "bitglass",
+  "name": "Bitglass",
+  "description": "The app pulls Bitglass cloudaudit and access log data once configured and parses the specified DLP patterns from the asset configuration page",
+  "version": "1.1.3",
+  "category": "siem",
+  "vendor": "Bitglass Inc.",
+  "auth_type": "basic_auth",
+  "auth_config": {
+    "type": "basic_auth",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "on_poll",
+      "name": "On Poll",
+      "description": "Polls for new pattern-matched Bitglass events used for other actions to act upon",
+      "http_method": "GET",
+      "endpoint": "/actions/on_poll",
+      "action_type": "ingest",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "filter_by_dlp_pattern",
+      "name": "Filter By Dlp Pattern",
+      "description": "Filter log artifacts by DLP pattern",
+      "http_method": "GET",
+      "endpoint": "/actions/filter_by_dlp_pattern",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "bg_match_expression",
+          "type": "string",
+          "description": "Python regex expression to match the patterns",
+          "required": true,
+          "default": "Malware.*"
+        },
+        {
+          "name": "bg_log_event",
+          "type": "string",
+          "description": "Phantom artifact ID",
+          "required": true,
+          "default": "artifact:*.id",
+          "contains": [
+            "phantom artifact id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "create_update_group",
+      "name": "Create Update Group",
+      "description": "Create or update a group",
+      "http_method": "POST",
+      "endpoint": "/actions/create_update_group",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "bg_group_name",
+          "type": "string",
+          "description": "Name of the group to create or update",
+          "required": true,
+          "default": "RiskyUsers",
+          "contains": [
+            "bg group name"
+          ]
+        },
+        {
+          "name": "bg_new_group_name",
+          "type": "string",
+          "description": "New name of the group to rename to",
+          "required": false,
+          "default": "RiskyUsers"
+        }
+      ]
+    },
+    {
+      "id": "delete_group",
+      "name": "Delete Group",
+      "description": "Delete a group",
+      "http_method": "POST",
+      "endpoint": "/actions/delete_group",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "bg_group_name",
+          "type": "string",
+          "description": "Name of the group to delete",
+          "required": true,
+          "default": "RiskyUsers",
+          "contains": [
+            "bg group name"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "add_user_to_group",
+      "name": "Add User To Group",
+      "description": "Add risky user to a group",
+      "http_method": "POST",
+      "endpoint": "/actions/add_user_to_group",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "bg_group_name",
+          "type": "string",
+          "description": "Name of the group to add the risky user to",
+          "required": true,
+          "default": "RiskyUsers",
+          "contains": [
+            "bg group name"
+          ]
+        },
+        {
+          "name": "bg_user_name",
+          "type": "string",
+          "description": "User name to add",
+          "required": true,
+          "contains": [
+            "user name"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "remove_user_from_group",
+      "name": "Remove User From Group",
+      "description": "Remove risky user from a group",
+      "http_method": "POST",
+      "endpoint": "/actions/remove_user_from_group",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "bg_group_name",
+          "type": "string",
+          "description": "Name of the group to add the risky user to",
+          "required": true,
+          "default": "RiskyUsers",
+          "contains": [
+            "bg group name"
+          ]
+        },
+        {
+          "name": "bg_user_name",
+          "type": "string",
+          "description": "User name to remove",
+          "required": true,
+          "contains": [
+            "user name"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "create_update_user",
+      "name": "Create Update User",
+      "description": "Create or update user",
+      "http_method": "POST",
+      "endpoint": "/actions/create_update_user",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "bg_user_name",
+          "type": "string",
+          "description": "Email of the user to create or update",
+          "required": true,
+          "contains": [
+            "user name"
+          ]
+        },
+        {
+          "name": "bg_first_name",
+          "type": "string",
+          "description": "First name",
+          "required": false
+        },
+        {
+          "name": "bg_last_name",
+          "type": "string",
+          "description": "Last name",
+          "required": false
+        },
+        {
+          "name": "bg_secondary_email",
+          "type": "string",
+          "description": "Secondary email",
+          "required": false
+        },
+        {
+          "name": "bg_netbios_domain",
+          "type": "string",
+          "description": "NetBIOS domain",
+          "required": false
+        },
+        {
+          "name": "bg_sam_account_name",
+          "type": "string",
+          "description": "SAM account domain",
+          "required": false
+        },
+        {
+          "name": "bg_user_principal_name",
+          "type": "string",
+          "description": "User principal name",
+          "required": false
+        },
+        {
+          "name": "bg_object_guid",
+          "type": "string",
+          "description": "Object GUID",
+          "required": false
+        },
+        {
+          "name": "bg_country_code",
+          "type": "string",
+          "description": "Country code",
+          "required": false
+        },
+        {
+          "name": "bg_mobile_number",
+          "type": "string",
+          "description": "Mobile number",
+          "required": false
+        },
+        {
+          "name": "bg_admin_role",
+          "type": "string",
+          "description": "Admin role",
+          "required": false
+        },
+        {
+          "name": "bg_group_membership",
+          "type": "string",
+          "description": "Place the user under the group",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "deactivate_user",
+      "name": "Deactivate User",
+      "description": "Deactivate user",
+      "http_method": "POST",
+      "endpoint": "/actions/deactivate_user",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "bg_user_name",
+          "type": "string",
+          "description": "Email of the user to deactivate",
+          "required": true,
+          "contains": [
+            "user name"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "reactivate_user",
+      "name": "Reactivate User",
+      "description": "Reactivate user",
+      "http_method": "POST",
+      "endpoint": "/actions/reactivate_user",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "bg_user_name",
+          "type": "string",
+          "description": "Email of the user to reactivate",
+          "required": true,
+          "contains": [
+            "user name"
+          ]
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Bitglass",
+    "original_type": "siem",
+    "converted_at": "2025-12-18T16:25:28.611916",
+    "source_version": "1.1.3"
+  }
+}

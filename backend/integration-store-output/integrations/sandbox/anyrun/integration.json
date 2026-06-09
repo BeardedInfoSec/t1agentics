@@ -1,0 +1,786 @@
+{
+  "id": "anyrun",
+  "name": "ANY.RUN",
+  "description": "This app enables you to detonate files and URLs, and perform investigative actions, using the ANY.RUN interactive online malware sandbox service, thereby giving you automated analysis and advanced threat detection through an agentless sandbox",
+  "version": "1.4.0",
+  "category": "sandbox",
+  "vendor": "ANYRUN FZCO",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "get_url_reputation",
+      "name": "Url Reputation",
+      "description": "Get reports of a specific URL analysis",
+      "http_method": "GET",
+      "endpoint": "/actions/get_url_reputation",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "URL (Size range: 2-256)",
+          "required": true,
+          "contains": [
+            "url"
+          ]
+        },
+        {
+          "name": "search_in_public_tasks",
+          "type": "boolean",
+          "description": "Option for searching in public tasks (requires TI license)",
+          "required": false,
+          "default": false
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "get_file_reputation",
+      "name": "File Reputation",
+      "description": "Get reports of a specific file analysis by that file's hash",
+      "http_method": "GET",
+      "endpoint": "/actions/get_file_reputation",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "hash",
+          "type": "string",
+          "description": "File hash ('MD5', 'SHA1', 'SHA256') (Size range: 2-256)",
+          "required": true,
+          "contains": [
+            "hash",
+            "md5",
+            "sha1",
+            "sha256"
+          ]
+        },
+        {
+          "name": "search_in_public_tasks",
+          "type": "boolean",
+          "description": "Option for searching in public tasks (requires TI license)",
+          "required": false,
+          "default": false
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "get_domain_reputation",
+      "name": "Domain Reputation",
+      "description": "Get reports of analyses, that involve specific domain",
+      "http_method": "GET",
+      "endpoint": "/actions/get_domain_reputation",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "domainname",
+          "type": "string",
+          "description": "Domain name (Size range: 2-256)",
+          "required": true,
+          "contains": [
+            "domain"
+          ]
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "get_ip_reputation",
+      "name": "Ip Reputation",
+      "description": "Get reports of analyses, that involve specific IP",
+      "http_method": "GET",
+      "endpoint": "/actions/get_ip_reputation",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "IP (Size range: 2-256)",
+          "required": true,
+          "contains": [
+            "ip"
+          ]
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "get_report",
+      "name": "Get Report",
+      "description": "Get report for a submission",
+      "http_method": "GET",
+      "endpoint": "/actions/get_report",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "taskid",
+          "type": "string",
+          "description": "ANY.RUN task UUID",
+          "required": true,
+          "contains": [
+            "anyrun task id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_ioc",
+      "name": "Get Iocs",
+      "description": "Get list of IoCs for a submission",
+      "http_method": "GET",
+      "endpoint": "/actions/get_ioc",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "taskid",
+          "type": "string",
+          "description": "ANY.RUN task UUID",
+          "required": true,
+          "contains": [
+            "anyrun task id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "detonate_url",
+      "name": "Detonate Url",
+      "description": "Detonate a URL",
+      "http_method": "GET",
+      "endpoint": "/actions/detonate_url",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "obj_url",
+          "type": "string",
+          "description": "URL to detonate (Size range: 5-512)",
+          "required": true,
+          "contains": [
+            "url"
+          ]
+        },
+        {
+          "name": "obj_type",
+          "type": "string",
+          "description": "Type of new task (Default: url)",
+          "required": false,
+          "default": "url"
+        },
+        {
+          "name": "os",
+          "type": "string",
+          "description": "Operation System (Default: Windows10x64_complete)",
+          "required": false,
+          "default": "Windows10x64_complete"
+        },
+        {
+          "name": "env_locale",
+          "type": "string",
+          "description": "Operation system's language (Default: en-US)",
+          "required": false,
+          "default": "en-US"
+        },
+        {
+          "name": "opt_network_connect",
+          "type": "boolean",
+          "description": "Network connection state",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "opt_network_fakenet",
+          "type": "boolean",
+          "description": "FakeNet feature status",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "opt_network_tor",
+          "type": "boolean",
+          "description": "TOR using",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "opt_network_geo",
+          "type": "string",
+          "description": "Geo location option (Default: fastest)",
+          "required": false,
+          "default": "fastest"
+        },
+        {
+          "name": "opt_network_mitm",
+          "type": "boolean",
+          "description": "HTTPS MITM proxy option",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "opt_network_residential_proxy",
+          "type": "boolean",
+          "description": "Residential proxy using",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "opt_network_residential_proxy_geo",
+          "type": "string",
+          "description": "Residential proxy geo location option (Default: fastest)",
+          "required": false,
+          "default": "fastest"
+        },
+        {
+          "name": "opt_privacy_type",
+          "type": "string",
+          "description": "Privacy settings (Default: bylink)",
+          "required": false,
+          "default": "bylink"
+        },
+        {
+          "name": "opt_timeout",
+          "type": "number",
+          "description": "Timeout option (seconds) (Default: 60) (Size range: 10-1200)",
+          "required": false,
+          "default": "60"
+        },
+        {
+          "name": "opt_automated_interactivity",
+          "type": "boolean",
+          "description": "Automated Interactivity (ML) option",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "obj_ext_startfolder",
+          "type": "string",
+          "description": "Start object from (Default: temp)",
+          "required": false,
+          "default": "temp"
+        },
+        {
+          "name": "obj_ext_cmd",
+          "type": "string",
+          "description": "Optional command line (Size range: 2-256)",
+          "required": false
+        },
+        {
+          "name": "obj_ext_browser",
+          "type": "string",
+          "description": "Browser name (Default: Google Chrome)",
+          "required": false,
+          "default": "Google Chrome"
+        },
+        {
+          "name": "obj_ext_useragent",
+          "type": "string",
+          "description": "User agent (Size range: 2-256)",
+          "required": false
+        },
+        {
+          "name": "obj_ext_extension",
+          "type": "boolean",
+          "description": "Change extension to valid",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "opt_privacy_hidesource",
+          "type": "boolean",
+          "description": "Option for hiding of source URL",
+          "required": false,
+          "default": false
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "detonate_file",
+      "name": "Detonate File",
+      "description": "Detonate a file from Vault",
+      "http_method": "GET",
+      "endpoint": "/actions/detonate_file",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "vault_id",
+          "type": "string",
+          "description": "Vault ID of a file to detonate",
+          "required": true,
+          "contains": [
+            "vault id"
+          ]
+        },
+        {
+          "name": "os",
+          "type": "string",
+          "description": "Operation System (Default: Windows10x64_complete)",
+          "required": false,
+          "default": "Windows10x64_complete"
+        },
+        {
+          "name": "env_locale",
+          "type": "string",
+          "description": "Operation system's language (Default: en-US)",
+          "required": false,
+          "default": "en-US"
+        },
+        {
+          "name": "opt_network_connect",
+          "type": "boolean",
+          "description": "Network connection state",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "opt_network_fakenet",
+          "type": "boolean",
+          "description": "FakeNet feature status",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "opt_network_tor",
+          "type": "boolean",
+          "description": "TOR using",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "opt_network_geo",
+          "type": "string",
+          "description": "Geo location option (Default: fastest)",
+          "required": false,
+          "default": "fastest"
+        },
+        {
+          "name": "opt_network_mitm",
+          "type": "boolean",
+          "description": "HTTPS MITM proxy option",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "opt_network_residential_proxy",
+          "type": "boolean",
+          "description": "Residential proxy using",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "opt_network_residential_proxy_geo",
+          "type": "string",
+          "description": "Residential proxy geo location option (Default: fastest)",
+          "required": false,
+          "default": "fastest"
+        },
+        {
+          "name": "opt_privacy_type",
+          "type": "string",
+          "description": "Privacy settings (Default: bylink)",
+          "required": false,
+          "default": "bylink"
+        },
+        {
+          "name": "opt_timeout",
+          "type": "number",
+          "description": "Timeout option (seconds) (Default: 60) (Size range: 10-660)",
+          "required": false,
+          "default": "60"
+        },
+        {
+          "name": "opt_automated_interactivity",
+          "type": "boolean",
+          "description": "Automated Interactivity (ML) option",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "obj_ext_startfolder",
+          "type": "string",
+          "description": "Start object from (Default: temp)",
+          "required": false,
+          "default": "temp"
+        },
+        {
+          "name": "obj_ext_cmd",
+          "type": "string",
+          "description": "Optional command line (Size range: 2-256)",
+          "required": false
+        },
+        {
+          "name": "obj_ext_elevateprompt",
+          "type": "boolean",
+          "description": "Encounter UAC prompts",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "auto_confirm_uac",
+          "type": "boolean",
+          "description": "Auto confirm Windows UAC requests. Not applicable for Linux , use run_as_root instead",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "run_as_root",
+          "type": "boolean",
+          "description": "Run file with superuser privileges. Not applicable for Windows, use auto_confirm_uac instead. Used only for file type",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "obj_ext_extension",
+          "type": "boolean",
+          "description": "Change extension to valid",
+          "required": false,
+          "default": true
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "get_intelligence",
+      "name": "Get Intelligence",
+      "description": "Threat Intelligence IoC Lookup",
+      "http_method": "GET",
+      "endpoint": "/actions/get_intelligence",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "sha256",
+          "type": "string",
+          "description": "Sha256 (Size range: 2-256)",
+          "required": false,
+          "contains": [
+            "hash",
+            "sha256"
+          ]
+        },
+        {
+          "name": "sha1",
+          "type": "string",
+          "description": "Sha1 (Size range: 2-256)",
+          "required": false,
+          "contains": [
+            "hash",
+            "sha1"
+          ]
+        },
+        {
+          "name": "md5",
+          "type": "string",
+          "description": "MD5 (Size range: 2-256)",
+          "required": false,
+          "contains": [
+            "hash",
+            "md5"
+          ]
+        },
+        {
+          "name": "threat_name",
+          "type": "string",
+          "description": "Name of threat (Size range: 2-256)",
+          "required": false
+        },
+        {
+          "name": "threat_level",
+          "type": "string",
+          "description": "Threat level (Default: <empty>)",
+          "required": false
+        },
+        {
+          "name": "task_type",
+          "type": "string",
+          "description": "Task run type (Default: <empty>)",
+          "required": false
+        },
+        {
+          "name": "submission_country",
+          "type": "string",
+          "description": "Submission country (Size range: 2-256)",
+          "required": false
+        },
+        {
+          "name": "os",
+          "type": "string",
+          "description": "Operation system (Default: <empty> - not used)",
+          "required": false
+        },
+        {
+          "name": "os_software_set",
+          "type": "string",
+          "description": "Operation system software (Default: <empty> - not used)",
+          "required": false
+        },
+        {
+          "name": "os_bit_version",
+          "type": "number",
+          "description": "Operation system bitness (Default: <empty> - not used)",
+          "required": false
+        },
+        {
+          "name": "registry_key",
+          "type": "string",
+          "description": "Registry key (Size range: 2-256)",
+          "required": false
+        },
+        {
+          "name": "registry_name",
+          "type": "string",
+          "description": "Registry name (Size range: 2-256)",
+          "required": false
+        },
+        {
+          "name": "registry_value",
+          "type": "string",
+          "description": "Registry value (Size range: 2-256)",
+          "required": false
+        },
+        {
+          "name": "module_image_path",
+          "type": "string",
+          "description": "Module image path (Size range: 2-256)",
+          "required": false,
+          "contains": [
+            "file path"
+          ]
+        },
+        {
+          "name": "rule_threat_level",
+          "type": "string",
+          "description": "Rule threat level (Default: <empty> - not used)",
+          "required": false
+        },
+        {
+          "name": "rule_name",
+          "type": "string",
+          "description": "Rule name (Size range: 2-256)",
+          "required": false
+        },
+        {
+          "name": "mitre",
+          "type": "string",
+          "description": "MITRE (Size range: 2-256)",
+          "required": false
+        },
+        {
+          "name": "image_path",
+          "type": "string",
+          "description": "Process image path (Size range: 2-256)",
+          "required": false,
+          "contains": [
+            "file path"
+          ]
+        },
+        {
+          "name": "command_line",
+          "type": "string",
+          "description": "Command line (Size range: 2-256)",
+          "required": false,
+          "contains": [
+            "process name"
+          ]
+        },
+        {
+          "name": "injected_flag",
+          "type": "string",
+          "description": "Injected flag (Default: <empty> - not used)",
+          "required": false
+        },
+        {
+          "name": "destination_ip",
+          "type": "string",
+          "description": "Destination ip (Size range: 2-256)",
+          "required": false,
+          "contains": [
+            "ip"
+          ]
+        },
+        {
+          "name": "destination_port",
+          "type": "number",
+          "description": "Destination port (Default: <empty> - not used) (Size range: 1-65535)",
+          "required": false,
+          "contains": [
+            "port"
+          ]
+        },
+        {
+          "name": "destination_ip_asn",
+          "type": "string",
+          "description": "Destination IPASN (Size range: 2-256)",
+          "required": false
+        },
+        {
+          "name": "destination_ip_geo",
+          "type": "string",
+          "description": "Destination IP Geo (Size range: 2-256)",
+          "required": false
+        },
+        {
+          "name": "domain_name",
+          "type": "string",
+          "description": "Domain name (Size range: 2-256)",
+          "required": false,
+          "contains": [
+            "domain"
+          ]
+        },
+        {
+          "name": "file_path",
+          "type": "string",
+          "description": "File path (Size range: 2-256)",
+          "required": false,
+          "contains": [
+            "file path"
+          ]
+        },
+        {
+          "name": "suricata_class",
+          "type": "string",
+          "description": "Suricata class (Default: <empty> - not used)",
+          "required": false
+        },
+        {
+          "name": "suricata_message",
+          "type": "string",
+          "description": "Suricata message (Size range: 2-256)",
+          "required": false
+        },
+        {
+          "name": "suricata_threat_level",
+          "type": "string",
+          "description": "Suricata threat level (Default: <empty> - not used)",
+          "required": false
+        },
+        {
+          "name": "suricata_id",
+          "type": "string",
+          "description": "Suricata ID (Size range: 2-256)",
+          "required": false
+        },
+        {
+          "name": "url",
+          "type": "string",
+          "description": "URL (Size range: 2-256)",
+          "required": false,
+          "contains": [
+            "url"
+          ]
+        },
+        {
+          "name": "http_request_content_type",
+          "type": "string",
+          "description": "HTTP request content type (Size range: 2-256)",
+          "required": false
+        },
+        {
+          "name": "http_response_content_type",
+          "type": "string",
+          "description": "HTTP response content type (Size range: 2-256)",
+          "required": false
+        },
+        {
+          "name": "http_request_file_type",
+          "type": "string",
+          "description": "HTTP request file type (Size range: 2-256)",
+          "required": false
+        },
+        {
+          "name": "http_response_file_type",
+          "type": "string",
+          "description": "HTTP response file type (Size range: 2-256)",
+          "required": false
+        },
+        {
+          "name": "file_event_path",
+          "type": "string",
+          "description": "File Event Path (Size range: 2-256)",
+          "required": false
+        },
+        {
+          "name": "file_extension",
+          "type": "string",
+          "description": "File Extension (Size range: 2-256)",
+          "required": false
+        },
+        {
+          "name": "sync_object_name",
+          "type": "string",
+          "description": "Sync Object Name (Size range: 2-256)",
+          "required": false
+        },
+        {
+          "name": "sync_object_type",
+          "type": "string",
+          "description": "Sync Object Type (Size range: 2-256)",
+          "required": false
+        },
+        {
+          "name": "sync_object_operation",
+          "type": "string",
+          "description": "Sync Object Operation (Size range: 2-256)",
+          "required": false
+        },
+        {
+          "name": "ja3",
+          "type": "string",
+          "description": "JA3 (Size range: 2-256)",
+          "required": false
+        },
+        {
+          "name": "ja3s",
+          "type": "string",
+          "description": "JA3S (Size range: 2-256)",
+          "required": false
+        },
+        {
+          "name": "jarm",
+          "type": "string",
+          "description": "JARM (Size range: 2-256)",
+          "required": false
+        }
+      ],
+      "observable_type": "file_hash"
+    }
+  ],
+  "source_metadata": {
+    "original_name": "ANY.RUN",
+    "original_type": "sandbox",
+    "converted_at": "2025-12-18T16:25:28.560558",
+    "source_version": "1.4.0"
+  }
+}

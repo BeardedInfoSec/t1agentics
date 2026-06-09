@@ -1,0 +1,336 @@
+{
+  "id": "vmray",
+  "name": "VMRay",
+  "description": "This app enables you to detonate files and URLs, and perform investigative actions, using the VMRay Platform, thereby giving you automated analysis and advanced threat detection through an agentless hypervisor-based sandbox",
+  "version": "2.6.1",
+  "category": "sandbox",
+  "vendor": "VMRay GmbH",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "get_file",
+      "name": "Get File",
+      "description": "Download a file from the VMRay Platform and add it to the vault",
+      "http_method": "GET",
+      "endpoint": "/actions/get_file",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "hash",
+          "type": "string",
+          "description": "The hash of the file to be downloaded",
+          "required": true,
+          "contains": [
+            "hash",
+            "sha256",
+            "sha1",
+            "md5"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "detonate_file",
+      "name": "Detonate File",
+      "description": "Detonate file in the VMRay Platform",
+      "http_method": "GET",
+      "endpoint": "/actions/detonate_file",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "vault_id",
+          "type": "string",
+          "description": "The vault_id of the file to be analyzed",
+          "required": true,
+          "contains": [
+            "vault id"
+          ]
+        },
+        {
+          "name": "ioc_only",
+          "type": "boolean",
+          "description": "Only import artifacts that are IOCs",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "file_name",
+          "type": "string",
+          "description": "The file name to use",
+          "required": false,
+          "contains": [
+            "file name"
+          ]
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "Comment for this submission",
+          "required": false
+        },
+        {
+          "name": "tags",
+          "type": "string",
+          "description": "Tags for this submission",
+          "required": false
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "The sample type",
+          "required": false
+        },
+        {
+          "name": "config",
+          "type": "string",
+          "description": "Additional configuration",
+          "required": false
+        },
+        {
+          "name": "jobrules",
+          "type": "string",
+          "description": "Jobrules",
+          "required": false
+        },
+        {
+          "name": "timeout",
+          "type": "number",
+          "description": "Submission timeout, default is 600 seconds",
+          "required": false
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "detonate_url",
+      "name": "Detonate Url",
+      "description": "Detonate a URL in the VMRay Platform",
+      "http_method": "GET",
+      "endpoint": "/actions/detonate_url",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "URL to detonate",
+          "required": true,
+          "contains": [
+            "url"
+          ]
+        },
+        {
+          "name": "ioc_only",
+          "type": "boolean",
+          "description": "Only import artifacts that are IOCs",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "Comment for this submission",
+          "required": false
+        },
+        {
+          "name": "tags",
+          "type": "string",
+          "description": "Tags added for this submission",
+          "required": false
+        },
+        {
+          "name": "config",
+          "type": "string",
+          "description": "Additional configuration",
+          "required": false
+        },
+        {
+          "name": "jobrules",
+          "type": "string",
+          "description": "Jobrules",
+          "required": false
+        },
+        {
+          "name": "timeout",
+          "type": "number",
+          "description": "Submission timeout, default is 600 seconds",
+          "required": false
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "get_iocs",
+      "name": "Get Iocs",
+      "description": "Get the iocs for a sample",
+      "http_method": "GET",
+      "endpoint": "/actions/get_iocs",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "sample_id",
+          "type": "number",
+          "description": "The VMRay Platform sample ID",
+          "required": true,
+          "contains": [
+            "vmray sample id"
+          ]
+        },
+        {
+          "name": "timeout",
+          "type": "number",
+          "description": "Timeout",
+          "required": false
+        },
+        {
+          "name": "all_artifacts",
+          "type": "boolean",
+          "description": "All artifacts",
+          "required": false,
+          "default": false
+        }
+      ]
+    },
+    {
+      "id": "get_vtis",
+      "name": "Get Vtis",
+      "description": "Get the vtis for a sample",
+      "http_method": "GET",
+      "endpoint": "/actions/get_vtis",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "sample_id",
+          "type": "number",
+          "description": "The VMRay Platform sample ID",
+          "required": true,
+          "contains": [
+            "vmray sample id"
+          ]
+        },
+        {
+          "name": "timeout",
+          "type": "number",
+          "description": "Timeout",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_report",
+      "name": "Get Report",
+      "description": "Get the report(s) for a submission",
+      "http_method": "GET",
+      "endpoint": "/actions/get_report",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "submission_id",
+          "type": "number",
+          "description": "The VMRay Platform submission ID",
+          "required": true,
+          "contains": [
+            "vmray submission id"
+          ]
+        },
+        {
+          "name": "ioc_only",
+          "type": "boolean",
+          "description": "Only import artifacts that are IOCs",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "timeout",
+          "type": "number",
+          "description": "Timeout",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_info",
+      "name": "Get Info",
+      "description": "Get information of a specific sample",
+      "http_method": "GET",
+      "endpoint": "/actions/get_info",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "hash",
+          "type": "string",
+          "description": "The sample hash",
+          "required": true,
+          "contains": [
+            "hash",
+            "sha256",
+            "sha1",
+            "md5"
+          ]
+        },
+        {
+          "name": "timeout",
+          "type": "number",
+          "description": "Timeout",
+          "required": false
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "get_screenshots",
+      "name": "Get Screenshots",
+      "description": "Get screenshots from an analysis",
+      "http_method": "GET",
+      "endpoint": "/actions/get_screenshots",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "analysis_id",
+          "type": "number",
+          "description": "The VMRay Platform analysis ID",
+          "required": true,
+          "contains": [
+            "vmray analysis id"
+          ]
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "VMRay",
+    "original_type": "sandbox",
+    "converted_at": "2025-12-18T16:25:29.282433",
+    "source_version": "2.6.1"
+  }
+}

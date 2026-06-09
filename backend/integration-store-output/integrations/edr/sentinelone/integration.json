@@ -1,8 +1,8 @@
 {
   "id": "sentinelone",
   "name": "SentinelOne",
-  "description": "Integration with SentinelOne for security operations",
-  "version": "1.0.0",
+  "description": "This app integrates with the SentinelOne Singularity platform to perform prevention, detection, remediation, and forensic endpoint management tasks",
+  "version": "2.2.9",
   "category": "edr",
   "vendor": "SentinelOne",
   "auth_type": "api_key",
@@ -14,34 +14,814 @@
   "base_url": "",
   "actions": [
     {
-      "id": "get_threats",
-      "name": "Get Threats",
-      "http_method": "GET",
-      "endpoint": "/web/api/v2.1/threats",
-      "read_only": true,
+      "id": "block_hash",
+      "name": "Block Hash",
+      "description": "Add a file hash to the global blocklist",
+      "http_method": "POST",
+      "endpoint": "/actions/block_hash",
+      "action_type": "contain",
+      "read_only": false,
       "cacheable": false,
-      "cache_ttl_days": 30,
-      "description": "Query threats detected by SentinelOne"
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "hash",
+          "type": "string",
+          "description": "Hash of a file to block",
+          "required": true,
+          "contains": [
+            "sha1"
+          ]
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Description",
+          "required": true,
+          "default": "Added via Phantom"
+        },
+        {
+          "name": "os_family",
+          "type": "string",
+          "description": "OS Family",
+          "required": true,
+          "default": "windows"
+        }
+      ],
+      "observable_type": "file_hash"
     },
     {
-      "id": "get_agents",
-      "name": "Get Agents",
+      "id": "unblock_hash",
+      "name": "Unblock Hash",
+      "description": "Remove a hash from the global blocklist",
+      "http_method": "POST",
+      "endpoint": "/actions/unblock_hash",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "hash",
+          "type": "string",
+          "description": "Hash of a file to remove from the blocklist",
+          "required": true,
+          "contains": [
+            "sha1"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "quarantine_device",
+      "name": "Quarantine Device",
+      "description": "Quarantine an endpoint",
+      "http_method": "POST",
+      "endpoint": "/actions/quarantine_device",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "ip_hostname",
+          "type": "string",
+          "description": "The IP or hostname of an endpoint to quarantine",
+          "required": true,
+          "contains": [
+            "host name",
+            "ip"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "unquarantine_device",
+      "name": "Unquarantine Device",
+      "description": "Unquarantine an endpoint",
+      "http_method": "POST",
+      "endpoint": "/actions/unquarantine_device",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "ip_hostname",
+          "type": "string",
+          "description": "The IP or hostname of an endpoint to unquarantine",
+          "required": true,
+          "contains": [
+            "host name",
+            "ip"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "mitigate_threat",
+      "name": "Mitigate Threat",
+      "description": "Mitigate an identified threat",
       "http_method": "GET",
-      "endpoint": "/web/api/v2.1/agents",
+      "endpoint": "/actions/mitigate_threat",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "s1_threat_id",
+          "type": "string",
+          "description": "The threat ID",
+          "required": true,
+          "contains": [
+            "sentinelone s1 threat id"
+          ]
+        },
+        {
+          "name": "action",
+          "type": "string",
+          "description": "Allowed values include: kill, quarantine, un-quarantine, remediate and rollback-remediation",
+          "required": true,
+          "default": "quarantine"
+        }
+      ]
+    },
+    {
+      "id": "abort_scan",
+      "name": "Abort Scan",
+      "description": "Stop a Full Disk Scan on endpoint/agent",
+      "http_method": "GET",
+      "endpoint": "/actions/abort_scan",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "ip_hostname",
+          "type": "string",
+          "description": "The IP or hostname of an endpoint to abort scan",
+          "required": true,
+          "contains": [
+            "host name",
+            "ip"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "shutdown_endpoint",
+      "name": "Shutdown Endpoint",
+      "description": "Shutdown an endpoint",
+      "http_method": "GET",
+      "endpoint": "/actions/shutdown_endpoint",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "ip_hostname",
+          "type": "string",
+          "description": "The IP or hostname of an endpoint to shutdown",
+          "required": true,
+          "contains": [
+            "host name",
+            "ip"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "broadcast_message",
+      "name": "Broadcast Message",
+      "description": "Send a Message through the Agents that users can see",
+      "http_method": "GET",
+      "endpoint": "/actions/broadcast_message",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "ip_hostname",
+          "type": "string",
+          "description": "The IP or hostname of an endpoint to broadcast Message",
+          "required": true,
+          "contains": [
+            "host name",
+            "ip"
+          ]
+        },
+        {
+          "name": "message",
+          "type": "string",
+          "description": "Message",
+          "required": true,
+          "default": "Added via Phantom"
+        }
+      ]
+    },
+    {
+      "id": "fetch_files",
+      "name": "Get File",
+      "description": "Fetch files from endpoints to analyze the root of threats",
+      "http_method": "GET",
+      "endpoint": "/actions/fetch_files",
+      "action_type": "investigate",
       "read_only": true,
       "cacheable": true,
-      "cache_ttl_days": 1,
-      "description": "Query endpoint agents"
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "file_path",
+          "type": "string",
+          "description": "The file path of an endpoint",
+          "required": true,
+          "contains": [
+            "file path"
+          ]
+        },
+        {
+          "name": "password",
+          "type": "string",
+          "description": "Password",
+          "required": true
+        },
+        {
+          "name": "ip_hostname",
+          "type": "string",
+          "description": "The IP or hostname of an endpoint to fetch file",
+          "required": true,
+          "contains": [
+            "host name",
+            "ip"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
     },
     {
-      "id": "disconnect_agent",
-      "name": "Disconnect Agent",
-      "http_method": "POST",
-      "endpoint": "/web/api/v2.1/agents/actions/disconnect",
+      "id": "fetch_firewall_rules",
+      "name": "Fetch Firewall Rules",
+      "description": "Fetch the firewall rules",
+      "http_method": "GET",
+      "endpoint": "/actions/fetch_firewall_rules",
+      "action_type": "investigate",
       "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "ip_hostname",
+          "type": "string",
+          "description": "The IP or hostname of an endpoint to fetch firewall rules",
+          "required": true,
+          "contains": [
+            "host name",
+            "ip"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fetch_firewall_logs",
+      "name": "Fetch Firewall Logs",
+      "description": "Fetch the firewall logs",
+      "http_method": "GET",
+      "endpoint": "/actions/fetch_firewall_logs",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "ip_hostname",
+          "type": "string",
+          "description": "The IP or hostname of an endpoint to fetch firewall logs",
+          "required": true,
+          "contains": [
+            "host name",
+            "ip"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "scan_endpoint",
+      "name": "Scan Endpoint",
+      "description": "Start a Full Disk Scan on endpoint/agent",
+      "http_method": "GET",
+      "endpoint": "/actions/scan_endpoint",
+      "action_type": "generic",
+      "read_only": false,
       "cacheable": false,
-      "cache_ttl_days": 30,
-      "description": "Network disconnect an endpoint"
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "ip_hostname",
+          "type": "string",
+          "description": "The IP or hostname of an endpoint to scan",
+          "required": true,
+          "contains": [
+            "host name",
+            "ip"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_endpoint_info",
+      "name": "Get Endpoint Info",
+      "description": "Get detailed information about an endpoint/agent",
+      "http_method": "GET",
+      "endpoint": "/actions/get_endpoint_info",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "ip_hostname",
+          "type": "string",
+          "description": "The IP or hostname of an endpoint to get information",
+          "required": true,
+          "contains": [
+            "host name",
+            "ip"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_threat_info",
+      "name": "Get Threat Info",
+      "description": "Get detailed information about a threat",
+      "http_method": "GET",
+      "endpoint": "/actions/get_threat_info",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "s1_threat_id",
+          "type": "string",
+          "description": "The S1 Threat ID for a specific threat",
+          "required": true,
+          "contains": [
+            "sentinelone s1 threat id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_applications",
+      "name": "List Applications",
+      "description": "Get the applications, and their data, installed on endpoints",
+      "http_method": "GET",
+      "endpoint": "/actions/get_applications",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "ip_hostname",
+          "type": "string",
+          "description": "The IP or hostname of an endpoint to get applications",
+          "required": false,
+          "contains": [
+            "host name",
+            "ip"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_cves",
+      "name": "Get Cves",
+      "description": "Get known CVEs for applications that are installed on endpoints with Application Risk-enabled Agents",
+      "http_method": "GET",
+      "endpoint": "/actions/get_cves",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "get_device_control_events",
+      "name": "Get Devicecontrol Events",
+      "description": "Get the data of Device Control events on Windows and macOS endpoints",
+      "http_method": "GET",
+      "endpoint": "/actions/get_device_control_events",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "ip_hostname",
+          "type": "string",
+          "description": "The IP or hostname of an endpoint to get information",
+          "required": true,
+          "contains": [
+            "host name",
+            "ip"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_firewall_rules",
+      "name": "List Firewall Rules",
+      "description": "Get the Firewall Control rules for a scope specified",
+      "http_method": "GET",
+      "endpoint": "/actions/get_firewall_rules",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "create_firewall_rule",
+      "name": "Create Firewall Rule",
+      "description": "Create a Firewall Control rule",
+      "http_method": "GET",
+      "endpoint": "/actions/create_firewall_rule",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "rule_name",
+          "type": "string",
+          "description": "The name of the firewall rule",
+          "required": true,
+          "contains": [
+            "firewall rule name"
+          ]
+        },
+        {
+          "name": "tag_ids",
+          "type": "string",
+          "description": "Tag ID (comma separated values)",
+          "required": false
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Description",
+          "required": true,
+          "default": "Added via Phantom"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Type of the remote host",
+          "required": true,
+          "default": "fqdn"
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "description": "Value of the remote host",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "hash_reputation",
+      "name": "Hash Reputation",
+      "description": "Get the reputation of a hash, given the required SHA1",
+      "http_method": "GET",
+      "endpoint": "/actions/hash_reputation",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "hash",
+          "type": "string",
+          "description": "Hash of a file to get the reputation",
+          "required": true,
+          "contains": [
+            "sha1"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "get_threat_notes",
+      "name": "Get Threat Notes",
+      "description": "Get the threat notes",
+      "http_method": "GET",
+      "endpoint": "/actions/get_threat_notes",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "s1_threat_id",
+          "type": "string",
+          "description": "The S1 Threat ID for a specific threat",
+          "required": true,
+          "contains": [
+            "sentinelone s1 threat id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "add_threat_note",
+      "name": "Add Threat Note",
+      "description": "Add a threat note to multiple threats",
+      "http_method": "GET",
+      "endpoint": "/actions/add_threat_note",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "s1_threat_ids",
+          "type": "string",
+          "description": "The S1 Threat IDs for specific threats (comma separated values)",
+          "required": true,
+          "contains": [
+            "sentinelone s1 threat ids"
+          ]
+        },
+        {
+          "name": "note",
+          "type": "string",
+          "description": "Threat Note text",
+          "required": true,
+          "default": "Added via Phantom"
+        }
+      ]
+    },
+    {
+      "id": "export_threat_timeline",
+      "name": "Export Threat Timeline",
+      "description": "Export a threat's timeline",
+      "http_method": "GET",
+      "endpoint": "/actions/export_threat_timeline",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "s1_threat_id",
+          "type": "string",
+          "description": "The S1 Threat ID for a specific threat",
+          "required": true,
+          "contains": [
+            "sentinelone s1 threat id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "export_mitigation_report",
+      "name": "Export Mitigation Report",
+      "description": "Export the mitigation report of threat",
+      "http_method": "GET",
+      "endpoint": "/actions/export_mitigation_report",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "s1_threat_id",
+          "type": "string",
+          "description": "The S1 Threat ID for a specific threat",
+          "required": true,
+          "contains": [
+            "sentinelone s1 threat id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "export_threats",
+      "name": "Export Threats",
+      "description": "Export data of threats",
+      "http_method": "GET",
+      "endpoint": "/actions/export_threats",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "ip_hostname",
+          "type": "string",
+          "description": "The IP or hostname of an endpoint",
+          "required": false,
+          "contains": [
+            "host name",
+            "ip"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fetch_threat_file",
+      "name": "Fetch Threat File",
+      "description": "Fetch a file associated with the threat",
+      "http_method": "GET",
+      "endpoint": "/actions/fetch_threat_file",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "s1_threat_id",
+          "type": "string",
+          "description": "The S1 Threat ID for a specific threat",
+          "required": true,
+          "contains": [
+            "sentinelone s1 threat id"
+          ]
+        },
+        {
+          "name": "password",
+          "type": "string",
+          "description": "Password",
+          "required": true
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "update_threat_analyst_verdict",
+      "name": "Update Threat Analystverdict",
+      "description": "Change the verdict of a threat, as determined by a Console user",
+      "http_method": "GET",
+      "endpoint": "/actions/update_threat_analyst_verdict",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "s1_threat_id",
+          "type": "string",
+          "description": "The S1 Threat ID for a specific threat",
+          "required": true,
+          "contains": [
+            "sentinelone s1 threat id"
+          ]
+        },
+        {
+          "name": "analyst_verdict",
+          "type": "string",
+          "description": "Analyst verdict",
+          "required": true,
+          "default": "undefined"
+        }
+      ]
+    },
+    {
+      "id": "get_threat_timeline",
+      "name": "Get Threat Timeline",
+      "description": "Get a threat's timeline",
+      "http_method": "GET",
+      "endpoint": "/actions/get_threat_timeline",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "s1_threat_id",
+          "type": "string",
+          "description": "The S1 Threat ID for a specific threat",
+          "required": true,
+          "contains": [
+            "sentinelone s1 threat id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "update_threat_incident",
+      "name": "Update Threat Incident",
+      "description": "Update the incident details of a threat",
+      "http_method": "GET",
+      "endpoint": "/actions/update_threat_incident",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "s1_threat_id",
+          "type": "string",
+          "description": "The S1 Threat ID for a specific threat",
+          "required": true,
+          "contains": [
+            "sentinelone s1 threat id"
+          ]
+        },
+        {
+          "name": "analyst_verdict",
+          "type": "string",
+          "description": "Analyst verdict",
+          "required": true,
+          "default": "undefined"
+        },
+        {
+          "name": "incident_status",
+          "type": "string",
+          "description": "A specific incident status",
+          "required": true,
+          "default": "unresolved"
+        }
+      ]
+    },
+    {
+      "id": "download_from_cloud",
+      "name": "Download From Cloud",
+      "description": "Download threat file from cloud",
+      "http_method": "GET",
+      "endpoint": "/actions/download_from_cloud",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "s1_threat_id",
+          "type": "string",
+          "description": "The S1 Threat ID for a specific threat",
+          "required": true,
+          "contains": [
+            "sentinelone s1 threat id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "on_poll",
+      "name": "On Poll",
+      "description": "Callback action for the on_poll ingest functionality",
+      "http_method": "GET",
+      "endpoint": "/actions/on_poll",
+      "action_type": "ingest",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "container_id",
+          "type": "string",
+          "description": "Parameter Ignored in this app",
+          "required": false
+        },
+        {
+          "name": "start_time",
+          "type": "number",
+          "description": "Parameter Ignored in this app",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "number",
+          "description": "Parameter Ignored in this app",
+          "required": false
+        },
+        {
+          "name": "container_count",
+          "type": "number",
+          "description": "Maximum number of container records to query for",
+          "required": false
+        },
+        {
+          "name": "artifact_count",
+          "type": "number",
+          "description": "Parameter Ignored in this app",
+          "required": false
+        }
+      ]
     }
-  ]
+  ],
+  "source_metadata": {
+    "original_name": "SentinelOne",
+    "original_type": "endpoint",
+    "converted_at": "2025-12-18T16:25:29.107154",
+    "source_version": "2.2.9"
+  }
 }

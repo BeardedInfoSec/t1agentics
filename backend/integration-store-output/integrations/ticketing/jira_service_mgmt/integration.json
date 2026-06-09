@@ -1,0 +1,247 @@
+{
+  "id": "jira_service_mgmt",
+  "name": "Jira Service Management",
+  "description": "Integrates with Atlassian Jira Service Management REST API for IT service desk operations including request creation, tracking, and resolution",
+  "version": "1.0.0",
+  "category": "ticketing",
+  "vendor": "Atlassian",
+  "auth_type": "basic",
+  "auth_config": {
+    "type": "basic",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "https://{host}/rest/api/3",
+  "actions": [
+    {
+      "id": "create_issue",
+      "name": "Create Issue",
+      "description": "Create a new issue or service request in Jira Service Management",
+      "http_method": "POST",
+      "endpoint": "/issue",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "project_key",
+          "type": "string",
+          "description": "Project key where the issue will be created (e.g. ITSM)",
+          "required": true
+        },
+        {
+          "name": "summary",
+          "type": "string",
+          "description": "Summary/title of the issue",
+          "required": true
+        },
+        {
+          "name": "issuetype",
+          "type": "string",
+          "description": "Issue type name (e.g. Bug, Task, Story, Service Request)",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Detailed description of the issue in Atlassian Document Format (ADF) or plain text",
+          "required": false
+        },
+        {
+          "name": "priority",
+          "type": "string",
+          "description": "Priority name (e.g. Highest, High, Medium, Low, Lowest)",
+          "required": false
+        },
+        {
+          "name": "assignee_account_id",
+          "type": "string",
+          "description": "Account ID of the assignee",
+          "required": false
+        },
+        {
+          "name": "labels",
+          "type": "string",
+          "description": "Comma-separated list of labels",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_issue",
+      "name": "Get Issue",
+      "description": "Retrieve details of a specific issue by issue key or ID",
+      "http_method": "GET",
+      "endpoint": "/issue/{issue_id_or_key}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "issue_id_or_key",
+          "type": "string",
+          "description": "Issue key (e.g. PROJ-123) or numeric ID",
+          "required": true
+        },
+        {
+          "name": "fields",
+          "type": "string",
+          "description": "Comma-separated list of field names to return",
+          "required": false
+        },
+        {
+          "name": "expand",
+          "type": "string",
+          "description": "Comma-separated list of fields to expand (e.g. changelog, renderedFields)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "update_issue",
+      "name": "Update Issue",
+      "description": "Update fields on an existing issue",
+      "http_method": "PUT",
+      "endpoint": "/issue/{issue_id_or_key}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "issue_id_or_key",
+          "type": "string",
+          "description": "Issue key (e.g. PROJ-123) or numeric ID",
+          "required": true
+        },
+        {
+          "name": "summary",
+          "type": "string",
+          "description": "Updated summary/title",
+          "required": false
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Updated description",
+          "required": false
+        },
+        {
+          "name": "priority",
+          "type": "string",
+          "description": "Updated priority name",
+          "required": false
+        },
+        {
+          "name": "assignee_account_id",
+          "type": "string",
+          "description": "Account ID of new assignee",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_issues",
+      "name": "List Issues",
+      "description": "Search for issues using JQL (Jira Query Language)",
+      "http_method": "POST",
+      "endpoint": "/search",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "jql",
+          "type": "string",
+          "description": "JQL query string (e.g. project=ITSM AND status='Open')",
+          "required": true
+        },
+        {
+          "name": "maxResults",
+          "type": "number",
+          "description": "Maximum number of results to return",
+          "required": false,
+          "default": 50
+        },
+        {
+          "name": "startAt",
+          "type": "number",
+          "description": "Starting index for pagination",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "fields",
+          "type": "string",
+          "description": "Comma-separated list of field names to include",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "add_comment",
+      "name": "Add Comment",
+      "description": "Add a comment to an existing issue",
+      "http_method": "POST",
+      "endpoint": "/issue/{issue_id_or_key}/comment",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "issue_id_or_key",
+          "type": "string",
+          "description": "Issue key (e.g. PROJ-123) or numeric ID",
+          "required": true
+        },
+        {
+          "name": "body",
+          "type": "string",
+          "description": "Comment body text in Atlassian Document Format or plain text",
+          "required": true
+        },
+        {
+          "name": "visibility_type",
+          "type": "string",
+          "description": "Visibility type for the comment (role or group)",
+          "required": false
+        },
+        {
+          "name": "visibility_value",
+          "type": "string",
+          "description": "Name of the role or group for visibility restriction",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "transition_issue",
+      "name": "Transition Issue",
+      "description": "Transition an issue to a new status (e.g. close, resolve, reopen)",
+      "http_method": "POST",
+      "endpoint": "/issue/{issue_id_or_key}/transitions",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "issue_id_or_key",
+          "type": "string",
+          "description": "Issue key (e.g. PROJ-123) or numeric ID",
+          "required": true
+        },
+        {
+          "name": "transition_id",
+          "type": "string",
+          "description": "ID of the transition to execute",
+          "required": true
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "Comment to add during transition",
+          "required": false
+        },
+        {
+          "name": "resolution",
+          "type": "string",
+          "description": "Resolution name when closing (e.g. Done, Won't Do)",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

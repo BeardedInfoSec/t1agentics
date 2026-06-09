@@ -1,0 +1,156 @@
+{
+  "id": "urlscanio",
+  "name": "urlscan.io",
+  "description": "URLScan.io website scanner and analysis service",
+  "version": "2.6.3",
+  "category": "sandbox",
+  "vendor": "urlscan.io",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "api-key",
+    "location": "header"
+  },
+  "base_url": "https://urlscan.io/api/v1",
+  "actions": [
+    {
+      "id": "get_report",
+      "name": "Get Report",
+      "description": "Get results of a completed scan by UUID",
+      "http_method": "GET",
+      "endpoint": "/result/{uuid}/",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "uuid",
+          "type": "string",
+          "description": "Scan UUID from submission",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "hunt_domain",
+      "name": "Lookup Domain",
+      "description": "Search for scans of a specific domain",
+      "http_method": "GET",
+      "endpoint": "/search/",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "q",
+          "type": "string",
+          "description": "Search query (e.g., domain:example.com)",
+          "required": true
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "hunt_ip",
+      "name": "Lookup IP",
+      "description": "Search for scans associated with an IP address",
+      "http_method": "GET",
+      "endpoint": "/search/",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "q",
+          "type": "string",
+          "description": "Search query (e.g., page.ip:1.2.3.4)",
+          "required": true
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "hunt_url",
+      "name": "Lookup URL",
+      "description": "Search for existing scans of a URL",
+      "http_method": "GET",
+      "endpoint": "/search/",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "q",
+          "type": "string",
+          "description": "Search query for URL",
+          "required": true,
+          "contains": ["url"],
+          "value_template": "page.url:\"{value}\""
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "detonate_url",
+      "name": "Submit URL for Scan",
+      "description": "Submit a URL to be scanned",
+      "http_method": "POST",
+      "endpoint": "/scan/",
+      "action_type": "investigate",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "URL to scan",
+          "required": true
+        },
+        {
+          "name": "visibility",
+          "type": "string",
+          "description": "Scan visibility: public, unlisted, or private",
+          "required": false,
+          "default": "public"
+        },
+        {
+          "name": "tags",
+          "type": "array",
+          "description": "Tags to associate with this scan",
+          "required": false
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "get_screenshot",
+      "name": "Get Screenshot",
+      "description": "Get the screenshot from a completed scan",
+      "http_method": "GET",
+      "endpoint": "/screenshots/{uuid}.png",
+      "action_type": "generic",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 30,
+      "parameters": [
+        {
+          "name": "uuid",
+          "type": "string",
+          "description": "Scan UUID",
+          "required": true
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "urlscan.io",
+    "original_type": "sandbox",
+    "converted_at": "2025-12-18T16:25:29.260925",
+    "source_version": "2.6.3"
+  }
+}

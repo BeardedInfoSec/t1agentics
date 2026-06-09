@@ -1,0 +1,190 @@
+{
+  "id": "metasponse",
+  "name": "Metasponse",
+  "description": "Connects to Metasponse platform using Metasponse API services",
+  "version": "1.0.2",
+  "category": "edr",
+  "vendor": "AIS",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "create_job",
+      "name": "Create Job",
+      "description": "Create a job with provided plugins and options",
+      "http_method": "GET",
+      "endpoint": "/actions/create_job",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "job_name",
+          "type": "string",
+          "description": "Job name for creation",
+          "required": true,
+          "contains": [
+            "metasponse job name"
+          ]
+        },
+        {
+          "name": "job_plugins",
+          "type": "string",
+          "description": "Comma-separated plugin values",
+          "required": true,
+          "contains": [
+            "metasponse job plugins"
+          ]
+        },
+        {
+          "name": "job_options",
+          "type": "string",
+          "description": "Json string key-value pairs containing options and their values",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_all_jobs",
+      "name": "Get All Jobs",
+      "description": "Get information of all deployed jobs",
+      "http_method": "GET",
+      "endpoint": "/actions/get_all_jobs",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "run_job",
+      "name": "Run Job",
+      "description": "Run or schedule a job using builder id, which is created from create job action",
+      "http_method": "GET",
+      "endpoint": "/actions/run_job",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "builder_id",
+          "type": "string",
+          "description": "Job builder ID",
+          "required": true,
+          "contains": [
+            "metasponse job builder id"
+          ]
+        },
+        {
+          "name": "template",
+          "type": "boolean",
+          "description": "Save a job as a template",
+          "required": false
+        },
+        {
+          "name": "delta",
+          "type": "number",
+          "description": "Schedules a builder using relative time (in seconds)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "job_control",
+      "name": "Job Control",
+      "description": "Pickup or abort the job that is currently running on the platform",
+      "http_method": "GET",
+      "endpoint": "/actions/job_control",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "job_name",
+          "type": "string",
+          "description": "Job name for pickup or abort",
+          "required": true,
+          "contains": [
+            "metasponse job name"
+          ]
+        },
+        {
+          "name": "action",
+          "type": "string",
+          "description": "Action to perform on job",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_job_status",
+      "name": "Get Job Status",
+      "description": "Get job status with all job properties",
+      "http_method": "GET",
+      "endpoint": "/actions/get_job_status",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "job_name",
+          "type": "string",
+          "description": "Job name for get the status",
+          "required": true,
+          "contains": [
+            "metasponse job name"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "kill_job",
+      "name": "Kill Job",
+      "description": "Delete a job which is configured on platform",
+      "http_method": "GET",
+      "endpoint": "/actions/kill_job",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "job_name",
+          "type": "string",
+          "description": "Job name for delete",
+          "required": true,
+          "contains": [
+            "metasponse job name"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_plugins",
+      "name": "List Plugins",
+      "description": "Get information about all plugins",
+      "http_method": "GET",
+      "endpoint": "/actions/list_plugins",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Metasponse",
+    "original_type": "endpoint",
+    "converted_at": "2025-12-18T16:25:28.924541",
+    "source_version": "1.0.2"
+  }
+}

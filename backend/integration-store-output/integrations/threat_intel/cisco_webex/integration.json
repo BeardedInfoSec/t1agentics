@@ -1,0 +1,676 @@
+{
+  "id": "cisco_webex",
+  "name": "Cisco Webex",
+  "description": "This app integrates with Cisco Webex to implement investigative and genric actions",
+  "version": "2.1.3",
+  "category": "threat_intel",
+  "vendor": "Cisco",
+  "auth_type": "oauth2",
+  "auth_config": {
+    "type": "oauth2",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "https://webexapis.com/v1",
+  "actions": [
+    {
+      "id": "list_rooms",
+      "name": "List Rooms",
+      "description": "List webex rooms",
+      "http_method": "GET",
+      "endpoint": "/people",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "get_user",
+      "name": "Get User",
+      "description": "Get user ID from e-mail address",
+      "http_method": "GET",
+      "endpoint": "/people?email={0}",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "email_address",
+          "type": "string",
+          "description": "User webex e-mail address",
+          "required": true,
+          "contains": [
+            "email"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "send_message",
+      "name": "Send Message",
+      "description": "Send message to user or room",
+      "http_method": "GET",
+      "endpoint": "/actions/send_message",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "endpoint_id",
+          "type": "string",
+          "description": "User or Room ID",
+          "required": true,
+          "contains": [
+            "webex user id",
+            "webex room id"
+          ]
+        },
+        {
+          "name": "destination_type",
+          "type": "string",
+          "description": "Destination Type",
+          "required": true
+        },
+        {
+          "name": "message",
+          "type": "string",
+          "description": "Message",
+          "required": true
+        },
+        {
+          "name": "is_markdown",
+          "type": "boolean",
+          "description": "Is the message Markdown formatted",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "create_room",
+      "name": "Create A Room",
+      "description": "Create a new Webex room (space)",
+      "http_method": "GET",
+      "endpoint": "/actions/create_room",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "title",
+          "type": "string",
+          "description": "A user-friendly name for the room",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "The description of the space",
+          "required": false
+        },
+        {
+          "name": "team_id",
+          "type": "string",
+          "description": "The ID for the team with which this room is associated",
+          "required": false
+        },
+        {
+          "name": "classification_id",
+          "type": "string",
+          "description": "The classification_id for the room",
+          "required": false
+        },
+        {
+          "name": "is_locked",
+          "type": "boolean",
+          "description": "Set the space as locked/moderated; creator becomes a moderator",
+          "required": false
+        },
+        {
+          "name": "is_public",
+          "type": "boolean",
+          "description": "If true, the room is discoverable by anyone in the org; description must be provided",
+          "required": false
+        },
+        {
+          "name": "is_announcement_only",
+          "type": "boolean",
+          "description": "Sets the space into announcement-only mode",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "add_people_to_room",
+      "name": "Add People",
+      "description": "Add a people to a Webex room (space) as a member or moderator",
+      "http_method": "GET",
+      "endpoint": "/actions/add_people_to_room",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "room_id",
+          "type": "string",
+          "description": "The ID of the room to add the person to",
+          "required": true,
+          "contains": [
+            "webex room id"
+          ]
+        },
+        {
+          "name": "person_id",
+          "type": "string",
+          "description": "The ID of the person to add (use either person_id or person_email)",
+          "required": false,
+          "contains": [
+            "webex user id"
+          ]
+        },
+        {
+          "name": "person_email",
+          "type": "string",
+          "description": "The email address of the person to add (use either person_email or person_id)",
+          "required": false,
+          "contains": [
+            "email"
+          ]
+        },
+        {
+          "name": "is_moderator",
+          "type": "boolean",
+          "description": "Set to true to make the person a room moderator",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "schedule_meeting",
+      "name": "Schedule Meeting",
+      "description": "Allows users to schedule a Webex meeting, webinar, or ad-hoc meeting",
+      "http_method": "GET",
+      "endpoint": "/meetings",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "title",
+          "type": "string",
+          "description": "Title of the meeting (max 128 chars)",
+          "required": true
+        },
+        {
+          "name": "start",
+          "type": "string",
+          "description": "Meeting start time (ISO 8601 format)",
+          "required": true
+        },
+        {
+          "name": "end",
+          "type": "string",
+          "description": "Meeting end time (ISO 8601 format)",
+          "required": true
+        },
+        {
+          "name": "timezone",
+          "type": "string",
+          "description": "IANA time zone for the meeting (e.g., America/Los_Angeles)",
+          "required": false
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Meeting description (max 1300 chars)",
+          "required": false
+        },
+        {
+          "name": "invitees",
+          "type": "string",
+          "description": "List of emails to invite (comma\u2011separated)",
+          "required": false
+        },
+        {
+          "name": "password",
+          "type": "string",
+          "description": "Password to join the meeting",
+          "required": false
+        },
+        {
+          "name": "send_email",
+          "type": "boolean",
+          "description": "Whether to email host & invitees",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "host_email",
+          "type": "string",
+          "description": "Host email (admin scopes required)",
+          "required": false
+        },
+        {
+          "name": "scheduled_type",
+          "type": "string",
+          "description": "Type of meeting: meeting, webinar, or personal_room_meeting",
+          "required": false
+        },
+        {
+          "name": "adhoc",
+          "type": "boolean",
+          "description": "Create an ad\u2011hoc (instant) meeting in a room",
+          "required": false
+        },
+        {
+          "name": "room_id",
+          "type": "string",
+          "description": "Room (space) ID for ad\u2011hoc meeting",
+          "required": false,
+          "contains": [
+            "webex room id"
+          ]
+        },
+        {
+          "name": "recurrence",
+          "type": "string",
+          "description": "Meeting series rule (RFC\u20112445, e.g. FREQ=DAILY;INTERVAL=1)",
+          "required": false
+        },
+        {
+          "name": "session_type_id",
+          "type": "number",
+          "description": "Session type ID (required for webinars)",
+          "required": false
+        },
+        {
+          "name": "enabled_auto_record_meeting",
+          "type": "boolean",
+          "description": "Automatically record when meeting starts",
+          "required": false
+        },
+        {
+          "name": "allow_any_user_to_be_co_host",
+          "type": "boolean",
+          "description": "Allow any qualified user to be cohost",
+          "required": false
+        },
+        {
+          "name": "enabled_join_before_host",
+          "type": "boolean",
+          "description": "Allow attendees to join before host",
+          "required": false
+        },
+        {
+          "name": "join_before_host_minutes",
+          "type": "number",
+          "description": "Minutes attendees can join before host (0,5,10,15)",
+          "required": false
+        },
+        {
+          "name": "enable_connect_audio_before_host",
+          "type": "boolean",
+          "description": "Allow audio connect before host",
+          "required": false
+        },
+        {
+          "name": "enable_automatic_lock",
+          "type": "boolean",
+          "description": "Automatically lock the meeting after start",
+          "required": false
+        },
+        {
+          "name": "automatic_lock_minutes",
+          "type": "number",
+          "description": "Minutes after start to auto\u2011lock",
+          "required": false
+        },
+        {
+          "name": "public_meeting",
+          "type": "boolean",
+          "description": "List on public calendar",
+          "required": false
+        },
+        {
+          "name": "reminder_time",
+          "type": "number",
+          "description": "Minutes before start to send host reminder",
+          "required": false
+        },
+        {
+          "name": "unlocked_meeting_join_security",
+          "type": "string",
+          "description": "How non\u2011invitees join: allowJoin, allowJoinWithLobby, blockFromJoin",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "retrieve_meeting_participants",
+      "name": "Retrieve Meeting Participants",
+      "description": "Retrieve all participants in an in-progress or ended Webex meeting",
+      "http_method": "GET",
+      "endpoint": "/actions/retrieve_meeting_participants",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "meeting_id",
+          "type": "string",
+          "description": "Unique identifier of the meeting (not personal room meeting)",
+          "required": true,
+          "contains": [
+            "webex meeting id"
+          ]
+        },
+        {
+          "name": "breakout_session_id",
+          "type": "string",
+          "description": "Unique ID of a breakout session in an ended meeting",
+          "required": false
+        },
+        {
+          "name": "meeting_start_time_from",
+          "type": "string",
+          "description": "Start time to filter meetings (ISO 8601 format)",
+          "required": false
+        },
+        {
+          "name": "meeting_start_time_to",
+          "type": "string",
+          "description": "End time to filter meetings (ISO 8601 format)",
+          "required": false
+        },
+        {
+          "name": "host_email",
+          "type": "string",
+          "description": "Email address of the meeting host (admin-only use)",
+          "required": false,
+          "contains": [
+            "email"
+          ]
+        },
+        {
+          "name": "join_time_from",
+          "type": "string",
+          "description": "Start of participant join time range (ISO 8601 format)",
+          "required": false
+        },
+        {
+          "name": "join_time_to",
+          "type": "string",
+          "description": "End of participant join time range (ISO 8601 format)",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Max number of participants to return (1\u2013100)",
+          "required": false,
+          "default": 10
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "list_messages",
+      "name": "List Messages",
+      "description": "Retrieve a list of messages from a Webex room or 1:1 conversation",
+      "http_method": "GET",
+      "endpoint": "/people",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "room_id",
+          "type": "string",
+          "description": "The ID of the room to list messages from",
+          "required": true,
+          "contains": [
+            "webex room id"
+          ]
+        },
+        {
+          "name": "parent_id",
+          "type": "string",
+          "description": "List messages in a thread by parent message ID",
+          "required": false,
+          "contains": [
+            "webex message id"
+          ]
+        },
+        {
+          "name": "before",
+          "type": "string",
+          "description": "List messages sent before a specific date/time (ISO 8601 format)",
+          "required": false
+        },
+        {
+          "name": "before_message",
+          "type": "string",
+          "description": "List messages sent before a specific message ID",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "The maximum number of messages to return (default 50, max 100)",
+          "required": false,
+          "default": 50
+        }
+      ]
+    },
+    {
+      "id": "get_message_details",
+      "name": "Get Message Details",
+      "description": "Retrieve the details of a specific Webex message by message ID",
+      "http_method": "GET",
+      "endpoint": "/actions/get_message_details",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "message_id",
+          "type": "string",
+          "description": "The unique identifier of the message to retrieve",
+          "required": true,
+          "contains": [
+            "webex message id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_meeting_details",
+      "name": "Get Meeting Details",
+      "description": "Retrieve details of a specific Webex meeting using meeting ID or meeting number",
+      "http_method": "GET",
+      "endpoint": "/actions/get_meeting_details",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "meeting_id",
+          "type": "string",
+          "description": "The unique identifier of the meeting being requested (UUID format)",
+          "required": true,
+          "contains": [
+            "webex meeting id"
+          ]
+        },
+        {
+          "name": "host_email",
+          "type": "string",
+          "description": "Email address of the meeting host (for admin-level access)",
+          "required": false,
+          "contains": [
+            "email"
+          ]
+        },
+        {
+          "name": "current",
+          "type": "boolean",
+          "description": "Whether to retrieve only the current scheduled meeting of the series (true or false)",
+          "required": false,
+          "default": false
+        }
+      ]
+    },
+    {
+      "id": "list_users",
+      "name": "List Users",
+      "description": "List users in your Webex organization using filters like email, name, ID, roles, or location",
+      "http_method": "GET",
+      "endpoint": "/people",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "email",
+          "type": "string",
+          "description": "Filter people by email address",
+          "required": false,
+          "contains": [
+            "email"
+          ]
+        },
+        {
+          "name": "display_name",
+          "type": "string",
+          "description": "Filter people whose name starts with this string",
+          "required": false
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Comma-separated list of person IDs to retrieve (max 85)",
+          "required": false,
+          "contains": [
+            "webex user id"
+          ]
+        },
+        {
+          "name": "org_id",
+          "type": "string",
+          "description": "List users in this organization (admin only)",
+          "required": false
+        },
+        {
+          "name": "roles",
+          "type": "string",
+          "description": "Comma-separated list of role IDs to filter by (admin only)",
+          "required": false
+        },
+        {
+          "name": "calling_data",
+          "type": "boolean",
+          "description": "Whether to include Webex Calling data (admin only)",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "location_id",
+          "type": "string",
+          "description": "List users present in this location (admin only)",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of people to return (default 100, max varies based on flags)",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "get_recording_details",
+      "name": "Get Recording Details",
+      "description": "Retrieve details of a Webex meeting recording using its recording ID",
+      "http_method": "GET",
+      "endpoint": "/actions/get_recording_details",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "recording_id",
+          "type": "string",
+          "description": "Unique identifier of the Webex recording.",
+          "required": false,
+          "contains": [
+            "webex recording id"
+          ]
+        },
+        {
+          "name": "meeting_id",
+          "type": "string",
+          "description": "Unique identifier of the Webex meeting.",
+          "required": false,
+          "contains": [
+            "webex meeting id"
+          ]
+        },
+        {
+          "name": "host_email",
+          "type": "string",
+          "description": "Email address of the meeting host (admin only).",
+          "required": false,
+          "contains": [
+            "email"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ai_meeting_summary",
+      "name": "Ai Meeting Summary",
+      "description": "Retrieve AI-Generated meeting summary and actions items using its recording ID and site url",
+      "http_method": "GET",
+      "endpoint": "/actions/ai_meeting_summary",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "recording_id",
+          "type": "string",
+          "description": "Unique identifier of the Webex recording.",
+          "required": true,
+          "contains": [
+            "webex recording id"
+          ]
+        },
+        {
+          "name": "site_url",
+          "type": "string",
+          "description": "Unique identifier of the Webex recording.eg: company.webex.com",
+          "required": true
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Cisco Webex",
+    "original_type": "information",
+    "converted_at": "2025-12-18T16:25:28.672152",
+    "source_version": "2.1.3"
+  }
+}

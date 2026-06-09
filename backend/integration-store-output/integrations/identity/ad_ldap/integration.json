@@ -1,0 +1,405 @@
+{
+  "id": "ad_ldap",
+  "name": "AD LDAP",
+  "description": "App specifically designed for interacting with Microsoft Active Directory's LDAP Implementation",
+  "version": "2.3.7",
+  "category": "identity",
+  "vendor": "Splunk",
+  "auth_type": "basic_auth",
+  "auth_config": {
+    "type": "basic_auth",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "add_group_members",
+      "name": "Add Group Members",
+      "description": "Adds one or more Active Directory objects to one or more groups",
+      "http_method": "GET",
+      "endpoint": "/actions/add_group_members",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "use_samaccountname",
+          "type": "boolean",
+          "description": "Specify members AND groups as sAMAccountName(s) instead of distinguishedName(s) (note: member AND groups will use sAMAccountName if selected)",
+          "required": false
+        },
+        {
+          "name": "members",
+          "type": "string",
+          "description": "Semi-colon (';') separated list of users. If 'use samaccountname' is false, then these must be distinguishedName(s)",
+          "required": true
+        },
+        {
+          "name": "groups",
+          "type": "string",
+          "description": "Semi-colon (';') separated list of groups to which the members will be added. If 'use samaccountname' is false, then these must be distinguishedName(s)",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "remove_group_members",
+      "name": "Remove Group Members",
+      "description": "Removes one or more Active Directory objects from one or more groups",
+      "http_method": "GET",
+      "endpoint": "/actions/remove_group_members",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "use_samaccountname",
+          "type": "boolean",
+          "description": "Specify members AND groups as sAMAccountName(s) instead of distinguishedName(s)",
+          "required": false
+        },
+        {
+          "name": "members",
+          "type": "string",
+          "description": "Semi-colon (';') separated list of users. If 'use samaccountname' is false, then these must be distinguishedName(s)",
+          "required": true
+        },
+        {
+          "name": "groups",
+          "type": "string",
+          "description": "Semi-colon (';') separated list of groups from which the members will be removed. If 'use samaccountname' is false, then these must be distinguishedName(s)",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "unlock_account",
+      "name": "Unlock Account",
+      "description": "Unlocks a locked Active Directory account",
+      "http_method": "GET",
+      "endpoint": "/actions/unlock_account",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "use_samaccountname",
+          "type": "boolean",
+          "description": "Use sAMAccountName for user instead of distinguishedName(s)",
+          "required": false
+        },
+        {
+          "name": "user",
+          "type": "string",
+          "description": "Specify the user to unlock. If 'use samaccountname' is false, then this must be the user's distinguishedName",
+          "required": true,
+          "contains": [
+            "user name"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "disable_account",
+      "name": "Disable Account",
+      "description": "Disables an Active Directory account",
+      "http_method": "GET",
+      "endpoint": "/actions/disable_account",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "use_samaccountname",
+          "type": "boolean",
+          "description": "Specify sAMAccountName instead of distinguishedName",
+          "required": false
+        },
+        {
+          "name": "user",
+          "type": "string",
+          "description": "Specify the user to disable. If 'use samaccountname' is false, then this must be the user's distinguishedName",
+          "required": true,
+          "contains": [
+            "user name"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "enable_account",
+      "name": "Enable Account",
+      "description": "Enables a disabled Active Directory account",
+      "http_method": "GET",
+      "endpoint": "/actions/enable_account",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "use_samaccountname",
+          "type": "boolean",
+          "description": "Specify sAMAccountName instead of distinguishedName",
+          "required": false
+        },
+        {
+          "name": "user",
+          "type": "string",
+          "description": "Specify the user to enable. If 'use samaccountname' is false, then this must be the user's distinguishedName",
+          "required": true,
+          "contains": [
+            "user name"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "reset_password",
+      "name": "Reset Password",
+      "description": "Resets the password of a user, requiring the user to change password at next login",
+      "http_method": "GET",
+      "endpoint": "/actions/reset_password",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "use_samaccountname",
+          "type": "boolean",
+          "description": "Use sAMAccountName instead of distinguishedName",
+          "required": false
+        },
+        {
+          "name": "user",
+          "type": "string",
+          "description": "User whose attributes are to be modified",
+          "required": true,
+          "contains": [
+            "user name"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "set_password",
+      "name": "Set Password",
+      "description": "Set a user's password",
+      "http_method": "GET",
+      "endpoint": "/actions/set_password",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "use_samaccountname",
+          "type": "boolean",
+          "description": "Specify sAMAccountName instead of distinguishedName",
+          "required": false
+        },
+        {
+          "name": "user",
+          "type": "string",
+          "description": "Specify the user whose password will be set. If 'use samaccountname' is false, then this must be the user's distinguishedName",
+          "required": true,
+          "contains": [
+            "user name"
+          ]
+        },
+        {
+          "name": "password",
+          "type": "string",
+          "description": "New password",
+          "required": true
+        },
+        {
+          "name": "confirm_password",
+          "type": "string",
+          "description": "Re-type the password",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "move_object",
+      "name": "Move Object",
+      "description": "Moves an entry in Active Directory",
+      "http_method": "GET",
+      "endpoint": "/actions/move_object",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "object",
+          "type": "string",
+          "description": "Specify the distinguishedName to move",
+          "required": true
+        },
+        {
+          "name": "destination_ou",
+          "type": "string",
+          "description": "The distinguishedName of the OU the specified object will move to",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "run_query",
+      "name": "Run Query",
+      "description": "Query Active Directory LDAP",
+      "http_method": "GET",
+      "endpoint": "/actions/run_query",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "The LDAP filter (must be in LDAP Syntax)",
+          "required": true
+        },
+        {
+          "name": "search_base",
+          "type": "string",
+          "description": "The search base to use in its distinguishedName format. If not specified, the 'defaultNamingContext' will be used",
+          "required": false
+        },
+        {
+          "name": "attributes",
+          "type": "string",
+          "description": "Semi-colon separated list of attributes to collect (e.g. sAMAccountName;mail)",
+          "required": true,
+          "default": "sAMAccountName"
+        }
+      ]
+    },
+    {
+      "id": "get_attributes",
+      "name": "Get Attributes",
+      "description": "Get attributes of various principals",
+      "http_method": "GET",
+      "endpoint": "/actions/get_attributes",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "principals",
+          "type": "string",
+          "description": "The semi-colon separated principals. These can be sAMAccountName, userprincipalname, or distinguishedName",
+          "required": true
+        },
+        {
+          "name": "attributes",
+          "type": "string",
+          "description": "Semi-colon separated list of attributes to collect",
+          "required": true,
+          "default": "sAMAccountName"
+        }
+      ]
+    },
+    {
+      "id": "set_attribute",
+      "name": "Set Attribute",
+      "description": "Add, delete, or replace an attribute of a user",
+      "http_method": "GET",
+      "endpoint": "/actions/set_attribute",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "use_samaccountname",
+          "type": "boolean",
+          "description": "Use sAMAccountName instead of distinguishedName",
+          "required": false
+        },
+        {
+          "name": "user",
+          "type": "string",
+          "description": "User whose attributes are to be modified",
+          "required": true,
+          "contains": [
+            "user name"
+          ]
+        },
+        {
+          "name": "attribute",
+          "type": "string",
+          "description": "The attribute to modify (add/delete/replace)",
+          "required": true,
+          "default": "mail"
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "description": "Attribute value",
+          "required": false,
+          "default": "user@foo.bar"
+        },
+        {
+          "name": "action",
+          "type": "string",
+          "description": "Semi-colon separated list of attributes to collect",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "rename_object",
+      "name": "Rename Object",
+      "description": "Rename the object",
+      "http_method": "GET",
+      "endpoint": "/actions/rename_object",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "object",
+          "type": "string",
+          "description": "The object to be renamed",
+          "required": true,
+          "contains": [
+            "user name"
+          ]
+        },
+        {
+          "name": "use_samaccountname",
+          "type": "boolean",
+          "description": "Use sAMAccountName instead of distinguishedName",
+          "required": false
+        },
+        {
+          "name": "new_name",
+          "type": "string",
+          "description": "New name for the object",
+          "required": true,
+          "contains": [
+            "user name"
+          ]
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "AD LDAP",
+    "original_type": "identity management",
+    "converted_at": "2025-12-18T16:25:28.547558",
+    "source_version": "2.3.7"
+  }
+}

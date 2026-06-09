@@ -1,0 +1,273 @@
+{
+  "id": "sentinel",
+  "name": "Sentinel",
+  "description": "This app provides integration with Microsoft Sentinel",
+  "version": "1.0.2",
+  "category": "threat_intel",
+  "vendor": "Microsoft",
+  "auth_type": "oauth2",
+  "auth_config": {
+    "type": "oauth2",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "https://management.azure.com/subscriptions/{subscription_id}/resourceGroups/\\\n{resource_group}/providers/Microsoft.OperationalInsights/workspaces/{workspace_name}/providers/Microsoft.SecurityInsights",
+  "actions": [
+    {
+      "id": "on_poll",
+      "name": "On Poll",
+      "description": "Callback action for the on_poll ingest functionality",
+      "http_method": "GET",
+      "endpoint": "/actions/on_poll",
+      "action_type": "ingest",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "container_count",
+          "type": "number",
+          "description": "Number of events to generate",
+          "required": false
+        },
+        {
+          "name": "artifact_count",
+          "type": "number",
+          "description": "Number of artifacts to generate per event",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_incident",
+      "name": "Get Incident",
+      "description": "Gets a given incident",
+      "http_method": "GET",
+      "endpoint": "/actions/get_incident",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "incident_name",
+          "type": "string",
+          "description": "Incident Name",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_incident_entities",
+      "name": "Get Incident Entities",
+      "description": "Gets all entities for an incident",
+      "http_method": "GET",
+      "endpoint": "/actions/get_incident_entities",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "incident_name",
+          "type": "string",
+          "description": "Incident Name",
+          "required": true,
+          "contains": [
+            "mssentinel incident name"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_incident_alerts",
+      "name": "Get Incident Alerts",
+      "description": "Gets all alerts for an incident",
+      "http_method": "GET",
+      "endpoint": "/actions/get_incident_alerts",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "incident_name",
+          "type": "string",
+          "description": "Incident Name",
+          "required": true,
+          "contains": [
+            "mssentinel incident name"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_incidents",
+      "name": "List Incidents",
+      "description": "Gets all incidents",
+      "http_method": "GET",
+      "endpoint": "/actions/list_incidents",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of incidents to list",
+          "required": true,
+          "default": 100
+        },
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "Filters the results, based on a Boolean condition",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "update_incident",
+      "name": "Update Incident",
+      "description": "Updates an existing incident",
+      "http_method": "GET",
+      "endpoint": "/actions/update_incident",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "incident_name",
+          "type": "string",
+          "description": "Incident Name",
+          "required": true
+        },
+        {
+          "name": "ph",
+          "type": "string",
+          "description": "",
+          "required": false
+        },
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Updated severity of the incident",
+          "required": false
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Updated status of the incident",
+          "required": false
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "description": "Updated title of the incident",
+          "required": false
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Updated description of the incident",
+          "required": false
+        },
+        {
+          "name": "owner_upn",
+          "type": "string",
+          "description": "Updated owner (userPrincipalName)",
+          "required": false
+        },
+        {
+          "name": "ph2",
+          "type": "string",
+          "description": "",
+          "required": false
+        },
+        {
+          "name": "classification",
+          "type": "string",
+          "description": "The reason the incident was closed. Only updated when status is updated to Closed",
+          "required": false
+        },
+        {
+          "name": "classification_comment",
+          "type": "string",
+          "description": "Describes the reason the incident was closed. Only updated when status is updated to Closed",
+          "required": false
+        },
+        {
+          "name": "classification_reason",
+          "type": "string",
+          "description": "The classification reason the incident was closed with. Only updated when status is updated to Closed",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "add_incident_comment",
+      "name": "Add Incident Comment",
+      "description": "Creates a new incident comment",
+      "http_method": "GET",
+      "endpoint": "/actions/add_incident_comment",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "incident_name",
+          "type": "string",
+          "description": "Incident Name",
+          "required": true
+        },
+        {
+          "name": "message",
+          "type": "string",
+          "description": "The comment message",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "run_query",
+      "name": "Run Query",
+      "description": "Queries the Sentinel Log Analytics workspace for data using KQL",
+      "http_method": "GET",
+      "endpoint": "/actions/run_query",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Query in KQL (for example, \"SecurityIncident\" will retrieve the Sentinel incidents table)",
+          "required": true
+        },
+        {
+          "name": "timespan",
+          "type": "string",
+          "description": "Time Interval in ISO 8601 Duration format. For example, \"P7D\" for last 7 days or an interval like \"2007-03-01T13:00:00Z/2008-05-11T15:30:00Z\"",
+          "required": false
+        },
+        {
+          "name": "max_rows",
+          "type": "number",
+          "description": "Maximum number of rows to return in the result. Defaults to 3000",
+          "required": true,
+          "default": 3000
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Sentinel",
+    "original_type": "information",
+    "converted_at": "2025-12-18T16:25:29.109654",
+    "source_version": "1.0.2"
+  }
+}

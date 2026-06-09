@@ -1,0 +1,181 @@
+{
+  "id": "cofense_phishme",
+  "name": "Cofense PhishMe",
+  "description": "Phishing simulation and security awareness training platform providing campaign management, reporting, and automated phishing program deployment",
+  "version": "1.0.0",
+  "category": "email_security",
+  "vendor": "Cofense",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header",
+    "prefix": "Bearer"
+  },
+  "base_url": "https://{host}/api/v2",
+  "actions": [
+    {
+      "id": "get_campaigns",
+      "name": "Get Campaigns",
+      "description": "Retrieve phishing simulation campaigns and their status",
+      "http_method": "GET",
+      "endpoint": "/campaigns",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Filter by campaign status (draft, scheduled, running, completed)",
+          "required": false
+        },
+        {
+          "name": "start_date",
+          "type": "string",
+          "description": "Filter campaigns starting after this date",
+          "required": false
+        },
+        {
+          "name": "end_date",
+          "type": "string",
+          "description": "Filter campaigns ending before this date",
+          "required": false
+        },
+        {
+          "name": "page",
+          "type": "number",
+          "description": "Page number for pagination",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "per_page",
+          "type": "number",
+          "description": "Results per page",
+          "required": false,
+          "default": 50
+        }
+      ]
+    },
+    {
+      "id": "get_campaign_details",
+      "name": "Get Campaign Details",
+      "description": "Retrieve detailed information about a specific phishing simulation campaign",
+      "http_method": "GET",
+      "endpoint": "/campaigns/{campaign_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "campaign_id",
+          "type": "number",
+          "description": "The campaign ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_campaign_results",
+      "name": "Get Campaign Results",
+      "description": "Retrieve simulation results and response metrics for a campaign",
+      "http_method": "GET",
+      "endpoint": "/campaigns/{campaign_id}/results",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "campaign_id",
+          "type": "number",
+          "description": "The campaign ID",
+          "required": true
+        },
+        {
+          "name": "page",
+          "type": "number",
+          "description": "Page number for pagination",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "per_page",
+          "type": "number",
+          "description": "Results per page",
+          "required": false,
+          "default": 50
+        }
+      ]
+    },
+    {
+      "id": "get_scenarios",
+      "name": "Get Scenarios",
+      "description": "Retrieve available phishing simulation scenarios",
+      "http_method": "GET",
+      "endpoint": "/scenarios",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "category",
+          "type": "string",
+          "description": "Filter by scenario category",
+          "required": false
+        },
+        {
+          "name": "page",
+          "type": "number",
+          "description": "Page number for pagination",
+          "required": false,
+          "default": 1
+        }
+      ]
+    },
+    {
+      "id": "get_reporters",
+      "name": "Get Reporters",
+      "description": "Retrieve list of users who reported simulated phishing emails",
+      "http_method": "GET",
+      "endpoint": "/campaigns/{campaign_id}/reporters",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "campaign_id",
+          "type": "number",
+          "description": "The campaign ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_users",
+      "name": "Get Users",
+      "description": "Retrieve user list and their simulation response history",
+      "http_method": "GET",
+      "endpoint": "/users",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "email",
+          "type": "string",
+          "description": "Filter by user email address",
+          "required": false
+        },
+        {
+          "name": "page",
+          "type": "number",
+          "description": "Page number for pagination",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "per_page",
+          "type": "number",
+          "description": "Results per page",
+          "required": false,
+          "default": 50
+        }
+      ]
+    }
+  ]
+}

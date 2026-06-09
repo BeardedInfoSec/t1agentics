@@ -1,0 +1,397 @@
+{
+  "id": "g_suite_for_gmail",
+  "name": "G Suite for GMail",
+  "description": "Integrates with G Suite for various investigative and containment actions",
+  "version": "2.7.0",
+  "category": "email_security",
+  "vendor": "Google",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "get_users",
+      "name": "List Users",
+      "description": "Get the list of users",
+      "http_method": "GET",
+      "endpoint": "/actions/get_users",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "max_items",
+          "type": "number",
+          "description": "Max users to get (max 500)",
+          "required": false
+        },
+        {
+          "name": "page_token",
+          "type": "string",
+          "description": "Token to specify next page in list",
+          "required": false,
+          "contains": [
+            "gsuite page token"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "run_query",
+      "name": "Run Query",
+      "description": "Search emails with query/filtering options",
+      "http_method": "GET",
+      "endpoint": "/actions/run_query",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "email",
+          "type": "string",
+          "description": "User's Email (Mailbox to search in)",
+          "required": true,
+          "contains": [
+            "email"
+          ]
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "description": "Label (to search in)",
+          "required": false,
+          "default": "Inbox",
+          "contains": [
+            "gmail label"
+          ]
+        },
+        {
+          "name": "subject",
+          "type": "string",
+          "description": "Substring to search in Subject",
+          "required": false
+        },
+        {
+          "name": "sender",
+          "type": "string",
+          "description": "Sender Email address to match",
+          "required": false,
+          "contains": [
+            "email"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "string",
+          "description": "Substring to search in Body",
+          "required": false
+        },
+        {
+          "name": "internet_message_id",
+          "type": "string",
+          "description": "Internet Message ID",
+          "required": false,
+          "contains": [
+            "internet message id"
+          ]
+        },
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Gmail Query string",
+          "required": false
+        },
+        {
+          "name": "max_results",
+          "type": "number",
+          "description": "Max Results",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "page_token",
+          "type": "string",
+          "description": "Next page token",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "delete_email",
+      "name": "Delete Email",
+      "description": "Delete emails",
+      "http_method": "POST",
+      "endpoint": "/actions/delete_email",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Message IDs to delete(Comma separated IDs allowed)",
+          "required": true,
+          "contains": [
+            "gmail email id"
+          ]
+        },
+        {
+          "name": "email",
+          "type": "string",
+          "description": "Email of the mailbox owner",
+          "required": true,
+          "contains": [
+            "email"
+          ]
+        }
+      ],
+      "observable_type": "email"
+    },
+    {
+      "id": "on_poll",
+      "name": "On Poll",
+      "description": "Callback action for the on-poll ingest functionality",
+      "http_method": "GET",
+      "endpoint": "/actions/on_poll",
+      "action_type": "ingest",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "start_time",
+          "type": "number",
+          "description": "Parameter Ignored in this app",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "number",
+          "description": "Parameter Ignored in this app",
+          "required": false
+        },
+        {
+          "name": "container_id",
+          "type": "string",
+          "description": "Parameter Ignored in this app",
+          "required": false
+        },
+        {
+          "name": "container_count",
+          "type": "number",
+          "description": "Maximum number of emails to ingest",
+          "required": true
+        },
+        {
+          "name": "artifact_count",
+          "type": "number",
+          "description": "Maximum number of artifact to ingest",
+          "required": true
+        },
+        {
+          "name": "data_type",
+          "type": "string",
+          "description": "Encode ingested emails as ASCII or UTF-8",
+          "required": false,
+          "default": "utf-8"
+        }
+      ]
+    },
+    {
+      "id": "get_email",
+      "name": "Get Email",
+      "description": "Retrieve email details via internet message id",
+      "http_method": "GET",
+      "endpoint": "/actions/get_email",
+      "action_type": "investigate",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "email",
+          "type": "string",
+          "description": "User's Email (Mailbox to search)",
+          "required": true,
+          "contains": [
+            "email"
+          ]
+        },
+        {
+          "name": "internet_message_id",
+          "type": "string",
+          "description": "Internet Message ID",
+          "required": true,
+          "contains": [
+            "internet message id"
+          ]
+        },
+        {
+          "name": "extract_attachments",
+          "type": "boolean",
+          "description": "Add attachments to vault and create vault artifacts",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "extract_nested",
+          "type": "boolean",
+          "description": "Works when `extract_attachments` is set to `true`. Extracts attachments from nested email attachments.",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "format",
+          "type": "string",
+          "description": "Format used for the get email action",
+          "required": false,
+          "default": ""
+        },
+        {
+          "name": "download_email",
+          "type": "boolean",
+          "description": "Download email to vault",
+          "required": false
+        }
+      ],
+      "observable_type": "email"
+    },
+    {
+      "id": "get_user",
+      "name": "Get User",
+      "description": "Retrieve user details via email address",
+      "http_method": "GET",
+      "endpoint": "/actions/get_user",
+      "action_type": "investigate",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "email",
+          "type": "string",
+          "description": "User's Email (User to search)",
+          "required": true,
+          "contains": [
+            "email"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "send_email",
+      "name": "Send Email",
+      "description": "Send emails",
+      "http_method": "POST",
+      "endpoint": "/actions/send_email",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "from",
+          "type": "string",
+          "description": "From field",
+          "required": false,
+          "contains": [
+            "email"
+          ]
+        },
+        {
+          "name": "to",
+          "type": "string",
+          "description": "List of recipients email addresses",
+          "required": true,
+          "contains": [
+            "email"
+          ]
+        },
+        {
+          "name": "subject",
+          "type": "string",
+          "description": "Message Subject",
+          "required": true
+        },
+        {
+          "name": "cc",
+          "type": "string",
+          "description": "List of recipients email addresses to include on cc line",
+          "required": false,
+          "contains": [
+            "email"
+          ]
+        },
+        {
+          "name": "bcc",
+          "type": "string",
+          "description": "List of recipients email addresses to include on bcc line",
+          "required": false,
+          "contains": [
+            "email"
+          ]
+        },
+        {
+          "name": "reply_to",
+          "type": "string",
+          "description": "Address that should recieve replies to the sent email",
+          "required": false,
+          "contains": [
+            "email"
+          ]
+        },
+        {
+          "name": "headers",
+          "type": "string",
+          "description": "Serialized json dictionary. Additional email headers to be added to the message",
+          "required": false
+        },
+        {
+          "name": "body",
+          "type": "string",
+          "description": "Html rendering of message",
+          "required": true
+        },
+        {
+          "name": "attachments",
+          "type": "string",
+          "description": "List of vault ids of files to attach to the email. Vault id is used as content id",
+          "required": false,
+          "contains": [
+            "sha1",
+            "vault id"
+          ]
+        },
+        {
+          "name": "alias_email",
+          "type": "string",
+          "description": "Custom from send-as alias email",
+          "required": false,
+          "contains": [
+            "email"
+          ]
+        },
+        {
+          "name": "alias_name",
+          "type": "string",
+          "description": "Custom from send-as alias name",
+          "required": false
+        }
+      ],
+      "observable_type": "email"
+    }
+  ],
+  "source_metadata": {
+    "original_name": "G Suite for GMail",
+    "original_type": "email",
+    "converted_at": "2025-12-18T16:25:28.842654",
+    "source_version": "2.7.0"
+  }
+}

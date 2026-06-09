@@ -1,0 +1,263 @@
+{
+  "id": "proofpoint",
+  "name": "Proofpoint TAP",
+  "description": "Targeted Attack Protection platform providing advanced email threat detection, URL defense, and attachment sandboxing with SIEM integration API",
+  "version": "1.0.0",
+  "category": "email_security",
+  "vendor": "Proofpoint",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header",
+    "prefix": "Basic",
+    "note": "Base64-encoded service_principal:secret"
+  },
+  "base_url": "https://tap-api-v2.proofpoint.com/v2",
+  "actions": [
+    {
+      "id": "get_all_events",
+      "name": "Get All Events",
+      "description": "Retrieve all click and message events for a given time period",
+      "http_method": "GET",
+      "endpoint": "/siem/all",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "sinceSeconds",
+          "type": "number",
+          "description": "Number of seconds to look back (max 3600)",
+          "required": false
+        },
+        {
+          "name": "sinceTime",
+          "type": "string",
+          "description": "ISO 8601 timestamp to start from",
+          "required": false
+        },
+        {
+          "name": "format",
+          "type": "string",
+          "description": "Response format (json or syslog)",
+          "required": false,
+          "default": "json"
+        }
+      ]
+    },
+    {
+      "id": "get_blocked_messages",
+      "name": "Get Blocked Messages",
+      "description": "Retrieve messages blocked by Proofpoint containing threats",
+      "http_method": "GET",
+      "endpoint": "/siem/messages/blocked",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "sinceSeconds",
+          "type": "number",
+          "description": "Number of seconds to look back (max 3600)",
+          "required": false
+        },
+        {
+          "name": "sinceTime",
+          "type": "string",
+          "description": "ISO 8601 timestamp to start from",
+          "required": false
+        },
+        {
+          "name": "format",
+          "type": "string",
+          "description": "Response format (json or syslog)",
+          "required": false,
+          "default": "json"
+        }
+      ]
+    },
+    {
+      "id": "get_delivered_messages",
+      "name": "Get Delivered Messages",
+      "description": "Retrieve messages delivered that contain known threats",
+      "http_method": "GET",
+      "endpoint": "/siem/messages/delivered",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "sinceSeconds",
+          "type": "number",
+          "description": "Number of seconds to look back (max 3600)",
+          "required": false
+        },
+        {
+          "name": "sinceTime",
+          "type": "string",
+          "description": "ISO 8601 timestamp to start from",
+          "required": false
+        },
+        {
+          "name": "format",
+          "type": "string",
+          "description": "Response format (json or syslog)",
+          "required": false,
+          "default": "json"
+        }
+      ]
+    },
+    {
+      "id": "get_blocked_clicks",
+      "name": "Get Blocked Clicks",
+      "description": "Retrieve clicks on malicious URLs that were blocked by URL Defense",
+      "http_method": "GET",
+      "endpoint": "/siem/clicks/blocked",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "sinceSeconds",
+          "type": "number",
+          "description": "Number of seconds to look back (max 3600)",
+          "required": false
+        },
+        {
+          "name": "sinceTime",
+          "type": "string",
+          "description": "ISO 8601 timestamp to start from",
+          "required": false
+        },
+        {
+          "name": "format",
+          "type": "string",
+          "description": "Response format (json or syslog)",
+          "required": false,
+          "default": "json"
+        }
+      ]
+    },
+    {
+      "id": "get_permitted_clicks",
+      "name": "Get Permitted Clicks",
+      "description": "Retrieve clicks on URLs that were permitted through URL Defense",
+      "http_method": "GET",
+      "endpoint": "/siem/clicks/permitted",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "sinceSeconds",
+          "type": "number",
+          "description": "Number of seconds to look back (max 3600)",
+          "required": false
+        },
+        {
+          "name": "sinceTime",
+          "type": "string",
+          "description": "ISO 8601 timestamp to start from",
+          "required": false
+        },
+        {
+          "name": "format",
+          "type": "string",
+          "description": "Response format (json or syslog)",
+          "required": false,
+          "default": "json"
+        }
+      ]
+    },
+    {
+      "id": "get_issues",
+      "name": "Get Issues",
+      "description": "Retrieve permitted clicks and delivered messages containing known threats",
+      "http_method": "GET",
+      "endpoint": "/siem/issues",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "sinceSeconds",
+          "type": "number",
+          "description": "Number of seconds to look back (max 3600)",
+          "required": false
+        },
+        {
+          "name": "sinceTime",
+          "type": "string",
+          "description": "ISO 8601 timestamp to start from",
+          "required": false
+        },
+        {
+          "name": "format",
+          "type": "string",
+          "description": "Response format (json or syslog)",
+          "required": false,
+          "default": "json"
+        }
+      ]
+    },
+    {
+      "id": "decode_url",
+      "name": "Decode URL",
+      "description": "Decode a Proofpoint-rewritten URL to get the original URL and threat information",
+      "http_method": "POST",
+      "endpoint": "/url/decode",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "urls",
+          "type": "array",
+          "description": "Array of Proofpoint-rewritten URLs to decode",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_campaign",
+      "name": "Get Campaign",
+      "description": "Retrieve details about a specific threat campaign tracked by Proofpoint",
+      "http_method": "GET",
+      "endpoint": "/campaign/{campaign_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "campaign_id",
+          "type": "string",
+          "description": "The campaign ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_forensics",
+      "name": "Get Forensics",
+      "description": "Retrieve forensic analysis details for a specific threat",
+      "http_method": "GET",
+      "endpoint": "/forensics",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "threatId",
+          "type": "string",
+          "description": "The threat ID to get forensics for",
+          "required": false
+        },
+        {
+          "name": "campaignId",
+          "type": "string",
+          "description": "The campaign ID to get forensics for",
+          "required": false
+        },
+        {
+          "name": "includeCampaignForensics",
+          "type": "boolean",
+          "description": "Include campaign-level forensics",
+          "required": false,
+          "default": false
+        }
+      ]
+    }
+  ]
+}

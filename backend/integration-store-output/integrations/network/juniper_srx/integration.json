@@ -1,0 +1,205 @@
+{
+  "id": "juniper_srx_network",
+  "name": "Juniper SRX",
+  "description": "This app implements various containment and investigative actions on a Juniper SRX device. Uses port 830 by default if no port is set",
+  "version": "2.0.20",
+  "category": "network",
+  "vendor": "Juniper Networks",
+  "auth_type": "basic_auth",
+  "auth_config": {
+    "type": "basic_auth",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "block_ip",
+      "name": "Block Ip",
+      "description": "Block an IP",
+      "http_method": "POST",
+      "endpoint": "/actions/block_ip",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "IP to block",
+          "required": true,
+          "contains": [
+            "ip"
+          ]
+        },
+        {
+          "name": "ph",
+          "type": "string",
+          "description": "",
+          "required": false
+        },
+        {
+          "name": "from_zone",
+          "type": "string",
+          "description": "Source zone",
+          "required": true,
+          "default": "trust"
+        },
+        {
+          "name": "to_zone",
+          "type": "string",
+          "description": "Destination zone",
+          "required": true,
+          "default": "untrust"
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "unblock_ip",
+      "name": "Unblock Ip",
+      "description": "Unblock an IP",
+      "http_method": "POST",
+      "endpoint": "/actions/unblock_ip",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "IP to block",
+          "required": true,
+          "contains": [
+            "ip"
+          ]
+        },
+        {
+          "name": "ph",
+          "type": "string",
+          "description": "",
+          "required": false
+        },
+        {
+          "name": "from_zone",
+          "type": "string",
+          "description": "Source zone",
+          "required": true,
+          "default": "trust"
+        },
+        {
+          "name": "to_zone",
+          "type": "string",
+          "description": "Destination zone",
+          "required": true,
+          "default": "untrust"
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "block_application",
+      "name": "Block Application",
+      "description": "Block an application",
+      "http_method": "POST",
+      "endpoint": "/actions/block_application",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "application",
+          "type": "string",
+          "description": "Application to block",
+          "required": true,
+          "contains": [
+            "network application"
+          ]
+        },
+        {
+          "name": "ph",
+          "type": "string",
+          "description": "",
+          "required": false
+        },
+        {
+          "name": "from_zone",
+          "type": "string",
+          "description": "Source zone",
+          "required": true,
+          "default": "trust"
+        },
+        {
+          "name": "to_zone",
+          "type": "string",
+          "description": "Destination zone",
+          "required": true,
+          "default": "untrust"
+        }
+      ]
+    },
+    {
+      "id": "unblock_application",
+      "name": "Unblock Application",
+      "description": "Unblock an application",
+      "http_method": "POST",
+      "endpoint": "/actions/unblock_application",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "application",
+          "type": "string",
+          "description": "Application to unblock",
+          "required": true,
+          "contains": [
+            "network application"
+          ]
+        },
+        {
+          "name": "ph",
+          "type": "string",
+          "description": "",
+          "required": false
+        },
+        {
+          "name": "from_zone",
+          "type": "string",
+          "description": "Source zone",
+          "required": true,
+          "default": "trust"
+        },
+        {
+          "name": "to_zone",
+          "type": "string",
+          "description": "Destination zone",
+          "required": true,
+          "default": "untrust"
+        }
+      ]
+    },
+    {
+      "id": "list_apps",
+      "name": "List Applications",
+      "description": "List the application that the device knows about and can block",
+      "http_method": "GET",
+      "endpoint": "/actions/list_apps",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Juniper SRX",
+    "original_type": "firewall",
+    "converted_at": "2025-12-18T16:25:28.893694",
+    "source_version": "2.0.20"
+  }
+}

@@ -1,0 +1,1067 @@
+{
+  "id": "ms_graph_for_office_365",
+  "name": "MS Graph for Office 365",
+  "description": "This app connects to Office 365 using the MS Graph API to support investigate and generic actions related to the email messages and calendar events",
+  "version": "4.0.1",
+  "category": "email_security",
+  "vendor": "Microsoft",
+  "auth_type": "oauth2",
+  "auth_config": {
+    "type": "oauth2",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "generate_token",
+      "name": "Generate Token",
+      "description": "Generate a token",
+      "http_method": "GET",
+      "endpoint": "/actions/generate_token",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": []
+    },
+    {
+      "id": "oof_check",
+      "name": "Oof Check",
+      "description": "Get user's out of office status",
+      "http_method": "GET",
+      "endpoint": "/actions/oof_check",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "user_id",
+          "type": "string",
+          "description": "User ID/Principal name",
+          "required": true,
+          "contains": [
+            "msgoffice365 user id",
+            "msgoffice365 user principal name",
+            "email"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_events",
+      "name": "List Events",
+      "description": "List events from user or group calendar",
+      "http_method": "GET",
+      "endpoint": "/actions/list_events",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "user_id",
+          "type": "string",
+          "description": "User ID/Principal name",
+          "required": false,
+          "contains": [
+            "msgoffice365 user id",
+            "msgoffice365 user principal name",
+            "email"
+          ]
+        },
+        {
+          "name": "group_id",
+          "type": "string",
+          "description": "Group ID",
+          "required": false,
+          "contains": [
+            "msgoffice365 group id"
+          ]
+        },
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "OData query to filter/search for specific results",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of events to return",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_rule",
+      "name": "Get Rule",
+      "description": "Get the properties and relationships of a messageRule object",
+      "http_method": "GET",
+      "endpoint": "/actions/get_rule",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "user_id",
+          "type": "string",
+          "description": "User ID/Principal name",
+          "required": true,
+          "contains": [
+            "msgoffice365 user id",
+            "msgoffice365 user principal name",
+            "email"
+          ]
+        },
+        {
+          "name": "rule_id",
+          "type": "string",
+          "description": "Inbox rule ID",
+          "required": true,
+          "contains": [
+            "msgoffice365 rule id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_rules",
+      "name": "List Rules",
+      "description": "Get all the messageRule objects defined for the user's inbox",
+      "http_method": "GET",
+      "endpoint": "/actions/list_rules",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "user_id",
+          "type": "string",
+          "description": "User ID/Principal name",
+          "required": true,
+          "contains": [
+            "msgoffice365 user id",
+            "msgoffice365 user principal name",
+            "email"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_users",
+      "name": "List Users",
+      "description": "Retrieve a list of users",
+      "http_method": "GET",
+      "endpoint": "/actions/list_users",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "Search for specific results",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of users to return",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_groups",
+      "name": "List Groups",
+      "description": "List all the groups in an organization, including but not limited to Office 365 groups",
+      "http_method": "GET",
+      "endpoint": "/actions/list_groups",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "Search for specific results",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of groups to return",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_group_members",
+      "name": "List Group Members",
+      "description": "List all the members in group by group ID or group e-mail address",
+      "http_method": "GET",
+      "endpoint": "/actions/list_group_members",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "method",
+          "type": "string",
+          "description": "Method to use to list group members",
+          "required": true,
+          "default": "Group ID"
+        },
+        {
+          "name": "identificator",
+          "type": "string",
+          "description": "Group ID or group e-mail address, based on the selected method",
+          "required": true,
+          "contains": [
+            "msgoffice365 group id",
+            "msgoffice365 group email address",
+            "msgoffice365 group e-mail address"
+          ]
+        },
+        {
+          "name": "get_transitive_members",
+          "type": "boolean",
+          "description": "Get a list of the group's members. A group can have users, devices, organizational contacts, and other groups as members. This operation is transitive and returns a flat list of all nested members",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "Search for specific results",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of members to return",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_folders",
+      "name": "List Folders",
+      "description": "Retrieve a list of mail folders",
+      "http_method": "GET",
+      "endpoint": "/actions/list_folders",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "user_id",
+          "type": "string",
+          "description": "User ID/Principal name",
+          "required": true,
+          "contains": [
+            "msgoffice365 user id",
+            "msgoffice365 user principal name",
+            "email"
+          ]
+        },
+        {
+          "name": "folder_id",
+          "type": "string",
+          "description": "Parent mail folder ID",
+          "required": false,
+          "contains": [
+            "msgoffice365 folder id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "copy_email",
+      "name": "Copy Email",
+      "description": "Copy an email to a folder",
+      "http_method": "GET",
+      "endpoint": "/actions/copy_email",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Message ID to copy",
+          "required": true,
+          "contains": [
+            "msgoffice365 message id"
+          ]
+        },
+        {
+          "name": "email_address",
+          "type": "string",
+          "description": "Source mailbox (email)",
+          "required": true,
+          "contains": [
+            "email"
+          ]
+        },
+        {
+          "name": "folder",
+          "type": "string",
+          "description": "Destination folder; this must be either a (case-sensitive) well-known name or the internal o365 folder ID",
+          "required": true,
+          "contains": [
+            "msgoffice365 mail folder",
+            "msgoffice365 mail folder path",
+            "msgoffice365 folder id"
+          ]
+        },
+        {
+          "name": "get_folder_id",
+          "type": "boolean",
+          "description": "Assume the folder parameter contains a folder name/folder path, separated by '/' ; i.e. Inbox/dir1/dir2/dir3. If this parameter is enabled, it retrieves the folder ID for the provided folder name/folder path automatically and replaces the parameter value",
+          "required": false,
+          "default": true
+        }
+      ],
+      "observable_type": "email"
+    },
+    {
+      "id": "move_email",
+      "name": "Move Email",
+      "description": "Move an email to a folder",
+      "http_method": "GET",
+      "endpoint": "/actions/move_email",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Message ID to move",
+          "required": true,
+          "contains": [
+            "msgoffice365 message id"
+          ]
+        },
+        {
+          "name": "email_address",
+          "type": "string",
+          "description": "Source mailbox (email)",
+          "required": true,
+          "contains": [
+            "email"
+          ]
+        },
+        {
+          "name": "folder",
+          "type": "string",
+          "description": "Destination folder; this must be either a (case-sensitive) well-known name or the internal o365 folder ID",
+          "required": true,
+          "contains": [
+            "msgoffice365 mail folder",
+            "msgoffice365 mail folder path",
+            "msgoffice365 folder id"
+          ]
+        },
+        {
+          "name": "get_folder_id",
+          "type": "boolean",
+          "description": "Assume the folder parameter contains a folder name/folder path, separated by '/'(forward slash) ; i.e. Inbox/dir1/dir2/dir3. If this parameter is enabled, it retrieves the folder ID for the provided folder name/folder path automatically and replaces the parameter value",
+          "required": false,
+          "default": true
+        }
+      ],
+      "observable_type": "email"
+    },
+    {
+      "id": "delete_email",
+      "name": "Delete Email",
+      "description": "Delete an email",
+      "http_method": "POST",
+      "endpoint": "/actions/delete_email",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Message ID to delete",
+          "required": true,
+          "contains": [
+            "msgoffice365 message id"
+          ]
+        },
+        {
+          "name": "email_address",
+          "type": "string",
+          "description": "Email address of the mailbox owner",
+          "required": true,
+          "contains": [
+            "email"
+          ]
+        }
+      ],
+      "observable_type": "email"
+    },
+    {
+      "id": "delete_event",
+      "name": "Delete Event",
+      "description": "Delete an event from user calendar",
+      "http_method": "GET",
+      "endpoint": "/actions/delete_event",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Event ID to delete",
+          "required": true,
+          "contains": [
+            "msgoffice365 event id"
+          ]
+        },
+        {
+          "name": "email_address",
+          "type": "string",
+          "description": "Email address of the mailbox owner",
+          "required": true,
+          "contains": [
+            "email"
+          ]
+        },
+        {
+          "name": "send_decline_response",
+          "type": "boolean",
+          "description": "Send decline response to the organizer",
+          "required": false,
+          "default": true
+        }
+      ]
+    },
+    {
+      "id": "get_email",
+      "name": "Get Email",
+      "description": "Get an email from the server",
+      "http_method": "GET",
+      "endpoint": "/actions/get_email",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Message ID to get",
+          "required": true,
+          "contains": [
+            "msgoffice365 message id"
+          ]
+        },
+        {
+          "name": "email_address",
+          "type": "string",
+          "description": "Email address of the mailbox owner",
+          "required": true,
+          "contains": [
+            "email"
+          ]
+        },
+        {
+          "name": "download_attachments",
+          "type": "boolean",
+          "description": "Download attachments to vault",
+          "required": false
+        },
+        {
+          "name": "extract_headers",
+          "type": "boolean",
+          "description": "Extract email headers",
+          "required": false
+        },
+        {
+          "name": "download_email",
+          "type": "boolean",
+          "description": "Download email to vault",
+          "required": false
+        }
+      ],
+      "observable_type": "email"
+    },
+    {
+      "id": "get_email_properties",
+      "name": "Get Email Properties",
+      "description": "Get non-standard email properties from the server",
+      "http_method": "GET",
+      "endpoint": "/actions/get_email_properties",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Message ID to get properties of",
+          "required": true,
+          "contains": [
+            "msgoffice365 message id"
+          ]
+        },
+        {
+          "name": "email_address",
+          "type": "string",
+          "description": "Email address of the mailbox owner",
+          "required": true,
+          "contains": [
+            "email"
+          ]
+        },
+        {
+          "name": "get_headers",
+          "type": "boolean",
+          "description": "Get email headers",
+          "required": false
+        },
+        {
+          "name": "get_body",
+          "type": "boolean",
+          "description": "Get email body",
+          "required": false
+        },
+        {
+          "name": "get_unique_body",
+          "type": "boolean",
+          "description": "Get unique email body",
+          "required": false
+        },
+        {
+          "name": "get_sender",
+          "type": "boolean",
+          "description": "Get email sender",
+          "required": false
+        },
+        {
+          "name": "properties_list",
+          "type": "string",
+          "description": "Other properties to get (comma-separated list)",
+          "required": false
+        }
+      ],
+      "observable_type": "email"
+    },
+    {
+      "id": "run_query",
+      "name": "Run Query",
+      "description": "Search emails",
+      "http_method": "GET",
+      "endpoint": "/actions/run_query",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "email_address",
+          "type": "string",
+          "description": "User's email (mailbox to search in)",
+          "required": true,
+          "contains": [
+            "email"
+          ]
+        },
+        {
+          "name": "folder",
+          "type": "string",
+          "description": "Destination folder; this must be either a (case-sensitive) well-known name or the internal o365 folder ID",
+          "required": false,
+          "default": "Inbox",
+          "contains": [
+            "msgoffice365 mail folder",
+            "msgoffice365 mail folder path",
+            "msgoffice365 folder id"
+          ]
+        },
+        {
+          "name": "search_well_known_folders",
+          "type": "boolean",
+          "description": "Checks all well known folders for messages, ignores folder name provided in parameter",
+          "required": false
+        },
+        {
+          "name": "get_folder_id",
+          "type": "boolean",
+          "description": "Assume the folder parameter contains a folder name/folder path, separated by '/'(forward slash) ; i.e. Inbox/dir1/dir2/dir3. If this parameter is enabled, it retrieves the folder ID for the provided folder name/folder path automatically and replaces the parameter value",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "subject",
+          "type": "string",
+          "description": "Substring to search in subject",
+          "required": false,
+          "contains": [
+            "msgoffice365 subject"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "string",
+          "description": "Substring to search in body",
+          "required": false
+        },
+        {
+          "name": "sender",
+          "type": "string",
+          "description": "Sender email address to match",
+          "required": false,
+          "contains": [
+            "email"
+          ]
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum emails to return",
+          "required": false
+        },
+        {
+          "name": "query",
+          "type": "string",
+          "description": "MS Graph query string",
+          "required": false
+        },
+        {
+          "name": "internet_message_id",
+          "type": "string",
+          "description": "Internet message ID",
+          "required": false,
+          "contains": [
+            "msgoffice365 internet message id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "create_folder",
+      "name": "Create Folder",
+      "description": "Create a new folder",
+      "http_method": "GET",
+      "endpoint": "/actions/create_folder",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "email_address",
+          "type": "string",
+          "description": "User's email (mailbox to create folders)",
+          "required": true,
+          "contains": [
+            "email"
+          ]
+        },
+        {
+          "name": "folder",
+          "type": "string",
+          "description": "Folder Name/Path. Use '/'to separate folder elements; i.e. Inbox/dir1/dir2/dir3",
+          "required": true,
+          "contains": [
+            "msgoffice365 mail folder",
+            "msgoffice365 mail folder path"
+          ]
+        },
+        {
+          "name": "all_subdirs",
+          "type": "boolean",
+          "description": "Make any missing directories in the path if they don't exist instead of failing",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_folder_id",
+      "name": "Get Folder Id",
+      "description": "Get the API ID of the folder",
+      "http_method": "GET",
+      "endpoint": "/actions/get_folder_id",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "email_address",
+          "type": "string",
+          "description": "User's email (mailbox)",
+          "required": true,
+          "contains": [
+            "email"
+          ]
+        },
+        {
+          "name": "folder",
+          "type": "string",
+          "description": "Folder Name/Path. Use '/' to separate folder elements; i.e. Inbox/dir1/dir2/dir3",
+          "required": true,
+          "contains": [
+            "msgoffice365 mail folder",
+            "msgoffice365 mail folder path"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "send_email",
+      "name": "Send Email",
+      "description": "Sends an email with optional text rendering. Attachments are allowed a Content-ID tag for reference within the html",
+      "http_method": "GET",
+      "endpoint": "/actions/send_email",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "from",
+          "type": "string",
+          "description": "From field",
+          "required": false,
+          "contains": [
+            "email"
+          ]
+        },
+        {
+          "name": "to",
+          "type": "string",
+          "description": "List of recipients email addresses",
+          "required": true,
+          "contains": [
+            "email"
+          ]
+        },
+        {
+          "name": "cc",
+          "type": "string",
+          "description": "List of recipients email addresses to include on cc line",
+          "required": false,
+          "contains": [
+            "email"
+          ]
+        },
+        {
+          "name": "bcc",
+          "type": "string",
+          "description": "List of recipients email addresses to include on bcc line",
+          "required": false,
+          "contains": [
+            "email"
+          ]
+        },
+        {
+          "name": "subject",
+          "type": "string",
+          "description": "Message Subject",
+          "required": true
+        },
+        {
+          "name": "headers",
+          "type": "string",
+          "description": "Serialized json dictionary. Additional email headers to be added to the message",
+          "required": false
+        },
+        {
+          "name": "body",
+          "type": "string",
+          "description": "Html rendering of message",
+          "required": true
+        },
+        {
+          "name": "attachments",
+          "type": "string",
+          "description": "List of vault ids of files to attach to the email. Vault id is used as content id",
+          "required": false,
+          "contains": [
+            "sha1",
+            "vault id"
+          ]
+        }
+      ],
+      "observable_type": "email"
+    },
+    {
+      "id": "on_poll",
+      "name": "On Poll",
+      "description": "Ingest emails from Office 365 using Graph API",
+      "http_method": "GET",
+      "endpoint": "/actions/on_poll",
+      "action_type": "ingest",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "start_time",
+          "type": "number",
+          "description": "Parameter Ignored in this app",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "number",
+          "description": "Parameter Ignored in this app",
+          "required": false
+        },
+        {
+          "name": "container_id",
+          "type": "string",
+          "description": "Parameter Ignored in this app",
+          "required": false
+        },
+        {
+          "name": "container_count",
+          "type": "number",
+          "description": "Maximum number of emails to ingest",
+          "required": true
+        },
+        {
+          "name": "artifact_count",
+          "type": "number",
+          "description": "Parameter Ignored in this app",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "update_email",
+      "name": "Update Email",
+      "description": "Update an email on the server",
+      "http_method": "GET",
+      "endpoint": "/actions/update_email",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Message ID to delete",
+          "required": true,
+          "contains": [
+            "msgoffice365 message id"
+          ]
+        },
+        {
+          "name": "email_address",
+          "type": "string",
+          "description": "Email address of the mailbox owner",
+          "required": true,
+          "contains": [
+            "email"
+          ]
+        },
+        {
+          "name": "subject",
+          "type": "string",
+          "description": "Subject to set",
+          "required": false
+        },
+        {
+          "name": "categories",
+          "type": "string",
+          "description": "Categories to set",
+          "required": false
+        }
+      ],
+      "observable_type": "email"
+    },
+    {
+      "id": "block_sender",
+      "name": "Block Sender",
+      "description": "Add the sender email into the block list",
+      "http_method": "POST",
+      "endpoint": "/actions/block_sender",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "message_id",
+          "type": "string",
+          "description": "Message ID to pick the sender of",
+          "required": true
+        },
+        {
+          "name": "user_id",
+          "type": "string",
+          "description": "User ID to base the action of",
+          "required": true
+        },
+        {
+          "name": "move_to_junk_folder",
+          "type": "boolean",
+          "description": "Should the email be moved to the junk folder",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "unblock_sender",
+      "name": "Unblock Sender",
+      "description": "Remove the sender email from the block list",
+      "http_method": "POST",
+      "endpoint": "/actions/unblock_sender",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "message_id",
+          "type": "string",
+          "description": "Message ID to pick the sender of",
+          "required": true
+        },
+        {
+          "name": "user_id",
+          "type": "string",
+          "description": "User ID to base the action of",
+          "required": true
+        },
+        {
+          "name": "move_to_inbox",
+          "type": "boolean",
+          "description": "Should the email be moved to the inbox folder",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "resolve_name",
+      "name": "Resolve Name",
+      "description": "Verify aliases and resolve display names to the appropriate user",
+      "http_method": "GET",
+      "endpoint": "/actions/resolve_name",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "email",
+          "type": "string",
+          "description": "Name to resolve",
+          "required": true,
+          "contains": [
+            "email",
+            "string"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_mailbox_messages",
+      "name": "Get Mailbox Messages",
+      "description": "Retrieves messages from a specified mailbox folder with advanced functionality",
+      "http_method": "GET",
+      "endpoint": "/actions/get_mailbox_messages",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "email_address",
+          "type": "string",
+          "description": "Email address of the mailbox",
+          "required": true
+        },
+        {
+          "name": "folder",
+          "type": "string",
+          "description": "Folder to retrieve messages",
+          "required": false,
+          "default": "inbox"
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of messages to retrieve (should not exceed 100 per request)",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Number of messages to skip before retrieving results",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "start_date",
+          "type": "string",
+          "description": "Start date for filtering messages (format: YYYY-MM-DD)",
+          "required": false
+        },
+        {
+          "name": "end_date",
+          "type": "string",
+          "description": "End date for filtering messages (format: YYYY-MM-DD)",
+          "required": false
+        },
+        {
+          "name": "download_attachments",
+          "type": "boolean",
+          "description": "Download email attachments to vault",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "download_email",
+          "type": "boolean",
+          "description": "Download email as EML file to vault",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "extract_headers",
+          "type": "boolean",
+          "description": "Include email headers in results",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "plus_ingest",
+          "type": "boolean",
+          "description": "If enabled, messages will be also ingested like on_poll",
+          "required": false
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "MS Graph for Office 365",
+    "original_type": "email",
+    "converted_at": "2025-12-18T16:25:28.989513",
+    "source_version": "4.0.1"
+  }
+}

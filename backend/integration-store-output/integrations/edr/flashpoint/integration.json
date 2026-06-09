@@ -1,0 +1,225 @@
+{
+  "id": "flashpoint",
+  "name": "Flashpoint",
+  "description": "This app implements the investigative actions for the Flashpoint on the Phantom Platform",
+  "version": "3.0.0",
+  "category": "edr",
+  "vendor": "Flashpoint",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "list_reports",
+      "name": "List Reports",
+      "description": "Fetch a list of all the intelligence reports from the Flashpoint Platform",
+      "http_method": "GET",
+      "endpoint": "/finished-intelligence/v1/reports",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of reports to be fetched (default: 500)",
+          "required": false,
+          "default": 500
+        }
+      ]
+    },
+    {
+      "id": "get_report",
+      "name": "Get Report",
+      "description": "Fetch a specific intelligence report from the Flashpoint Platform for the provided report ID",
+      "http_method": "GET",
+      "endpoint": "/finished-intelligence/v1/reports/{report_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "report_id",
+          "type": "string",
+          "description": "Flashpoint intelligence report ID",
+          "required": true,
+          "contains": [
+            "fp report id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_related_reports",
+      "name": "List Related Reports",
+      "description": "Fetch a list of all the related intelligence reports from the Flashpoint Platform for the provided report ID",
+      "http_method": "GET",
+      "endpoint": "/finished-intelligence/v1/reports/{report_id}/related",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "report_id",
+          "type": "string",
+          "description": "Flashpoint intelligence report ID",
+          "required": true,
+          "contains": [
+            "fp report id"
+          ]
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of reports to be fetched (default: 500)",
+          "required": false,
+          "default": 500
+        }
+      ]
+    },
+    {
+      "id": "get_compromised_credentials",
+      "name": "Get Compromised Credentials",
+      "description": "Fetch a list of all the Credential Sightings from the Flashpoint Platform",
+      "http_method": "GET",
+      "endpoint": "/actions/get_compromised_credentials",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "Filtering the data of credentials sightings",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of reports to be fetched (default: 500)",
+          "required": false,
+          "default": 500
+        }
+      ]
+    },
+    {
+      "id": "run_query",
+      "name": "Run Query",
+      "description": "Fetch the data by performing a universal search from the Flashpoint Platform",
+      "http_method": "GET",
+      "endpoint": "/actions/run_query",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Search across all fields in the marketplace or free text search",
+          "required": true,
+          "contains": [
+            "fp query basetypes"
+          ]
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of reports to be fetched (default: 500)",
+          "required": false,
+          "default": 500
+        }
+      ]
+    },
+    {
+      "id": "list_indicators",
+      "name": "List Indicators",
+      "description": "Fetch a list of IoCs that occur in the context of an event from the Flashpoint Platform",
+      "http_method": "GET",
+      "endpoint": "/finished-intelligence/v1/reports",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "attributes_types",
+          "type": "string",
+          "description": "Enable a search by attribute types(allows Comma-separated list)",
+          "required": false,
+          "contains": [
+            "fp attribute type"
+          ]
+        },
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Filter the results based on the field value or free text search",
+          "required": false,
+          "contains": [
+            "fp attribute value"
+          ]
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of indicators to be fetched (default: 500)",
+          "required": false,
+          "default": 500
+        }
+      ]
+    },
+    {
+      "id": "search_indicators",
+      "name": "Search Indicators",
+      "description": "Fetch an IoC value of a specific attribute type from the list of available IoCs on the Flashpoint Platform",
+      "http_method": "GET",
+      "endpoint": "/actions/search_indicators",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "attribute_type",
+          "type": "string",
+          "description": "Retrieve specific indicator's attribute type result",
+          "required": true,
+          "contains": [
+            "fp attribute type"
+          ]
+        },
+        {
+          "name": "attribute_value",
+          "type": "string",
+          "description": "Retrieve specific indicator's attribute type result based on the provided value",
+          "required": true,
+          "contains": [
+            "fp attribute value"
+          ]
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of reports to be fetched (default: 500)",
+          "required": false,
+          "default": 500
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Flashpoint",
+    "original_type": "endpoint",
+    "converted_at": "2025-12-18T16:25:28.786145",
+    "source_version": "3.0.0"
+  }
+}

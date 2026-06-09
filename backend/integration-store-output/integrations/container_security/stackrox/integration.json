@@ -1,0 +1,162 @@
+{
+  "id": "stackrox",
+  "name": "StackRox (Red Hat ACS)",
+  "description": "Kubernetes-native security platform (Red Hat Advanced Cluster Security) for vulnerability management, compliance, network segmentation, and runtime threat detection",
+  "version": "1.0.0",
+  "category": "container_security",
+  "vendor": "Red Hat (IBM)",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "header_name": "Authorization",
+    "prefix": "Bearer ",
+    "location": "header",
+    "description": "API token generated from the StackRox/ACS console"
+  },
+  "base_url": "https://{host}/v1",
+  "actions": [
+    {
+      "id": "list_images",
+      "name": "List Images",
+      "description": "List all container images with vulnerability and policy violation data",
+      "http_method": "GET",
+      "endpoint": "/images",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Search query (e.g., 'Image:nginx' or 'CVE:CVE-2021-44228')",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "pagination.limit",
+          "type": "integer",
+          "description": "Max results per page",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "pagination.offset",
+          "type": "integer",
+          "description": "Pagination offset",
+          "required": false,
+          "location": "query"
+        }
+      ]
+    },
+    {
+      "id": "get_image",
+      "name": "Get Image Details",
+      "description": "Retrieve detailed vulnerability and component information for a specific image",
+      "http_method": "GET",
+      "endpoint": "/images/{image_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "image_id",
+          "type": "string",
+          "description": "Image SHA or ID",
+          "required": true,
+          "location": "path"
+        }
+      ]
+    },
+    {
+      "id": "list_deployments",
+      "name": "List Deployments",
+      "description": "List Kubernetes deployments with security risk information",
+      "http_method": "GET",
+      "endpoint": "/deployments",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Search query (e.g., 'Namespace:production')",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "pagination.limit",
+          "type": "integer",
+          "description": "Max results per page",
+          "required": false,
+          "location": "query"
+        }
+      ]
+    },
+    {
+      "id": "list_alerts",
+      "name": "List Alerts",
+      "description": "List security alerts and policy violations",
+      "http_method": "GET",
+      "endpoint": "/alerts",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Search query (e.g., 'Severity:CRITICAL_SEVERITY')",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "pagination.limit",
+          "type": "integer",
+          "description": "Max results per page",
+          "required": false,
+          "location": "query"
+        }
+      ]
+    },
+    {
+      "id": "get_compliance_results",
+      "name": "Get Compliance Results",
+      "description": "Retrieve compliance scan results against standards like CIS, NIST, PCI DSS, HIPAA",
+      "http_method": "GET",
+      "endpoint": "/compliance/results",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Filter by standard, cluster, or namespace",
+          "required": false,
+          "location": "query"
+        }
+      ]
+    },
+    {
+      "id": "list_cves",
+      "name": "List CVEs",
+      "description": "Search and list CVEs across all scanned images and deployments",
+      "http_method": "GET",
+      "endpoint": "/cves",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Search query (e.g., 'CVE:CVE-2021-44228' or 'Severity:CRITICAL_SEVERITY')",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "pagination.limit",
+          "type": "integer",
+          "description": "Max results per page",
+          "required": false,
+          "location": "query"
+        }
+      ]
+    }
+  ]
+}

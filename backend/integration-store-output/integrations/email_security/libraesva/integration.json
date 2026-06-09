@@ -1,0 +1,114 @@
+{
+  "id": "libraesva",
+  "name": "Libraesva",
+  "description": "This app implements integration with Libraesva Email Security Gateway",
+  "version": "1.0.1",
+  "category": "email_security",
+  "vendor": "Libraesva",
+  "auth_type": "basic_auth",
+  "auth_config": {
+    "type": "basic_auth",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "search_email",
+      "name": "Search Email",
+      "description": "Search email based on provided query string",
+      "http_method": "GET",
+      "endpoint": "/actions/search_email",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "page",
+          "type": "number",
+          "description": "Number of first page of expected results",
+          "required": false,
+          "contains": [
+            "page"
+          ]
+        },
+        {
+          "name": "date_range",
+          "type": "string",
+          "description": "Date range of expected results",
+          "required": false,
+          "contains": [
+            "date_range"
+          ]
+        },
+        {
+          "name": "email",
+          "type": "string",
+          "description": "Filter by email of sender or recipients",
+          "required": false,
+          "contains": [
+            "email"
+          ]
+        },
+        {
+          "name": "groups",
+          "type": "string",
+          "description": "Advanced messages filters field",
+          "required": false,
+          "contains": [
+            "groups"
+          ]
+        },
+        {
+          "name": "groups_value",
+          "type": "string",
+          "description": "Advanced messages filters field value",
+          "required": false,
+          "contains": [
+            "groups_value"
+          ]
+        }
+      ],
+      "observable_type": "email"
+    },
+    {
+      "id": "blocklist_resource",
+      "name": "Blocklist Resource",
+      "description": "Blocklist specified resource",
+      "http_method": "GET",
+      "endpoint": "/actions/blocklist_resource",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "from",
+          "type": "string",
+          "description": "Source to be blocklisted",
+          "required": true
+        },
+        {
+          "name": "to",
+          "type": "string",
+          "description": "Target mailbox",
+          "required": true
+        },
+        {
+          "name": "only_envelope",
+          "type": "boolean",
+          "description": "The onlyEnvelope query parameter",
+          "required": false,
+          "default": true
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Libraesva",
+    "original_type": "email",
+    "converted_at": "2025-12-18T16:25:28.903201",
+    "source_version": "1.0.1"
+  }
+}

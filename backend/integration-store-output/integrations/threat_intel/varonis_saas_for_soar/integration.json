@@ -1,0 +1,250 @@
+{
+  "id": "varonis_saas_for_soar",
+  "name": "Varonis SaaS for SOAR",
+  "description": "Varonis SaaS for Splunk SOAR",
+  "version": "1.0.5",
+  "category": "threat_intel",
+  "vendor": "Varonis",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "get_alerts",
+      "name": "Get Alerts",
+      "description": "Get alerts from Varonis SaaS",
+      "http_method": "GET",
+      "endpoint": "/actions/get_alerts",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "threat_model_name",
+          "type": "string",
+          "description": "List of requested threat models to retrieve",
+          "required": false
+        },
+        {
+          "name": "page",
+          "type": "number",
+          "description": "Page number (default 1)",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "max_results",
+          "type": "number",
+          "description": "The max number of alerts to retrieve (up to 50)",
+          "required": false,
+          "default": 50
+        },
+        {
+          "name": "start_time",
+          "type": "string",
+          "description": "Start time of the range of alerts",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "string",
+          "description": "End time of the range of alerts",
+          "required": false
+        },
+        {
+          "name": "alert_status",
+          "type": "string",
+          "description": "List of required alerts status",
+          "required": false
+        },
+        {
+          "name": "alert_severity",
+          "type": "string",
+          "description": "List of alerts severity",
+          "required": false
+        },
+        {
+          "name": "device_name",
+          "type": "string",
+          "description": "List of device names",
+          "required": false
+        },
+        {
+          "name": "user_name",
+          "type": "string",
+          "description": "List of user names",
+          "required": false,
+          "contains": [
+            "user name"
+          ]
+        },
+        {
+          "name": "last_days",
+          "type": "number",
+          "description": "Number of days you want the search to go back to",
+          "required": false
+        },
+        {
+          "name": "descending_order",
+          "type": "boolean",
+          "description": "Indicates whether alerts should be ordered in newest to oldest order",
+          "required": false,
+          "default": true
+        }
+      ]
+    },
+    {
+      "id": "update_alert_status",
+      "name": "Update Alert Status",
+      "description": "Update Varonis alert status command",
+      "http_method": "GET",
+      "endpoint": "/actions/update_alert_status",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Alert's new status",
+          "required": true
+        },
+        {
+          "name": "alert_id",
+          "type": "string",
+          "description": "Array of alert IDs to be updated",
+          "required": true,
+          "contains": [
+            "varonis alert id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "close_alert",
+      "name": "Close Alert",
+      "description": "Close Varonis alert command",
+      "http_method": "GET",
+      "endpoint": "/actions/close_alert",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "close_reason",
+          "type": "string",
+          "description": "Alert's close reason",
+          "required": true
+        },
+        {
+          "name": "alert_id",
+          "type": "string",
+          "description": "Array of alert IDs to be closed",
+          "required": true,
+          "contains": [
+            "varonis alert id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_alerted_events",
+      "name": "Get Alerted Events",
+      "description": "Get alerted events from Varonis SaaS",
+      "http_method": "GET",
+      "endpoint": "/actions/get_alerted_events",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "alert_id",
+          "type": "string",
+          "description": "List of alert IDs",
+          "required": true,
+          "contains": [
+            "varonis alert id"
+          ]
+        },
+        {
+          "name": "page",
+          "type": "number",
+          "description": "Page number (default 1)",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "max_results",
+          "type": "number",
+          "description": "The max number of events to retrieve (up to 5k)",
+          "required": false,
+          "default": 5000
+        },
+        {
+          "name": "descending_order",
+          "type": "boolean",
+          "description": "Indicates whether events should be ordered in newest to oldest order",
+          "required": false,
+          "default": true
+        }
+      ]
+    },
+    {
+      "id": "on_poll",
+      "name": "On Poll",
+      "description": "Callback action for the on_poll ingest functionality",
+      "http_method": "GET",
+      "endpoint": "/actions/on_poll",
+      "action_type": "ingest",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "container_id",
+          "type": "string",
+          "description": "Parameter ignored for this app",
+          "required": false
+        },
+        {
+          "name": "start_time",
+          "type": "number",
+          "description": "Parameter ignored for this app",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "number",
+          "description": "Parameter ignored for this app",
+          "required": false
+        },
+        {
+          "name": "container_count",
+          "type": "number",
+          "description": "Maximum number of containers to create",
+          "required": false
+        },
+        {
+          "name": "artifact_count",
+          "type": "number",
+          "description": "Maximum number of artifacts to create per container",
+          "required": false
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Varonis SaaS for SOAR",
+    "original_type": "information",
+    "converted_at": "2025-12-18T16:25:29.262924",
+    "source_version": "1.0.5"
+  }
+}

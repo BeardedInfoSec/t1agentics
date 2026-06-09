@@ -1,0 +1,183 @@
+{
+  "id": "prisma_cloud_compute",
+  "name": "Prisma Cloud Compute",
+  "description": "Container and cloud-native security platform (formerly Twistlock) providing image scanning, runtime protection, compliance, and vulnerability management",
+  "version": "1.0.0",
+  "category": "container_security",
+  "vendor": "Palo Alto Networks (Twistlock)",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "header_name": "Authorization",
+    "prefix": "Bearer ",
+    "location": "header",
+    "token_endpoint": "/api/v1/authenticate",
+    "description": "POST username/password to /api/v1/authenticate to obtain bearer token (valid 30 min)"
+  },
+  "base_url": "https://{host}/api/v1",
+  "actions": [
+    {
+      "id": "list_images",
+      "name": "List Images",
+      "description": "List all scanned container images with vulnerability summary",
+      "http_method": "GET",
+      "endpoint": "/images",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "compact",
+          "type": "boolean",
+          "description": "Return compact results",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Filter by image name",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "offset",
+          "type": "integer",
+          "description": "Pagination offset",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "description": "Max results (default 50, max 250)",
+          "required": false,
+          "location": "query"
+        }
+      ]
+    },
+    {
+      "id": "scan_image",
+      "name": "Scan Image",
+      "description": "Trigger an on-demand vulnerability scan for a container image",
+      "http_method": "POST",
+      "endpoint": "/images/scan",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "tag",
+          "type": "string",
+          "description": "Full image name with tag (e.g., registry/repo:tag)",
+          "required": true,
+          "location": "body"
+        }
+      ]
+    },
+    {
+      "id": "list_containers",
+      "name": "List Containers",
+      "description": "List all running containers with security profile information",
+      "http_method": "GET",
+      "endpoint": "/containers",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "hostname",
+          "type": "string",
+          "description": "Filter by hostname",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "image",
+          "type": "string",
+          "description": "Filter by image name",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "offset",
+          "type": "integer",
+          "description": "Pagination offset",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "description": "Max results per page",
+          "required": false,
+          "location": "query"
+        }
+      ]
+    },
+    {
+      "id": "list_runtime_audits",
+      "name": "List Runtime Audits",
+      "description": "List runtime audit events for container security incidents",
+      "http_method": "GET",
+      "endpoint": "/audits/runtime/container",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "from",
+          "type": "string",
+          "description": "Start date (ISO 8601 format)",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "to",
+          "type": "string",
+          "description": "End date (ISO 8601 format)",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Audit type filter: process, network, filesystem",
+          "required": false,
+          "location": "query"
+        }
+      ]
+    },
+    {
+      "id": "get_compliance_results",
+      "name": "Get Compliance Results",
+      "description": "Retrieve container and image compliance check results",
+      "http_method": "GET",
+      "endpoint": "/containers/compliance",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "offset",
+          "type": "integer",
+          "description": "Pagination offset",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "description": "Max results per page",
+          "required": false,
+          "location": "query"
+        }
+      ]
+    },
+    {
+      "id": "get_runtime_policy",
+      "name": "Get Runtime Policies",
+      "description": "Retrieve container runtime security policies",
+      "http_method": "GET",
+      "endpoint": "/policies/runtime/container",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    }
+  ]
+}

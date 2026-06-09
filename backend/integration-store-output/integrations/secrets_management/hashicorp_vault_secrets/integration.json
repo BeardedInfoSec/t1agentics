@@ -1,0 +1,239 @@
+{
+  "id": "hashicorp_vault_secrets",
+  "name": "HashiCorp Vault Secrets",
+  "description": "Centralized secrets management through HashiCorp Vault HTTP API for managing static secrets, dynamic secrets, encryption, and secrets engine lifecycle",
+  "version": "1.0.0",
+  "category": "secrets_management",
+  "vendor": "HashiCorp (IBM)",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "header_name": "X-Vault-Token",
+    "location": "header"
+  },
+  "base_url": "https://{host}:8200/v1",
+  "actions": [
+    {
+      "id": "read_secret",
+      "name": "Read Secret",
+      "description": "Read a secret from the KV v2 secrets engine",
+      "http_method": "GET",
+      "endpoint": "/secret/data/{path}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "path",
+          "type": "string",
+          "description": "Path to the secret",
+          "required": true
+        },
+        {
+          "name": "version",
+          "type": "number",
+          "description": "Version number of the secret (latest if omitted)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_secrets",
+      "name": "List Secrets",
+      "description": "List secret keys at a given path",
+      "http_method": "LIST",
+      "endpoint": "/secret/metadata/{path}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "path",
+          "type": "string",
+          "description": "Path to list secrets at",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "create_secret",
+      "name": "Create Secret",
+      "description": "Create or update a secret in the KV v2 secrets engine",
+      "http_method": "POST",
+      "endpoint": "/secret/data/{path}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "path",
+          "type": "string",
+          "description": "Path to store the secret",
+          "required": true
+        },
+        {
+          "name": "data",
+          "type": "object",
+          "description": "Key-value pairs for the secret data",
+          "required": true
+        },
+        {
+          "name": "options",
+          "type": "object",
+          "description": "Options like cas (check-and-set) for version control",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "delete_secret",
+      "name": "Delete Secret Versions",
+      "description": "Soft-delete specific versions of a secret",
+      "http_method": "POST",
+      "endpoint": "/secret/delete/{path}",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "path",
+          "type": "string",
+          "description": "Path of the secret",
+          "required": true
+        },
+        {
+          "name": "versions",
+          "type": "array",
+          "description": "List of version numbers to delete",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "destroy_secret",
+      "name": "Destroy Secret Versions",
+      "description": "Permanently destroy specific versions of a secret (cannot be recovered)",
+      "http_method": "POST",
+      "endpoint": "/secret/destroy/{path}",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "path",
+          "type": "string",
+          "description": "Path of the secret",
+          "required": true
+        },
+        {
+          "name": "versions",
+          "type": "array",
+          "description": "List of version numbers to permanently destroy",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_secret_metadata",
+      "name": "Get Secret Metadata",
+      "description": "Read metadata about a secret including version history",
+      "http_method": "GET",
+      "endpoint": "/secret/metadata/{path}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "path",
+          "type": "string",
+          "description": "Path to the secret",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_secrets_engines",
+      "name": "List Secrets Engines",
+      "description": "List all enabled secrets engines",
+      "http_method": "GET",
+      "endpoint": "/sys/mounts",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "rotate_root_credentials",
+      "name": "Rotate Root Credentials",
+      "description": "Rotate root credentials for a database secrets engine",
+      "http_method": "POST",
+      "endpoint": "/database/rotate-root/{name}",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Name of the database connection",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "generate_database_creds",
+      "name": "Generate Database Credentials",
+      "description": "Generate dynamic database credentials for a role",
+      "http_method": "GET",
+      "endpoint": "/database/creds/{name}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Name of the database role",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "encrypt_data",
+      "name": "Encrypt Data",
+      "description": "Encrypt plaintext data using the transit secrets engine",
+      "http_method": "POST",
+      "endpoint": "/transit/encrypt/{name}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Name of the encryption key",
+          "required": true
+        },
+        {
+          "name": "plaintext",
+          "type": "string",
+          "description": "Base64-encoded plaintext to encrypt",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "decrypt_data",
+      "name": "Decrypt Data",
+      "description": "Decrypt ciphertext using the transit secrets engine",
+      "http_method": "POST",
+      "endpoint": "/transit/decrypt/{name}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Name of the encryption key",
+          "required": true
+        },
+        {
+          "name": "ciphertext",
+          "type": "string",
+          "description": "Ciphertext to decrypt",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

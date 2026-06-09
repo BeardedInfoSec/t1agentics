@@ -1,0 +1,578 @@
+{
+  "id": "cybereason",
+  "name": "Cybereason",
+  "description": "This app integrates with the Cybereason platform to perform investigative, contain, and corrective actions on Malop and Malware events",
+  "version": "2.4.2",
+  "category": "edr",
+  "vendor": "Cybereason",
+  "auth_type": "basic_auth",
+  "auth_config": {
+    "type": "basic_auth",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "on_poll",
+      "name": "On Poll",
+      "description": "Callback action for the on_poll ingest functionality",
+      "http_method": "GET",
+      "endpoint": "/actions/on_poll",
+      "action_type": "ingest",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "container_count",
+          "type": "number",
+          "description": "Maximum number of containers to ingest",
+          "required": false
+        },
+        {
+          "name": "container_id",
+          "type": "string",
+          "description": "Parameter ignored in this app",
+          "required": false
+        },
+        {
+          "name": "start_time",
+          "type": "number",
+          "description": "Parameter ignored in this app",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "number",
+          "description": "Parameter ignored in this app",
+          "required": false
+        },
+        {
+          "name": "artifact_count",
+          "type": "number",
+          "description": "Parameter ignored in this app",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "delete_registry_key",
+      "name": "Delete Registry Key",
+      "description": "Deletes the specified registry key for a given malop ID and machine name",
+      "http_method": "POST",
+      "endpoint": "/actions/delete_registry_key",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "malop_id",
+          "type": "string",
+          "description": "The ID of the malop for deleting the registry key",
+          "required": true,
+          "contains": [
+            "cybereason malop id"
+          ]
+        },
+        {
+          "name": "machine_name",
+          "type": "string",
+          "description": "The name of the machine on which we want to delete the registry key",
+          "required": true,
+          "contains": [
+            "cybereason machine name"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_sensor_status",
+      "name": "Get Sensor Status",
+      "description": "Get the connectivity status for all machine sensors in a Malop",
+      "http_method": "GET",
+      "endpoint": "/actions/get_sensor_status",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "malop_id",
+          "type": "string",
+          "description": "The malop ID for which we will get sensor status information",
+          "required": true,
+          "contains": [
+            "cybereason malop id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "add_malop_comment",
+      "name": "Add Malop Comment",
+      "description": "Add a comment to the provided Malop ID",
+      "http_method": "GET",
+      "endpoint": "/actions/add_malop_comment",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "malop_id",
+          "type": "string",
+          "description": "The malop ID for which we want to add a comment",
+          "required": true,
+          "contains": [
+            "cybereason malop id"
+          ]
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "The comment that we want to add to the malop",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "update_malop_status",
+      "name": "Update Malop Status",
+      "description": "Update status for the provided Malop ID such as Under Investigation, To review, etc",
+      "http_method": "GET",
+      "endpoint": "/actions/update_malop_status",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "malop_id",
+          "type": "string",
+          "description": "The malop ID for which we want to update the status",
+          "required": true,
+          "contains": [
+            "cybereason malop id"
+          ]
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "The status that will be assigned to the malop",
+          "required": true,
+          "contains": [
+            "cybereason malop status"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "isolate_machine",
+      "name": "Isolate Machine",
+      "description": "Blocks all communication to and from the machine. Communication with the Cybereason platform is not affected",
+      "http_method": "POST",
+      "endpoint": "/actions/isolate_machine",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "malop_id",
+          "type": "string",
+          "description": "The malop ID for which we want to isolate the machine",
+          "required": true,
+          "contains": [
+            "cybereason malop id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "unisolate_machine",
+      "name": "Unisolate Machine",
+      "description": "Unblocks all communication to and from the machine",
+      "http_method": "POST",
+      "endpoint": "/actions/unisolate_machine",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "malop_id",
+          "type": "string",
+          "description": "The malop ID for which we want to unisolate the machine",
+          "required": true,
+          "contains": [
+            "cybereason malop id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "isolate_specific_machine",
+      "name": "Isolate Specific Machine",
+      "description": "Blocks all communication to and from the machine identified by the given Name or IP. Communication with the Cybereason platform is not affected",
+      "http_method": "POST",
+      "endpoint": "/actions/isolate_specific_machine",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "machine_name_or_ip",
+          "type": "string",
+          "description": "Name or IP of the machine that needs to be isolated",
+          "required": true,
+          "contains": [
+            "cybereason machine name or ip"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "unisolate_specific_machine",
+      "name": "Unisolate Specific Machine",
+      "description": "Unblocks all communication to and from the machine identified by the given Name or IP. Communication with the Cybereason platform is not affected",
+      "http_method": "POST",
+      "endpoint": "/actions/unisolate_specific_machine",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "machine_name_or_ip",
+          "type": "string",
+          "description": "Name or IP of the machine that needs to be unisolated",
+          "required": true,
+          "contains": [
+            "cybereason machine name or ip"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "kill_process",
+      "name": "Kill Process",
+      "description": "Kills the active process on the machine",
+      "http_method": "POST",
+      "endpoint": "/actions/kill_process",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "malop_id",
+          "type": "string",
+          "description": "The malop ID for which we want to kill the active process",
+          "required": true,
+          "contains": [
+            "cybereason malop id"
+          ]
+        },
+        {
+          "name": "remediation_user",
+          "type": "string",
+          "description": "The user-id who is killing the process",
+          "required": true,
+          "contains": [
+            "cybereason user"
+          ]
+        },
+        {
+          "name": "machine_id",
+          "type": "string",
+          "description": "Machine ID associated with that malop ID",
+          "required": true,
+          "contains": [
+            "cybereason machine id"
+          ]
+        },
+        {
+          "name": "process_id",
+          "type": "string",
+          "description": "Cybereason Process ID of the process to kill",
+          "required": true,
+          "contains": [
+            "cybereason process id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_remediation_status",
+      "name": "Get Remediation Status",
+      "description": "Gets the remediation status for a previously executed remediation action like Kill Process",
+      "http_method": "GET",
+      "endpoint": "/actions/get_remediation_status",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "malop_id",
+          "type": "string",
+          "description": "The malop ID for which we want to get the remediation status",
+          "required": true,
+          "contains": [
+            "cybereason malop id"
+          ]
+        },
+        {
+          "name": "remediation_user",
+          "type": "string",
+          "description": "The user ID that has requested the remediation action",
+          "required": true,
+          "contains": [
+            "cybereason user"
+          ]
+        },
+        {
+          "name": "remediation_id",
+          "type": "string",
+          "description": "An ID that specifies a previously executed remediation action like Kill Process",
+          "required": true,
+          "contains": [
+            "cybereason remediation id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "set_reputation",
+      "name": "Set Reputation",
+      "description": "Blacklists / Whitelists / Removes a file hash reputation so that future malop detections can quickly identify the hash",
+      "http_method": "GET",
+      "endpoint": "/actions/set_reputation",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "reputation_item_hash",
+          "type": "string",
+          "description": "The item (hash, IP) for which we want to set the reputation",
+          "required": true,
+          "contains": [
+            "hash"
+          ]
+        },
+        {
+          "name": "custom_reputation",
+          "type": "string",
+          "description": "The custom reputation that we want to set for the reputation item",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "query_processes",
+      "name": "Query Processes",
+      "description": "Queries a given malop to retrieve all processes",
+      "http_method": "GET",
+      "endpoint": "/actions/query_processes",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "malop_id",
+          "type": "string",
+          "description": "The ID of the malop for which we want to get process details",
+          "required": true,
+          "contains": [
+            "cybereason malop id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "query_machine",
+      "name": "Query Machine",
+      "description": "Queries a given machine name to retrieve all that machine's information",
+      "http_method": "GET",
+      "endpoint": "/actions/query_machine",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "The name of the machine",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "query_machine_ip",
+      "name": "Query Machine Ip",
+      "description": "Queries a given machine IP to retrieve all that machine's information",
+      "http_method": "GET",
+      "endpoint": "/actions/query_machine_ip",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "machine_ip",
+          "type": "string",
+          "description": "The IP of a machine",
+          "required": true,
+          "contains": [
+            "ip"
+          ]
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "query_users",
+      "name": "Query Users",
+      "description": "Queries a given user to retrieve all user-related details",
+      "http_method": "GET",
+      "endpoint": "/actions/query_users",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "user",
+          "type": "string",
+          "description": "The name of the user",
+          "required": true,
+          "contains": [
+            "cybereason user"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "query_files",
+      "name": "Query Files",
+      "description": "Queries a given filename to retrieve all file details",
+      "http_method": "GET",
+      "endpoint": "/actions/query_files",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "file_name",
+          "type": "string",
+          "description": "The name of the file",
+          "required": true,
+          "contains": [
+            "file name"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "query_domain",
+      "name": "Query Domain",
+      "description": "Queries a given domain name to retrieve all details of that domain",
+      "http_method": "GET",
+      "endpoint": "/actions/query_domain",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "domain_name",
+          "type": "string",
+          "description": "The name of the domain",
+          "required": true,
+          "contains": [
+            "domain"
+          ]
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "query_connections",
+      "name": "Query Connections",
+      "description": "Queries a given name to retrieve all details of that connection",
+      "http_method": "GET",
+      "endpoint": "/actions/query_connections",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "connection_name",
+          "type": "string",
+          "description": "The name of the connection",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "upgrade_sensor",
+      "name": "Upgrade Sensor",
+      "description": "Upgrade a sensor",
+      "http_method": "GET",
+      "endpoint": "/actions/upgrade_sensor",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "pylumid",
+          "type": "string",
+          "description": "The Cybereason sensor pylum ID targeted for upgrade (comma-separated IDs allowed)",
+          "required": true,
+          "contains": [
+            "cybereason sensor pylum id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "restart_sensor",
+      "name": "Restart Sensor",
+      "description": "Restart a sensor",
+      "http_method": "GET",
+      "endpoint": "/actions/restart_sensor",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "pylumid",
+          "type": "string",
+          "description": "The Cybereason sensor pylum ID targeted for restart (comma-separated IDs allowed)",
+          "required": true,
+          "contains": [
+            "cybereason sensor pylum id"
+          ]
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Cybereason",
+    "original_type": "endpoint",
+    "converted_at": "2025-12-18T16:25:28.719448",
+    "source_version": "2.4.2"
+  }
+}

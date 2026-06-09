@@ -1,0 +1,248 @@
+{
+  "id": "infoblox",
+  "name": "Infoblox DDI",
+  "description": "Infoblox WAPI REST API for DNS, DHCP, and IPAM management including DNS record operations, zone management, network discovery, and IP address tracking",
+  "version": "1.0.0",
+  "category": "dns_security",
+  "vendor": "Infoblox",
+  "auth_type": "basic",
+  "auth_config": {
+    "type": "basic",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "https://{host}/wapi/v2.12",
+  "actions": [
+    {
+      "id": "lookup_host_record",
+      "name": "Lookup Host Record",
+      "description": "Search for DNS host records by name, IP address, or other criteria",
+      "http_method": "GET",
+      "endpoint": "/record:host",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Hostname to search for (supports regex with ~= operator)",
+          "required": false
+        },
+        {
+          "name": "ipv4addr",
+          "type": "string",
+          "description": "IPv4 address to search for",
+          "required": false
+        },
+        {
+          "name": "_return_fields",
+          "type": "string",
+          "description": "Comma-separated fields to return (e.g., name,ipv4addrs,zone)",
+          "required": false
+        },
+        {
+          "name": "_max_results",
+          "type": "integer",
+          "description": "Maximum number of results to return",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "lookup_a_record",
+      "name": "Lookup A Record",
+      "description": "Search for DNS A records by name or IP address",
+      "http_method": "GET",
+      "endpoint": "/record:a",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "FQDN to search for",
+          "required": false
+        },
+        {
+          "name": "ipv4addr",
+          "type": "string",
+          "description": "IPv4 address to search for",
+          "required": false
+        },
+        {
+          "name": "zone",
+          "type": "string",
+          "description": "DNS zone to filter by",
+          "required": false
+        },
+        {
+          "name": "_return_fields",
+          "type": "string",
+          "description": "Comma-separated fields to return",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "create_host_record",
+      "name": "Create Host Record",
+      "description": "Create a new DNS host record with forward and reverse mappings",
+      "http_method": "POST",
+      "endpoint": "/record:host",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "body",
+          "type": "object",
+          "description": "Host record including name (FQDN), ipv4addrs array with ipv4addr values, and optional configure_for_dns flag",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "delete_record",
+      "name": "Delete DNS Record",
+      "description": "Delete a DNS record by its reference (_ref)",
+      "http_method": "DELETE",
+      "endpoint": "/{record_ref}",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "record_ref",
+          "type": "string",
+          "description": "Object reference (_ref) of the record to delete",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_zones",
+      "name": "List DNS Zones",
+      "description": "Retrieve all authoritative DNS zones managed by Infoblox",
+      "http_method": "GET",
+      "endpoint": "/zone_auth",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "fqdn",
+          "type": "string",
+          "description": "Zone FQDN to filter by",
+          "required": false
+        },
+        {
+          "name": "view",
+          "type": "string",
+          "description": "DNS view name to filter by",
+          "required": false
+        },
+        {
+          "name": "_return_fields",
+          "type": "string",
+          "description": "Comma-separated fields to return",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "search_ip_address",
+      "name": "Search IP Address",
+      "description": "Search for an IPv4 address and its associated records and network info",
+      "http_method": "GET",
+      "endpoint": "/ipv4address",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "ip_address",
+          "type": "string",
+          "description": "IP address to search for",
+          "required": false
+        },
+        {
+          "name": "network",
+          "type": "string",
+          "description": "Network CIDR to search within",
+          "required": false
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "IP status filter: USED, UNUSED",
+          "required": false
+        },
+        {
+          "name": "_return_fields",
+          "type": "string",
+          "description": "Fields to return (e.g., ip_address,names,network,status,mac_address)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_networks",
+      "name": "List Networks",
+      "description": "Retrieve all networks/subnets managed in IPAM",
+      "http_method": "GET",
+      "endpoint": "/network",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "network",
+          "type": "string",
+          "description": "Network CIDR to filter by",
+          "required": false
+        },
+        {
+          "name": "_return_fields",
+          "type": "string",
+          "description": "Fields to return",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_dns_rpz_records",
+      "name": "Get RPZ Records",
+      "description": "Retrieve Response Policy Zone records used for DNS-level domain blocking",
+      "http_method": "GET",
+      "endpoint": "/record:rpz:cname",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "zone",
+          "type": "string",
+          "description": "RPZ zone name to query",
+          "required": false
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "description": "RPZ record name to search for",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "block_domain_rpz",
+      "name": "Block Domain via RPZ",
+      "description": "Add a domain to a Response Policy Zone to block DNS resolution",
+      "http_method": "POST",
+      "endpoint": "/record:rpz:cname",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "body",
+          "type": "object",
+          "description": "RPZ CNAME record including name (domain to block), canonical (action), rp_zone, and view",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,338 @@
+{
+  "id": "agari",
+  "name": "Agari",
+  "description": "This app integrates with Agari to implement the investigative and generic actions that protect against phishing and Business Email Compromise (BEC) attacks",
+  "version": "1.0.1",
+  "category": "edr",
+  "vendor": "Agari",
+  "auth_type": "oauth2",
+  "auth_config": {
+    "type": "oauth2",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "https://api.agari.com/v1/ep",
+  "actions": [
+    {
+      "id": "list_policy_events",
+      "name": "List Policy Events",
+      "description": "List all the policy events",
+      "http_method": "GET",
+      "endpoint": "/policy_events",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "max_results",
+          "type": "number",
+          "description": "Max number of policy events to return. The default value is 100",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "This parameter allows the user to set the starting point or offset for the response. The default value is 0",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "sort",
+          "type": "string",
+          "description": "A comma-delimited string that specifies the field ordering (with direction) to be applied to the response",
+          "required": false,
+          "default": "created_at ASC, id ASC"
+        },
+        {
+          "name": "rem_fields",
+          "type": "string",
+          "description": "A comma-delimited list of fields to remove from the default payload",
+          "required": false
+        },
+        {
+          "name": "add_fields",
+          "type": "string",
+          "description": "A comma-delimited list of optional fields to add to the default payload",
+          "required": false
+        },
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "Search filters that can be applied to the response",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "type": "string",
+          "description": "A comma-delimited list of fields to include in the payload",
+          "required": false
+        },
+        {
+          "name": "start_date",
+          "type": "string",
+          "description": "The earliest date time (UTC) a search should target (ISO 8601 format)",
+          "required": false
+        },
+        {
+          "name": "end_date",
+          "type": "string",
+          "description": "The latest date time (UTC) a search should target (ISO 8601 format)",
+          "required": false
+        },
+        {
+          "name": "policy_name",
+          "type": "string",
+          "description": "Find by policy name",
+          "required": false,
+          "contains": [
+            "agari policy name"
+          ]
+        },
+        {
+          "name": "policy_action",
+          "type": "string",
+          "description": "Find by policy action. Valid values are deliver, move, inbox, delete, none, and all",
+          "required": false
+        },
+        {
+          "name": "policy_enabled",
+          "type": "string",
+          "description": "Find by enabled policies",
+          "required": false,
+          "default": "True"
+        },
+        {
+          "name": "exclude_alert_types",
+          "type": "string",
+          "description": "Exclude Policy types. Valid values are MessageAlert, SystemAlert, and None",
+          "required": false,
+          "default": "SystemAlert"
+        }
+      ]
+    },
+    {
+      "id": "get_policy_event",
+      "name": "Get Policy Event",
+      "description": "Fetches a single policy event from Agari for the given policy event ID",
+      "http_method": "GET",
+      "endpoint": "/policy_events/{id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "number",
+          "description": "Policy Event ID",
+          "required": true,
+          "contains": [
+            "agari policy event id"
+          ]
+        },
+        {
+          "name": "rem_fields",
+          "type": "string",
+          "description": "A comma-delimited list of fields to remove from the default payload",
+          "required": false
+        },
+        {
+          "name": "add_fields",
+          "type": "string",
+          "description": "A comma-delimited list of optional fields to add to the default payload",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "type": "string",
+          "description": "A comma-delimited list of fields to include in the payload",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_messages",
+      "name": "List Messages",
+      "description": "List all the messages",
+      "http_method": "GET",
+      "endpoint": "/messages",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "max_results",
+          "type": "number",
+          "description": "Max number of messages to return. The default value is 100",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "The offset, or starting point, for the paged response. The default value is 0",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "sort",
+          "type": "string",
+          "description": "A comma-delimited string that specifies the field ordering (with direction) to be applied to the response",
+          "required": false,
+          "default": "date ASC, id ASC"
+        },
+        {
+          "name": "rem_fields",
+          "type": "string",
+          "description": "A comma-delimited list of fields to remove from the default payload",
+          "required": false
+        },
+        {
+          "name": "add_fields",
+          "type": "string",
+          "description": "A comma-delimited list of optional fields to add to the default payload",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "type": "string",
+          "description": "A comma-delimited list of fields to include in the payload",
+          "required": false
+        },
+        {
+          "name": "search",
+          "type": "string",
+          "description": "Search using the advanced search syntax",
+          "required": false
+        },
+        {
+          "name": "start_date",
+          "type": "string",
+          "description": "The earliest date time (UTC) a search should target (ISO 8601 format)",
+          "required": false
+        },
+        {
+          "name": "end_date",
+          "type": "string",
+          "description": "The latest date time (UTC) a search should target (ISO 8601 format)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_message",
+      "name": "Get Message",
+      "description": "Fetches a single message from Agari for the given message ID",
+      "http_method": "GET",
+      "endpoint": "/messages/{id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Message ID",
+          "required": true,
+          "contains": [
+            "agari internal message id"
+          ]
+        },
+        {
+          "name": "rem_fields",
+          "type": "string",
+          "description": "A comma-delimited list of fields to remove from the default payload",
+          "required": false
+        },
+        {
+          "name": "add_fields",
+          "type": "string",
+          "description": "A comma-delimited list of optional fields to add to the default payload",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "type": "string",
+          "description": "A comma-delimited list of fields to include in the payload",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "remediate_message",
+      "name": "Remediate Message",
+      "description": "Deletes or moves a message from the inbox for the provided message ID",
+      "http_method": "GET",
+      "endpoint": "/messages/{id}/remediate",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Message ID",
+          "required": true,
+          "contains": [
+            "agari internal message id"
+          ]
+        },
+        {
+          "name": "remediation_operation",
+          "type": "string",
+          "description": "This parameter allows the user to move or delete the suspected message from the inbox",
+          "required": true,
+          "default": "move"
+        }
+      ]
+    },
+    {
+      "id": "on_poll",
+      "name": "On Poll",
+      "description": "Action handler for the on poll ingest functionality",
+      "http_method": "GET",
+      "endpoint": "/actions/on_poll",
+      "action_type": "ingest",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "container_count",
+          "type": "number",
+          "description": "Maximum number of containers to ingest",
+          "required": false
+        },
+        {
+          "name": "start_time",
+          "type": "number",
+          "description": "Parameter ignored in this app",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "number",
+          "description": "Parameter ignored in this app",
+          "required": false
+        },
+        {
+          "name": "artifact_count",
+          "type": "number",
+          "description": "Parameter ignored in this app",
+          "required": false
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Agari",
+    "original_type": "endpoint",
+    "converted_at": "2025-12-18T16:25:28.549558",
+    "source_version": "1.0.1"
+  }
+}

@@ -1,0 +1,198 @@
+{
+  "id": "azure_defender_cloud",
+  "name": "Microsoft Defender for Cloud",
+  "description": "Azure cloud security posture management and workload protection platform providing threat detection, vulnerability assessment, and compliance management across multi-cloud environments",
+  "version": "1.0.0",
+  "category": "azure_security",
+  "vendor": "Microsoft Azure",
+  "auth_type": "oauth2_client",
+  "auth_config": {
+    "type": "oauth2_client",
+    "token_url": "https://login.microsoftonline.com/{tenantId}/oauth2/v2.0/token",
+    "scope": "https://management.azure.com/.default",
+    "grant_type": "client_credentials"
+  },
+  "base_url": "https://management.azure.com",
+  "actions": [
+    {
+      "id": "list_alerts",
+      "name": "List Security Alerts",
+      "description": "List Defender for Cloud security alerts for a subscription with severity and status filtering",
+      "http_method": "GET",
+      "endpoint": "/subscriptions/{subscriptionId}/providers/Microsoft.Security/alerts",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "subscriptionId",
+          "type": "string",
+          "description": "Azure subscription ID",
+          "required": true
+        },
+        {
+          "name": "api-version",
+          "type": "string",
+          "description": "API version",
+          "required": true,
+          "default": "2022-01-01"
+        },
+        {
+          "name": "$filter",
+          "type": "string",
+          "description": "OData filter expression (e.g., \"properties/severity eq 'High'\")",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_alert",
+      "name": "Get Alert Details",
+      "description": "Retrieve detailed information about a specific Defender for Cloud alert",
+      "http_method": "GET",
+      "endpoint": "/subscriptions/{subscriptionId}/providers/Microsoft.Security/locations/{location}/alerts/{alertName}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "subscriptionId",
+          "type": "string",
+          "description": "Azure subscription ID",
+          "required": true
+        },
+        {
+          "name": "location",
+          "type": "string",
+          "description": "Azure location",
+          "required": true
+        },
+        {
+          "name": "alertName",
+          "type": "string",
+          "description": "Alert name identifier",
+          "required": true
+        },
+        {
+          "name": "api-version",
+          "type": "string",
+          "description": "API version",
+          "required": true,
+          "default": "2022-01-01"
+        }
+      ]
+    },
+    {
+      "id": "get_secure_score",
+      "name": "Get Secure Score",
+      "description": "Retrieve the overall Defender for Cloud secure score for a subscription",
+      "http_method": "GET",
+      "endpoint": "/subscriptions/{subscriptionId}/providers/Microsoft.Security/secureScores",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "subscriptionId",
+          "type": "string",
+          "description": "Azure subscription ID",
+          "required": true
+        },
+        {
+          "name": "api-version",
+          "type": "string",
+          "description": "API version",
+          "required": true,
+          "default": "2020-01-01"
+        }
+      ]
+    },
+    {
+      "id": "list_recommendations",
+      "name": "List Recommendations",
+      "description": "List security recommendations for improving cloud security posture",
+      "http_method": "GET",
+      "endpoint": "/subscriptions/{subscriptionId}/providers/Microsoft.Security/assessments",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "subscriptionId",
+          "type": "string",
+          "description": "Azure subscription ID",
+          "required": true
+        },
+        {
+          "name": "api-version",
+          "type": "string",
+          "description": "API version",
+          "required": true,
+          "default": "2021-06-01"
+        }
+      ]
+    },
+    {
+      "id": "list_compliance_results",
+      "name": "List Compliance Results",
+      "description": "List regulatory compliance assessment results for configured standards",
+      "http_method": "GET",
+      "endpoint": "/subscriptions/{subscriptionId}/providers/Microsoft.Security/regulatoryComplianceStandards",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "subscriptionId",
+          "type": "string",
+          "description": "Azure subscription ID",
+          "required": true
+        },
+        {
+          "name": "api-version",
+          "type": "string",
+          "description": "API version",
+          "required": true,
+          "default": "2019-01-01-preview"
+        }
+      ]
+    },
+    {
+      "id": "update_alert_status",
+      "name": "Update Alert Status",
+      "description": "Update the status of a Defender for Cloud alert (dismiss, activate, resolve)",
+      "http_method": "POST",
+      "endpoint": "/subscriptions/{subscriptionId}/providers/Microsoft.Security/locations/{location}/alerts/{alertName}/{action}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "subscriptionId",
+          "type": "string",
+          "description": "Azure subscription ID",
+          "required": true
+        },
+        {
+          "name": "location",
+          "type": "string",
+          "description": "Azure location",
+          "required": true
+        },
+        {
+          "name": "alertName",
+          "type": "string",
+          "description": "Alert name identifier",
+          "required": true
+        },
+        {
+          "name": "action",
+          "type": "string",
+          "description": "Action to perform (dismiss, activate, resolve)",
+          "required": true
+        },
+        {
+          "name": "api-version",
+          "type": "string",
+          "description": "API version",
+          "required": true,
+          "default": "2022-01-01"
+        }
+      ]
+    }
+  ]
+}

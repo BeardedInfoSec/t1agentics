@@ -1,0 +1,188 @@
+{
+  "id": "f5_waf",
+  "name": "F5 BIG-IP WAF (ASM)",
+  "description": "F5 BIG-IP iControl REST API for managing Application Security Manager (ASM) WAF policies, signatures, and virtual servers",
+  "version": "1.0.0",
+  "category": "waf",
+  "vendor": "F5 Networks",
+  "auth_type": "basic",
+  "auth_config": {
+    "type": "basic",
+    "header_name": "Authorization",
+    "location": "header",
+    "note": "Uses HTTP Basic Authentication or token-based auth via X-F5-Auth-Token header"
+  },
+  "base_url": "https://{host}/mgmt/tm",
+  "actions": [
+    {
+      "id": "list_asm_policies",
+      "name": "List ASM Policies",
+      "description": "Retrieve all Application Security Manager (WAF) policies",
+      "http_method": "GET",
+      "endpoint": "/asm/policies",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "$filter",
+          "type": "string",
+          "description": "OData filter expression to narrow results",
+          "required": false
+        },
+        {
+          "name": "$select",
+          "type": "string",
+          "description": "Comma-separated fields to return",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_asm_policy",
+      "name": "Get ASM Policy",
+      "description": "Retrieve a specific ASM WAF policy by ID",
+      "http_method": "GET",
+      "endpoint": "/asm/policies/{policy_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "policy_id",
+          "type": "string",
+          "description": "ID (hash) of the ASM policy",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_policy_signatures",
+      "name": "List Policy Signatures",
+      "description": "Retrieve all attack signatures in an ASM policy",
+      "http_method": "GET",
+      "endpoint": "/asm/policies/{policy_id}/signatures",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "policy_id",
+          "type": "string",
+          "description": "ID of the ASM policy",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_policy_violations",
+      "name": "List Policy Violations",
+      "description": "Retrieve violation settings for an ASM policy",
+      "http_method": "GET",
+      "endpoint": "/asm/policies/{policy_id}/violations",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "policy_id",
+          "type": "string",
+          "description": "ID of the ASM policy",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_ip_address_exceptions",
+      "name": "List IP Address Exceptions",
+      "description": "Retrieve IP address exception (whitelist) entries for a policy",
+      "http_method": "GET",
+      "endpoint": "/asm/policies/{policy_id}/whitelist-ips",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "policy_id",
+          "type": "string",
+          "description": "ID of the ASM policy",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "block_ip_address",
+      "name": "Block IP Address",
+      "description": "Add an IP address to the ASM policy deny list",
+      "http_method": "POST",
+      "endpoint": "/asm/policies/{policy_id}/blocking/ip-addresses",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "policy_id",
+          "type": "string",
+          "description": "ID of the ASM policy",
+          "required": true
+        },
+        {
+          "name": "body",
+          "type": "object",
+          "description": "IP address entry including ipAddress, ipMask, blockReason, and trustedByPolicyBuilder flag",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_security_events",
+      "name": "Get Security Events",
+      "description": "Retrieve ASM security events and request logs",
+      "http_method": "GET",
+      "endpoint": "/asm/events/requests",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "$filter",
+          "type": "string",
+          "description": "OData filter for events (e.g., by date, severity, or attack type)",
+          "required": false
+        },
+        {
+          "name": "$top",
+          "type": "integer",
+          "description": "Maximum number of events to return",
+          "required": false
+        },
+        {
+          "name": "$orderby",
+          "type": "string",
+          "description": "Field to order results by",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_virtual_servers",
+      "name": "List Virtual Servers",
+      "description": "Retrieve all virtual servers configured on the BIG-IP",
+      "http_method": "GET",
+      "endpoint": "/ltm/virtual",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "apply_asm_policy",
+      "name": "Apply ASM Policy",
+      "description": "Apply pending changes to an ASM policy",
+      "http_method": "POST",
+      "endpoint": "/asm/tasks/apply-policy",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "body",
+          "type": "object",
+          "description": "Policy reference including policyReference link to the policy to apply",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

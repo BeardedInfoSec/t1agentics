@@ -1,0 +1,223 @@
+{
+  "id": "threatquotient",
+  "name": "ThreatQuotient ThreatQ",
+  "description": "Integrate with ThreatQuotient ThreatQ to search indicators, adversaries, events, and signatures using the REST API with OAuth2 authentication",
+  "version": "1.0.0",
+  "category": "threat_intel",
+  "vendor": "ThreatQuotient",
+  "auth_type": "oauth2_client",
+  "auth_config": {
+    "type": "oauth2_client",
+    "token_url": "/api/token",
+    "grant_type": "client_credentials",
+    "note": "OAuth2 authentication. POST email, password, and grant_type to /api/token. Token must be refreshed periodically."
+  },
+  "base_url": "https://{threatq_hostname}",
+  "actions": [
+    {
+      "id": "search_indicators",
+      "name": "Search Indicators",
+      "description": "Search ThreatQ indicators by value, type, status, or score with flexible filtering",
+      "http_method": "GET",
+      "endpoint": "/api/indicators",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "value",
+          "type": "string",
+          "description": "Indicator value to search for (IP, domain, hash, URL, email)",
+          "required": false,
+          "contains": ["ip", "domain", "hash", "url", "email"]
+        },
+        {
+          "name": "type_name",
+          "type": "string",
+          "description": "Indicator type filter (IP Address, FQDN, MD5, SHA-256, URL, Email Address)",
+          "required": false
+        },
+        {
+          "name": "status_id",
+          "type": "number",
+          "description": "Status filter ID (1=Active, 2=Expired, 3=Indirect, 4=Review, 5=Whitelisted)",
+          "required": false
+        },
+        {
+          "name": "score",
+          "type": "string",
+          "description": "Score filter expression (e.g. gte:7 for score >= 7)",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of results to return",
+          "required": false
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Offset for pagination",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_indicator",
+      "name": "Get Indicator Details",
+      "description": "Retrieve full details for a specific ThreatQ indicator by ID including sources, attributes, and related objects",
+      "http_method": "GET",
+      "endpoint": "/api/indicators/{id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "ThreatQ indicator ID",
+          "required": true
+        },
+        {
+          "name": "with",
+          "type": "string",
+          "description": "Related objects to include (e.g. adversaries,events,sources,attributes,tags)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "search_adversaries",
+      "name": "Search Adversaries",
+      "description": "Search ThreatQ adversary records (threat actors) by name or attributes",
+      "http_method": "GET",
+      "endpoint": "/api/adversaries",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Adversary name to search for",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of results",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "search_events",
+      "name": "Search Events",
+      "description": "Search ThreatQ events for incident and threat activity tracking",
+      "http_method": "GET",
+      "endpoint": "/api/events",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "title",
+          "type": "string",
+          "description": "Event title to search for",
+          "required": false
+        },
+        {
+          "name": "type_id",
+          "type": "number",
+          "description": "Event type ID filter",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of results",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "search_signatures",
+      "name": "Search Signatures",
+      "description": "Search ThreatQ signatures (YARA, Snort, Sigma rules) by name or type",
+      "http_method": "GET",
+      "endpoint": "/api/signatures",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Signature name to search for",
+          "required": false
+        },
+        {
+          "name": "type_name",
+          "type": "string",
+          "description": "Signature type filter (YARA, Snort, Sigma, Suricata)",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of results",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "create_indicator",
+      "name": "Create Indicator",
+      "description": "Create a new indicator in ThreatQ with optional score, status, and attributes",
+      "http_method": "POST",
+      "endpoint": "/api/indicators",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "value",
+          "type": "string",
+          "description": "Indicator value",
+          "required": true,
+          "contains": ["ip", "domain", "hash", "url", "email"]
+        },
+        {
+          "name": "type_id",
+          "type": "number",
+          "description": "Indicator type ID",
+          "required": true
+        },
+        {
+          "name": "status_id",
+          "type": "number",
+          "description": "Status ID (1=Active, 2=Expired, 4=Review, 5=Whitelisted)",
+          "required": false
+        },
+        {
+          "name": "score",
+          "type": "number",
+          "description": "Manual score value",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "add_to_watchlist",
+      "name": "Add to Watchlist",
+      "description": "Add an indicator to the ThreatQ watchlist for ongoing monitoring",
+      "http_method": "PUT",
+      "endpoint": "/api/indicators/{id}/watchlist",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "ThreatQ indicator ID to add to watchlist",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

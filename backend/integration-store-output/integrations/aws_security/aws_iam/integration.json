@@ -1,0 +1,190 @@
+{
+  "id": "aws_iam",
+  "name": "AWS IAM",
+  "description": "AWS Identity and Access Management service for managing access to AWS services and resources securely through users, groups, roles, and policies",
+  "version": "1.0.0",
+  "category": "aws_security",
+  "vendor": "Amazon Web Services",
+  "auth_type": "aws",
+  "auth_config": {
+    "type": "aws",
+    "service": "iam",
+    "signing_version": "v4"
+  },
+  "base_url": "https://iam.amazonaws.com",
+  "actions": [
+    {
+      "id": "list_users",
+      "name": "List Users",
+      "description": "List IAM users in the AWS account with optional path filtering",
+      "http_method": "GET",
+      "endpoint": "/?Action=ListUsers",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "PathPrefix",
+          "type": "string",
+          "description": "Path prefix for filtering users",
+          "required": false,
+          "default": "/"
+        },
+        {
+          "name": "MaxItems",
+          "type": "number",
+          "description": "Maximum users to return (1-1000)",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "Marker",
+          "type": "string",
+          "description": "Pagination marker from previous response",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_user",
+      "name": "Get User Details",
+      "description": "Retrieve detailed information about a specific IAM user",
+      "http_method": "GET",
+      "endpoint": "/?Action=GetUser",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "UserName",
+          "type": "string",
+          "description": "IAM user name",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_roles",
+      "name": "List Roles",
+      "description": "List IAM roles in the account",
+      "http_method": "GET",
+      "endpoint": "/?Action=ListRoles",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "PathPrefix",
+          "type": "string",
+          "description": "Path prefix for filtering roles",
+          "required": false,
+          "default": "/"
+        },
+        {
+          "name": "MaxItems",
+          "type": "number",
+          "description": "Maximum roles to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "list_policies",
+      "name": "List Policies",
+      "description": "List IAM policies with optional scope and path filtering",
+      "http_method": "GET",
+      "endpoint": "/?Action=ListPolicies",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "Scope",
+          "type": "string",
+          "description": "Filter by scope (All, AWS, Local)",
+          "required": false,
+          "default": "Local"
+        },
+        {
+          "name": "OnlyAttached",
+          "type": "boolean",
+          "description": "Only return policies attached to users/groups/roles",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "MaxItems",
+          "type": "number",
+          "description": "Maximum policies to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "list_user_policies",
+      "name": "List User Policies",
+      "description": "List inline policies attached to a specific IAM user",
+      "http_method": "GET",
+      "endpoint": "/?Action=ListUserPolicies",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "UserName",
+          "type": "string",
+          "description": "IAM user name",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_access_keys",
+      "name": "List Access Keys",
+      "description": "List access keys for a specific IAM user including their status and creation date",
+      "http_method": "GET",
+      "endpoint": "/?Action=ListAccessKeys",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "UserName",
+          "type": "string",
+          "description": "IAM user name",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_credential_report",
+      "name": "Get Credential Report",
+      "description": "Retrieve the IAM credential report listing all users and the status of their credentials",
+      "http_method": "GET",
+      "endpoint": "/?Action=GetCredentialReport",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "get_account_authorization_details",
+      "name": "Get Account Authorization Details",
+      "description": "Retrieve all IAM users, groups, roles, and policies in the account with their relationships",
+      "http_method": "GET",
+      "endpoint": "/?Action=GetAccountAuthorizationDetails",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "Filter",
+          "type": "array",
+          "description": "Filter by entity type (User, Role, Group, LocalManagedPolicy, AWSManagedPolicy)",
+          "required": false
+        },
+        {
+          "name": "MaxItems",
+          "type": "number",
+          "description": "Maximum items to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,455 @@
+{
+  "id": "extrahop_revealx_network",
+  "name": "ExtraHop Reveal(x)",
+  "description": "This app integrates with your ExtraHop system to gain insight into devices, traffic, and detections in your environment",
+  "version": "3.1.2",
+  "category": "network",
+  "vendor": "ExtraHop Networks",
+  "auth_type": "oauth2",
+  "auth_config": {
+    "type": "oauth2",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "https://{}",
+  "actions": [
+    {
+      "id": "get_device",
+      "name": "Get Device Info",
+      "description": "Retrieve details and properties for a device",
+      "http_method": "GET",
+      "endpoint": "/actions/get_device",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "Comma-delimited list of device IP addresses to retrieve details and properties",
+          "required": true,
+          "contains": [
+            "ip"
+          ]
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "get_peers",
+      "name": "Get Peers",
+      "description": "Retrieve a list of peers that communicated with a device",
+      "http_method": "GET",
+      "endpoint": "/actions/get_peers",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "IP address of the device from which to search for peers",
+          "required": false,
+          "contains": [
+            "ip"
+          ]
+        },
+        {
+          "name": "minutes",
+          "type": "number",
+          "description": "Amount of lookback data in minutes (default is 30 mins)",
+          "required": false,
+          "default": 30
+        },
+        {
+          "name": "peer_role",
+          "type": "string",
+          "description": "Role to search for on peers",
+          "required": false,
+          "default": "any"
+        },
+        {
+          "name": "protocol",
+          "type": "string",
+          "description": "Protocol to search for on peers",
+          "required": false,
+          "default": "any"
+        },
+        {
+          "name": "eh_api_id",
+          "type": "number",
+          "description": "REST API ID of the device (default value if 'ip' is also specified)",
+          "required": false,
+          "contains": [
+            "extrahop api id"
+          ]
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "get_protocols",
+      "name": "Get Protocols",
+      "description": "Retrieve a list of protocols observed on a device",
+      "http_method": "GET",
+      "endpoint": "/actions/get_protocols",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "IP address of the device on which to search for protocols",
+          "required": false,
+          "contains": [
+            "ip"
+          ]
+        },
+        {
+          "name": "minutes",
+          "type": "number",
+          "description": "Amount of lookback data in minutes (default is 30 mins)",
+          "required": false,
+          "default": 30
+        },
+        {
+          "name": "eh_api_id",
+          "type": "number",
+          "description": "REST API ID of the device (default value if 'ip' is also specified)",
+          "required": false,
+          "contains": [
+            "extrahop api id"
+          ]
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "detect_devices",
+      "name": "Get Devices",
+      "description": "Retrieve a list of devices based on specified search criteria",
+      "http_method": "GET",
+      "endpoint": "/actions/detect_devices",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "json_object",
+          "type": "string",
+          "description": "Json object for get device",
+          "required": false
+        },
+        {
+          "name": "field_type",
+          "type": "string",
+          "description": "Type of search criteria",
+          "required": false,
+          "default": "custom_filter"
+        },
+        {
+          "name": "minutes",
+          "type": "number",
+          "description": "Amount of lookback data in minutes (default is 30 mins)",
+          "required": false,
+          "default": 30
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Starting count for the set of results (default is 0)",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of results that can be retrieved",
+          "required": false,
+          "default": 1000
+        },
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "JSON query of device search criteria",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "create_device",
+      "name": "Create Device",
+      "description": "Create a custom device (Reveal(x) Enterprise only)",
+      "http_method": "GET",
+      "endpoint": "/actions/create_device",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "json_object",
+          "type": "string",
+          "description": "Json object for creating a custom device",
+          "required": false
+        },
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "IP address for the custom device",
+          "required": false,
+          "contains": [
+            "ip"
+          ]
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Unique name for the custom device",
+          "required": false
+        },
+        {
+          "name": "author",
+          "type": "string",
+          "description": "User that created the custom device",
+          "required": false
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Description details for the custom device",
+          "required": false
+        },
+        {
+          "name": "cidr",
+          "type": "string",
+          "description": "CIDR block for the custom device",
+          "required": false
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "tag_device",
+      "name": "Tag Device",
+      "description": "Tag an existing device",
+      "http_method": "GET",
+      "endpoint": "/actions/tag_device",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "IP address of the device to tag",
+          "required": false,
+          "contains": [
+            "ip"
+          ]
+        },
+        {
+          "name": "tag",
+          "type": "string",
+          "description": "Name of the tag",
+          "required": true,
+          "default": "suspicious"
+        },
+        {
+          "name": "eh_api_id",
+          "type": "number",
+          "description": "REST API ID of the device (default value if 'ip' is also specified",
+          "required": false,
+          "contains": [
+            "extrahop api id"
+          ]
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "get_metrics",
+      "name": "Get Metrics",
+      "description": "Retrieve the metrics data",
+      "http_method": "GET",
+      "endpoint": "/actions/get_metrics",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "json_object",
+          "type": "string",
+          "description": "JSON object for get metrics action",
+          "required": false
+        },
+        {
+          "name": "minutes",
+          "type": "number",
+          "description": "Amount of lookback data in minutes (default is 30 mins)",
+          "required": false,
+          "default": 30
+        },
+        {
+          "name": "metric_cycle_length",
+          "type": "string",
+          "description": "Aggregation time interval for retrieved metrics",
+          "required": false,
+          "default": "auto"
+        },
+        {
+          "name": "object_type",
+          "type": "string",
+          "description": "Object type associated with the API IDs",
+          "required": false,
+          "default": "Application"
+        },
+        {
+          "name": "object_id",
+          "type": "string",
+          "description": "API IDs for the objects (Comma-delimited)",
+          "required": false,
+          "contains": [
+            "extrahop api id"
+          ]
+        },
+        {
+          "name": "metric_category",
+          "type": "string",
+          "description": "Category of metrics to retrieve. (See REST API Parameters in the ExtraHop Metric Catalog to find categories)",
+          "required": false
+        },
+        {
+          "name": "metric_name",
+          "type": "string",
+          "description": "Names of metrics to retrieve. (Comma-delimited; see REST API Parameters in the ExtraHop Metric Catalog to find metric names)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_packets",
+      "name": "Get Packets",
+      "description": "Retrieve the packets data",
+      "http_method": "GET",
+      "endpoint": "/actions/get_packets",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "json_object",
+          "type": "string",
+          "description": "JSON object for get packets action",
+          "required": false
+        },
+        {
+          "name": "minutes",
+          "type": "number",
+          "description": "Amount of lookback data in minutes (default is 30 mins)",
+          "required": false,
+          "default": 30
+        },
+        {
+          "name": "bpf",
+          "type": "string",
+          "description": "Berkeley Packet Filter (BPF) syntax for packet retrieval",
+          "required": false
+        },
+        {
+          "name": "limit_bytes",
+          "type": "string",
+          "description": "Maximum number of return bytes for packet retrieval",
+          "required": false
+        },
+        {
+          "name": "limit_search_duration",
+          "type": "string",
+          "description": "Maximum runtime for packet retrieval. The default unit is milliseconds, but other units can be specified with a unit suffix.",
+          "required": false
+        },
+        {
+          "name": "ip1",
+          "type": "string",
+          "description": "Retrieve packets sent to or received by this IP address",
+          "required": false,
+          "contains": [
+            "ip"
+          ]
+        },
+        {
+          "name": "ip2",
+          "type": "string",
+          "description": "Retrieve packets sent to or received by this additional IP address",
+          "required": false,
+          "contains": [
+            "ip"
+          ]
+        },
+        {
+          "name": "port1",
+          "type": "number",
+          "description": "Retrieve packets sent to or received by this port number",
+          "required": false
+        },
+        {
+          "name": "port2",
+          "type": "number",
+          "description": "Retrieve packets sent to or received by this additional port number",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "on_poll",
+      "name": "On Poll",
+      "description": "Retrieve and ingest of data from the ExtraHop system",
+      "http_method": "GET",
+      "endpoint": "/actions/on_poll",
+      "action_type": "ingest",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "container_count",
+          "type": "number",
+          "description": "Maximum number of containers to ingest",
+          "required": false
+        },
+        {
+          "name": "start_time",
+          "type": "number",
+          "description": "Parameter ignored in this app",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "number",
+          "description": "Parameter ignored in this app",
+          "required": false
+        },
+        {
+          "name": "artifact_count",
+          "type": "number",
+          "description": "Parameter ignored in this app",
+          "required": false
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "ExtraHop Reveal(x)",
+    "original_type": "network security",
+    "converted_at": "2025-12-18T16:25:28.764121",
+    "source_version": "3.1.2"
+  }
+}

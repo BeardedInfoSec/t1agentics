@@ -1,0 +1,231 @@
+{
+  "id": "fortinet_fortiedr",
+  "name": "Fortinet FortiEDR",
+  "description": "Integrates with FortiEDR Central Manager REST API for endpoint detection, threat hunting, collector management, and automated response actions",
+  "version": "1.0.0",
+  "category": "edr",
+  "vendor": "Fortinet",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "header_name": "Authorization",
+    "prefix": "Bearer"
+  },
+  "base_url": "https://{central_manager_host}/api",
+  "actions": [
+    {
+      "id": "list_events",
+      "name": "List Security Events",
+      "description": "Retrieve security events from FortiEDR with filtering and pagination",
+      "http_method": "GET",
+      "endpoint": "/v1/events",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of events to return",
+          "required": false,
+          "default": 50
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Starting offset for pagination",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Filter by severity level (Critical, High, Medium, Low)",
+          "required": false
+        },
+        {
+          "name": "firstSeen",
+          "type": "string",
+          "description": "Start time filter for event creation (ISO 8601)",
+          "required": false
+        },
+        {
+          "name": "lastSeen",
+          "type": "string",
+          "description": "End time filter for event creation (ISO 8601)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_event",
+      "name": "Get Event Details",
+      "description": "Retrieve detailed information about a specific security event",
+      "http_method": "GET",
+      "endpoint": "/v1/events/{event_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "event_id",
+          "type": "string",
+          "description": "The unique identifier of the security event",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_collectors",
+      "name": "List Collectors",
+      "description": "Retrieve the list of FortiEDR collectors (agents) deployed across endpoints",
+      "http_method": "GET",
+      "endpoint": "/v1/collectors",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of collectors to return",
+          "required": false,
+          "default": 50
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Starting offset for pagination",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "state",
+          "type": "string",
+          "description": "Filter by collector state (Running, Disconnected, Disabled)",
+          "required": false
+        }
+      ],
+      "observable_type": "hostname"
+    },
+    {
+      "id": "list_collector_groups",
+      "name": "List Collector Groups",
+      "description": "Retrieve the list of collector groups in the environment",
+      "http_method": "GET",
+      "endpoint": "/v1/collector-groups",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "isolate_collector",
+      "name": "Isolate Collector",
+      "description": "Isolate one or more collectors from the network to contain threats",
+      "http_method": "PUT",
+      "endpoint": "/v1/collectors/isolate",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "devices",
+          "type": "string",
+          "description": "Comma-separated list of device names to isolate",
+          "required": true
+        }
+      ],
+      "observable_type": "hostname"
+    },
+    {
+      "id": "unisolate_collector",
+      "name": "Unisolate Collector",
+      "description": "Remove network isolation from one or more collectors",
+      "http_method": "PUT",
+      "endpoint": "/v1/collectors/unisolate",
+      "action_type": "correct",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "devices",
+          "type": "string",
+          "description": "Comma-separated list of device names to unisolate",
+          "required": true
+        }
+      ],
+      "observable_type": "hostname"
+    },
+    {
+      "id": "threat_hunting_search",
+      "name": "Threat Hunting Search",
+      "description": "Search endpoint telemetry for threat hunting using activity event types (process creation, file ops, registry, network)",
+      "http_method": "POST",
+      "endpoint": "/v1/threat-hunting/search",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Threat hunting search query expression",
+          "required": true
+        },
+        {
+          "name": "from_time",
+          "type": "string",
+          "description": "Start time for the search window (ISO 8601)",
+          "required": false
+        },
+        {
+          "name": "to_time",
+          "type": "string",
+          "description": "End time for the search window (ISO 8601)",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of results to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "get_forensics_data",
+      "name": "Get Forensics Data",
+      "description": "Retrieve forensic data collected from endpoints including memory dumps and artifacts",
+      "http_method": "GET",
+      "endpoint": "/v1/forensics/{event_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "event_id",
+          "type": "string",
+          "description": "The event ID associated with the forensic collection",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "update_event_classification",
+      "name": "Update Event Classification",
+      "description": "Update the classification of a security event (mark as handled, false positive, etc.)",
+      "http_method": "PUT",
+      "endpoint": "/v1/events/{event_id}/classification",
+      "action_type": "correct",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "event_id",
+          "type": "string",
+          "description": "The unique identifier of the security event",
+          "required": true
+        },
+        {
+          "name": "classification",
+          "type": "string",
+          "description": "New classification (TruePositive, FalsePositive, Inconclusive)",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

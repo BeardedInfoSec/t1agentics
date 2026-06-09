@@ -1,0 +1,156 @@
+{
+  "id": "detection_on_demand",
+  "name": "Detection on Demand",
+  "description": "This app integrates with FireEye's Detection on Demand service to identify malicious files and hashes",
+  "version": "1.0.1",
+  "category": "sandbox",
+  "vendor": "FireEye",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "detonate_file",
+      "name": "Detonate File",
+      "description": "Execute a file in FireEye's various detection engines to determine what malicious behaviors, if any, the file exhibits",
+      "http_method": "GET",
+      "endpoint": "/actions/detonate_file",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "vault_id",
+          "type": "string",
+          "description": "Vault ID of file to detonate",
+          "required": true,
+          "contains": [
+            "pe file",
+            "pdf",
+            "flash",
+            "apk",
+            "jar",
+            "doc",
+            "xls",
+            "ppt",
+            "txt",
+            "vault id"
+          ]
+        },
+        {
+          "name": "password",
+          "type": "string",
+          "description": "Password to be used by the detection engine to decrypt a password protected file",
+          "required": false
+        },
+        {
+          "name": "param",
+          "type": "string",
+          "description": "Command line parameter(s) to be used by detection engine when running the file. Mainly applicable to .exe files. For example, setting param to \"start -h localhost -p 5555\" will make the detection engine run a file named \"malicious.exe\" as \"malicious.exe start -h localhost -p 5555\"",
+          "required": false
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "detonate_url",
+      "name": "Detonate Url",
+      "description": "Send a URL to Detection on Demand to scan for malicious behavior and artifacts",
+      "http_method": "GET",
+      "endpoint": "/actions/detonate_url",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "The URL to analyze",
+          "required": true,
+          "contains": [
+            "url"
+          ]
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "lookup_hash",
+      "name": "Lookup Hash",
+      "description": "Search FireEye's hash database to see if there is already a report on the file",
+      "http_method": "GET",
+      "endpoint": "/files",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "md5_hash",
+          "type": "string",
+          "description": "The MD5 hash of the file to investigate",
+          "required": true,
+          "contains": [
+            "md5"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "get_report",
+      "name": "Get Report",
+      "description": "Get a detailed report on the execution results of a submitted file",
+      "http_method": "GET",
+      "endpoint": "/reports",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "report_id",
+          "type": "string",
+          "description": "ID of the report to view",
+          "required": true,
+          "contains": [
+            "detectionondemand report id"
+          ]
+        },
+        {
+          "name": "presigned_url_expiry",
+          "type": "number",
+          "description": "Number of hours to let the presigned URL be active for",
+          "required": true,
+          "default": 72
+        },
+        {
+          "name": "poll_interval",
+          "type": "number",
+          "description": "Number of seconds to wait between each request to get the report",
+          "required": true,
+          "default": 10
+        },
+        {
+          "name": "poll_attempts",
+          "type": "number",
+          "description": "Total number of attempts to fetch the report before failing",
+          "required": true,
+          "default": 12
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Detection on Demand",
+    "original_type": "sandbox",
+    "converted_at": "2025-12-18T16:25:28.734118",
+    "source_version": "1.0.1"
+  }
+}

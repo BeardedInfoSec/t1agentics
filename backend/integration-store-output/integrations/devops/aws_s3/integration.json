@@ -1,0 +1,530 @@
+{
+  "id": "aws_s3",
+  "name": "AWS S3",
+  "description": "This app integrates with AWS S3 to perform investigative actions",
+  "version": "2.5.1",
+  "category": "devops",
+  "vendor": "AWS",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "list_buckets",
+      "name": "List Buckets",
+      "description": "List all buckets configured on S3",
+      "http_method": "GET",
+      "endpoint": "/actions/list_buckets",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "credentials",
+          "type": "string",
+          "description": "Assumed role credentials",
+          "required": false,
+          "contains": [
+            "aws credentials"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_bucket",
+      "name": "Get Bucket",
+      "description": "Get information about a bucket",
+      "http_method": "GET",
+      "endpoint": "/actions/get_bucket",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "bucket",
+          "type": "string",
+          "description": "Bucket to get",
+          "required": true,
+          "contains": [
+            "aws s3 bucket"
+          ]
+        },
+        {
+          "name": "credentials",
+          "type": "string",
+          "description": "Assumed role credentials",
+          "required": false,
+          "contains": [
+            "aws credentials"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "create_bucket",
+      "name": "Create Bucket",
+      "description": "Create a bucket",
+      "http_method": "GET",
+      "endpoint": "/actions/create_bucket",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "bucket",
+          "type": "string",
+          "description": "Name of bucket to create",
+          "required": true,
+          "contains": [
+            "aws s3 bucket"
+          ]
+        },
+        {
+          "name": "credentials",
+          "type": "string",
+          "description": "Assumed role credentials",
+          "required": false,
+          "contains": [
+            "aws credentials"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "update_bucket",
+      "name": "Update Bucket",
+      "description": "Update a bucket",
+      "http_method": "GET",
+      "endpoint": "/actions/update_bucket",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "bucket",
+          "type": "string",
+          "description": "Name of bucket to update",
+          "required": true,
+          "contains": [
+            "aws s3 bucket"
+          ]
+        },
+        {
+          "name": "tags",
+          "type": "string",
+          "description": "JSON dictionary containing tags to give object",
+          "required": false
+        },
+        {
+          "name": "encryption",
+          "type": "string",
+          "description": "Encryption to apply to bucket",
+          "required": false
+        },
+        {
+          "name": "kms_key",
+          "type": "string",
+          "description": "KMS Key (Only if encryption is AWS:KMS)",
+          "required": false
+        },
+        {
+          "name": "grants",
+          "type": "string",
+          "description": "JSON dictionary of users and the permissions to grant them",
+          "required": false
+        },
+        {
+          "name": "owner",
+          "type": "string",
+          "description": "Canonical ID of new owner",
+          "required": false,
+          "contains": [
+            "aws canonical id"
+          ]
+        },
+        {
+          "name": "credentials",
+          "type": "string",
+          "description": "Assumed role credentials",
+          "required": false,
+          "contains": [
+            "aws credentials"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "delete_bucket",
+      "name": "Delete Bucket",
+      "description": "Delete a bucket",
+      "http_method": "GET",
+      "endpoint": "/actions/delete_bucket",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "bucket",
+          "type": "string",
+          "description": "Name of bucket to delete",
+          "required": true,
+          "contains": [
+            "aws s3 bucket"
+          ]
+        },
+        {
+          "name": "credentials",
+          "type": "string",
+          "description": "Assumed role credentials",
+          "required": false,
+          "contains": [
+            "aws credentials"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_objects",
+      "name": "List Objects",
+      "description": "List objects in a bucket",
+      "http_method": "GET",
+      "endpoint": "/actions/list_objects",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "bucket",
+          "type": "string",
+          "description": "List objects in this bucket",
+          "required": true,
+          "contains": [
+            "aws s3 bucket"
+          ]
+        },
+        {
+          "name": "key",
+          "type": "string",
+          "description": "List objects under this key",
+          "required": false,
+          "contains": [
+            "aws s3 key"
+          ]
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Max number of objects to list",
+          "required": false,
+          "default": 1000
+        },
+        {
+          "name": "continuation_token",
+          "type": "string",
+          "description": "Use this parameter to get the next set of objects from a previous action",
+          "required": false,
+          "contains": [
+            "aws s3 continuation token"
+          ]
+        },
+        {
+          "name": "credentials",
+          "type": "string",
+          "description": "Assumed role credentials",
+          "required": false,
+          "contains": [
+            "aws credentials"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_object",
+      "name": "Get Object",
+      "description": "Get information about an object",
+      "http_method": "GET",
+      "endpoint": "/actions/get_object",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "bucket",
+          "type": "string",
+          "description": "Object bucket",
+          "required": true,
+          "contains": [
+            "aws s3 bucket"
+          ]
+        },
+        {
+          "name": "key",
+          "type": "string",
+          "description": "Object Key",
+          "required": true,
+          "contains": [
+            "aws s3 key"
+          ]
+        },
+        {
+          "name": "download_file",
+          "type": "boolean",
+          "description": "Download File",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "credentials",
+          "type": "string",
+          "description": "Assumed role credentials",
+          "required": false,
+          "contains": [
+            "aws credentials"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "update_object",
+      "name": "Update Object",
+      "description": "Update an object",
+      "http_method": "GET",
+      "endpoint": "/actions/update_object",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "bucket",
+          "type": "string",
+          "description": "Name of the bucket",
+          "required": true,
+          "contains": [
+            "aws s3 bucket"
+          ]
+        },
+        {
+          "name": "key",
+          "type": "string",
+          "description": "Path to upload file to",
+          "required": true,
+          "contains": [
+            "aws s3 key"
+          ]
+        },
+        {
+          "name": "grants",
+          "type": "string",
+          "description": "JSON dictionary of users and the permissions to grant them",
+          "required": false
+        },
+        {
+          "name": "owner",
+          "type": "string",
+          "description": "Canonical ID of new owner",
+          "required": false,
+          "contains": [
+            "aws canonical id"
+          ]
+        },
+        {
+          "name": "tags",
+          "type": "string",
+          "description": "JSON dictionary containing tags to give object",
+          "required": false
+        },
+        {
+          "name": "credentials",
+          "type": "string",
+          "description": "Assumed role credentials",
+          "required": false,
+          "contains": [
+            "aws credentials"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "post_data",
+      "name": "Create Object",
+      "description": "Create an object",
+      "http_method": "GET",
+      "endpoint": "/actions/post_data",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "bucket",
+          "type": "string",
+          "description": "Bucket to upload file to",
+          "required": true,
+          "contains": [
+            "aws s3 bucket"
+          ]
+        },
+        {
+          "name": "key",
+          "type": "string",
+          "description": "Key to upload file as",
+          "required": true,
+          "contains": [
+            "aws s3 key"
+          ]
+        },
+        {
+          "name": "vault_id",
+          "type": "string",
+          "description": "Vault ID of file to upload",
+          "required": true,
+          "contains": [
+            "vault id"
+          ]
+        },
+        {
+          "name": "storage_class",
+          "type": "string",
+          "description": "Storage class for object",
+          "required": true,
+          "default": "STANDARD"
+        },
+        {
+          "name": "encryption",
+          "type": "string",
+          "description": "Encryption to apply to object",
+          "required": true,
+          "default": "NONE"
+        },
+        {
+          "name": "kms_key",
+          "type": "string",
+          "description": "KMS Key (Only if encryption is AWS:KMS)",
+          "required": false
+        },
+        {
+          "name": "metadata",
+          "type": "string",
+          "description": "JSON dictionary containing metadata to give object",
+          "required": false
+        },
+        {
+          "name": "credentials",
+          "type": "string",
+          "description": "Assumed role credentials",
+          "required": false,
+          "contains": [
+            "aws credentials"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "delete_object",
+      "name": "Delete Object",
+      "description": "Delete an object inside a bucket",
+      "http_method": "GET",
+      "endpoint": "/actions/delete_object",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "bucket",
+          "type": "string",
+          "description": "Name of the bucket",
+          "required": true,
+          "contains": [
+            "aws s3 bucket"
+          ]
+        },
+        {
+          "name": "key",
+          "type": "string",
+          "description": "File include path to be deleted",
+          "required": true,
+          "contains": [
+            "aws s3 key"
+          ]
+        },
+        {
+          "name": "credentials",
+          "type": "string",
+          "description": "Assumed role credentials",
+          "required": false,
+          "contains": [
+            "aws credentials"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "generate_presigned_url",
+      "name": "Generate Presigned Url",
+      "description": "Generate a Pre-Signed S3 URL",
+      "http_method": "GET",
+      "endpoint": "/actions/generate_presigned_url",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "client_method",
+          "type": "string",
+          "description": "Currently supported options are put_object",
+          "required": true,
+          "default": "put_object"
+        },
+        {
+          "name": "bucket_name",
+          "type": "string",
+          "description": "Name of the bucket",
+          "required": true,
+          "default": ""
+        },
+        {
+          "name": "object_name",
+          "type": "string",
+          "description": "Name of the Object",
+          "required": true,
+          "default": ""
+        },
+        {
+          "name": "method_parameters",
+          "type": "string",
+          "description": "Dictionary of parameters to send to the method",
+          "required": false,
+          "default": ""
+        },
+        {
+          "name": "expiration",
+          "type": "number",
+          "description": "Time in seconds for the presigned URL to remain valid",
+          "required": false,
+          "default": "3600"
+        }
+      ],
+      "observable_type": "url"
+    }
+  ],
+  "source_metadata": {
+    "original_name": "AWS S3",
+    "original_type": "devops",
+    "converted_at": "2025-12-18T16:25:28.589305",
+    "source_version": "2.5.1"
+  }
+}

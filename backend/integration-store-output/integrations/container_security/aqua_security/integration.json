@@ -1,0 +1,168 @@
+{
+  "id": "aqua_security",
+  "name": "Aqua Security",
+  "description": "Cloud-native security platform for container and Kubernetes workload protection, image scanning, runtime security, and compliance",
+  "version": "1.0.0",
+  "category": "container_security",
+  "vendor": "Aqua Security",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "header_name": "Authorization",
+    "prefix": "Bearer ",
+    "location": "header",
+    "token_endpoint": "/v2/tokens",
+    "description": "POST API key and secret to /v2/tokens to obtain bearer token"
+  },
+  "base_url": "https://{host}/api/v2",
+  "actions": [
+    {
+      "id": "list_images",
+      "name": "List Images",
+      "description": "List all container images registered in Aqua with scan status",
+      "http_method": "GET",
+      "endpoint": "/images",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "registry",
+          "type": "string",
+          "description": "Filter by container registry name",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "repository",
+          "type": "string",
+          "description": "Filter by image repository",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "page",
+          "type": "integer",
+          "description": "Page number",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "pagesize",
+          "type": "integer",
+          "description": "Results per page",
+          "required": false,
+          "location": "query"
+        }
+      ]
+    },
+    {
+      "id": "get_image_vulnerabilities",
+      "name": "Get Image Vulnerabilities",
+      "description": "List vulnerabilities found in a specific container image",
+      "http_method": "GET",
+      "endpoint": "/images/{registry}/{repo}/{tag}/vulnerabilities",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "registry",
+          "type": "string",
+          "description": "Registry name",
+          "required": true,
+          "location": "path"
+        },
+        {
+          "name": "repo",
+          "type": "string",
+          "description": "Repository name",
+          "required": true,
+          "location": "path"
+        },
+        {
+          "name": "tag",
+          "type": "string",
+          "description": "Image tag",
+          "required": true,
+          "location": "path"
+        },
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Filter by severity: critical, high, medium, low, negligible",
+          "required": false,
+          "location": "query"
+        }
+      ]
+    },
+    {
+      "id": "scan_image",
+      "name": "Scan Image",
+      "description": "Trigger a vulnerability scan for a container image",
+      "http_method": "POST",
+      "endpoint": "/images/scan",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "registry",
+          "type": "string",
+          "description": "Registry name",
+          "required": true,
+          "location": "body"
+        },
+        {
+          "name": "image",
+          "type": "string",
+          "description": "Full image name including tag (e.g., nginx:latest)",
+          "required": true,
+          "location": "body"
+        }
+      ]
+    },
+    {
+      "id": "list_runtime_policies",
+      "name": "List Runtime Policies",
+      "description": "List all container runtime security policies",
+      "http_method": "GET",
+      "endpoint": "/runtime_policies",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "list_containers",
+      "name": "List Containers",
+      "description": "List all running containers with security status",
+      "http_method": "GET",
+      "endpoint": "/containers",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Filter by container status",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "page",
+          "type": "integer",
+          "description": "Page number",
+          "required": false,
+          "location": "query"
+        }
+      ]
+    },
+    {
+      "id": "get_compliance_status",
+      "name": "Get Compliance Status",
+      "description": "Retrieve compliance assessment results and policy evaluation",
+      "http_method": "GET",
+      "endpoint": "/risks/compliance",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    }
+  ]
+}

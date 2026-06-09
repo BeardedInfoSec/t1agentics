@@ -1,0 +1,94 @@
+{
+  "id": "hyperproof",
+  "name": "Hyperproof",
+  "description": "Integrates with Hyperproof REST API v1 for compliance operations management including controls tracking, evidence management, and label organization",
+  "version": "1.0.0",
+  "category": "grc",
+  "vendor": "Hyperproof",
+  "auth_type": "oauth2_client",
+  "auth_config": {
+    "type": "oauth2_client",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "https://api.hyperproof.app/v1",
+  "actions": [
+    {
+      "id": "list_controls",
+      "name": "List Controls",
+      "description": "List all controls in the Hyperproof organization",
+      "http_method": "GET",
+      "endpoint": "/controls",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "labelId", "type": "string", "description": "Filter by label ID", "required": false},
+        {"name": "status", "type": "string", "description": "Filter by control status", "required": false}
+      ]
+    },
+    {
+      "id": "get_control",
+      "name": "Get Control",
+      "description": "Retrieve details of a specific control",
+      "http_method": "GET",
+      "endpoint": "/controls/{control_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "control_id", "type": "string", "description": "Control ID", "required": true}
+      ]
+    },
+    {
+      "id": "create_control",
+      "name": "Create Control",
+      "description": "Create a new control in Hyperproof",
+      "http_method": "POST",
+      "endpoint": "/controls",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "name", "type": "string", "description": "Control name", "required": true},
+        {"name": "description", "type": "string", "description": "Control description", "required": false},
+        {"name": "controlIdentifier", "type": "string", "description": "External control identifier", "required": false},
+        {"name": "ownerId", "type": "string", "description": "Owner user ID", "required": false},
+        {"name": "labelIds", "type": "string", "description": "JSON array of label IDs to associate", "required": false}
+      ]
+    },
+    {
+      "id": "list_labels",
+      "name": "List Labels",
+      "description": "List all labels (frameworks/standards) in the organization",
+      "http_method": "GET",
+      "endpoint": "/labels",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "upload_proof",
+      "name": "Upload Proof",
+      "description": "Upload proof/evidence to a control",
+      "http_method": "POST",
+      "endpoint": "/controls/{control_id}/proof",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "control_id", "type": "string", "description": "Control ID to upload proof for", "required": true},
+        {"name": "file", "type": "string", "description": "File to upload as proof", "required": true},
+        {"name": "description", "type": "string", "description": "Description of the proof", "required": false}
+      ]
+    },
+    {
+      "id": "list_proof",
+      "name": "List Proof",
+      "description": "List proof/evidence items for a control",
+      "http_method": "GET",
+      "endpoint": "/controls/{control_id}/proof",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "control_id", "type": "string", "description": "Control ID", "required": true}
+      ]
+    }
+  ]
+}

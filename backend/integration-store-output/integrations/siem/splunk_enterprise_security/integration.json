@@ -1,0 +1,203 @@
+{
+  "id": "splunk_enterprise_security",
+  "name": "Splunk Enterprise Security",
+  "description": "Integrates with Splunk Enterprise Security for notable event management, correlation searches, and security posture monitoring via the ES REST API",
+  "version": "1.0.0",
+  "category": "siem",
+  "vendor": "Splunk (Cisco)",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "https://{host}:8089",
+  "actions": [
+    {
+      "id": "search_notable_events",
+      "name": "Search Notable Events",
+      "description": "Search for notable events in Splunk Enterprise Security using SPL query",
+      "http_method": "POST",
+      "endpoint": "/services/search/jobs",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "search",
+          "type": "string",
+          "description": "SPL search query (e.g., '| search `notable` | head 50')",
+          "required": true
+        },
+        {
+          "name": "earliest_time",
+          "type": "string",
+          "description": "Earliest time for the search (e.g., '-24h@h')",
+          "required": false
+        },
+        {
+          "name": "latest_time",
+          "type": "string",
+          "description": "Latest time for the search (e.g., 'now')",
+          "required": false
+        },
+        {
+          "name": "max_count",
+          "type": "number",
+          "description": "Maximum number of results to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "get_search_results",
+      "name": "Get Search Results",
+      "description": "Retrieve results from a completed search job",
+      "http_method": "GET",
+      "endpoint": "/services/search/jobs/{search_id}/results",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "search_id",
+          "type": "string",
+          "description": "Search job ID (SID) to retrieve results for",
+          "required": true
+        },
+        {
+          "name": "count",
+          "type": "number",
+          "description": "Number of results to return",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Offset for paginating results",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "output_mode",
+          "type": "string",
+          "description": "Output format (json, csv, xml)",
+          "required": false,
+          "default": "json"
+        }
+      ]
+    },
+    {
+      "id": "update_notable_event",
+      "name": "Update Notable Event",
+      "description": "Update the status, owner, urgency, or comment of a notable event",
+      "http_method": "POST",
+      "endpoint": "/services/notable_update",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "ruleUIDs",
+          "type": "string",
+          "description": "Comma-separated list of notable event IDs to update",
+          "required": true
+        },
+        {
+          "name": "newOwner",
+          "type": "string",
+          "description": "New owner to assign the notable event to",
+          "required": false
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "New status value (new, in progress, pending, resolved, closed)",
+          "required": false
+        },
+        {
+          "name": "urgency",
+          "type": "string",
+          "description": "New urgency level (critical, high, medium, low, informational)",
+          "required": false
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "Comment to add to the notable event",
+          "required": false
+        },
+        {
+          "name": "disposition",
+          "type": "string",
+          "description": "Disposition for the notable event",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_correlation_searches",
+      "name": "Get Correlation Searches",
+      "description": "List all correlation searches configured in Enterprise Security",
+      "http_method": "GET",
+      "endpoint": "/services/saved/searches",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "search",
+          "type": "string",
+          "description": "Filter correlation searches by name",
+          "required": false
+        },
+        {
+          "name": "count",
+          "type": "number",
+          "description": "Number of results to return",
+          "required": false,
+          "default": 50
+        }
+      ]
+    },
+    {
+      "id": "get_es_security_posture",
+      "name": "Get Security Posture",
+      "description": "Retrieve the current security posture dashboard data from Enterprise Security",
+      "http_method": "POST",
+      "endpoint": "/services/search/jobs",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "search",
+          "type": "string",
+          "description": "SPL query for security posture data",
+          "required": true
+        },
+        {
+          "name": "earliest_time",
+          "type": "string",
+          "description": "Earliest time boundary",
+          "required": false,
+          "default": "-24h"
+        }
+      ]
+    },
+    {
+      "id": "get_incident_review",
+      "name": "Get Incident Review",
+      "description": "Retrieve incident review entries and audit trail for notable events",
+      "http_method": "GET",
+      "endpoint": "/services/notable/{event_id}/history",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "event_id",
+          "type": "string",
+          "description": "Notable event ID to retrieve history for",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

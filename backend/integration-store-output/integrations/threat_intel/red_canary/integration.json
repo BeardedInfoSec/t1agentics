@@ -1,0 +1,91 @@
+{
+  "id": "red_canary",
+  "name": "Red Canary",
+  "description": "Integrates with Red Canary's MDR platform",
+  "version": "1.1.0",
+  "category": "threat_intel",
+  "vendor": "Red Canary",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "on_poll",
+      "name": "On Poll",
+      "description": "Subscribe to Red Canary detections",
+      "http_method": "GET",
+      "endpoint": "/actions/on_poll",
+      "action_type": "ingest",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "ack_detection",
+      "name": "Acknowledge Detection",
+      "description": "Acknowledge a Red Canary detection",
+      "http_method": "GET",
+      "endpoint": "/actions/ack_detection",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "detection_id",
+          "type": "number",
+          "description": "Unique Red Canary detection identifier",
+          "required": true,
+          "contains": [
+            "redcanary detection id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "remediate",
+      "name": "Remediate Detection",
+      "description": "Update a detection's remediation state",
+      "http_method": "GET",
+      "endpoint": "/actions/remediate",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "detection_id",
+          "type": "number",
+          "description": "Unique Red Canary detection identifier",
+          "required": true,
+          "contains": [
+            "redcanary detection id"
+          ]
+        },
+        {
+          "name": "remediation_state",
+          "type": "string",
+          "description": "Way in which the detection was remediated",
+          "required": true
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "Comment describing the reason why the detection was remediated in this manner",
+          "required": false
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Red Canary",
+    "original_type": "investigative",
+    "converted_at": "2025-12-18T16:25:29.064590",
+    "source_version": "1.1.0"
+  }
+}

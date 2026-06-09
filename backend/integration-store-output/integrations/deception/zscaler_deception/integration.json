@@ -1,0 +1,144 @@
+{
+  "id": "zscaler_deception",
+  "name": "Zscaler Deception",
+  "description": "Distributed deception platform integrated with Zscaler Zero Trust Exchange for detecting compromised users, lateral movement, and insider threats using endpoint and network decoys",
+  "version": "1.0.0",
+  "category": "deception",
+  "vendor": "Zscaler",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "header_name": "Authorization",
+    "prefix": "Bearer ",
+    "location": "header",
+    "description": "OAuth2 bearer token from Zscaler API authentication"
+  },
+  "base_url": "https://api.{cloud}.zscaler.com/deception/api/v1",
+  "actions": [
+    {
+      "id": "list_decoys",
+      "name": "List Decoys",
+      "description": "List all deployed decoys including endpoint landmines, AD decoys, and TI decoys",
+      "http_method": "GET",
+      "endpoint": "/decoys",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Filter by decoy type: endpoint, ad, threat_intel, network",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Filter by status: active, inactive",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "description": "Max results per page",
+          "required": false,
+          "location": "query"
+        }
+      ]
+    },
+    {
+      "id": "list_alerts",
+      "name": "List Deception Alerts",
+      "description": "List high-fidelity alerts from attacker interactions with decoys and breadcrumbs",
+      "http_method": "GET",
+      "endpoint": "/alerts",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Filter by severity: critical, high, medium, low",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "startTime",
+          "type": "string",
+          "description": "Start time filter (ISO 8601)",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "endTime",
+          "type": "string",
+          "description": "End time filter (ISO 8601)",
+          "required": false,
+          "location": "query"
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "description": "Max results per page",
+          "required": false,
+          "location": "query"
+        }
+      ]
+    },
+    {
+      "id": "get_alert_details",
+      "name": "Get Alert Details",
+      "description": "Retrieve detailed alert information including attacker actions, source IP, and compromised credentials",
+      "http_method": "GET",
+      "endpoint": "/alerts/{alert_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "alert_id",
+          "type": "string",
+          "description": "Alert ID",
+          "required": true,
+          "location": "path"
+        }
+      ]
+    },
+    {
+      "id": "list_breadcrumbs",
+      "name": "List Breadcrumbs",
+      "description": "List deployed breadcrumbs and lures on endpoints including fake credentials, files, and processes",
+      "http_method": "GET",
+      "endpoint": "/breadcrumbs",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Filter by breadcrumb type: credential, file, process, registry",
+          "required": false,
+          "location": "query"
+        }
+      ]
+    },
+    {
+      "id": "get_incident_summary",
+      "name": "Get Incident Summary",
+      "description": "Retrieve a summary of deception incidents with attacker intelligence",
+      "http_method": "GET",
+      "endpoint": "/incidents/summary",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "timeRange",
+          "type": "string",
+          "description": "Time range: last_24h, last_7d, last_30d, custom",
+          "required": false,
+          "location": "query"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,422 @@
+{
+  "id": "netskope_edr",
+  "name": "Netskope",
+  "description": "This app integrates with the Netskope to execute various investigative and polling actions",
+  "version": "4.0.1",
+  "category": "edr",
+  "vendor": "Netskope",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "get_file",
+      "name": "Get File",
+      "description": "Download a quarantined file and upload it to the vault",
+      "http_method": "GET",
+      "endpoint": "/actions/get_file",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "file",
+          "type": "string",
+          "description": "ID or quarantined name of the file to download",
+          "required": true,
+          "contains": [
+            "netskope file id",
+            "file name"
+          ]
+        },
+        {
+          "name": "profile",
+          "type": "string",
+          "description": "Quarantine profile ID or quarantined profile name",
+          "required": true,
+          "contains": [
+            "netskope profile id",
+            "netskope profile name"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "get_scim_users",
+      "name": "Get Scim Users",
+      "description": "Get current SCIM user(s). If no parameter is sent, it will retrieve all users",
+      "http_method": "GET",
+      "endpoint": "/actions/get_scim_users",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "user",
+          "type": "string",
+          "description": "Username or email to find",
+          "required": false,
+          "contains": [
+            "netskope user",
+            "email",
+            "user name"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_scim_groups",
+      "name": "Get Scim Groups",
+      "description": "Get current SCIM group(s). If no parameter is sent, it will retrieve all groups",
+      "http_method": "GET",
+      "endpoint": "/actions/get_scim_groups",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "group",
+          "type": "string",
+          "description": "Group Display Name to find",
+          "required": false,
+          "contains": [
+            "netskope group name"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "create_scim_group",
+      "name": "Create Scim Group",
+      "description": "Create SCIM group",
+      "http_method": "GET",
+      "endpoint": "/actions/create_scim_group",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "group",
+          "type": "string",
+          "description": "Group Name",
+          "required": true,
+          "contains": [
+            "netskope group name"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "create_scim_user",
+      "name": "Create Scim User",
+      "description": "Create SCIM user",
+      "http_method": "GET",
+      "endpoint": "/actions/create_scim_user",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "user",
+          "type": "string",
+          "description": "User Name",
+          "required": true,
+          "contains": [
+            "netskope user"
+          ]
+        },
+        {
+          "name": "familyName",
+          "type": "string",
+          "description": "Family Name",
+          "required": false
+        },
+        {
+          "name": "givenName",
+          "type": "string",
+          "description": "Given Name",
+          "required": false
+        },
+        {
+          "name": "email",
+          "type": "string",
+          "description": "Primary Email",
+          "required": true,
+          "contains": [
+            "netskope user",
+            "email"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "scim_user_to_group",
+      "name": "Scim User Group",
+      "description": "Add or Remove a user from a SCIM group",
+      "http_method": "POST",
+      "endpoint": "/actions/scim_user_to_group",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "group",
+          "type": "string",
+          "description": "Group ID",
+          "required": true,
+          "contains": [
+            "netskope scim group id"
+          ]
+        },
+        {
+          "name": "user",
+          "type": "string",
+          "description": "User ID",
+          "required": true,
+          "contains": [
+            "netskope scim user id"
+          ]
+        },
+        {
+          "name": "action",
+          "type": "string",
+          "description": "Action to perform",
+          "required": true,
+          "default": "add"
+        }
+      ]
+    },
+    {
+      "id": "list_files",
+      "name": "List Files",
+      "description": "List all quarantined files",
+      "http_method": "GET",
+      "endpoint": "/api/v1/updateFileHashList",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "run_query",
+      "name": "Run Query",
+      "description": "Run query for events on a given IP",
+      "http_method": "GET",
+      "endpoint": "/actions/run_query",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "IP to be queried for",
+          "required": true,
+          "contains": [
+            "ip"
+          ]
+        },
+        {
+          "name": "start_time",
+          "type": "number",
+          "description": "Start time epoch",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "number",
+          "description": "End time epoch",
+          "required": false
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "on_poll",
+      "name": "On Poll",
+      "description": "Ingest data to Phantom",
+      "http_method": "GET",
+      "endpoint": "/actions/on_poll",
+      "action_type": "ingest",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "container_count",
+          "type": "number",
+          "description": "Maximum number of containers to ingest",
+          "required": false
+        },
+        {
+          "name": "container_id",
+          "type": "string",
+          "description": "Parameter ignored in this app",
+          "required": false
+        },
+        {
+          "name": "start_time",
+          "type": "number",
+          "description": "Parameter ignored in this app",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "number",
+          "description": "Parameter ignored in this app",
+          "required": false
+        },
+        {
+          "name": "artifact_count",
+          "type": "number",
+          "description": "Parameter ignored in this app",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "add_url_list",
+      "name": "Add Url",
+      "description": "Add an URL to the Netskope URL Blocklist",
+      "http_method": "POST",
+      "endpoint": "/api/v1/updateFileHashList",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "URL to block",
+          "required": true,
+          "contains": [
+            "url",
+            "domain"
+          ]
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "remove_url_list",
+      "name": "Remove Url",
+      "description": "Remove an URL from the Netskope URL Blocklist",
+      "http_method": "POST",
+      "endpoint": "/api/v1/updateFileHashList",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "URL to remove",
+          "required": true,
+          "contains": [
+            "url",
+            "domain"
+          ]
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "update_url_list",
+      "name": "Update Url",
+      "description": "Send the url list to Netskope",
+      "http_method": "POST",
+      "endpoint": "/api/v1/updateFileHashList",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [],
+      "observable_type": "url"
+    },
+    {
+      "id": "add_file_list",
+      "name": "Add Hash",
+      "description": "Add a file hash to the Netskope file hash list",
+      "http_method": "POST",
+      "endpoint": "/api/v1/updateFileHashList",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "hash",
+          "type": "string",
+          "description": "Hash to add",
+          "required": true,
+          "contains": [
+            "hash",
+            "md5",
+            "sha256"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "remove_file_list",
+      "name": "Remove Hash",
+      "description": "Remove a hash from the Netskope file hash list",
+      "http_method": "POST",
+      "endpoint": "/api/v1/updateFileHashList",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "hash",
+          "type": "string",
+          "description": "Hash to remove",
+          "required": true,
+          "contains": [
+            "hash",
+            "md5",
+            "sha256"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "update_file_list",
+      "name": "Update Hash",
+      "description": "Send the file hash list to Netskope",
+      "http_method": "POST",
+      "endpoint": "/api/v1/updateFileHashList",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [],
+      "observable_type": "file_hash"
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Netskope",
+    "original_type": "endpoint",
+    "converted_at": "2025-12-18T16:25:29.000513",
+    "source_version": "4.0.1"
+  }
+}

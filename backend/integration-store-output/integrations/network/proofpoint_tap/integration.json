@@ -1,0 +1,206 @@
+{
+  "id": "proofpoint_tap",
+  "name": "Proofpoint TAP",
+  "description": "This App integrates with Proofpoint to implement ingestion and investigative actions",
+  "version": "2.1.1",
+  "category": "network",
+  "vendor": "Proofpoint",
+  "auth_type": "basic_auth",
+  "auth_config": {
+    "type": "basic_auth",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "https://tap-api-v2.proofpoint.com",
+  "actions": [
+    {
+      "id": "on_poll",
+      "name": "On Poll",
+      "description": "Callback action for the On Poll ingest functionality",
+      "http_method": "GET",
+      "endpoint": "/actions/on_poll",
+      "action_type": "ingest",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "start_time",
+          "type": "number",
+          "description": "Start of time range, in epoch time (milliseconds) (default is past 10 days)",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "number",
+          "description": "End of time range, in epoch time (milliseconds) (default is now)",
+          "required": false
+        },
+        {
+          "name": "container_id",
+          "type": "string",
+          "description": "Matching email subject. Wildcards supported",
+          "required": false
+        },
+        {
+          "name": "container_count",
+          "type": "number",
+          "description": "Maximum number of container records to query for",
+          "required": true
+        },
+        {
+          "name": "artifact_count",
+          "type": "number",
+          "description": "Maximum number of artifact records to query for",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_campaign_details",
+      "name": "Get Campaign Data",
+      "description": "Fetch detailed information for a given campaign (deprecated)",
+      "http_method": "GET",
+      "endpoint": "/actions/get_campaign_details",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "campaign_id",
+          "type": "string",
+          "description": "Proofpoint campaign ID from other Proofpoint events",
+          "required": true,
+          "contains": [
+            "proofpoint campaign id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_campaign",
+      "name": "Get Campaign",
+      "description": "Fetch detailed information for a given campaign",
+      "http_method": "GET",
+      "endpoint": "/actions/get_campaign",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "campaign_id",
+          "type": "string",
+          "description": "Proofpoint campaign ID from other Proofpoint events",
+          "required": true,
+          "contains": [
+            "proofpoint campaign id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_forensic_data",
+      "name": "Get Forensic Data",
+      "description": "Fetch forensic information for a given threat or campaign (deprecated)",
+      "http_method": "GET",
+      "endpoint": "/actions/get_forensic_data",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "campaign_id",
+          "type": "string",
+          "description": "Proofpoint campaign ID from other Proofpoint events",
+          "required": false,
+          "contains": [
+            "proofpoint campaign id"
+          ]
+        },
+        {
+          "name": "threat_id",
+          "type": "string",
+          "description": "Proofpoint threat ID from other Proofpoint events",
+          "required": false,
+          "contains": [
+            "proofpoint threat id"
+          ]
+        },
+        {
+          "name": "include_campaign_forensics",
+          "type": "boolean",
+          "description": "Include full campaign forensic data for a threat. This value is ignored for campaign queries",
+          "required": false,
+          "default": false
+        }
+      ]
+    },
+    {
+      "id": "get_forensic",
+      "name": "Get Forensic",
+      "description": "Fetch forensic information for a given threat or campaign",
+      "http_method": "GET",
+      "endpoint": "/actions/get_forensic",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "campaign_id",
+          "type": "string",
+          "description": "Proofpoint campaign ID from other Proofpoint events",
+          "required": false,
+          "contains": [
+            "proofpoint campaign id"
+          ]
+        },
+        {
+          "name": "threat_id",
+          "type": "string",
+          "description": "Proofpoint threat ID from other Proofpoint events",
+          "required": false,
+          "contains": [
+            "proofpoint threat id"
+          ]
+        },
+        {
+          "name": "include_campaign_forensics",
+          "type": "boolean",
+          "description": "Include full campaign forensic data for a threat. This value is ignored for campaign queries",
+          "required": false,
+          "default": false
+        }
+      ]
+    },
+    {
+      "id": "decode_url",
+      "name": "Decode Url",
+      "description": "Decode Proofpoint rewritten URL(s)",
+      "http_method": "GET",
+      "endpoint": "/actions/decode_url",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "List of URL(s) to decode, comma separated",
+          "required": true
+        }
+      ],
+      "observable_type": "url"
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Proofpoint TAP",
+    "original_type": "network security",
+    "converted_at": "2025-12-18T16:25:29.045586",
+    "source_version": "2.1.1"
+  }
+}

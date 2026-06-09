@@ -1,0 +1,241 @@
+{
+  "id": "cisco_firepower_firewall",
+  "name": "Cisco Secure Firewall (Firepower)",
+  "description": "Cisco Firepower Management Center REST API for managing access control policies, network objects, and security events",
+  "version": "1.0.0",
+  "category": "firewall",
+  "vendor": "Cisco",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "X-auth-access-token",
+    "location": "header"
+  },
+  "base_url": "https://{fmc}/api/fmc_config/v1",
+  "actions": [
+    {
+      "id": "generate_token",
+      "name": "Generate Auth Token",
+      "description": "Authenticate and generate an access token for API calls",
+      "http_method": "POST",
+      "endpoint": "/api/fmc_platform/v1/auth/generatetoken",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": []
+    },
+    {
+      "id": "list_access_policies",
+      "name": "List Access Policies",
+      "description": "Retrieve all access control policies from the FMC",
+      "http_method": "GET",
+      "endpoint": "/domain/{domain_uuid}/policy/accesspolicies",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "domain_uuid",
+          "type": "string",
+          "description": "UUID of the domain",
+          "required": true
+        },
+        {
+          "name": "offset",
+          "type": "integer",
+          "description": "Starting index for pagination",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "description": "Number of items to return (max 1000)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_access_rules",
+      "name": "List Access Rules",
+      "description": "Retrieve all access rules within a specific access policy",
+      "http_method": "GET",
+      "endpoint": "/domain/{domain_uuid}/policy/accesspolicies/{policy_id}/accessrules",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "domain_uuid",
+          "type": "string",
+          "description": "UUID of the domain",
+          "required": true
+        },
+        {
+          "name": "policy_id",
+          "type": "string",
+          "description": "UUID of the access policy",
+          "required": true
+        },
+        {
+          "name": "offset",
+          "type": "integer",
+          "description": "Starting index for pagination",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "description": "Number of rules to return",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "create_access_rule",
+      "name": "Create Access Rule",
+      "description": "Create a new access control rule within a policy",
+      "http_method": "POST",
+      "endpoint": "/domain/{domain_uuid}/policy/accesspolicies/{policy_id}/accessrules",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "domain_uuid",
+          "type": "string",
+          "description": "UUID of the domain",
+          "required": true
+        },
+        {
+          "name": "policy_id",
+          "type": "string",
+          "description": "UUID of the access policy",
+          "required": true
+        },
+        {
+          "name": "body",
+          "type": "object",
+          "description": "Rule definition including name, action (ALLOW/BLOCK/TRUST/MONITOR), sourceNetworks, destinationNetworks, sourceZones, destinationZones",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_network_objects",
+      "name": "List Network Objects",
+      "description": "Retrieve all network objects from the FMC",
+      "http_method": "GET",
+      "endpoint": "/domain/{domain_uuid}/object/networks",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "domain_uuid",
+          "type": "string",
+          "description": "UUID of the domain",
+          "required": true
+        },
+        {
+          "name": "offset",
+          "type": "integer",
+          "description": "Starting index for pagination",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "description": "Number of objects to return",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "create_network_object",
+      "name": "Create Network Object",
+      "description": "Create a new network or host object for use in access rules",
+      "http_method": "POST",
+      "endpoint": "/domain/{domain_uuid}/object/hosts",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "domain_uuid",
+          "type": "string",
+          "description": "UUID of the domain",
+          "required": true
+        },
+        {
+          "name": "body",
+          "type": "object",
+          "description": "Host object definition including name, value (IP address), and description",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_security_zones",
+      "name": "List Security Zones",
+      "description": "Retrieve all security zones configured on the FMC",
+      "http_method": "GET",
+      "endpoint": "/domain/{domain_uuid}/object/securityzones",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "domain_uuid",
+          "type": "string",
+          "description": "UUID of the domain",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_intrusion_events",
+      "name": "Get Intrusion Events",
+      "description": "Retrieve intrusion detection/prevention events",
+      "http_method": "GET",
+      "endpoint": "/domain/{domain_uuid}/health/alerts",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "domain_uuid",
+          "type": "string",
+          "description": "UUID of the domain",
+          "required": true
+        },
+        {
+          "name": "offset",
+          "type": "integer",
+          "description": "Starting index for pagination",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "description": "Number of events to return",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "deploy_configuration",
+      "name": "Deploy Configuration",
+      "description": "Deploy pending changes to managed devices",
+      "http_method": "POST",
+      "endpoint": "/domain/{domain_uuid}/deployment/deploymentrequests",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "domain_uuid",
+          "type": "string",
+          "description": "UUID of the domain",
+          "required": true
+        },
+        {
+          "name": "body",
+          "type": "object",
+          "description": "Deployment request including type, version, deviceList, and forceDeploy flag",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

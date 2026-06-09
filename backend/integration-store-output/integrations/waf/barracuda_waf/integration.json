@@ -1,0 +1,188 @@
+{
+  "id": "barracuda_waf",
+  "name": "Barracuda WAF",
+  "description": "Barracuda Web Application Firewall REST API v3 for managing virtual services, security policies, access rules, and attack monitoring",
+  "version": "1.0.0",
+  "category": "waf",
+  "vendor": "Barracuda",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "header_name": "Authorization",
+    "location": "header",
+    "token_prefix": "Basic",
+    "note": "Requires login token obtained from /restapi/v3.2/login endpoint"
+  },
+  "base_url": "https://{host}:8000/restapi/v3.2",
+  "actions": [
+    {
+      "id": "login",
+      "name": "Login",
+      "description": "Authenticate and obtain an access token for API operations",
+      "http_method": "POST",
+      "endpoint": "/login",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "username",
+          "type": "string",
+          "description": "Administrator username",
+          "required": true
+        },
+        {
+          "name": "password",
+          "type": "string",
+          "description": "Administrator password",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_services",
+      "name": "List Services",
+      "description": "Retrieve all virtual services (protected web applications) on the WAF",
+      "http_method": "GET",
+      "endpoint": "/services",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "get_service",
+      "name": "Get Service",
+      "description": "Retrieve details of a specific virtual service",
+      "http_method": "GET",
+      "endpoint": "/services/{service_name}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "service_name",
+          "type": "string",
+          "description": "Name of the service to retrieve",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_security_policies",
+      "name": "List Security Policies",
+      "description": "Retrieve all WAF security policies configured on the appliance",
+      "http_method": "GET",
+      "endpoint": "/security-policies",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "get_security_policy",
+      "name": "Get Security Policy",
+      "description": "Retrieve a specific WAF security policy configuration",
+      "http_method": "GET",
+      "endpoint": "/security-policies/{policy_name}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "policy_name",
+          "type": "string",
+          "description": "Name of the security policy",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "update_security_policy",
+      "name": "Update Security Policy",
+      "description": "Update settings of an existing WAF security policy",
+      "http_method": "PUT",
+      "endpoint": "/security-policies/{policy_name}",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "policy_name",
+          "type": "string",
+          "description": "Name of the security policy to update",
+          "required": true
+        },
+        {
+          "name": "body",
+          "type": "object",
+          "description": "Policy settings including request limits, URL normalization, and cookie security",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_global_acls",
+      "name": "List Global ACL Rules",
+      "description": "Retrieve all global access control list rules",
+      "http_method": "GET",
+      "endpoint": "/services/{service_name}/global-acls",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "service_name",
+          "type": "string",
+          "description": "Name of the service",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "create_global_acl",
+      "name": "Create Global ACL Rule",
+      "description": "Create a new global ACL rule to block or allow traffic by IP",
+      "http_method": "POST",
+      "endpoint": "/services/{service_name}/global-acls",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "service_name",
+          "type": "string",
+          "description": "Name of the service to add the ACL to",
+          "required": true
+        },
+        {
+          "name": "body",
+          "type": "object",
+          "description": "ACL rule definition including name, ip_address, action (Allow/Deny), and priority",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_attack_logs",
+      "name": "Get Attack Logs",
+      "description": "Retrieve web attack logs and security events from the WAF",
+      "http_method": "GET",
+      "endpoint": "/logs/web-firewall-logs",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "from",
+          "type": "string",
+          "description": "Start date/time for log query",
+          "required": false
+        },
+        {
+          "name": "to",
+          "type": "string",
+          "description": "End date/time for log query",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "description": "Maximum number of log entries to return",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

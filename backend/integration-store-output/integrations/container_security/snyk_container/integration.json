@@ -1,0 +1,164 @@
+{
+  "id": "snyk_container",
+  "name": "Snyk Container",
+  "description": "Container security scanning for detecting vulnerabilities in container images including OS packages and application dependencies",
+  "version": "1.0.0",
+  "category": "container_security",
+  "vendor": "Snyk",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "prefix": "token ",
+    "location": "header"
+  },
+  "base_url": "https://api.snyk.io/v1",
+  "actions": [
+    {
+      "id": "test_image",
+      "name": "Test Container Image",
+      "description": "Test a container image for vulnerabilities by image name and tag",
+      "http_method": "POST",
+      "endpoint": "/test/docker/{org_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "org_id",
+          "type": "string",
+          "description": "Organization ID",
+          "required": true,
+          "location": "path"
+        },
+        {
+          "name": "image",
+          "type": "string",
+          "description": "Container image name (e.g., nginx)",
+          "required": true,
+          "location": "body"
+        },
+        {
+          "name": "tag",
+          "type": "string",
+          "description": "Image tag (e.g., latest, 1.25)",
+          "required": true,
+          "location": "body"
+        }
+      ]
+    },
+    {
+      "id": "list_container_projects",
+      "name": "List Container Projects",
+      "description": "List all monitored container image projects in the organization",
+      "http_method": "GET",
+      "endpoint": "/org/{org_id}/projects",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "org_id",
+          "type": "string",
+          "description": "Organization ID",
+          "required": true,
+          "location": "path"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Filter by project type (set to 'dockerfile' or 'docker' for containers)",
+          "required": false,
+          "location": "query"
+        }
+      ]
+    },
+    {
+      "id": "list_container_issues",
+      "name": "List Container Image Issues",
+      "description": "List vulnerabilities found in a monitored container image project",
+      "http_method": "POST",
+      "endpoint": "/org/{org_id}/project/{project_id}/aggregated-issues",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "org_id",
+          "type": "string",
+          "description": "Organization ID",
+          "required": true,
+          "location": "path"
+        },
+        {
+          "name": "project_id",
+          "type": "string",
+          "description": "Project ID for the container image",
+          "required": true,
+          "location": "path"
+        },
+        {
+          "name": "includeDescription",
+          "type": "boolean",
+          "description": "Include vulnerability descriptions",
+          "required": false,
+          "location": "body"
+        }
+      ]
+    },
+    {
+      "id": "get_image_dependencies",
+      "name": "Get Image Dependencies",
+      "description": "List all packages and dependencies detected in a container image",
+      "http_method": "GET",
+      "endpoint": "/org/{org_id}/project/{project_id}/dep-graph",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "org_id",
+          "type": "string",
+          "description": "Organization ID",
+          "required": true,
+          "location": "path"
+        },
+        {
+          "name": "project_id",
+          "type": "string",
+          "description": "Project ID",
+          "required": true,
+          "location": "path"
+        }
+      ]
+    },
+    {
+      "id": "monitor_image",
+      "name": "Monitor Container Image",
+      "description": "Add a container image to continuous monitoring for new vulnerabilities",
+      "http_method": "POST",
+      "endpoint": "/monitor/docker/{org_id}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "org_id",
+          "type": "string",
+          "description": "Organization ID",
+          "required": true,
+          "location": "path"
+        },
+        {
+          "name": "image",
+          "type": "string",
+          "description": "Container image name",
+          "required": true,
+          "location": "body"
+        },
+        {
+          "name": "tag",
+          "type": "string",
+          "description": "Image tag",
+          "required": true,
+          "location": "body"
+        }
+      ]
+    }
+  ]
+}

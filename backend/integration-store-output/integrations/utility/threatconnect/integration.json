@@ -1,0 +1,371 @@
+{
+  "id": "threatconnect_utility",
+  "name": "ThreatConnect",
+  "description": "This app integrates with the ThreatConnect platform to provide various hunting actions in addition to threat ingestion",
+  "version": "3.0.1",
+  "category": "utility",
+  "vendor": "ThreatConnect",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "base_url",
+  "actions": [
+    {
+      "id": "on_poll",
+      "name": "On Poll",
+      "description": "Callback action for the on_poll ingest functionality",
+      "http_method": "GET",
+      "endpoint": "/actions/on_poll",
+      "action_type": "ingest",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "list_owners",
+      "name": "List Owners",
+      "description": "List the owners visible with the configured credentials",
+      "http_method": "GET",
+      "endpoint": "/actions/list_owners",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "post_data",
+      "name": "Post Data",
+      "description": "Create an indicator and post it to ThreatConnect",
+      "http_method": "GET",
+      "endpoint": "/actions/post_data",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "confidence",
+          "type": "number",
+          "description": "Analytic confidence (0 to 100)",
+          "required": false
+        },
+        {
+          "name": "dns_active",
+          "type": "boolean",
+          "description": "Is DNS active",
+          "required": false
+        },
+        {
+          "name": "primary_field",
+          "type": "string",
+          "description": "IP, email, file hash, domain, or URL",
+          "required": true,
+          "contains": [
+            "ip",
+            "ipv6",
+            "email",
+            "hash",
+            "md5",
+            "sha1",
+            "sha256",
+            "domain",
+            "url"
+          ]
+        },
+        {
+          "name": "rating",
+          "type": "number",
+          "description": "Indicator rating (0 to 5)",
+          "required": false
+        },
+        {
+          "name": "size",
+          "type": "number",
+          "description": "Size of file in bytes",
+          "required": false
+        },
+        {
+          "name": "whois_active",
+          "type": "boolean",
+          "description": "Is WHOIS active",
+          "required": false
+        },
+        {
+          "name": "attribute_name",
+          "type": "string",
+          "description": "Name of attribute to add",
+          "required": false
+        },
+        {
+          "name": "attribute_value",
+          "type": "string",
+          "description": "Value of attribute to add",
+          "required": false
+        },
+        {
+          "name": "tag",
+          "type": "string",
+          "description": "Name of Indicator Tag to add",
+          "required": false
+        },
+        {
+          "name": "security_label",
+          "type": "string",
+          "description": "Name of Security Label to add",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "hunt_ip",
+      "name": "Hunt Ip",
+      "description": "Hunt an IP and retrieve any available information",
+      "http_method": "GET",
+      "endpoint": "/actions/hunt_ip",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "IP to hunt",
+          "required": true,
+          "contains": [
+            "ip",
+            "ipv6"
+          ]
+        },
+        {
+          "name": "owner",
+          "type": "string",
+          "description": "Indicator Owner within ThreatConnect",
+          "required": false
+        },
+        {
+          "name": "attribute",
+          "type": "boolean",
+          "description": "Retrieves Indicator attributes",
+          "required": false
+        },
+        {
+          "name": "tag",
+          "type": "boolean",
+          "description": "Retrieves Indicator tags",
+          "required": false
+        },
+        {
+          "name": "security_label",
+          "type": "boolean",
+          "description": "Retrieves Indicator security labels",
+          "required": false
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "hunt_file",
+      "name": "Hunt File",
+      "description": "Hunt a file hash and retrieve available information",
+      "http_method": "GET",
+      "endpoint": "/actions/hunt_file",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "hash",
+          "type": "string",
+          "description": "File hash (md5, sha1, sha256)",
+          "required": true,
+          "contains": [
+            "hash",
+            "md5",
+            "sha1",
+            "sha256"
+          ]
+        },
+        {
+          "name": "owner",
+          "type": "string",
+          "description": "Indicator Owner within ThreatConnect",
+          "required": false
+        },
+        {
+          "name": "attribute",
+          "type": "boolean",
+          "description": "Retrieves Indicator attributes",
+          "required": false
+        },
+        {
+          "name": "tag",
+          "type": "boolean",
+          "description": "Retrieves Indicator tags",
+          "required": false
+        },
+        {
+          "name": "security_label",
+          "type": "boolean",
+          "description": "Retrieves Indicator security labels",
+          "required": false
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "hunt_email",
+      "name": "Hunt Email",
+      "description": "Hunt an email and retrieve available information",
+      "http_method": "GET",
+      "endpoint": "/actions/hunt_email",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "email",
+          "type": "string",
+          "description": "Email address",
+          "required": true,
+          "contains": [
+            "email"
+          ]
+        },
+        {
+          "name": "owner",
+          "type": "string",
+          "description": "Indicator Owner within ThreatConnect",
+          "required": false
+        },
+        {
+          "name": "attribute",
+          "type": "boolean",
+          "description": "Retrieves Indicator attributes",
+          "required": false
+        },
+        {
+          "name": "tag",
+          "type": "boolean",
+          "description": "Retrieves Indicator tags",
+          "required": false
+        },
+        {
+          "name": "security_label",
+          "type": "boolean",
+          "description": "Retrieves Indicator security labels",
+          "required": false
+        }
+      ],
+      "observable_type": "email"
+    },
+    {
+      "id": "hunt_host",
+      "name": "Hunt Domain",
+      "description": "Hunt a domain and retrieve available information",
+      "http_method": "GET",
+      "endpoint": "/actions/hunt_host",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "domain",
+          "type": "string",
+          "description": "Domain or URL name",
+          "required": true,
+          "contains": [
+            "url",
+            "domain"
+          ]
+        },
+        {
+          "name": "owner",
+          "type": "string",
+          "description": "Indicator Owner within ThreatConnect",
+          "required": false
+        },
+        {
+          "name": "attribute",
+          "type": "boolean",
+          "description": "Retrieves Indicator attributes",
+          "required": false
+        },
+        {
+          "name": "tag",
+          "type": "boolean",
+          "description": "Retrieves Indicator tags",
+          "required": false
+        },
+        {
+          "name": "security_label",
+          "type": "boolean",
+          "description": "Retrieves Indicator security labels",
+          "required": false
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "hunt_url",
+      "name": "Hunt Url",
+      "description": "Hunt a URL and retrieve available information",
+      "http_method": "GET",
+      "endpoint": "/actions/hunt_url",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "URL to find",
+          "required": true,
+          "contains": [
+            "url"
+          ]
+        },
+        {
+          "name": "owner",
+          "type": "string",
+          "description": "Indicator Owner within ThreatConnect",
+          "required": false
+        },
+        {
+          "name": "attribute",
+          "type": "boolean",
+          "description": "Retrieves Indicator attributes",
+          "required": false
+        },
+        {
+          "name": "tag",
+          "type": "boolean",
+          "description": "Retrieves Indicator tags",
+          "required": false
+        },
+        {
+          "name": "security_label",
+          "type": "boolean",
+          "description": "Retrieves Indicator security labels",
+          "required": false
+        }
+      ],
+      "observable_type": "url"
+    }
+  ],
+  "source_metadata": {
+    "original_name": "ThreatConnect",
+    "original_type": "threat intel",
+    "converted_at": "2025-12-18T16:25:29.223534",
+    "source_version": "3.0.1"
+  }
+}

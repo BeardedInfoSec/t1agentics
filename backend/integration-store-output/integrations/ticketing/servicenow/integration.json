@@ -1,37 +1,641 @@
 {
   "id": "servicenow",
   "name": "ServiceNow",
-  "description": "Integration with ServiceNow for security operations",
-  "version": "1.0.0",
+  "description": "This app integrates with ServiceNow to perform investigative and generic actions",
+  "version": "2.6.6",
   "category": "ticketing",
   "vendor": "ServiceNow",
-  "auth_type": "basic_auth",
+  "auth_type": "oauth2",
   "auth_config": {
-    "type": "basic_auth",
-    "username_field": "username",
-    "password_field": "password"
+    "type": "oauth2",
+    "header_name": "Authorization",
+    "location": "header"
   },
-  "base_url": "",
+  "base_url": "Using url: {base_url}",
   "actions": [
     {
-      "id": "create_incident",
-      "name": "Create Incident",
-      "http_method": "POST",
-      "endpoint": "/api/now/table/incident",
-      "read_only": true,
+      "id": "add_work_note",
+      "name": "Add Work Note",
+      "description": "Add a work note to a record",
+      "http_method": "GET",
+      "endpoint": "/actions/add_work_note",
+      "action_type": "generic",
+      "read_only": false,
       "cacheable": false,
-      "cache_ttl_days": 30,
-      "description": "Create a new ServiceNow incident"
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "table_name",
+          "type": "string",
+          "description": "Table to query",
+          "required": true,
+          "default": "incident",
+          "contains": [
+            "servicenow table"
+          ]
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "description": "SYS ID or ticket number of a record",
+          "required": true,
+          "contains": [
+            "servicenow ticket sysid",
+            "servicenow ticket number"
+          ]
+        },
+        {
+          "name": "work_note",
+          "type": "string",
+          "description": "Work note to add",
+          "required": true
+        },
+        {
+          "name": "is_sys_id",
+          "type": "boolean",
+          "description": "Whether the value provided in the ID parameter is SYS ID or ticket number",
+          "required": false
+        }
+      ]
     },
     {
-      "id": "create_security_incident",
-      "name": "Create Security Incident",
-      "http_method": "POST",
-      "endpoint": "/api/now/table/sn_si_incident",
-      "read_only": true,
+      "id": "add_comment",
+      "name": "Add Comment",
+      "description": "Add a comment to a record",
+      "http_method": "GET",
+      "endpoint": "/actions/add_comment",
+      "action_type": "generic",
+      "read_only": false,
       "cacheable": false,
-      "cache_ttl_days": 30,
-      "description": "Create a security incident in ServiceNow SecOps"
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "table_name",
+          "type": "string",
+          "description": "Table to query",
+          "required": true,
+          "default": "incident",
+          "contains": [
+            "servicenow table"
+          ]
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "description": "SYS ID or ticket number of a record",
+          "required": true,
+          "contains": [
+            "servicenow ticket sysid",
+            "servicenow ticket number"
+          ]
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "Comment to add",
+          "required": true
+        },
+        {
+          "name": "is_sys_id",
+          "type": "boolean",
+          "description": "Whether the value provided in the ID parameter is SYS ID or ticket number",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "describe_service_catalog",
+      "name": "Describe Service Catalog",
+      "description": "Fetches the details of a catalog",
+      "http_method": "GET",
+      "endpoint": "/actions/describe_service_catalog",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "sys_id",
+          "type": "string",
+          "description": "SYS ID of a catalog",
+          "required": true,
+          "contains": [
+            "servicenow catalog sys id",
+            "md5"
+          ]
+        },
+        {
+          "name": "max_results",
+          "type": "number",
+          "description": "Max number of service catalog items to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "request_catalog_item",
+      "name": "Request Catalog Item",
+      "description": "Requests a catalog item",
+      "http_method": "GET",
+      "endpoint": "/actions/request_catalog_item",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "sys_id",
+          "type": "string",
+          "description": "SYS ID of an item",
+          "required": true,
+          "contains": [
+            "servicenow item sys id",
+            "md5"
+          ]
+        },
+        {
+          "name": "variables",
+          "type": "string",
+          "description": "JSON containing variables values",
+          "required": false
+        },
+        {
+          "name": "quantity",
+          "type": "number",
+          "description": "Number of items to request",
+          "required": true,
+          "default": 1
+        }
+      ]
+    },
+    {
+      "id": "describe_catalog_item",
+      "name": "Describe Catalog Item",
+      "description": "Fetches the details of a catalog item",
+      "http_method": "GET",
+      "endpoint": "/actions/describe_catalog_item",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "sys_id",
+          "type": "string",
+          "description": "SYS ID of an item",
+          "required": true,
+          "contains": [
+            "servicenow item sys id",
+            "md5"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_services",
+      "name": "List Services",
+      "description": "Get a list of items",
+      "http_method": "GET",
+      "endpoint": "/actions/list_services",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "catalog_sys_id",
+          "type": "string",
+          "description": "SYS ID of a catalog",
+          "required": false,
+          "contains": [
+            "servicenow catalog sys id",
+            "md5"
+          ]
+        },
+        {
+          "name": "category_sys_id",
+          "type": "string",
+          "description": "SYS ID of a catergory",
+          "required": false,
+          "contains": [
+            "servicenow category sys id",
+            "md5"
+          ]
+        },
+        {
+          "name": "search_text",
+          "type": "string",
+          "description": "Text pattern to search over",
+          "required": false
+        },
+        {
+          "name": "max_results",
+          "type": "number",
+          "description": "Max number of items to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "list_categories",
+      "name": "List Categories",
+      "description": "Get a list of categories",
+      "http_method": "GET",
+      "endpoint": "/actions/list_categories",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "max_results",
+          "type": "number",
+          "description": "Max number of categories to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "list_service_catalogs",
+      "name": "List Service Catalogs",
+      "description": "Get a list of catalogs",
+      "http_method": "GET",
+      "endpoint": "/actions/list_service_catalogs",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "max_results",
+          "type": "number",
+          "description": "Max number of service catalogs to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "list_tickets",
+      "name": "List Tickets",
+      "description": "Get a list of tickets/records",
+      "http_method": "GET",
+      "endpoint": "/actions/list_tickets",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "Filter to use with action separated by '^' (e.g. description=This is a test^assigned_to=john.smith)",
+          "required": false
+        },
+        {
+          "name": "table",
+          "type": "string",
+          "description": "Table to query",
+          "required": false,
+          "default": "incident",
+          "contains": [
+            "servicenow table"
+          ]
+        },
+        {
+          "name": "max_results",
+          "type": "number",
+          "description": "Max number of records to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "create_ticket",
+      "name": "Create Ticket",
+      "description": "Create a new ticket/record",
+      "http_method": "GET",
+      "endpoint": "/actions/create_ticket",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "short_description",
+          "type": "string",
+          "description": "Ticket short description",
+          "required": false
+        },
+        {
+          "name": "table",
+          "type": "string",
+          "description": "Table to add to",
+          "required": false,
+          "default": "incident",
+          "contains": [
+            "servicenow table"
+          ]
+        },
+        {
+          "name": "vault_id",
+          "type": "string",
+          "description": "To attach a file to a ticket, the file must first be in the vault. When the Vault ID of a file is provided, it is uploaded and attached to the ticket (Comma-delimited)",
+          "required": false,
+          "contains": [
+            "vault id"
+          ]
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Ticket description",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "type": "string",
+          "description": "JSON containing field values",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_ticket",
+      "name": "Get Ticket",
+      "description": "Get ticket/record information",
+      "http_method": "GET",
+      "endpoint": "/actions/get_ticket",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "table",
+          "type": "string",
+          "description": "Table to query",
+          "required": false,
+          "default": "incident",
+          "contains": [
+            "servicenow table"
+          ]
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "description": "SYS ID or ticket number of a record",
+          "required": true,
+          "contains": [
+            "servicenow ticket sysid",
+            "servicenow ticket number"
+          ]
+        },
+        {
+          "name": "is_sys_id",
+          "type": "boolean",
+          "description": "Whether the value provided in the ID parameter is SYS ID or ticket number",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "update_ticket",
+      "name": "Update Ticket",
+      "description": "Update ticket/record information",
+      "http_method": "GET",
+      "endpoint": "/actions/update_ticket",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "table",
+          "type": "string",
+          "description": "Ticket table",
+          "required": false,
+          "default": "incident",
+          "contains": [
+            "servicenow table"
+          ]
+        },
+        {
+          "name": "vault_id",
+          "type": "string",
+          "description": "To attach a file to a ticket, the file must first be in the vault. When the vault ID of a file is provided, it is uploaded and attached to the ticket (Comma-delimited)",
+          "required": false,
+          "contains": [
+            "vault id"
+          ]
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "description": "SYS ID or ticket number of a record",
+          "required": true,
+          "contains": [
+            "servicenow ticket sysid",
+            "servicenow ticket number"
+          ]
+        },
+        {
+          "name": "fields",
+          "type": "string",
+          "description": "JSON containing field values",
+          "required": false
+        },
+        {
+          "name": "is_sys_id",
+          "type": "boolean",
+          "description": "Whether the value provided in the ID parameter is SYS ID or ticket number",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_variables",
+      "name": "Get Variables",
+      "description": "Get variables for a ticket/record",
+      "http_method": "GET",
+      "endpoint": "/actions/get_variables",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "sys_id",
+          "type": "string",
+          "description": "Request Item System ID",
+          "required": true,
+          "contains": [
+            "servicenow item sys id",
+            "md5"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "run_query",
+      "name": "Run Query",
+      "description": "Gets object data according to the specified query",
+      "http_method": "GET",
+      "endpoint": "/actions/run_query",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "The query to search for e.g. sysparm_query=short_descriptionLIKEaudit",
+          "required": true
+        },
+        {
+          "name": "query_table",
+          "type": "string",
+          "description": "Name of the table to be searched task",
+          "required": true,
+          "contains": [
+            "servicenow table"
+          ]
+        },
+        {
+          "name": "max_results",
+          "type": "number",
+          "description": "Max number of records to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "query_users",
+      "name": "Query Users",
+      "description": "Gets user data according to the specified query, username, or system ID",
+      "http_method": "GET",
+      "endpoint": "/actions/query_users",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "The query to run. e.g. sysparm_query=user_name=admin",
+          "required": false
+        },
+        {
+          "name": "user_id",
+          "type": "string",
+          "description": "Query by user system ID",
+          "required": false
+        },
+        {
+          "name": "username",
+          "type": "string",
+          "description": "Query by username",
+          "required": false
+        },
+        {
+          "name": "max_results",
+          "type": "number",
+          "description": "Max number of records to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "search_sources",
+      "name": "Search Sources",
+      "description": "Search for records across multiple tables",
+      "http_method": "GET",
+      "endpoint": "/actions/search_sources",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "sysparm_term",
+          "type": "string",
+          "description": "Search record for the given term",
+          "required": true
+        },
+        {
+          "name": "sysparm_search_sources",
+          "type": "string",
+          "description": "SYS ID of search sources, Comma-separated list allowed",
+          "required": true,
+          "contains": [
+            "servicenow ticket sysid"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "on_poll",
+      "name": "On Poll",
+      "description": "Ingest tickets from SNOW",
+      "http_method": "GET",
+      "endpoint": "/actions/on_poll",
+      "action_type": "ingest",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "container_count",
+          "type": "number",
+          "description": "Maximum numer of tickets ingest during poll now",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "start_time",
+          "type": "number",
+          "description": "Parameter ignored in this app",
+          "required": false
+        },
+        {
+          "name": "container_id",
+          "type": "string",
+          "description": "Parameter ignored in this app",
+          "required": false
+        },
+        {
+          "name": "artifact_count",
+          "type": "number",
+          "description": "Parameter ignored in this app",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "number",
+          "description": "Parameter ignored in this app",
+          "required": false
+        },
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Parameter ignored in this app",
+          "required": false
+        }
+      ]
     }
-  ]
+  ],
+  "source_metadata": {
+    "original_name": "ServiceNow",
+    "original_type": "ticketing",
+    "converted_at": "2025-12-18T16:25:29.121523",
+    "source_version": "2.6.6"
+  }
 }

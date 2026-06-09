@@ -1,0 +1,589 @@
+{
+  "id": "docker",
+  "name": "Docker",
+  "description": "This app uses the Docker remote API to perform a range of actions on existing containers within the user-specified domain",
+  "version": "1.0.0",
+  "category": "edr",
+  "vendor": "Docker",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "get_changes_of_a_container_filesystem",
+      "name": "Get Container Filesystem Changes",
+      "description": "Get added, modified, or deleted files of a container's filesystem",
+      "http_method": "GET",
+      "endpoint": "/actions/get_changes_of_a_container_filesystem",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "ID or Name of the container",
+          "required": true,
+          "contains": [
+            "docker container id"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "inspect_a_container",
+      "name": "Inspect Container",
+      "description": "Get low-level information about a container",
+      "http_method": "GET",
+      "endpoint": "/actions/inspect_a_container",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "ID or Name of the container",
+          "required": true,
+          "contains": [
+            "docker container id"
+          ]
+        },
+        {
+          "name": "size",
+          "type": "boolean",
+          "description": "Get size of the container as fields SizeRw and SizeRootFs",
+          "required": false,
+          "default": false
+        }
+      ]
+    },
+    {
+      "id": "update_a_container",
+      "name": "Update Container",
+      "description": "Change various configuration options of a container without having to recreate it",
+      "http_method": "GET",
+      "endpoint": "/actions/update_a_container",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "ID or Name of the container",
+          "required": true,
+          "contains": [
+            "docker container id"
+          ]
+        },
+        {
+          "name": "request_body",
+          "type": "string",
+          "description": "Configuration",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "restart_a_container",
+      "name": "Restart Container",
+      "description": "Restart the specified container",
+      "http_method": "GET",
+      "endpoint": "/actions/restart_a_container",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "ID or Name of the container",
+          "required": true,
+          "contains": [
+            "docker container id"
+          ]
+        },
+        {
+          "name": "delay",
+          "type": "number",
+          "description": "Number of seconds to wait before killing the container",
+          "required": false,
+          "default": 1
+        }
+      ]
+    },
+    {
+      "id": "export_a_container",
+      "name": "Export Container",
+      "description": "Export the contents of a container as a tarball",
+      "http_method": "GET",
+      "endpoint": "/actions/export_a_container",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "ID or Name of the container",
+          "required": true,
+          "contains": [
+            "docker container id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_container",
+      "name": "List Container",
+      "description": "Get a list of containers",
+      "http_method": "GET",
+      "endpoint": "/actions/list_container",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "all",
+          "type": "boolean",
+          "description": "Get all containers. By default, only running containers are shown",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Return this number of most recently created containers, including non-running ones",
+          "required": false
+        },
+        {
+          "name": "size",
+          "type": "boolean",
+          "description": "Return size of the container as fields SizeRw and SizeRootFs",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "filters",
+          "type": "string",
+          "description": "Filters to process on the container list, encoded as JSON (a map[string][]string). For example, {\"status\": [\"paused\"]} will only return paused containers",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "stop_a_container",
+      "name": "Stop Container",
+      "description": "Stop the specified container",
+      "http_method": "GET",
+      "endpoint": "/actions/stop_a_container",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "ID or Name of the container",
+          "required": true,
+          "contains": [
+            "docker container id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "start_a_container",
+      "name": "Start Container",
+      "description": "Start the specified container",
+      "http_method": "GET",
+      "endpoint": "/actions/start_a_container",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "ID or Name of the container",
+          "required": true,
+          "contains": [
+            "docker container id"
+          ]
+        },
+        {
+          "name": "detachkeys",
+          "type": "string",
+          "description": "Override the key sequence for detaching a container. The format is a single character [a-Z] or ctrl-<value> where <value> is one of: a-z, @, ^, [, , or _",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_images",
+      "name": "List Images",
+      "description": "Returns a list of images on the server. Note that it uses a different, smaller representation of an image than inspecting a single image",
+      "http_method": "GET",
+      "endpoint": "/actions/list_images",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "all",
+          "type": "boolean",
+          "description": "Show all images. Only images from a final layer (no children) are shown by default",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "filters",
+          "type": "string",
+          "description": "A JSON encoded value of the filters (a map[string][]string) to process on the images list, e.g., {\"status\":[\"exited\"]}",
+          "required": false
+        },
+        {
+          "name": "digests",
+          "type": "boolean",
+          "description": "Show digest information as a RepoDigests field on each image",
+          "required": false,
+          "default": false
+        }
+      ]
+    },
+    {
+      "id": "rename_container",
+      "name": "Rename Container",
+      "description": "Rename a container based on the provided new name",
+      "http_method": "GET",
+      "endpoint": "/actions/rename_container",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "ID or Name of the container",
+          "required": true,
+          "contains": [
+            "docker container id"
+          ]
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "description": "New name for the container",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "kill_container",
+      "name": "Kill Container",
+      "description": "Send a POSIX signal to a container, defaulting to killing the container",
+      "http_method": "GET",
+      "endpoint": "/actions/kill_container",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "ID or Name of the container",
+          "required": true,
+          "contains": [
+            "docker container id"
+          ]
+        },
+        {
+          "name": "signal",
+          "type": "string",
+          "description": "Signal to be sent to the container as an integer or string, e.g., SIGINT, default is SIGKILL",
+          "required": false,
+          "default": "SIGKILL"
+        }
+      ]
+    },
+    {
+      "id": "remove_container",
+      "name": "Remove Container",
+      "description": "Remove the selected container",
+      "http_method": "GET",
+      "endpoint": "/actions/remove_container",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "ID or Name of the container",
+          "required": true,
+          "contains": [
+            "docker container id"
+          ]
+        },
+        {
+          "name": "volumes",
+          "type": "boolean",
+          "description": "Remove the volumes associated with the container",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "force",
+          "type": "boolean",
+          "description": "If the container is running, kill it before removing it",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "link",
+          "type": "boolean",
+          "description": "Remove the specified link associated with the container",
+          "required": false,
+          "default": false
+        }
+      ]
+    },
+    {
+      "id": "delete_stopped",
+      "name": "Delete Stopped Containers",
+      "description": "Delete containers that are stopped",
+      "http_method": "GET",
+      "endpoint": "/actions/delete_stopped",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "filters",
+          "type": "string",
+          "description": "Filters to process on the prune list, encoded as JSON (a map[string][]string), e.g., {\"status\":[\"exited\"]}",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "remove_image",
+      "name": "Remove Image",
+      "description": "Remove an image, along with any untagged parent images that were referenced by that image. Images can't be removed if they have any descendant images or being used by a running container or build",
+      "http_method": "GET",
+      "endpoint": "/actions/remove_image",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Image Name or ID",
+          "required": true
+        },
+        {
+          "name": "force",
+          "type": "boolean",
+          "description": "Remove the image even if it is being used by any stopped containers or has other tags",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "noprune",
+          "type": "boolean",
+          "description": "Do not delete untagged parent images",
+          "required": false,
+          "default": false
+        }
+      ]
+    },
+    {
+      "id": "delete_unused",
+      "name": "Delete Unused Images",
+      "description": "Delete all unused images based on the specified filters",
+      "http_method": "GET",
+      "endpoint": "/actions/delete_unused",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "filters",
+          "type": "string",
+          "description": "Filters to process on the prune list, encoded as JSON (a map[string][]string), e.g., {\"status\":[\"exited\"]}",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "image_history",
+      "name": "Get Image History",
+      "description": "Get parent layers of an image",
+      "http_method": "GET",
+      "endpoint": "/actions/image_history",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Image Name or ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "delete_builder_cache",
+      "name": "Delete Builder Cache",
+      "description": "Remove cache generated from building the container",
+      "http_method": "GET",
+      "endpoint": "/actions/delete_builder_cache",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "keep_storage",
+          "type": "number",
+          "description": "Amount of disk space in bytes to keep for cache",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "all",
+          "type": "boolean",
+          "description": "Remove all types of the build cache",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "filters",
+          "type": "string",
+          "description": "A JSON encoded value of the filters (a map[string][]string) to process on the image list, e.g., {\"status\":[\"exited\"]}",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "snapshot_of_a_container",
+      "name": "Take Container Snapshot",
+      "description": "Take a snapshot of one of the containers",
+      "http_method": "GET",
+      "endpoint": "/actions/snapshot_of_a_container",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "container",
+          "type": "string",
+          "description": "ID or Name of the container to commit",
+          "required": true,
+          "contains": [
+            "docker container id"
+          ]
+        },
+        {
+          "name": "repo",
+          "type": "string",
+          "description": "Repository Name for the created image",
+          "required": false
+        },
+        {
+          "name": "tag",
+          "type": "string",
+          "description": "Tag name for the created image",
+          "required": false
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "Commit message",
+          "required": false
+        },
+        {
+          "name": "author",
+          "type": "string",
+          "description": "Author of the image, e.g., John Hannibal Smith <hannibal@a-team.com>",
+          "required": false
+        },
+        {
+          "name": "pause",
+          "type": "boolean",
+          "description": "Pause the container before committing",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "changes",
+          "type": "string",
+          "description": "Dockerfile instructions to apply while committing",
+          "required": false
+        },
+        {
+          "name": "request_body",
+          "type": "string",
+          "description": "Configuration",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "create_a_container",
+      "name": "Create Container",
+      "description": "Create a container from an existing image",
+      "http_method": "GET",
+      "endpoint": "/actions/create_a_container",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Assign the specified name to the container",
+          "required": true
+        },
+        {
+          "name": "request_body",
+          "type": "string",
+          "description": "Configuration",
+          "required": true
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Docker",
+    "original_type": "endpoint",
+    "converted_at": "2025-12-18T16:25:28.744118",
+    "source_version": "1.0.0"
+  }
+}

@@ -1,0 +1,231 @@
+{
+  "id": "onepassword_secrets",
+  "name": "1Password Secrets Automation",
+  "description": "Secrets management through 1Password Connect Server REST API for securely accessing vault items, managing secrets, and tracking API activity",
+  "version": "1.0.0",
+  "category": "secrets_management",
+  "vendor": "1Password",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "header_name": "Authorization",
+    "header_prefix": "Bearer",
+    "location": "header"
+  },
+  "base_url": "https://{host}:8080/v1",
+  "actions": [
+    {
+      "id": "list_vaults",
+      "name": "List Vaults",
+      "description": "List all vaults accessible by the Connect server token",
+      "http_method": "GET",
+      "endpoint": "/vaults",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "Filter expression for vaults",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_vault",
+      "name": "Get Vault",
+      "description": "Retrieve details of a specific vault",
+      "http_method": "GET",
+      "endpoint": "/vaults/{vaultId}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "vaultId",
+          "type": "string",
+          "description": "Vault UUID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_items",
+      "name": "List Items",
+      "description": "List all items in a specific vault",
+      "http_method": "GET",
+      "endpoint": "/vaults/{vaultId}/items",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "vaultId",
+          "type": "string",
+          "description": "Vault UUID",
+          "required": true
+        },
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "Filter expression for items (e.g. title co \"API\")",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_item",
+      "name": "Get Item",
+      "description": "Retrieve a specific item including all its fields and secret values",
+      "http_method": "GET",
+      "endpoint": "/vaults/{vaultId}/items/{itemId}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "vaultId",
+          "type": "string",
+          "description": "Vault UUID",
+          "required": true
+        },
+        {
+          "name": "itemId",
+          "type": "string",
+          "description": "Item UUID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "create_item",
+      "name": "Create Item",
+      "description": "Create a new item (secret) in a vault",
+      "http_method": "POST",
+      "endpoint": "/vaults/{vaultId}/items",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "vaultId",
+          "type": "string",
+          "description": "Vault UUID",
+          "required": true
+        },
+        {
+          "name": "category",
+          "type": "string",
+          "description": "Item category (LOGIN, PASSWORD, API_CREDENTIAL, etc.)",
+          "required": true
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "description": "Title of the item",
+          "required": true
+        },
+        {
+          "name": "fields",
+          "type": "array",
+          "description": "Array of field objects with id, type, value, and label",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "update_item",
+      "name": "Update Item",
+      "description": "Update an existing item in a vault",
+      "http_method": "PUT",
+      "endpoint": "/vaults/{vaultId}/items/{itemId}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "vaultId",
+          "type": "string",
+          "description": "Vault UUID",
+          "required": true
+        },
+        {
+          "name": "itemId",
+          "type": "string",
+          "description": "Item UUID",
+          "required": true
+        },
+        {
+          "name": "fields",
+          "type": "array",
+          "description": "Updated field values",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "delete_item",
+      "name": "Delete Item",
+      "description": "Delete an item from a vault (moves to trash)",
+      "http_method": "DELETE",
+      "endpoint": "/vaults/{vaultId}/items/{itemId}",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "vaultId",
+          "type": "string",
+          "description": "Vault UUID",
+          "required": true
+        },
+        {
+          "name": "itemId",
+          "type": "string",
+          "description": "Item UUID to delete",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_files",
+      "name": "List Item Files",
+      "description": "List all files attached to a specific item",
+      "http_method": "GET",
+      "endpoint": "/vaults/{vaultId}/items/{itemId}/files",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "vaultId",
+          "type": "string",
+          "description": "Vault UUID",
+          "required": true
+        },
+        {
+          "name": "itemId",
+          "type": "string",
+          "description": "Item UUID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_api_activity",
+      "name": "Get API Activity",
+      "description": "List API activity on the Connect server for auditing",
+      "http_method": "GET",
+      "endpoint": "/activity",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of results",
+          "required": false
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Offset for pagination",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,353 @@
+{
+  "id": "terraform_cloud",
+  "name": "Terraform Cloud",
+  "description": "This app integrates with Terraform Cloud to perform generic and investigative actions to manage runs, plans, and applies",
+  "version": "1.0.10",
+  "category": "devops",
+  "vendor": "HashiCorp",
+  "auth_type": "bearer_token",
+  "auth_config": {
+    "type": "bearer_token",
+    "header_name": "authorization",
+    "location": "header"
+  },
+  "base_url": "{}{}",
+  "actions": [
+    {
+      "id": "list_workspaces",
+      "name": "List Workspaces",
+      "description": "Lists workspaces in the organization",
+      "http_method": "GET",
+      "endpoint": "/actions/list_workspaces",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "organization_name",
+          "type": "string",
+          "description": "Name of the organization to list the workspaces of",
+          "required": true,
+          "contains": [
+            "terraform organization name"
+          ]
+        },
+        {
+          "name": "page_num",
+          "type": "number",
+          "description": "Page number of workspace list",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "page_size",
+          "type": "number",
+          "description": "Number of workspaces to return per page (100 is default)",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "list_runs",
+      "name": "List Runs",
+      "description": "Lists runs for a workspace",
+      "http_method": "GET",
+      "endpoint": "/actions/list_runs",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Name of the organization to list the workspaces of",
+          "required": true,
+          "contains": [
+            "terraform workspace id"
+          ]
+        },
+        {
+          "name": "page_num",
+          "type": "number",
+          "description": "Page number of runs returned",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "page_size",
+          "type": "number",
+          "description": "Number of runs to return per page (20 is default)",
+          "required": false,
+          "default": 20
+        }
+      ]
+    },
+    {
+      "id": "create_run",
+      "name": "Create Run",
+      "description": "Create a run which will perform a plan and apply",
+      "http_method": "GET",
+      "endpoint": "/actions/create_run",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "workspace_id",
+          "type": "string",
+          "description": "ID of workspace where the run will be executed",
+          "required": true,
+          "contains": [
+            "terraform workspace id"
+          ]
+        },
+        {
+          "name": "configuration_version",
+          "type": "string",
+          "description": "Configuration version to use for this run. If blank, latest config is used",
+          "required": false
+        },
+        {
+          "name": "message",
+          "type": "string",
+          "description": "Message to be associated with this run",
+          "required": false,
+          "default": "Queued manually via the Terraform Enterprise API"
+        },
+        {
+          "name": "is_destroy",
+          "type": "boolean",
+          "description": "Specify if this plan is a destroy plan, which will destroy all provisioned resources",
+          "required": false,
+          "default": false
+        }
+      ]
+    },
+    {
+      "id": "create_workspace",
+      "name": "Create Workspace",
+      "description": "Create a workspace within Terraform",
+      "http_method": "GET",
+      "endpoint": "/actions/create_workspace",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "organization_name",
+          "type": "string",
+          "description": "Name of the organization to create the workspace within Terraform",
+          "required": true,
+          "contains": [
+            "terraform organization name"
+          ]
+        },
+        {
+          "name": "workspace_name",
+          "type": "string",
+          "description": "Name of the workspace",
+          "required": true,
+          "contains": [
+            "terraform workspace name"
+          ]
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Description for the workspace",
+          "required": false
+        },
+        {
+          "name": "ph_0",
+          "type": "string",
+          "description": "",
+          "required": false
+        },
+        {
+          "name": "vcs_repo_id",
+          "type": "string",
+          "description": "Reference to your VSC repo in the format :org/:repo",
+          "required": false,
+          "contains": [
+            "terraform vcs repo id"
+          ]
+        },
+        {
+          "name": "vcs_token_id",
+          "type": "string",
+          "description": "Token ID of the VSC repo",
+          "required": false,
+          "contains": [
+            "terraform vcs token id"
+          ]
+        },
+        {
+          "name": "file_triggers_enabled",
+          "type": "boolean",
+          "description": "Whether to filter runs based on the changed files in a VCS push",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "auto_apply",
+          "type": "boolean",
+          "description": "Automatically apply changes when plan is successful",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "queue_all_runs",
+          "type": "boolean",
+          "description": "Whether runs should be queued immediately after workspace creation",
+          "required": false,
+          "default": false
+        }
+      ]
+    },
+    {
+      "id": "apply_run",
+      "name": "Apply Run",
+      "description": "Applies a run that is paused waiting for confirmation after a plan",
+      "http_method": "GET",
+      "endpoint": "/actions/apply_run",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "The ID of the run to apply",
+          "required": true,
+          "contains": [
+            "terraform run id"
+          ]
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "An optional comment about the run",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_apply",
+      "name": "Get Apply",
+      "description": "Get details of an apply",
+      "http_method": "GET",
+      "endpoint": "/actions/get_apply",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "The ID of the apply to show",
+          "required": true,
+          "contains": [
+            "terraform apply id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_plan",
+      "name": "Get Plan",
+      "description": "Get details and status of the plan of a run in Terraform",
+      "http_method": "GET",
+      "endpoint": "/actions/get_plan",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "The ID of the plan to show",
+          "required": true,
+          "contains": [
+            "terraform plan id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_run",
+      "name": "Get Run",
+      "description": "This endpoint is used for showing details of a specific run",
+      "http_method": "GET",
+      "endpoint": "/actions/get_run",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "The ID of the run to retrieve details",
+          "required": true,
+          "contains": [
+            "terraform run id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_workspace",
+      "name": "Get Workspace",
+      "description": "Get details of a workspace",
+      "http_method": "GET",
+      "endpoint": "/actions/get_workspace",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "The ID of the workspace to show",
+          "required": false,
+          "contains": [
+            "terraform workspace id"
+          ]
+        },
+        {
+          "name": "organization_name",
+          "type": "string",
+          "description": "The name of the organization to retrieve workspace details",
+          "required": false,
+          "contains": [
+            "terraform organization name"
+          ]
+        },
+        {
+          "name": "workspace_name",
+          "type": "string",
+          "description": "The name of the workspace to retrieve details",
+          "required": false,
+          "contains": [
+            "terraform workspace name"
+          ]
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Terraform Cloud",
+    "original_type": "devops",
+    "converted_at": "2025-12-18T16:25:29.200518",
+    "source_version": "1.0.10"
+  }
+}

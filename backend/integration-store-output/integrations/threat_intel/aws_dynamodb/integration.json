@@ -1,0 +1,1069 @@
+{
+  "id": "aws_dynamodb",
+  "name": "AWS DynamoDB",
+  "description": "This app supports CRUD operations in a AWS DynamoDB database",
+  "version": "1.0.3",
+  "category": "threat_intel",
+  "vendor": "AWS",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "describe_global_table",
+      "name": "Describe Global Table",
+      "description": "Fetch metadata of a global table",
+      "http_method": "GET",
+      "endpoint": "/actions/describe_global_table",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "global_table_name",
+          "type": "string",
+          "description": "Name of Global Table to describe",
+          "required": true,
+          "contains": [
+            "aws dynamodb table name"
+          ]
+        },
+        {
+          "name": "credentials",
+          "type": "string",
+          "description": "Assumed role credentials",
+          "required": false,
+          "contains": [
+            "aws credentials"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "describe_backup",
+      "name": "Describe Backup",
+      "description": "Fetch metadata of a backup",
+      "http_method": "GET",
+      "endpoint": "/actions/describe_backup",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "backup_arn",
+          "type": "string",
+          "description": "Backup ARN of backup to describe",
+          "required": true,
+          "contains": [
+            "aws dynamodb backup arn"
+          ]
+        },
+        {
+          "name": "credentials",
+          "type": "string",
+          "description": "Assumed role credentials",
+          "required": false,
+          "contains": [
+            "aws credentials"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "describe_table",
+      "name": "Describe Table",
+      "description": "Fetch metadata of a table",
+      "http_method": "GET",
+      "endpoint": "/actions/describe_table",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "table_name",
+          "type": "string",
+          "description": "Name of the table to describe",
+          "required": true,
+          "contains": [
+            "aws dynamodb table name"
+          ]
+        },
+        {
+          "name": "credentials",
+          "type": "string",
+          "description": "Assumed role credentials",
+          "required": false,
+          "contains": [
+            "aws credentials"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "create_global_table",
+      "name": "Create Global Table",
+      "description": "Create a global table from an existing table in the specified regions",
+      "http_method": "GET",
+      "endpoint": "/actions/create_global_table",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "global_table_name",
+          "type": "string",
+          "description": "Name of table to make global",
+          "required": true,
+          "contains": [
+            "aws dynamodb table name"
+          ]
+        },
+        {
+          "name": "replication_group",
+          "type": "string",
+          "description": "Name of region to create global table (accepts comma separated regions)",
+          "required": true,
+          "contains": [
+            "aws region"
+          ]
+        },
+        {
+          "name": "credentials",
+          "type": "string",
+          "description": "Assumed role credentials",
+          "required": false,
+          "contains": [
+            "aws credentials"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_global_tables",
+      "name": "List Global Tables",
+      "description": "List the global tables of a specific region",
+      "http_method": "GET",
+      "endpoint": "/actions/list_global_tables",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "exclusive_start_global_table_name",
+          "type": "string",
+          "description": "List global tables after specific given global table name",
+          "required": false,
+          "contains": [
+            "aws dynamodb table name"
+          ]
+        },
+        {
+          "name": "region_name",
+          "type": "string",
+          "description": "List the global tables of a given region",
+          "required": false,
+          "contains": [
+            "aws region"
+          ]
+        },
+        {
+          "name": "max_items",
+          "type": "number",
+          "description": "Maximum number of tables to fetch",
+          "required": false
+        },
+        {
+          "name": "credentials",
+          "type": "string",
+          "description": "Assumed role credentials",
+          "required": false,
+          "contains": [
+            "aws credentials"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_backups",
+      "name": "List Backups",
+      "description": "List all the backups present in the database",
+      "http_method": "GET",
+      "endpoint": "/actions/list_backups",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "backup_type",
+          "type": "string",
+          "description": "Type of backup to list",
+          "required": false,
+          "contains": [
+            "aws dynamodb backup type"
+          ]
+        },
+        {
+          "name": "exclusive_start_backup_arn",
+          "type": "string",
+          "description": "List backups after specific given backup arn",
+          "required": false,
+          "contains": [
+            "aws dynamodb backup arn"
+          ]
+        },
+        {
+          "name": "max_items",
+          "type": "number",
+          "description": "Maximum number of backups to fetch",
+          "required": false
+        },
+        {
+          "name": "table_name",
+          "type": "string",
+          "description": "List backups of specific table",
+          "required": false,
+          "contains": [
+            "aws dynamodb table name"
+          ]
+        },
+        {
+          "name": "start_date",
+          "type": "string",
+          "description": "List backups created after provided date.(Valid date format allowed: YYYY/MM/DD)",
+          "required": false
+        },
+        {
+          "name": "end_date",
+          "type": "string",
+          "description": "List backups created before provided data.(Valid date format allowed: YYYY/MM/DD)",
+          "required": false
+        },
+        {
+          "name": "credentials",
+          "type": "string",
+          "description": "Assumed role credentials",
+          "required": false,
+          "contains": [
+            "aws credentials"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "delete_backup",
+      "name": "Delete Backup",
+      "description": "Delete backup of a table",
+      "http_method": "GET",
+      "endpoint": "/actions/delete_backup",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "backup_arn",
+          "type": "string",
+          "description": "ARN associated with the backup to delete",
+          "required": true,
+          "contains": [
+            "aws dynamodb backup arn"
+          ]
+        },
+        {
+          "name": "credentials",
+          "type": "string",
+          "description": "Assumed role credentials",
+          "required": false,
+          "contains": [
+            "aws credentials"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "create_backup",
+      "name": "Create Backup",
+      "description": "Create a backup of an existing table",
+      "http_method": "GET",
+      "endpoint": "/actions/create_backup",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "table_name",
+          "type": "string",
+          "description": "Name of the table to backup",
+          "required": true,
+          "contains": [
+            "aws dynamodb table name"
+          ]
+        },
+        {
+          "name": "backup_name",
+          "type": "string",
+          "description": "Name of the backup",
+          "required": true
+        },
+        {
+          "name": "credentials",
+          "type": "string",
+          "description": "Assumed role credentials",
+          "required": false,
+          "contains": [
+            "aws credentials"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "restore_table_from_backup",
+      "name": "Restore Backup Table",
+      "description": "Create a new table from an existing backup",
+      "http_method": "GET",
+      "endpoint": "/actions/restore_table_from_backup",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "table_name",
+          "type": "string",
+          "description": "Name of the table to restore",
+          "required": true,
+          "contains": [
+            "aws dynamodb table name"
+          ]
+        },
+        {
+          "name": "backup_arn",
+          "type": "string",
+          "description": "Amazon Resource Name (ARN) associated with the backup",
+          "required": true,
+          "contains": [
+            "aws dynamodb backup arn"
+          ]
+        },
+        {
+          "name": "billing_mode_override",
+          "type": "string",
+          "description": "Billing mode of the restored table",
+          "required": false,
+          "contains": [
+            "aws dynamodb billing mode"
+          ]
+        },
+        {
+          "name": "read_capacity_override",
+          "type": "number",
+          "description": "Read capacity override (for PROVISIONED billing mode)",
+          "required": false,
+          "contains": [
+            "aws dynamodb read capacity"
+          ]
+        },
+        {
+          "name": "write_capacity_override",
+          "type": "number",
+          "description": "Write capacity override (for PROVISIONED billing mode)",
+          "required": false,
+          "contains": [
+            "aws dynamodb write capacity"
+          ]
+        },
+        {
+          "name": "restore_secondary_indexes",
+          "type": "string",
+          "description": "Restore secondary indexes",
+          "required": true,
+          "default": "Restore the table without secondary indexes"
+        },
+        {
+          "name": "sse_enable_override",
+          "type": "string",
+          "description": "Server-side encryption(SSE) setting",
+          "required": false
+        },
+        {
+          "name": "kms_master_key_id",
+          "type": "string",
+          "description": "Key to use for the AWS KMS encryption (Used when SSE is enabled)",
+          "required": false,
+          "contains": [
+            "aws dynamodb kms master key id"
+          ]
+        },
+        {
+          "name": "credentials",
+          "type": "string",
+          "description": "Assumed role credentials",
+          "required": false,
+          "contains": [
+            "aws credentials"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_tables",
+      "name": "List Tables",
+      "description": "List all the tables present in the database",
+      "http_method": "GET",
+      "endpoint": "/actions/list_tables",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "max_items",
+          "type": "number",
+          "description": "Maximum number of tables to fetch",
+          "required": false
+        },
+        {
+          "name": "exclusive_start_table_name",
+          "type": "string",
+          "description": "List table after specific given table name",
+          "required": false,
+          "contains": [
+            "aws dynamodb table name"
+          ]
+        },
+        {
+          "name": "credentials",
+          "type": "string",
+          "description": "Assumed role credentials",
+          "required": false,
+          "contains": [
+            "aws credentials"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "delete_table",
+      "name": "Delete Table",
+      "description": "Delete a table from the database",
+      "http_method": "GET",
+      "endpoint": "/actions/delete_table",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "table_name",
+          "type": "string",
+          "description": "Name of table to delete",
+          "required": true,
+          "contains": [
+            "aws dynamodb table name"
+          ]
+        },
+        {
+          "name": "credentials",
+          "type": "string",
+          "description": "Assumed role credentials",
+          "required": false,
+          "contains": [
+            "aws credentials"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "create_table",
+      "name": "Create Table",
+      "description": "Create a table in the database",
+      "http_method": "GET",
+      "endpoint": "/actions/create_table",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "table_name",
+          "type": "string",
+          "description": "Name of table to be created",
+          "required": true,
+          "contains": [
+            "aws dynamodb table name"
+          ]
+        },
+        {
+          "name": "billing_mode",
+          "type": "string",
+          "description": "Billing mode to be used for table",
+          "required": false,
+          "contains": [
+            "aws dynamodb billing mode"
+          ]
+        },
+        {
+          "name": "partition_key_name",
+          "type": "string",
+          "description": "Name of partition key of table",
+          "required": true,
+          "contains": [
+            "aws dynamodb partition key name",
+            "aws dynamodb attribute name"
+          ]
+        },
+        {
+          "name": "partition_key_datatype",
+          "type": "string",
+          "description": "Datatype of partition key of table",
+          "required": true
+        },
+        {
+          "name": "sort_key_name",
+          "type": "string",
+          "description": "Name of sort key of table",
+          "required": false,
+          "contains": [
+            "aws dynamodb sort key name",
+            "aws dynamodb attribute name"
+          ]
+        },
+        {
+          "name": "sort_key_datatype",
+          "type": "string",
+          "description": "Datatype of sort key of table",
+          "required": false
+        },
+        {
+          "name": "read_capacity_units",
+          "type": "number",
+          "description": "Read capacity units for provisioned mode",
+          "required": false,
+          "contains": [
+            "aws dynamodb read capacity"
+          ]
+        },
+        {
+          "name": "write_capacity_units",
+          "type": "number",
+          "description": "Write capacity units for provisioned mode",
+          "required": false,
+          "contains": [
+            "aws dynamodb write capacity"
+          ]
+        },
+        {
+          "name": "local_secondary_index",
+          "type": "string",
+          "description": "JSON input for creating local secondary index",
+          "required": false
+        },
+        {
+          "name": "global_secondary_index",
+          "type": "string",
+          "description": "JSON input for creating global secondary index",
+          "required": false
+        },
+        {
+          "name": "enable_stream",
+          "type": "boolean",
+          "description": "Enable DynamoDB streams for the table",
+          "required": false
+        },
+        {
+          "name": "stream_view_type",
+          "type": "string",
+          "description": "View type of DynamoDB streams",
+          "required": false,
+          "contains": [
+            "aws dynamodb stream view type"
+          ]
+        },
+        {
+          "name": "sse",
+          "type": "string",
+          "description": "Settings used to enable server-side encryption",
+          "required": true
+        },
+        {
+          "name": "kms_master_key_id",
+          "type": "string",
+          "description": "The KMS key that should be used for the KMS encryption",
+          "required": false,
+          "contains": [
+            "aws dynamodb kms master key id"
+          ]
+        },
+        {
+          "name": "tags",
+          "type": "string",
+          "description": "JSON list of tags to add to table",
+          "required": false
+        },
+        {
+          "name": "credentials",
+          "type": "string",
+          "description": "Assumed role credentials",
+          "required": false,
+          "contains": [
+            "aws credentials"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "delete_item",
+      "name": "Delete Item",
+      "description": "Delete an item from the table",
+      "http_method": "GET",
+      "endpoint": "/actions/delete_item",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "table_name",
+          "type": "string",
+          "description": "Table name to delete item from",
+          "required": true,
+          "contains": [
+            "aws dynamodb table name"
+          ]
+        },
+        {
+          "name": "condition_expression",
+          "type": "string",
+          "description": "Condition to be checked before deleting an item",
+          "required": false
+        },
+        {
+          "name": "partition_key_name",
+          "type": "string",
+          "description": "Name of partition key of table",
+          "required": true,
+          "contains": [
+            "aws dynamodb partition key name",
+            "aws dynamodb attribute name"
+          ]
+        },
+        {
+          "name": "sort_key_name",
+          "type": "string",
+          "description": "Name of sort key of table",
+          "required": false,
+          "contains": [
+            "aws dynamodb sort key name",
+            "aws dynamodb attribute name"
+          ]
+        },
+        {
+          "name": "partition_key_value",
+          "type": "string",
+          "description": "Partition key value of item to delete",
+          "required": true
+        },
+        {
+          "name": "sort_key_value",
+          "type": "string",
+          "description": "Sort key value of item to delete",
+          "required": false
+        },
+        {
+          "name": "partition_key_datatype",
+          "type": "string",
+          "description": "Datatype of partition key of table",
+          "required": true
+        },
+        {
+          "name": "sort_key_datatype",
+          "type": "string",
+          "description": "Datatype of sort key of table",
+          "required": false
+        },
+        {
+          "name": "expression_attribute_names",
+          "type": "string",
+          "description": "Attribute names json",
+          "required": false
+        },
+        {
+          "name": "expression_attribute_values",
+          "type": "string",
+          "description": "Attribute values json",
+          "required": false
+        },
+        {
+          "name": "credentials",
+          "type": "string",
+          "description": "Assumed role credentials",
+          "required": false,
+          "contains": [
+            "aws credentials"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "put_item",
+      "name": "Put Item",
+      "description": "Add an item to the table",
+      "http_method": "GET",
+      "endpoint": "/actions/put_item",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "table_name",
+          "type": "string",
+          "description": "Table name to add item in",
+          "required": true,
+          "contains": [
+            "aws dynamodb table name"
+          ]
+        },
+        {
+          "name": "item_json",
+          "type": "string",
+          "description": "JSON of item to be added in the table",
+          "required": true
+        },
+        {
+          "name": "condition_expression",
+          "type": "string",
+          "description": "Condition to be checked before inserting an item",
+          "required": false
+        },
+        {
+          "name": "expression_attribute_names",
+          "type": "string",
+          "description": "Attribute names json",
+          "required": false
+        },
+        {
+          "name": "expression_attribute_values",
+          "type": "string",
+          "description": "Attribute values json",
+          "required": false
+        },
+        {
+          "name": "credentials",
+          "type": "string",
+          "description": "Assumed role credentials",
+          "required": false,
+          "contains": [
+            "aws credentials"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "update_item",
+      "name": "Update Item",
+      "description": "Update an item in the table",
+      "http_method": "GET",
+      "endpoint": "/actions/update_item",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "table_name",
+          "type": "string",
+          "description": "Table name to update item in",
+          "required": true,
+          "contains": [
+            "aws dynamodb table name"
+          ]
+        },
+        {
+          "name": "update_expression",
+          "type": "string",
+          "description": "Expression to update the item",
+          "required": false
+        },
+        {
+          "name": "partition_key_name",
+          "type": "string",
+          "description": "Name of partition key of table",
+          "required": true,
+          "contains": [
+            "aws dynamodb partition key name",
+            "aws dynamodb attribute name"
+          ]
+        },
+        {
+          "name": "sort_key_name",
+          "type": "string",
+          "description": "Name of sort key of table",
+          "required": false,
+          "contains": [
+            "aws dynamodb sort key name",
+            "aws dynamodb attribute name"
+          ]
+        },
+        {
+          "name": "partition_key_value",
+          "type": "string",
+          "description": "Partition key value of item to update",
+          "required": true
+        },
+        {
+          "name": "sort_key_value",
+          "type": "string",
+          "description": "Sort key value of item to update",
+          "required": false
+        },
+        {
+          "name": "partition_key_datatype",
+          "type": "string",
+          "description": "Datatype of partition key of table",
+          "required": true
+        },
+        {
+          "name": "sort_key_datatype",
+          "type": "string",
+          "description": "Datatype of sort key of table",
+          "required": false
+        },
+        {
+          "name": "expression_attribute_names",
+          "type": "string",
+          "description": "Attribute names json",
+          "required": false
+        },
+        {
+          "name": "expression_attribute_values",
+          "type": "string",
+          "description": "Attribute values json",
+          "required": false
+        },
+        {
+          "name": "credentials",
+          "type": "string",
+          "description": "Assumed role credentials",
+          "required": false,
+          "contains": [
+            "aws credentials"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_item",
+      "name": "Get Item",
+      "description": "Get an item from the table",
+      "http_method": "GET",
+      "endpoint": "/actions/get_item",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "table_name",
+          "type": "string",
+          "description": "Table name to fetch the item from",
+          "required": true,
+          "contains": [
+            "aws dynamodb table name"
+          ]
+        },
+        {
+          "name": "partition_key_name",
+          "type": "string",
+          "description": "Name of partition key of table",
+          "required": true,
+          "contains": [
+            "aws dynamodb partition key name",
+            "aws dynamodb attribute name"
+          ]
+        },
+        {
+          "name": "sort_key_name",
+          "type": "string",
+          "description": "Name of sort key of table",
+          "required": false,
+          "contains": [
+            "aws dynamodb sort key name",
+            "aws dynamodb attribute name"
+          ]
+        },
+        {
+          "name": "partition_key_value",
+          "type": "string",
+          "description": "Partition key value of item to fetch",
+          "required": true
+        },
+        {
+          "name": "sort_key_value",
+          "type": "string",
+          "description": "Sort key value of item to fetch",
+          "required": false
+        },
+        {
+          "name": "partition_key_datatype",
+          "type": "string",
+          "description": "Datatype of partition key of table",
+          "required": true
+        },
+        {
+          "name": "sort_key_datatype",
+          "type": "string",
+          "description": "Datatype of sort key of table",
+          "required": false
+        },
+        {
+          "name": "attributes_to_get",
+          "type": "string",
+          "description": "To fetch specific attributes from the item(accepts comma seperated attributes)",
+          "required": false,
+          "contains": [
+            "aws dynamodb attribute name"
+          ]
+        },
+        {
+          "name": "reserved_keyword_attributes",
+          "type": "string",
+          "description": "To fetch attributes from items whose names are same as reserved keywords(accepts comma seperated attributes)",
+          "required": false,
+          "contains": [
+            "aws dynamodb attribute name"
+          ]
+        },
+        {
+          "name": "credentials",
+          "type": "string",
+          "description": "Assumed role credentials",
+          "required": false,
+          "contains": [
+            "aws credentials"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "query_data",
+      "name": "Query Data",
+      "description": "Query data from database",
+      "http_method": "GET",
+      "endpoint": "/actions/query_data",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "table_name",
+          "type": "string",
+          "description": "Name of Table to perform query on",
+          "required": true,
+          "contains": [
+            "aws dynamodb table name"
+          ]
+        },
+        {
+          "name": "index_name",
+          "type": "string",
+          "description": "Name of index to be used for the query",
+          "required": false,
+          "contains": [
+            "aws dynamodb index name"
+          ]
+        },
+        {
+          "name": "expression_attribute_names",
+          "type": "string",
+          "description": "Attribute names json",
+          "required": false
+        },
+        {
+          "name": "expression_attribute_values",
+          "type": "string",
+          "description": "Attribute values json",
+          "required": false
+        },
+        {
+          "name": "key_condition_expression",
+          "type": "string",
+          "description": "Expression to apply conditions on partition key and sort key to fetch data accordingly from the table or index",
+          "required": true
+        },
+        {
+          "name": "filter_expression",
+          "type": "string",
+          "description": "Expression to filter data from table.A FilterExpression does not allow key attributes. You cannot define a filter expression based on a partition key or a sort key",
+          "required": false
+        },
+        {
+          "name": "projection_expression",
+          "type": "string",
+          "description": "Defines the attributes to be included in the result. If this expression is provided SELECT value is set to SPECIFIC_ATTRIBUTES. The attributes in the expression must be separated by commas",
+          "required": false,
+          "contains": [
+            "aws dynamodb attribute name"
+          ]
+        },
+        {
+          "name": "select",
+          "type": "string",
+          "description": "Retrieve all item attributes, specific item attributes, the count of matching items, or in the case of an index, some or all of the attributes projected into the index",
+          "required": false
+        },
+        {
+          "name": "return_consumed_capacity",
+          "type": "string",
+          "description": "Determines the level of detail about either provisioned or on-demand throughput consumption that is returned in the response",
+          "required": false
+        },
+        {
+          "name": "max_items",
+          "type": "number",
+          "description": "Maximum number of items to process",
+          "required": false
+        },
+        {
+          "name": "sort_descending",
+          "type": "boolean",
+          "description": "By default, the sort order for query data is ascending. To reverse the order, set the sort_descending parameter to true",
+          "required": false
+        },
+        {
+          "name": "consistent_read",
+          "type": "boolean",
+          "description": "Determines the read consistency model: If set to true, then the operation uses strongly consistent reads; otherwise, the operation uses eventually consistent reads",
+          "required": false
+        },
+        {
+          "name": "credentials",
+          "type": "string",
+          "description": "Assumed role credentials",
+          "required": false,
+          "contains": [
+            "aws credentials"
+          ]
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "AWS DynamoDB",
+    "original_type": "information",
+    "converted_at": "2025-12-18T16:25:28.574058",
+    "source_version": "1.0.3"
+  }
+}

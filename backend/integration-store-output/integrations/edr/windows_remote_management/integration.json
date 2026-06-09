@@ -1,0 +1,988 @@
+{
+  "id": "windows_remote_management",
+  "name": "Windows Remote Management",
+  "description": "This app integrates with the Windows Remote Management service to execute various actions",
+  "version": "2.3.3",
+  "category": "edr",
+  "vendor": "Microsoft",
+  "auth_type": "basic_auth",
+  "auth_config": {
+    "type": "basic_auth",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "run_command",
+      "name": "Run Command",
+      "description": "Execute a command on the endpoint",
+      "http_method": "GET",
+      "endpoint": "/actions/run_command",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "command",
+          "type": "string",
+          "description": "The command to be run",
+          "required": false
+        },
+        {
+          "name": "arguments",
+          "type": "string",
+          "description": "The arguments for the command",
+          "required": false
+        },
+        {
+          "name": "parser",
+          "type": "string",
+          "description": "The vault ID of a custom parser to use for output",
+          "required": false,
+          "contains": [
+            "vault id"
+          ]
+        },
+        {
+          "name": "ip_hostname",
+          "type": "string",
+          "description": "IP/Hostname",
+          "required": false,
+          "contains": [
+            "ip",
+            "host name"
+          ]
+        },
+        {
+          "name": "async",
+          "type": "boolean",
+          "description": "Start the command, but don't wait for output",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "command_id",
+          "type": "string",
+          "description": "Command ID of async command (Provide with shell_id)",
+          "required": false,
+          "contains": [
+            "winrm command id"
+          ]
+        },
+        {
+          "name": "shell_id",
+          "type": "string",
+          "description": "Shell ID of async command (Provide with command_id)",
+          "required": false,
+          "contains": [
+            "winrm shell id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "run_script",
+      "name": "Run Script",
+      "description": "Run a PowerShell script on the endpoint",
+      "http_method": "GET",
+      "endpoint": "/actions/run_script",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "script_file",
+          "type": "string",
+          "description": "The vault ID of a PowerShell script to run",
+          "required": false,
+          "contains": [
+            "vault id"
+          ]
+        },
+        {
+          "name": "script_str",
+          "type": "string",
+          "description": "A PowerShell script to run",
+          "required": false
+        },
+        {
+          "name": "parser",
+          "type": "string",
+          "description": "The vault ID of a custom parser to use for output",
+          "required": false,
+          "contains": [
+            "vault id"
+          ]
+        },
+        {
+          "name": "ip_hostname",
+          "type": "string",
+          "description": "IP/Hostname",
+          "required": false,
+          "contains": [
+            "ip",
+            "host name"
+          ]
+        },
+        {
+          "name": "async",
+          "type": "boolean",
+          "description": "Start the command, but don't wait for output",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "command_id",
+          "type": "string",
+          "description": "Command ID of async command (Provide with shell_id)",
+          "required": false,
+          "contains": [
+            "winrm command id"
+          ]
+        },
+        {
+          "name": "shell_id",
+          "type": "string",
+          "description": "Shell ID of async command (Provide with command_id)",
+          "required": false,
+          "contains": [
+            "winrm shell id"
+          ]
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "list_processes",
+      "name": "List Processes",
+      "description": "List the currently running processes",
+      "http_method": "GET",
+      "endpoint": "/actions/list_processes",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "ip_hostname",
+          "type": "string",
+          "description": "IP/Hostname",
+          "required": false,
+          "contains": [
+            "ip",
+            "host name"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "terminate_process",
+      "name": "Terminate Process",
+      "description": "Terminate a process",
+      "http_method": "GET",
+      "endpoint": "/actions/terminate_process",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "pid",
+          "type": "number",
+          "description": "The PID of the process to terminate",
+          "required": false,
+          "contains": [
+            "pid"
+          ]
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Name of program to terminate, accepts wildcards",
+          "required": false,
+          "contains": [
+            "process name"
+          ]
+        },
+        {
+          "name": "ip_hostname",
+          "type": "string",
+          "description": "IP/Hostname",
+          "required": false,
+          "contains": [
+            "ip",
+            "host name"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_connections",
+      "name": "List Connections",
+      "description": "List all active connections",
+      "http_method": "GET",
+      "endpoint": "/actions/list_connections",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "ip_hostname",
+          "type": "string",
+          "description": "IP/Hostname",
+          "required": false,
+          "contains": [
+            "ip",
+            "host name"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_firewall_rules",
+      "name": "List Firewall Rules",
+      "description": "List the firewall rules",
+      "http_method": "GET",
+      "endpoint": "/actions/list_firewall_rules",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "filter_port",
+          "type": "string",
+          "description": "Only show firewall rules acting on this port",
+          "required": false,
+          "contains": [
+            "port"
+          ]
+        },
+        {
+          "name": "filter_ip",
+          "type": "string",
+          "description": "Only show firewall rules acting on this ip",
+          "required": false,
+          "contains": [
+            "ip"
+          ]
+        },
+        {
+          "name": "direction",
+          "type": "string",
+          "description": "Only show firewall rules in this direction",
+          "required": false
+        },
+        {
+          "name": "protocol",
+          "type": "string",
+          "description": "Only show firewall rules using this protocol",
+          "required": false,
+          "contains": [
+            "winrm protocol"
+          ]
+        },
+        {
+          "name": "other",
+          "type": "string",
+          "description": "JSON object of key value pairs of other fields to match",
+          "required": false
+        },
+        {
+          "name": "ip_hostname",
+          "type": "string",
+          "description": "IP/Hostname",
+          "required": false,
+          "contains": [
+            "ip",
+            "host name"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "delete_firewall_rule",
+      "name": "Delete Firewall Rule",
+      "description": "Remove a firewall rule using netsh",
+      "http_method": "GET",
+      "endpoint": "/actions/delete_firewall_rule",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "The name of the rule to remove",
+          "required": true,
+          "contains": [
+            "windows firewall rule name"
+          ]
+        },
+        {
+          "name": "dir",
+          "type": "string",
+          "description": "Blocks inbound or outbound traffic",
+          "required": false
+        },
+        {
+          "name": "remote_ip",
+          "type": "string",
+          "description": "Firewall rule acts on this remote IP",
+          "required": false,
+          "contains": [
+            "ip"
+          ]
+        },
+        {
+          "name": "local_ip",
+          "type": "string",
+          "description": "Firewall rule acts on this local IP",
+          "required": false,
+          "contains": [
+            "ip"
+          ]
+        },
+        {
+          "name": "remote_port",
+          "type": "string",
+          "description": "Firewall rule acts on this remote port",
+          "required": false,
+          "contains": [
+            "port"
+          ]
+        },
+        {
+          "name": "local_port",
+          "type": "string",
+          "description": "Firewall rule acts on this local port",
+          "required": false,
+          "contains": [
+            "port"
+          ]
+        },
+        {
+          "name": "protocol",
+          "type": "string",
+          "description": "Firewall rule acts on this protocol",
+          "required": false,
+          "contains": [
+            "winrm protocol"
+          ]
+        },
+        {
+          "name": "other",
+          "type": "string",
+          "description": "JSON object of key value pairs for other parameters to include",
+          "required": false
+        },
+        {
+          "name": "ip_hostname",
+          "type": "string",
+          "description": "IP/Hostname",
+          "required": false,
+          "contains": [
+            "ip",
+            "host name"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "block_ip",
+      "name": "Block Ip",
+      "description": "Create a firewall rule to block a specified IP",
+      "http_method": "GET",
+      "endpoint": "/actions/block_ip",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "ip_hostname",
+          "type": "string",
+          "description": "IP/Hostname",
+          "required": false,
+          "contains": [
+            "ip",
+            "host name"
+          ]
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "description": "The name of the rule to add",
+          "required": true,
+          "contains": [
+            "windows firewall rule name"
+          ]
+        },
+        {
+          "name": "remote_ip",
+          "type": "string",
+          "description": "Block this IP",
+          "required": true,
+          "contains": [
+            "ip"
+          ]
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "create_firewall_rule",
+      "name": "Add Firewall Rule",
+      "description": "Add a firewall rule using netsh",
+      "http_method": "GET",
+      "endpoint": "/actions/create_firewall_rule",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "The name of the rule to add",
+          "required": true,
+          "contains": [
+            "windows firewall rule name"
+          ]
+        },
+        {
+          "name": "dir",
+          "type": "string",
+          "description": "Block inbound or outbound traffic",
+          "required": true
+        },
+        {
+          "name": "action",
+          "type": "string",
+          "description": "What the firewall will do with packets",
+          "required": true
+        },
+        {
+          "name": "remote_ip",
+          "type": "string",
+          "description": "Firewall rule acts on this remote IP",
+          "required": false,
+          "contains": [
+            "ip"
+          ]
+        },
+        {
+          "name": "local_ip",
+          "type": "string",
+          "description": "Firewall rule acts on this local IP",
+          "required": false,
+          "contains": [
+            "ip"
+          ]
+        },
+        {
+          "name": "remote_port",
+          "type": "string",
+          "description": "Firewall rule acts on this remote port",
+          "required": false,
+          "contains": [
+            "port"
+          ]
+        },
+        {
+          "name": "local_port",
+          "type": "string",
+          "description": "Firewall rule acts on this local port",
+          "required": false,
+          "contains": [
+            "port"
+          ]
+        },
+        {
+          "name": "protocol",
+          "type": "string",
+          "description": "Firewall rule acts on this protocol",
+          "required": false,
+          "contains": [
+            "winrm protocol"
+          ]
+        },
+        {
+          "name": "other",
+          "type": "string",
+          "description": "JSON object of key value pairs for other parameters to include",
+          "required": false
+        },
+        {
+          "name": "ip_hostname",
+          "type": "string",
+          "description": "IP/Hostname",
+          "required": false,
+          "contains": [
+            "ip",
+            "host name"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "logoff_user",
+      "name": "Logoff User",
+      "description": "Logoff a user",
+      "http_method": "GET",
+      "endpoint": "/actions/logoff_user",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "ip_hostname",
+          "type": "string",
+          "description": "IP/Hostname",
+          "required": false,
+          "contains": [
+            "ip",
+            "host name"
+          ]
+        },
+        {
+          "name": "session_id",
+          "type": "string",
+          "description": "Session ID",
+          "required": true,
+          "contains": [
+            "windows session id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_sessions",
+      "name": "List Sessions",
+      "description": "List all active sessions",
+      "http_method": "GET",
+      "endpoint": "/actions/list_sessions",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "ip_hostname",
+          "type": "string",
+          "description": "IP/Hostname",
+          "required": false,
+          "contains": [
+            "ip",
+            "host name"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "deactivate_partition",
+      "name": "Deactivate Partition",
+      "description": "Deactivate a partition",
+      "http_method": "POST",
+      "endpoint": "/actions/deactivate_partition",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "ip_hostname",
+          "type": "string",
+          "description": "IP/Hostname",
+          "required": false,
+          "contains": [
+            "ip",
+            "host name"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "activate_partition",
+      "name": "Activate Partition",
+      "description": "Activate a partition",
+      "http_method": "POST",
+      "endpoint": "/actions/activate_partition",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "ip_hostname",
+          "type": "string",
+          "description": "IP/Hostname",
+          "required": false,
+          "contains": [
+            "ip",
+            "host name"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "shutdown_system",
+      "name": "Shutdown System",
+      "description": "Shutdown a system",
+      "http_method": "GET",
+      "endpoint": "/actions/shutdown_system",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "ip_hostname",
+          "type": "string",
+          "description": "IP/Hostname",
+          "required": false,
+          "contains": [
+            "ip",
+            "host name"
+          ]
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "Comment to show to users",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "restart_system",
+      "name": "Restart System",
+      "description": "Restart a system",
+      "http_method": "GET",
+      "endpoint": "/actions/restart_system",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "ip_hostname",
+          "type": "string",
+          "description": "IP/Hostname",
+          "required": false,
+          "contains": [
+            "ip",
+            "host name"
+          ]
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "description": "Comment to show to users",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_applocker_policies",
+      "name": "List Policies",
+      "description": "List AppLocker Policies",
+      "http_method": "GET",
+      "endpoint": "/actions/list_applocker_policies",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "ip_hostname",
+          "type": "string",
+          "description": "IP/Hostname",
+          "required": false,
+          "contains": [
+            "ip",
+            "host name"
+          ]
+        },
+        {
+          "name": "location",
+          "type": "string",
+          "description": "Which policies to list",
+          "required": true
+        },
+        {
+          "name": "ldap",
+          "type": "string",
+          "description": "LDAP Server. Will only have an effect if 'location' is set to 'domain'",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "create_applocker_policy",
+      "name": "Block File Path",
+      "description": "Create a new AppLocker policy to block a file path",
+      "http_method": "GET",
+      "endpoint": "/actions/create_applocker_policy",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "ip_hostname",
+          "type": "string",
+          "description": "IP/Hostname",
+          "required": false,
+          "contains": [
+            "ip",
+            "host name"
+          ]
+        },
+        {
+          "name": "deny_allow",
+          "type": "string",
+          "description": "Set this rule to allow or deny",
+          "required": true
+        },
+        {
+          "name": "file_path",
+          "type": "string",
+          "description": "File path to set rule to. Allows wildcards (i.e. C:\\Windows\\System32\\*.exe)",
+          "required": true,
+          "contains": [
+            "file path"
+          ]
+        },
+        {
+          "name": "user",
+          "type": "string",
+          "description": "User or group to apply rule to",
+          "required": false,
+          "contains": [
+            "winrm user or group sid"
+          ]
+        },
+        {
+          "name": "rule_name_prefix",
+          "type": "string",
+          "description": "Prefix for new rule name",
+          "required": false
+        },
+        {
+          "name": "ldap",
+          "type": "string",
+          "description": "LDAP Server",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "delete_applocker_policy",
+      "name": "Delete Policy",
+      "description": "Delete an AppLocker policy",
+      "http_method": "GET",
+      "endpoint": "/actions/delete_applocker_policy",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "ip_hostname",
+          "type": "string",
+          "description": "IP/Hostname",
+          "required": false,
+          "contains": [
+            "ip",
+            "host name"
+          ]
+        },
+        {
+          "name": "applocker_policy_id",
+          "type": "string",
+          "description": "ID of policy to delete",
+          "required": true,
+          "contains": [
+            "windows applocker policy id"
+          ]
+        },
+        {
+          "name": "ldap",
+          "type": "string",
+          "description": "LDAP Server",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_file",
+      "name": "Get File",
+      "description": "Copy a file from the Windows Endpoint to the Vault",
+      "http_method": "GET",
+      "endpoint": "/actions/get_file",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "ip_hostname",
+          "type": "string",
+          "description": "IP/Hostname",
+          "required": false,
+          "contains": [
+            "ip",
+            "host name"
+          ]
+        },
+        {
+          "name": "file_path",
+          "type": "string",
+          "description": "Path to file",
+          "required": true,
+          "contains": [
+            "file path"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "send_file",
+      "name": "Upload File",
+      "description": "Copy a file from the vault to the Windows Endpoint",
+      "http_method": "GET",
+      "endpoint": "/actions/send_file",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "ip_hostname",
+          "type": "string",
+          "description": "IP/Hostname",
+          "required": false,
+          "contains": [
+            "ip",
+            "host name"
+          ]
+        },
+        {
+          "name": "vault_id",
+          "type": "string",
+          "description": "Vault ID of file",
+          "required": true,
+          "contains": [
+            "vault id"
+          ]
+        },
+        {
+          "name": "destination",
+          "type": "string",
+          "description": "Path to copy file to",
+          "required": true,
+          "contains": [
+            "file path"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "copy_file",
+      "name": "Copy File",
+      "description": "Run the copy command on the Windows Endpoint",
+      "http_method": "GET",
+      "endpoint": "/actions/copy_file",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "ip_hostname",
+          "type": "string",
+          "description": "IP/Hostname",
+          "required": false,
+          "contains": [
+            "ip",
+            "host name"
+          ]
+        },
+        {
+          "name": "from",
+          "type": "string",
+          "description": "File source (path)",
+          "required": true,
+          "contains": [
+            "file path"
+          ]
+        },
+        {
+          "name": "to",
+          "type": "string",
+          "description": "File destination (path)",
+          "required": true,
+          "contains": [
+            "file path"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "delete_file",
+      "name": "Delete File",
+      "description": "Run the delete command on the Windows Endpoint",
+      "http_method": "GET",
+      "endpoint": "/actions/delete_file",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "ip_hostname",
+          "type": "string",
+          "description": "IP/Hostname",
+          "required": false,
+          "contains": [
+            "ip",
+            "host name"
+          ]
+        },
+        {
+          "name": "file_path",
+          "type": "string",
+          "description": "Path to file",
+          "required": true,
+          "contains": [
+            "file path"
+          ]
+        },
+        {
+          "name": "force",
+          "type": "boolean",
+          "description": "Use the force flag for delete",
+          "required": false,
+          "default": false
+        }
+      ],
+      "observable_type": "file_hash"
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Windows Remote Management",
+    "original_type": "endpoint",
+    "converted_at": "2025-12-18T16:25:29.313149",
+    "source_version": "2.3.3"
+  }
+}

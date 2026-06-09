@@ -1,0 +1,155 @@
+{
+  "id": "keeper_secrets",
+  "name": "Keeper Secrets Manager",
+  "description": "Zero-knowledge secrets management through Keeper Secrets Manager REST API for managing secrets, records, and automated credential retrieval",
+  "version": "1.0.0",
+  "category": "secrets_management",
+  "vendor": "Keeper Security",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "api-key",
+    "location": "header"
+  },
+  "base_url": "https://{host}:9090/api/v2",
+  "actions": [
+    {
+      "id": "list_secrets",
+      "name": "List Secrets",
+      "description": "List all secrets (records) accessible by the application",
+      "http_method": "POST",
+      "endpoint": "/executecommand",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "command",
+          "type": "string",
+          "description": "Search records command",
+          "required": true,
+          "default": "search record --format json"
+        }
+      ]
+    },
+    {
+      "id": "get_secret",
+      "name": "Get Secret",
+      "description": "Retrieve a specific secret (record) by UID including all fields",
+      "http_method": "POST",
+      "endpoint": "/executecommand",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "command",
+          "type": "string",
+          "description": "Get record command with UID (e.g. get <recordUid> --format json)",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "create_secret",
+      "name": "Create Secret",
+      "description": "Create a new secret record in the vault",
+      "http_method": "POST",
+      "endpoint": "/executecommand",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "command",
+          "type": "string",
+          "description": "Import command with record data in JSON format",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "update_secret",
+      "name": "Update Secret",
+      "description": "Update fields of an existing secret record",
+      "http_method": "POST",
+      "endpoint": "/executecommand",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "command",
+          "type": "string",
+          "description": "Edit record command (e.g. edit <recordUid> --field <field>=<value>)",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "rotate_secret",
+      "name": "Rotate Secret",
+      "description": "Rotate a secret on the target system using PAM rotation",
+      "http_method": "POST",
+      "endpoint": "/executecommand",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "command",
+          "type": "string",
+          "description": "PAM rotation command (e.g. pam action rotate --record <recordUid>)",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "delete_secret",
+      "name": "Delete Secret",
+      "description": "Delete a secret record from the vault",
+      "http_method": "POST",
+      "endpoint": "/executecommand",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "command",
+          "type": "string",
+          "description": "Delete record command (e.g. rm <recordUid>)",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_shared_folders",
+      "name": "List Shared Folders",
+      "description": "List all shared folders accessible by the application",
+      "http_method": "POST",
+      "endpoint": "/executecommand",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "command",
+          "type": "string",
+          "description": "Shared folder list command",
+          "required": true,
+          "default": "sf-list --format json"
+        }
+      ]
+    },
+    {
+      "id": "get_totp",
+      "name": "Get TOTP Code",
+      "description": "Generate a current TOTP code from a record containing TOTP seed",
+      "http_method": "POST",
+      "endpoint": "/executecommand",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "command",
+          "type": "string",
+          "description": "TOTP command (e.g. totp <recordUid>)",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

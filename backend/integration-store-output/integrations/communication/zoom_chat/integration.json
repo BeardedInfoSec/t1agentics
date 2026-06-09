@@ -1,0 +1,101 @@
+{
+  "id": "zoom_chat",
+  "name": "Zoom Team Chat",
+  "description": "Integrates with Zoom REST API v2 for Team Chat messaging, channel management, and collaboration",
+  "version": "1.0.0",
+  "category": "communication",
+  "vendor": "Zoom",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "https://api.zoom.us/v2",
+  "actions": [
+    {
+      "id": "send_message",
+      "name": "Send Message",
+      "description": "Send a message to a Zoom Team Chat channel",
+      "http_method": "POST",
+      "endpoint": "/chat/users/me/messages",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "message", "type": "string", "description": "Message content", "required": true},
+        {"name": "to_channel", "type": "string", "description": "Channel ID to send message to", "required": true},
+        {"name": "reply_main_message_id", "type": "string", "description": "Message ID to reply to (for threading)", "required": false},
+        {"name": "at_items", "type": "string", "description": "JSON array of @mention items", "required": false}
+      ]
+    },
+    {
+      "id": "list_channels",
+      "name": "List Channels",
+      "description": "List Zoom Team Chat channels for the authenticated user",
+      "http_method": "GET",
+      "endpoint": "/chat/users/me/channels",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "page_size", "type": "number", "description": "Results per page (max 100)", "required": false, "default": 50},
+        {"name": "next_page_token", "type": "string", "description": "Pagination token", "required": false}
+      ]
+    },
+    {
+      "id": "get_message",
+      "name": "Get Message",
+      "description": "Retrieve messages from a Zoom Team Chat channel",
+      "http_method": "GET",
+      "endpoint": "/chat/users/me/messages",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "to_channel", "type": "string", "description": "Channel ID", "required": true},
+        {"name": "date", "type": "string", "description": "Date to query messages (yyyy-MM-dd)", "required": true},
+        {"name": "page_size", "type": "number", "description": "Number of messages per page (max 50)", "required": false, "default": 10},
+        {"name": "next_page_token", "type": "string", "description": "Pagination token", "required": false}
+      ]
+    },
+    {
+      "id": "create_channel",
+      "name": "Create Channel",
+      "description": "Create a new Zoom Team Chat channel",
+      "http_method": "POST",
+      "endpoint": "/chat/users/me/channels",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "name", "type": "string", "description": "Channel name", "required": true},
+        {"name": "type", "type": "number", "description": "Channel type (1=Private, 2=Private with external, 3=Public, 4=New chat)", "required": true},
+        {"name": "members", "type": "string", "description": "JSON array of member email addresses", "required": false}
+      ]
+    },
+    {
+      "id": "update_message",
+      "name": "Update Message",
+      "description": "Update an existing Zoom Team Chat message",
+      "http_method": "PUT",
+      "endpoint": "/chat/users/me/messages/{message_id}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "message_id", "type": "string", "description": "Message ID to update", "required": true},
+        {"name": "message", "type": "string", "description": "Updated message content", "required": true},
+        {"name": "to_channel", "type": "string", "description": "Channel ID", "required": true}
+      ]
+    },
+    {
+      "id": "delete_message",
+      "name": "Delete Message",
+      "description": "Delete a Zoom Team Chat message",
+      "http_method": "DELETE",
+      "endpoint": "/chat/users/me/messages/{message_id}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "message_id", "type": "string", "description": "Message ID to delete", "required": true},
+        {"name": "to_channel", "type": "string", "description": "Channel ID", "required": true}
+      ]
+    }
+  ]
+}

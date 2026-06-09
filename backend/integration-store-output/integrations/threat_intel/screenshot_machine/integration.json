@@ -1,0 +1,69 @@
+{
+  "id": "screenshot_machine",
+  "name": "Screenshot Machine",
+  "description": "This app integrates with the Screenshot Machine service",
+  "version": "3.0.5",
+  "category": "threat_intel",
+  "vendor": "Screenshot Machine",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "key_name": "key",
+    "location": "query"
+  },
+  "base_url": "https://api.screenshotmachine.com",
+  "documentation_url": "https://www.screenshotmachine.com/website-screenshot-api.php",
+  "setup_instructions": "## Get a Screenshot Machine API key\n\nScreenshot Machine renders a screenshot of any URL without your analyst ever opening the link in a browser — useful for phishing triage and suspicious-URL review.\n\n### 1. Register an account\n1. Open https://www.screenshotmachine.com/register.php and sign up.\n2. Verify the email link.\n\n### 2. Copy your customer key\n1. Log in and go to your dashboard at https://www.screenshotmachine.com/dashboard.php.\n2. Copy the **Customer Key** shown at the top — a short alphanumeric string (e.g. `a1b2c3`).\n\n### 3. Paste the key below\nPaste in the **API Key** field. T1 sends it as the `key` query-string parameter on every request — there's no header prefix.\n\nClick **Test Authentication** to confirm. The test issues a low-cost screenshot of `https://example.com` and expects an image response.\n\n### Tier-gated options\n- **Free**: 100 screenshots/month, watermarked, JPG only, max 1024×768.\n- **Paid plans**: no watermark, PNG/PDF output, full-page captures, larger resolutions, custom delay, ad blocking, cookie banner dismissal.\n\nThe `get_screenshot` action exposes optional params (`dimension`, `format`, `delay`, `device`) — T1 only sends what you set.\n\n### Rate limits\n- Per-plan monthly cap. Burst limits are loose. T1 surfaces a `QuotaExceededError` on 429 or on an over-limit JSON error response.\n\n### Troubleshooting\n- **`Invalid customer key`**: Key wrong or account suspended. Re-copy from dashboard.\n- **Returns watermarked image on paid plan**: Plan downgrade hit — check billing.\n- **`Page load timeout`**: Slow target or sites that block headless browsers (some Cloudflare-protected pages). Try with `delay=3000` or higher.\n- **Output is JSON not an image**: That JSON contains an error — log it and surface to the analyst.",
+  "actions": [
+    {
+      "id": "get_screenshot",
+      "name": "Get Screenshot",
+      "description": "Get a screenshot of a URL",
+      "http_method": "GET",
+      "endpoint": "/actions/get_screenshot",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "URL to screenshot",
+          "required": true,
+          "contains": [
+            "url",
+            "domain"
+          ]
+        },
+        {
+          "name": "dimension",
+          "type": "string",
+          "description": "Size of the web snapshot or webpage screenshot in format [width]x[height]. (Default: 120x90)",
+          "required": false,
+          "default": "120x90"
+        },
+        {
+          "name": "filename",
+          "type": "string",
+          "description": "The filename for storing the screenshot in the Vault",
+          "required": false
+        },
+        {
+          "name": "delay",
+          "type": "string",
+          "description": "Based on delay value(in seconds) capturing engine should wait before the screenshot is created, (Default: 200)",
+          "required": false,
+          "default": "200"
+        }
+      ],
+      "observable_type": "url"
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Screenshot Machine",
+    "original_type": "information",
+    "converted_at": "2025-12-18T16:25:29.101654",
+    "source_version": "3.0.5"
+  }
+}

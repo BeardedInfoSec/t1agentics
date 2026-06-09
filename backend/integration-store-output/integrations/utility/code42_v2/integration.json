@@ -1,0 +1,1114 @@
+{
+  "id": "code42_v2",
+  "name": "Code42 v2",
+  "description": "Code42 provides simple, fast detection and response to everyday data loss from insider threats by focusing on customer data on endpoints and the cloud",
+  "version": "1.0.3",
+  "category": "utility",
+  "vendor": "Code42",
+  "auth_type": "basic_auth",
+  "auth_config": {
+    "type": "basic_auth",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "on_poll",
+      "name": "On Poll",
+      "description": "Callback action for the on_poll ingest functionality",
+      "http_method": "GET",
+      "endpoint": "/actions/on_poll",
+      "action_type": "ingest",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "container_id",
+          "type": "string",
+          "description": "Alert IDs to limit the ingestion to (limited to 100)",
+          "required": false
+        },
+        {
+          "name": "start_time",
+          "type": "string",
+          "description": "Parameter ignored in this app",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "string",
+          "description": "Parameter ignored in this app",
+          "required": false
+        },
+        {
+          "name": "container_count",
+          "type": "number",
+          "description": "Maximum number of alerts to create (only used in Poll Now)",
+          "required": false
+        },
+        {
+          "name": "artifact_count",
+          "type": "number",
+          "description": "Maximum number of artifacts to create (only used in Poll Now)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "add_departing_employee",
+      "name": "Add Departing Employee",
+      "description": "Add a departing employee to the departing employees detection list",
+      "http_method": "POST",
+      "endpoint": "/actions/add_departing_employee",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "username",
+          "type": "string",
+          "description": "Username of the employee to add",
+          "required": true,
+          "contains": [
+            "email",
+            "user name"
+          ]
+        },
+        {
+          "name": "departure_date",
+          "type": "string",
+          "description": "Date of departure for employee in format yyyy-MM-dd",
+          "required": false
+        },
+        {
+          "name": "note",
+          "type": "string",
+          "description": "A note to include",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "remove_departing_employee",
+      "name": "Remove Departing Employee",
+      "description": "Remove a departing employee from the departing employees detection list",
+      "http_method": "POST",
+      "endpoint": "/actions/remove_departing_employee",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "username",
+          "type": "string",
+          "description": "Username of the employee to remove",
+          "required": true,
+          "contains": [
+            "email",
+            "user name"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_departing_employees",
+      "name": "List Departing Employees",
+      "description": "Returns a list of users who are on the departing employees list",
+      "http_method": "GET",
+      "endpoint": "/actions/list_departing_employees",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "filter_type",
+          "type": "string",
+          "description": "Filters the results based on specific filters",
+          "required": false,
+          "default": "OPEN"
+        }
+      ]
+    },
+    {
+      "id": "get_departing_employee",
+      "name": "Get Departing Employee",
+      "description": "Get a departing employee",
+      "http_method": "GET",
+      "endpoint": "/actions/get_departing_employee",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "username",
+          "type": "string",
+          "description": "The username of the departing employee to get",
+          "required": true,
+          "contains": [
+            "email",
+            "user name"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "add_highrisk_employee",
+      "name": "Add Highrisk Employee",
+      "description": "Add a high risk employee to the high risk employees detection list",
+      "http_method": "POST",
+      "endpoint": "/actions/add_highrisk_employee",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "username",
+          "type": "string",
+          "description": "Username of the employee to add",
+          "required": true,
+          "contains": [
+            "email",
+            "user name"
+          ]
+        },
+        {
+          "name": "note",
+          "type": "string",
+          "description": "A note to include",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "remove_highrisk_employee",
+      "name": "Remove Highrisk Employee",
+      "description": "Remove a high risk employee from the high risk employees detection list",
+      "http_method": "POST",
+      "endpoint": "/actions/remove_highrisk_employee",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "username",
+          "type": "string",
+          "description": "Username of the employee to remove",
+          "required": true,
+          "contains": [
+            "email",
+            "user name"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_highrisk_employees",
+      "name": "List Highrisk Employees",
+      "description": "Returns a list of users who are on the high-risk employees list",
+      "http_method": "GET",
+      "endpoint": "/actions/list_highrisk_employees",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "filter_type",
+          "type": "string",
+          "description": "Filters the results based on specific filters",
+          "required": false,
+          "default": "OPEN"
+        }
+      ]
+    },
+    {
+      "id": "get_highrisk_employee",
+      "name": "Get Highrisk Employee",
+      "description": "Get a high risk employee",
+      "http_method": "GET",
+      "endpoint": "/actions/get_highrisk_employee",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "username",
+          "type": "string",
+          "description": "The username of the high risk employee to get",
+          "required": true,
+          "contains": [
+            "email",
+            "user name"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "add_highrisk_tag",
+      "name": "Add Highrisk Tag",
+      "description": "Add a risk tag to a user",
+      "http_method": "POST",
+      "endpoint": "/actions/add_highrisk_tag",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "username",
+          "type": "string",
+          "description": "Username of the employee to add a risk tag to",
+          "required": true,
+          "contains": [
+            "email",
+            "user name"
+          ]
+        },
+        {
+          "name": "risk_tag",
+          "type": "string",
+          "description": "A risk tag to add to the user",
+          "required": true,
+          "contains": [
+            "code42 risk tag"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "remove_highrisk_tag",
+      "name": "Remove Highrisk Tag",
+      "description": "Remove a risk tag from a user",
+      "http_method": "POST",
+      "endpoint": "/actions/remove_highrisk_tag",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "username",
+          "type": "string",
+          "description": "Username of the employee to remove a risk tag from",
+          "required": true,
+          "contains": [
+            "email",
+            "user name"
+          ]
+        },
+        {
+          "name": "risk_tag",
+          "type": "string",
+          "description": "A risk tag to remove from the user",
+          "required": true,
+          "contains": [
+            "code42 risk tag"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_alert_details",
+      "name": "Get Alert Details",
+      "description": "Get alert details",
+      "http_method": "GET",
+      "endpoint": "/actions/get_alert_details",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "alert_id",
+          "type": "string",
+          "description": "ID of the alert to retrieve",
+          "required": true,
+          "contains": [
+            "code42 alert id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "search_alerts",
+      "name": "Search Alerts",
+      "description": "Search Alerts",
+      "http_method": "GET",
+      "endpoint": "/actions/search_alerts",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "username",
+          "type": "string",
+          "description": "Username of the actor listed on alert",
+          "required": false,
+          "contains": [
+            "email",
+            "user name"
+          ]
+        },
+        {
+          "name": "alert_state",
+          "type": "string",
+          "description": "Alert state",
+          "required": false,
+          "contains": [
+            "code42 alert state"
+          ]
+        },
+        {
+          "name": "start_date",
+          "type": "string",
+          "description": "Beginning of date range to search. Time (in UTC) may also be supplied but is not required",
+          "required": false
+        },
+        {
+          "name": "end_date",
+          "type": "string",
+          "description": "End of date range to search. Time (in UTC) may also be supplied but is not required",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "set_alert_state",
+      "name": "Set Alert State",
+      "description": "Set the state of the alert",
+      "http_method": "GET",
+      "endpoint": "/actions/set_alert_state",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "alert_id",
+          "type": "string",
+          "description": "Alert ID",
+          "required": true,
+          "contains": [
+            "code42 alert id"
+          ]
+        },
+        {
+          "name": "alert_state",
+          "type": "string",
+          "description": "Alert State",
+          "required": true
+        },
+        {
+          "name": "note",
+          "type": "string",
+          "description": "A note to include",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_users",
+      "name": "List Users",
+      "description": "List all users",
+      "http_method": "GET",
+      "endpoint": "/actions/list_users",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "org_uid",
+          "type": "string",
+          "description": "Organization UID",
+          "required": false
+        },
+        {
+          "name": "role_id",
+          "type": "number",
+          "description": "User role ID",
+          "required": false
+        },
+        {
+          "name": "email",
+          "type": "string",
+          "description": "User's email",
+          "required": false,
+          "contains": [
+            "email"
+          ]
+        },
+        {
+          "name": "user_status",
+          "type": "string",
+          "description": "User's status (Default: All)",
+          "required": false,
+          "default": "All"
+        }
+      ]
+    },
+    {
+      "id": "create_user",
+      "name": "Create User",
+      "description": "Create a new Code42 user account",
+      "http_method": "GET",
+      "endpoint": "/actions/create_user",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "org_uid",
+          "type": "string",
+          "description": "Org UID to create user in",
+          "required": true
+        },
+        {
+          "name": "username",
+          "type": "string",
+          "description": "Username to create",
+          "required": true,
+          "contains": [
+            "email",
+            "user name"
+          ]
+        },
+        {
+          "name": "password",
+          "type": "string",
+          "description": "Password for newly created user",
+          "required": true
+        },
+        {
+          "name": "first_name",
+          "type": "string",
+          "description": "User's first name",
+          "required": false
+        },
+        {
+          "name": "last_name",
+          "type": "string",
+          "description": "User's last name",
+          "required": false
+        },
+        {
+          "name": "notes",
+          "type": "string",
+          "description": "Notes about user",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "block_user",
+      "name": "Block User",
+      "description": "Blocks a user from accessing their Code42 account",
+      "http_method": "POST",
+      "endpoint": "/actions/block_user",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "username",
+          "type": "string",
+          "description": "Username to block",
+          "required": true,
+          "contains": [
+            "email",
+            "user name"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "deactivate_user",
+      "name": "Deactivate User",
+      "description": "Deactivates user's Code42 account",
+      "http_method": "POST",
+      "endpoint": "/actions/deactivate_user",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "username",
+          "type": "string",
+          "description": "Username to deactivate",
+          "required": true,
+          "contains": [
+            "email",
+            "user name"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "reactivate_user",
+      "name": "Reactivate User",
+      "description": "Reactivates a deactivated user's Code42 account",
+      "http_method": "POST",
+      "endpoint": "/actions/reactivate_user",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "username",
+          "type": "string",
+          "description": "Username to reactivate",
+          "required": true,
+          "contains": [
+            "email",
+            "user name"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "unblock_user",
+      "name": "Unblock User",
+      "description": "Unblocks a user, allowing access to their Code42 account",
+      "http_method": "POST",
+      "endpoint": "/actions/unblock_user",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "username",
+          "type": "string",
+          "description": "Username to unblock",
+          "required": true,
+          "contains": [
+            "email",
+            "user name"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_user_profile",
+      "name": "Get User Profile",
+      "description": "Get user profile",
+      "http_method": "GET",
+      "endpoint": "/actions/get_user_profile",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "username",
+          "type": "string",
+          "description": "The username associated with the user profile to get",
+          "required": true,
+          "contains": [
+            "email",
+            "user name"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "add_legalhold_custodian",
+      "name": "Add Legalhold Custodian",
+      "description": "Add a user (custodian) to a legal hold matter",
+      "http_method": "POST",
+      "endpoint": "/actions/add_legalhold_custodian",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "username",
+          "type": "string",
+          "description": "Username to be added to legal hold matter",
+          "required": true,
+          "contains": [
+            "email",
+            "user name"
+          ]
+        },
+        {
+          "name": "matter_id",
+          "type": "string",
+          "description": "The identifier of the legal hold matter",
+          "required": true,
+          "contains": [
+            "code42 matter id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "remove_legalhold_custodian",
+      "name": "Remove Legalhold Custodian",
+      "description": "Remove user (custodian) from a legal hold matter",
+      "http_method": "POST",
+      "endpoint": "/actions/remove_legalhold_custodian",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "username",
+          "type": "string",
+          "description": "Username of user to be removed from legal hold matter",
+          "required": true,
+          "contains": [
+            "email",
+            "user name"
+          ]
+        },
+        {
+          "name": "matter_id",
+          "type": "string",
+          "description": "ID of the legal hold matter to remove the user from",
+          "required": true,
+          "contains": [
+            "code42 matter id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "create_case",
+      "name": "Create Case",
+      "description": "Create a Code42 case",
+      "http_method": "GET",
+      "endpoint": "/actions/create_case",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "case_name",
+          "type": "string",
+          "description": "Case name",
+          "required": true
+        },
+        {
+          "name": "subject",
+          "type": "string",
+          "description": "Subject of case (username)",
+          "required": false,
+          "contains": [
+            "email",
+            "user name"
+          ]
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Description",
+          "required": false
+        },
+        {
+          "name": "assignee",
+          "type": "string",
+          "description": "Assignee (username)",
+          "required": false,
+          "contains": [
+            "email",
+            "user name"
+          ]
+        },
+        {
+          "name": "findings",
+          "type": "string",
+          "description": "Findings (markdown text)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "update_case",
+      "name": "Update Case",
+      "description": "Update the details of a case",
+      "http_method": "GET",
+      "endpoint": "/actions/update_case",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "case_number",
+          "type": "number",
+          "description": "Case number",
+          "required": true,
+          "contains": [
+            "code42 case number"
+          ]
+        },
+        {
+          "name": "case_name",
+          "type": "string",
+          "description": "Case name",
+          "required": false
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Description",
+          "required": false
+        },
+        {
+          "name": "subject",
+          "type": "string",
+          "description": "Subject",
+          "required": false,
+          "contains": [
+            "email",
+            "user name"
+          ]
+        },
+        {
+          "name": "assignee",
+          "type": "string",
+          "description": "Assignee",
+          "required": false,
+          "contains": [
+            "email",
+            "user name"
+          ]
+        },
+        {
+          "name": "findings",
+          "type": "string",
+          "description": "Findings (markdown)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "close_case",
+      "name": "Close Case",
+      "description": "Change the status of a Code42 case to 'CLOSED'",
+      "http_method": "GET",
+      "endpoint": "/actions/close_case",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "case_number",
+          "type": "number",
+          "description": "Case number",
+          "required": true,
+          "contains": [
+            "code42 case number"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_cases",
+      "name": "List Cases",
+      "description": "List Code42 Cases",
+      "http_method": "GET",
+      "endpoint": "/actions/list_cases",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Filter cases by status",
+          "required": true,
+          "default": "ALL"
+        },
+        {
+          "name": "assignee",
+          "type": "string",
+          "description": "Filter cases by assignee username",
+          "required": false,
+          "contains": [
+            "email",
+            "user name"
+          ]
+        },
+        {
+          "name": "subject",
+          "type": "string",
+          "description": "Filter cases by subject username",
+          "required": false,
+          "contains": [
+            "email",
+            "user name"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "add_case_event",
+      "name": "Add Case Event",
+      "description": "Associates a file event with a Code42 case",
+      "http_method": "GET",
+      "endpoint": "/actions/add_case_event",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "case_number",
+          "type": "number",
+          "description": "Case number",
+          "required": true,
+          "contains": [
+            "code42 case number"
+          ]
+        },
+        {
+          "name": "event_id",
+          "type": "string",
+          "description": "Event ID",
+          "required": true,
+          "contains": [
+            "code42 file event"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "hunt_file",
+      "name": "Hunt File",
+      "description": "Searches Code42 for a backed-up file with a matching hash and downloads it",
+      "http_method": "GET",
+      "endpoint": "/actions/hunt_file",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "hash",
+          "type": "string",
+          "description": "The MD5 or SHA256 hash of the file to download",
+          "required": true,
+          "contains": [
+            "md5",
+            "sha256"
+          ]
+        },
+        {
+          "name": "file_name",
+          "type": "string",
+          "description": "The name to give to the file after it is downloaded. If not supplied, the hash will be used",
+          "required": false,
+          "contains": [
+            "file name"
+          ]
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "run_query",
+      "name": "Run Query",
+      "description": "Search for Code42 file events",
+      "http_method": "GET",
+      "endpoint": "/actions/run_query",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "start_date",
+          "type": "string",
+          "description": "Beginning of date range to search. Time (in UTC) may also be supplied but is not required",
+          "required": false
+        },
+        {
+          "name": "end_date",
+          "type": "string",
+          "description": "End of date range to search. Time (in UTC) may also be supplied but is not required",
+          "required": false
+        },
+        {
+          "name": "file_hash",
+          "type": "string",
+          "description": "MD5 or SHA256 hash of a file",
+          "required": false,
+          "contains": [
+            "md5",
+            "sha256"
+          ]
+        },
+        {
+          "name": "file_name",
+          "type": "string",
+          "description": "Name of the file observed",
+          "required": false,
+          "contains": [
+            "file name"
+          ]
+        },
+        {
+          "name": "file_path",
+          "type": "string",
+          "description": "Path of the file observed",
+          "required": false,
+          "contains": [
+            "file path"
+          ]
+        },
+        {
+          "name": "file_category",
+          "type": "string",
+          "description": "Category of the file observed",
+          "required": false,
+          "contains": [
+            "code42 file category"
+          ]
+        },
+        {
+          "name": "username",
+          "type": "string",
+          "description": "Name of the user associated with the event",
+          "required": false,
+          "contains": [
+            "email",
+            "user name"
+          ]
+        },
+        {
+          "name": "hostname",
+          "type": "string",
+          "description": "Hostname",
+          "required": false,
+          "contains": [
+            "host name"
+          ]
+        },
+        {
+          "name": "private_ip",
+          "type": "string",
+          "description": "Private IPv4 or IPv6 address",
+          "required": false,
+          "contains": [
+            "ip",
+            "ipv6"
+          ]
+        },
+        {
+          "name": "public_ip",
+          "type": "string",
+          "description": "Public IPv4 or IPv6 address",
+          "required": false,
+          "contains": [
+            "ip",
+            "ipv6"
+          ]
+        },
+        {
+          "name": "exposure_type",
+          "type": "string",
+          "description": "Type of exposure that occurred",
+          "required": false,
+          "contains": [
+            "code42 exposure type"
+          ]
+        },
+        {
+          "name": "process_name",
+          "type": "string",
+          "description": "Process name involved in the exposure",
+          "required": false,
+          "contains": [
+            "code42 process name"
+          ]
+        },
+        {
+          "name": "url",
+          "type": "string",
+          "description": "Urls of all the browser tabs open during exposure",
+          "required": false,
+          "contains": [
+            "url"
+          ]
+        },
+        {
+          "name": "window_title",
+          "type": "string",
+          "description": "Names of all the open browser tabs or windows during exposure",
+          "required": false,
+          "contains": [
+            "code42 window title"
+          ]
+        },
+        {
+          "name": "untrusted_only",
+          "type": "boolean",
+          "description": "Return only events representing untrusted activity",
+          "required": false
+        },
+        {
+          "name": "max_results",
+          "type": "number",
+          "description": "Maximum number of results to fetch (default: 1000)",
+          "required": false,
+          "default": 1000
+        }
+      ],
+      "observable_type": "file_hash"
+    },
+    {
+      "id": "run_advanced_query",
+      "name": "Run Advanced Query",
+      "description": "Run an advanced query using JSON",
+      "http_method": "GET",
+      "endpoint": "/actions/run_advanced_query",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "json_query",
+          "type": "string",
+          "description": "The raw JSON of the query to execute",
+          "required": true
+        },
+        {
+          "name": "max_results",
+          "type": "number",
+          "description": "Maximum number of results to fetch (default: 1000)",
+          "required": false,
+          "default": 1000
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Code42 v2",
+    "original_type": "generic",
+    "converted_at": "2025-12-18T16:25:28.680652",
+    "source_version": "1.0.3"
+  }
+}

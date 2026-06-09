@@ -1,0 +1,228 @@
+{
+  "id": "ping_identity",
+  "name": "Ping Identity PingOne",
+  "description": "Cloud identity management through PingOne platform APIs for user lifecycle, group management, MFA, and identity governance",
+  "version": "1.0.0",
+  "category": "identity",
+  "vendor": "Ping Identity",
+  "auth_type": "oauth2_client",
+  "auth_config": {
+    "type": "oauth2_client",
+    "token_url": "https://auth.pingone.com/{environmentId}/as/token",
+    "scope": "openid"
+  },
+  "base_url": "https://api.pingone.com/v1/environments/{environmentId}",
+  "actions": [
+    {
+      "id": "list_users",
+      "name": "List Users",
+      "description": "List all users in the PingOne environment",
+      "http_method": "GET",
+      "endpoint": "/users",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "SCIM filter expression (e.g. username eq \"john\")",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of results per page",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_user",
+      "name": "Get User",
+      "description": "Retrieve details of a specific user",
+      "http_method": "GET",
+      "endpoint": "/users/{userId}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "userId",
+          "type": "string",
+          "description": "User ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "disable_user",
+      "name": "Disable User",
+      "description": "Disable a user account by setting enabled to false",
+      "http_method": "PUT",
+      "endpoint": "/users/{userId}",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "userId",
+          "type": "string",
+          "description": "User ID to disable",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "enable_user",
+      "name": "Enable User",
+      "description": "Enable a previously disabled user account",
+      "http_method": "PUT",
+      "endpoint": "/users/{userId}",
+      "action_type": "correct",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "userId",
+          "type": "string",
+          "description": "User ID to enable",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "reset_password",
+      "name": "Reset Password",
+      "description": "Trigger a password reset for a user",
+      "http_method": "POST",
+      "endpoint": "/users/{userId}/password",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "userId",
+          "type": "string",
+          "description": "User ID to reset password for",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_groups",
+      "name": "List Groups",
+      "description": "List all groups in the PingOne environment",
+      "http_method": "GET",
+      "endpoint": "/groups",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "SCIM filter expression for groups",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of results per page",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_group",
+      "name": "Get Group",
+      "description": "Retrieve details of a specific group",
+      "http_method": "GET",
+      "endpoint": "/groups/{groupId}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "groupId",
+          "type": "string",
+          "description": "Group ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "add_user_to_group",
+      "name": "Add User to Group",
+      "description": "Add a user to a group as a member",
+      "http_method": "POST",
+      "endpoint": "/users/{userId}/memberOfGroups",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "userId",
+          "type": "string",
+          "description": "User ID to add",
+          "required": true
+        },
+        {
+          "name": "groupId",
+          "type": "string",
+          "description": "Group ID to add the user to",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "remove_user_from_group",
+      "name": "Remove User from Group",
+      "description": "Remove a user from a group",
+      "http_method": "DELETE",
+      "endpoint": "/users/{userId}/memberOfGroups/{groupId}",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "userId",
+          "type": "string",
+          "description": "User ID to remove",
+          "required": true
+        },
+        {
+          "name": "groupId",
+          "type": "string",
+          "description": "Group ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_mfa_devices",
+      "name": "List MFA Devices",
+      "description": "List all MFA devices enrolled for a user",
+      "http_method": "GET",
+      "endpoint": "/users/{userId}/devices",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "userId",
+          "type": "string",
+          "description": "User ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_audit_activities",
+      "name": "Get Audit Activities",
+      "description": "Retrieve audit activity events for the environment",
+      "http_method": "GET",
+      "endpoint": "/activities",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "filter",
+          "type": "string",
+          "description": "Filter expression for audit activities",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

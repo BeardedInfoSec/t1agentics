@@ -1,0 +1,190 @@
+{
+  "id": "inky",
+  "name": "INKY",
+  "description": "Behavioral email security platform using computer vision, AI, and machine learning to detect phishing, BEC, and brand impersonation with color-coded warning banners",
+  "version": "1.0.0",
+  "category": "email_security",
+  "vendor": "Inky",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header",
+    "prefix": "Bearer"
+  },
+  "base_url": "https://api.inky.com/v1",
+  "actions": [
+    {
+      "id": "get_threats",
+      "name": "Get Threats",
+      "description": "Retrieve detected phishing threats and malicious emails",
+      "http_method": "GET",
+      "endpoint": "/threats",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "start_date",
+          "type": "string",
+          "description": "Start date in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "end_date",
+          "type": "string",
+          "description": "End date in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "classification",
+          "type": "string",
+          "description": "Filter by classification (danger, caution, safe)",
+          "required": false
+        },
+        {
+          "name": "threat_type",
+          "type": "string",
+          "description": "Filter by threat type (phishing, malware, bec, spoofing)",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of threats to return",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Offset for pagination",
+          "required": false,
+          "default": 0
+        }
+      ]
+    },
+    {
+      "id": "get_threat_details",
+      "name": "Get Threat Details",
+      "description": "Retrieve detailed analysis of a specific threat including banner classification and indicators",
+      "http_method": "GET",
+      "endpoint": "/threats/{threat_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "threat_id",
+          "type": "string",
+          "description": "The threat ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_reported_emails",
+      "name": "Get Reported Emails",
+      "description": "Retrieve emails reported by users as suspicious or phishing",
+      "http_method": "GET",
+      "endpoint": "/reported",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "start_date",
+          "type": "string",
+          "description": "Start date in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "end_date",
+          "type": "string",
+          "description": "End date in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of results",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "remediate_email",
+      "name": "Remediate Email",
+      "description": "Remove a malicious email from user inboxes",
+      "http_method": "POST",
+      "endpoint": "/threats/{threat_id}/remediate",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "threat_id",
+          "type": "string",
+          "description": "The threat ID to remediate",
+          "required": true
+        },
+        {
+          "name": "action",
+          "type": "string",
+          "description": "Remediation action (delete, quarantine, move_to_junk)",
+          "required": true,
+          "default": "quarantine"
+        }
+      ]
+    },
+    {
+      "id": "get_email_statistics",
+      "name": "Get Email Statistics",
+      "description": "Retrieve email processing and threat detection statistics",
+      "http_method": "GET",
+      "endpoint": "/statistics",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "start_date",
+          "type": "string",
+          "description": "Start date in ISO 8601 format",
+          "required": false
+        },
+        {
+          "name": "end_date",
+          "type": "string",
+          "description": "End date in ISO 8601 format",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "classify_email",
+      "name": "Classify Email",
+      "description": "Reclassify an email as safe, suspicious, or dangerous",
+      "http_method": "POST",
+      "endpoint": "/threats/{threat_id}/classify",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "threat_id",
+          "type": "string",
+          "description": "The threat ID to reclassify",
+          "required": true
+        },
+        {
+          "name": "classification",
+          "type": "string",
+          "description": "New classification (danger, caution, safe, false_positive)",
+          "required": true
+        },
+        {
+          "name": "reason",
+          "type": "string",
+          "description": "Reason for the reclassification",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

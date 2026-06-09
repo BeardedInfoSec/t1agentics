@@ -1,0 +1,212 @@
+{
+  "id": "varonis",
+  "name": "Varonis DatAlert",
+  "description": "Integrates with Varonis Data Security Platform REST API for DLP alert monitoring, data classification, permissions analysis, and sensitive data discovery via DatAlert and DatAdvantage",
+  "version": "1.0.0",
+  "category": "dlp",
+  "vendor": "Varonis",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "https://{host}/api/v1",
+  "actions": [
+    {
+      "id": "list_alerts",
+      "name": "List Alerts",
+      "description": "Retrieve DatAlert alerts for suspicious data access, permission changes, and policy violations",
+      "http_method": "GET",
+      "endpoint": "/alerts",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "startDate",
+          "type": "string",
+          "description": "Start date for alert query (ISO 8601 format)",
+          "required": false
+        },
+        {
+          "name": "endDate",
+          "type": "string",
+          "description": "End date for alert query (ISO 8601 format)",
+          "required": false
+        },
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Filter by alert severity (critical, high, medium, low)",
+          "required": false
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Filter by alert status (open, under_investigation, closed)",
+          "required": false
+        },
+        {
+          "name": "alertType",
+          "type": "string",
+          "description": "Filter by alert type (e.g., data_exfiltration, permission_change, abnormal_access)",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of alerts to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "get_alert_details",
+      "name": "Get Alert Details",
+      "description": "Retrieve detailed information about a specific DatAlert alert including affected resources and user context",
+      "http_method": "GET",
+      "endpoint": "/alerts/{alertId}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "alertId",
+          "type": "string",
+          "description": "Unique identifier of the alert",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "update_alert",
+      "name": "Update Alert",
+      "description": "Update alert status, assign to a user, or add investigation notes",
+      "http_method": "PUT",
+      "endpoint": "/alerts/{alertId}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "alertId",
+          "type": "string",
+          "description": "Unique identifier of the alert to update",
+          "required": true
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "New status for the alert (open, under_investigation, closed)",
+          "required": false
+        },
+        {
+          "name": "assignee",
+          "type": "string",
+          "description": "User to assign the alert to",
+          "required": false
+        },
+        {
+          "name": "closeReason",
+          "type": "string",
+          "description": "Reason for closing the alert",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "search_sensitive_data",
+      "name": "Search Sensitive Data",
+      "description": "Search for classified sensitive data across monitored file servers and cloud stores",
+      "http_method": "GET",
+      "endpoint": "/classification/results",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "category",
+          "type": "string",
+          "description": "Data classification category (e.g., PII, PHI, PCI, GDPR)",
+          "required": false
+        },
+        {
+          "name": "path",
+          "type": "string",
+          "description": "File path to search within",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of results to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "get_permissions",
+      "name": "Get Permissions",
+      "description": "Retrieve permissions and access control information for a specific resource path",
+      "http_method": "GET",
+      "endpoint": "/permissions",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "path",
+          "type": "string",
+          "description": "File or folder path to check permissions for",
+          "required": true
+        },
+        {
+          "name": "includeInherited",
+          "type": "boolean",
+          "description": "Include inherited permissions in the response",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_activity_log",
+      "name": "Get Activity Log",
+      "description": "Retrieve file system activity events for a specified user or path from the audit trail",
+      "http_method": "GET",
+      "endpoint": "/activity",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "user",
+          "type": "string",
+          "description": "User identity to filter activity by",
+          "required": false
+        },
+        {
+          "name": "path",
+          "type": "string",
+          "description": "File or folder path to filter activity for",
+          "required": false
+        },
+        {
+          "name": "startDate",
+          "type": "string",
+          "description": "Start date for activity query (ISO 8601 format)",
+          "required": false
+        },
+        {
+          "name": "endDate",
+          "type": "string",
+          "description": "End date for activity query (ISO 8601 format)",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of activity records to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    }
+  ]
+}

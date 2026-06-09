@@ -1,0 +1,112 @@
+{
+  "id": "opsgenie",
+  "name": "OpsGenie",
+  "description": "Integrates with Atlassian OpsGenie REST API v2 for alert management, incident response, and on-call scheduling",
+  "version": "1.0.0",
+  "category": "ticketing",
+  "vendor": "Atlassian",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header",
+    "prefix": "GenieKey "
+  },
+  "base_url": "https://api.opsgenie.com/v2",
+  "actions": [
+    {
+      "id": "create_alert",
+      "name": "Create Alert",
+      "description": "Create a new alert in OpsGenie",
+      "http_method": "POST",
+      "endpoint": "/alerts",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "message", "type": "string", "description": "Alert message (max 130 chars)", "required": true},
+        {"name": "alias", "type": "string", "description": "Client-defined unique identifier for the alert", "required": false},
+        {"name": "description", "type": "string", "description": "Detailed description (max 15000 chars)", "required": false},
+        {"name": "priority", "type": "string", "description": "Priority (P1, P2, P3, P4, P5)", "required": false, "default": "P3"},
+        {"name": "source", "type": "string", "description": "Source of the alert", "required": false},
+        {"name": "tags", "type": "string", "description": "Comma-separated list of tags", "required": false},
+        {"name": "entity", "type": "string", "description": "Entity the alert is related to", "required": false},
+        {"name": "responders", "type": "string", "description": "JSON array of responders (teams, users, escalations, schedules)", "required": false}
+      ]
+    },
+    {
+      "id": "get_alert",
+      "name": "Get Alert",
+      "description": "Retrieve details of a specific alert",
+      "http_method": "GET",
+      "endpoint": "/alerts/{identifier}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "identifier", "type": "string", "description": "Alert ID, tiny ID, or alias", "required": true},
+        {"name": "identifierType", "type": "string", "description": "Type of identifier (id, tiny, alias)", "required": false, "default": "id"}
+      ]
+    },
+    {
+      "id": "list_alerts",
+      "name": "List Alerts",
+      "description": "List and filter alerts",
+      "http_method": "GET",
+      "endpoint": "/alerts",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {"name": "query", "type": "string", "description": "Search query (e.g. status=open AND priority=P1)", "required": false},
+        {"name": "searchIdentifier", "type": "string", "description": "Saved search identifier", "required": false},
+        {"name": "limit", "type": "number", "description": "Number of results (max 100)", "required": false, "default": 20},
+        {"name": "offset", "type": "number", "description": "Starting offset for pagination", "required": false, "default": 0},
+        {"name": "sort", "type": "string", "description": "Sort field (createdAt, updatedAt, etc.)", "required": false},
+        {"name": "order", "type": "string", "description": "Sort order (asc or desc)", "required": false, "default": "desc"}
+      ]
+    },
+    {
+      "id": "acknowledge_alert",
+      "name": "Acknowledge Alert",
+      "description": "Acknowledge an OpsGenie alert",
+      "http_method": "POST",
+      "endpoint": "/alerts/{identifier}/acknowledge",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "identifier", "type": "string", "description": "Alert ID, tiny ID, or alias", "required": true},
+        {"name": "identifierType", "type": "string", "description": "Type of identifier (id, tiny, alias)", "required": false, "default": "id"},
+        {"name": "note", "type": "string", "description": "Note to add to the acknowledgement", "required": false},
+        {"name": "user", "type": "string", "description": "Display name of the acknowledging user", "required": false}
+      ]
+    },
+    {
+      "id": "close_alert",
+      "name": "Close Alert",
+      "description": "Close an OpsGenie alert",
+      "http_method": "POST",
+      "endpoint": "/alerts/{identifier}/close",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "identifier", "type": "string", "description": "Alert ID, tiny ID, or alias", "required": true},
+        {"name": "identifierType", "type": "string", "description": "Type of identifier (id, tiny, alias)", "required": false, "default": "id"},
+        {"name": "note", "type": "string", "description": "Note to add to the closure", "required": false},
+        {"name": "user", "type": "string", "description": "Display name of the closing user", "required": false}
+      ]
+    },
+    {
+      "id": "add_note",
+      "name": "Add Note",
+      "description": "Add a note to an alert",
+      "http_method": "POST",
+      "endpoint": "/alerts/{identifier}/notes",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {"name": "identifier", "type": "string", "description": "Alert ID, tiny ID, or alias", "required": true},
+        {"name": "identifierType", "type": "string", "description": "Type of identifier (id, tiny, alias)", "required": false, "default": "id"},
+        {"name": "note", "type": "string", "description": "Note content (max 25000 chars)", "required": true},
+        {"name": "user", "type": "string", "description": "Display name of the note author", "required": false}
+      ]
+    }
+  ]
+}

@@ -1,0 +1,195 @@
+{
+  "id": "aws_detective",
+  "name": "AWS Detective",
+  "description": "AWS security investigation service that analyzes and visualizes security data to help investigate potential security issues using behavior graphs",
+  "version": "1.0.0",
+  "category": "aws_security",
+  "vendor": "Amazon Web Services",
+  "auth_type": "aws",
+  "auth_config": {
+    "type": "aws",
+    "service": "detective",
+    "signing_version": "v4"
+  },
+  "base_url": "https://api.detective.{region}.amazonaws.com",
+  "actions": [
+    {
+      "id": "list_graphs",
+      "name": "List Graphs",
+      "description": "List behavior graphs managed by the calling account",
+      "http_method": "POST",
+      "endpoint": "/graphs/list",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "MaxResults",
+          "type": "number",
+          "description": "Maximum graphs to return",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "NextToken",
+          "type": "string",
+          "description": "Pagination token",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_members",
+      "name": "List Members",
+      "description": "List member accounts in a behavior graph",
+      "http_method": "POST",
+      "endpoint": "/graph/members/list",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "GraphArn",
+          "type": "string",
+          "description": "ARN of the behavior graph",
+          "required": true
+        },
+        {
+          "name": "MaxResults",
+          "type": "number",
+          "description": "Maximum members to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "list_investigations",
+      "name": "List Investigations",
+      "description": "List Detective investigations associated with a behavior graph",
+      "http_method": "POST",
+      "endpoint": "/investigations/list",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "GraphArn",
+          "type": "string",
+          "description": "ARN of the behavior graph",
+          "required": true
+        },
+        {
+          "name": "FilterCriteria",
+          "type": "object",
+          "description": "Filter criteria for investigations (severity, status, state, entity ARN)",
+          "required": false
+        },
+        {
+          "name": "SortCriteria",
+          "type": "object",
+          "description": "Sort criteria (field and sort order)",
+          "required": false
+        },
+        {
+          "name": "MaxResults",
+          "type": "number",
+          "description": "Maximum results to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "get_investigation",
+      "name": "Get Investigation Details",
+      "description": "Retrieve details of a specific investigation including indicators and findings",
+      "http_method": "POST",
+      "endpoint": "/investigations/getInvestigation",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "GraphArn",
+          "type": "string",
+          "description": "ARN of the behavior graph",
+          "required": true
+        },
+        {
+          "name": "InvestigationId",
+          "type": "string",
+          "description": "Investigation ID",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_indicators",
+      "name": "List Indicators",
+      "description": "List indicators (anomalies and suspicious activities) for an investigation",
+      "http_method": "POST",
+      "endpoint": "/investigations/listIndicators",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "GraphArn",
+          "type": "string",
+          "description": "ARN of the behavior graph",
+          "required": true
+        },
+        {
+          "name": "InvestigationId",
+          "type": "string",
+          "description": "Investigation ID",
+          "required": true
+        },
+        {
+          "name": "IndicatorType",
+          "type": "string",
+          "description": "Filter by indicator type (TTP_OBSERVED, IMPOSSIBLE_TRAVEL, FLAGGED_IP_ADDRESS, etc.)",
+          "required": false
+        },
+        {
+          "name": "MaxResults",
+          "type": "number",
+          "description": "Maximum indicators to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "start_investigation",
+      "name": "Start Investigation",
+      "description": "Start a new Detective investigation for a specific IAM entity",
+      "http_method": "POST",
+      "endpoint": "/investigations/startInvestigation",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "GraphArn",
+          "type": "string",
+          "description": "ARN of the behavior graph",
+          "required": true
+        },
+        {
+          "name": "EntityArn",
+          "type": "string",
+          "description": "ARN of the IAM user or role to investigate",
+          "required": true
+        },
+        {
+          "name": "ScopeStartTime",
+          "type": "string",
+          "description": "Start of the investigation scope in ISO 8601",
+          "required": true
+        },
+        {
+          "name": "ScopeEndTime",
+          "type": "string",
+          "description": "End of the investigation scope in ISO 8601",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

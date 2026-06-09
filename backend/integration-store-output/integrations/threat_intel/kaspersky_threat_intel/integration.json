@@ -1,0 +1,130 @@
+{
+  "id": "kaspersky_threat_intel",
+  "name": "Kaspersky Threat Intelligence Portal",
+  "description": "Integrate with Kaspersky Threat Intelligence Portal (OpenTIP) to look up file hashes, IP addresses, domains, and URLs for threat verdicts and context",
+  "version": "1.0.0",
+  "category": "threat_intel",
+  "vendor": "Kaspersky",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "x-api-key",
+    "location": "header",
+    "note": "API token generated at opentip.kaspersky.com/token. Can also be set as OPENTIP_APIKEY environment variable."
+  },
+  "base_url": "https://opentip.kaspersky.com/api/v1",
+  "actions": [
+    {
+      "id": "lookup_hash",
+      "name": "Lookup File Hash",
+      "description": "Look up a file hash (MD5, SHA-1, or SHA-256) in Kaspersky Threat Intelligence for verdict and malware classification",
+      "http_method": "GET",
+      "endpoint": "/search/hash",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "request",
+          "type": "string",
+          "description": "File hash to look up (MD5, SHA-1, or SHA-256)",
+          "required": true,
+          "contains": ["hash", "md5", "sha1", "sha256"]
+        }
+      ],
+      "observable_type": "hash"
+    },
+    {
+      "id": "lookup_ip",
+      "name": "Lookup IP Address",
+      "description": "Look up an IPv4 address in Kaspersky Threat Intelligence for threat verdict and context",
+      "http_method": "GET",
+      "endpoint": "/search/ip",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "request",
+          "type": "string",
+          "description": "IPv4 address to look up",
+          "required": true,
+          "contains": ["ip"]
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "lookup_domain",
+      "name": "Lookup Domain",
+      "description": "Look up a domain in Kaspersky Threat Intelligence for threat verdict, categories, and related data",
+      "http_method": "GET",
+      "endpoint": "/search/domain",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "request",
+          "type": "string",
+          "description": "Domain name to look up",
+          "required": true,
+          "contains": ["domain"]
+        }
+      ],
+      "observable_type": "domain"
+    },
+    {
+      "id": "lookup_url",
+      "name": "Lookup URL",
+      "description": "Look up a web address in Kaspersky Threat Intelligence for threat verdict and categorization",
+      "http_method": "GET",
+      "endpoint": "/search/url",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "request",
+          "type": "string",
+          "description": "Web address (URL) to look up",
+          "required": true,
+          "contains": ["url"]
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "submit_file",
+      "name": "Submit File for Analysis",
+      "description": "Submit a file to Kaspersky Sandbox for dynamic analysis and threat detection",
+      "http_method": "POST",
+      "endpoint": "/scan/file",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "file",
+          "type": "string",
+          "description": "File to submit (binary, multipart/form-data)",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_file_report",
+      "name": "Get File Analysis Report",
+      "description": "Retrieve the full analysis report for a previously submitted or known file by hash",
+      "http_method": "GET",
+      "endpoint": "/search/hash",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "request",
+          "type": "string",
+          "description": "File hash (SHA-256 preferred) to retrieve report for",
+          "required": true,
+          "contains": ["sha256", "hash"]
+        }
+      ],
+      "observable_type": "hash"
+    }
+  ]
+}

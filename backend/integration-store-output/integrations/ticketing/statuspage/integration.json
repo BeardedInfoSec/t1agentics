@@ -1,0 +1,275 @@
+{
+  "id": "statuspage",
+  "name": "Statuspage",
+  "description": "This app is an Atlassian product that is used to help monitor and communicate status issues for various products",
+  "version": "1.1.4",
+  "category": "ticketing",
+  "vendor": "Atlassian",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "list_incidents",
+      "name": "List Incidents",
+      "description": "Get a list of incidents",
+      "http_method": "GET",
+      "endpoint": "/actions/list_incidents",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Provide text to search in the incident name, status, postmortem body and incident_updates fields",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "The maximum number of rows to return per page (default and max: 100)",
+          "required": false,
+          "default": 100
+        },
+        {
+          "name": "page_offset",
+          "type": "number",
+          "description": "Page offset to fetch",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_incident",
+      "name": "Get Incident",
+      "description": "Get an incident's details",
+      "http_method": "GET",
+      "endpoint": "/actions/get_incident",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "incident_id",
+          "type": "string",
+          "description": "Incident Identifier",
+          "required": true,
+          "contains": [
+            "incident id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "create_incident_subscriber",
+      "name": "Create Incident Subscriber",
+      "description": "Create an incident subscriber",
+      "http_method": "GET",
+      "endpoint": "/actions/create_incident_subscriber",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "incident_id",
+          "type": "string",
+          "description": "Incident Identifier",
+          "required": true,
+          "contains": [
+            "incident id"
+          ]
+        },
+        {
+          "name": "email",
+          "type": "string",
+          "description": "Email address for creating email subscriber",
+          "required": true,
+          "contains": [
+            "email id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "create_incident",
+      "name": "Create Incident",
+      "description": "Create an incident",
+      "http_method": "GET",
+      "endpoint": "/actions/create_incident",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Incident Name",
+          "required": true,
+          "contains": [
+            "incident name"
+          ]
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Incident status. Default is investigating",
+          "required": false,
+          "default": "investigating",
+          "contains": [
+            "incident status"
+          ]
+        },
+        {
+          "name": "impact_override",
+          "type": "string",
+          "description": "Select value to override calculated impact value",
+          "required": false,
+          "contains": [
+            "incident impact"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "string",
+          "description": "Write a initial message, created as the first incident update",
+          "required": false,
+          "contains": [
+            "incident body"
+          ]
+        },
+        {
+          "name": "component_ids",
+          "type": "string",
+          "description": "Specify component's id affected by this incident. Separate multiple ids with commas",
+          "required": false
+        },
+        {
+          "name": "components",
+          "type": "string",
+          "description": "A JSON object of 'component affected' and 'status'",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "update_incident",
+      "name": "Update Incident",
+      "description": "Update an incident",
+      "http_method": "GET",
+      "endpoint": "/actions/update_incident",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "incident_id",
+          "type": "string",
+          "description": "Incident Identifier",
+          "required": true,
+          "contains": [
+            "incident id"
+          ]
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Update Incident Name",
+          "required": false,
+          "contains": [
+            "incident name"
+          ]
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Update Incident status",
+          "required": false,
+          "contains": [
+            "incident status"
+          ]
+        },
+        {
+          "name": "impact_override",
+          "type": "string",
+          "description": "Select value to override impact value",
+          "required": false,
+          "contains": [
+            "incident impact"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "string",
+          "description": "Update initial message, created as the first incident update",
+          "required": false,
+          "contains": [
+            "incident body"
+          ]
+        },
+        {
+          "name": "component_ids",
+          "type": "string",
+          "description": "Specify component's id affected by this incident. Separate multiple ids with commas",
+          "required": false
+        },
+        {
+          "name": "components",
+          "type": "string",
+          "description": "A JSON object of 'component affected' and 'status'",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_incident_subscribers",
+      "name": "List Incident Subscribers",
+      "description": "Get a list of incident subscribers",
+      "http_method": "GET",
+      "endpoint": "/actions/list_incident_subscribers",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "incident_id",
+          "type": "string",
+          "description": "Incident Identifier",
+          "required": true,
+          "contains": [
+            "incident id"
+          ]
+        },
+        {
+          "name": "page",
+          "type": "number",
+          "description": "Page offset to fetch",
+          "required": false
+        },
+        {
+          "name": "per_page",
+          "type": "number",
+          "description": "The maximum number of rows to return per page (default and max: 100)",
+          "required": false,
+          "default": 100
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Statuspage",
+    "original_type": "ticketing",
+    "converted_at": "2025-12-18T16:25:29.178934",
+    "source_version": "1.1.4"
+  }
+}

@@ -1,0 +1,398 @@
+{
+  "id": "f5_big_ip_ltm",
+  "name": "F5 BIG-IP LTM",
+  "description": "This app implements investigate and generic actions to integrate with an F5 BIG-IP LTM instance to manage pools and nodes",
+  "version": "2.1.2",
+  "category": "utility",
+  "vendor": "F5",
+  "auth_type": "basic_auth",
+  "auth_config": {
+    "type": "basic_auth",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "",
+  "actions": [
+    {
+      "id": "create_node",
+      "name": "Create Node",
+      "description": "Create a new node",
+      "http_method": "GET",
+      "endpoint": "/actions/create_node",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "node_name",
+          "type": "string",
+          "description": "Name of the node to create",
+          "required": true,
+          "contains": [
+            "f5 node name"
+          ]
+        },
+        {
+          "name": "partition_name",
+          "type": "string",
+          "description": "Name of the partition",
+          "required": true,
+          "contains": [
+            "f5 partition name"
+          ]
+        },
+        {
+          "name": "ip_address",
+          "type": "string",
+          "description": "IP address of the new node",
+          "required": true,
+          "contains": [
+            "ip",
+            "ipv6"
+          ]
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "delete_node",
+      "name": "Delete Node",
+      "description": "Delete a node",
+      "http_method": "GET",
+      "endpoint": "/actions/delete_node",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "node_name",
+          "type": "string",
+          "description": "Name of the node to delete",
+          "required": true,
+          "contains": [
+            "f5 node name"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "remove_node",
+      "name": "Remove Node",
+      "description": "Remove a node from a pool",
+      "http_method": "GET",
+      "endpoint": "/actions/remove_node",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "node_name",
+          "type": "string",
+          "description": "Name of the node to remove",
+          "required": true,
+          "contains": [
+            "f5 node name"
+          ]
+        },
+        {
+          "name": "port",
+          "type": "string",
+          "description": "Port number",
+          "required": true,
+          "contains": [
+            "port"
+          ]
+        },
+        {
+          "name": "pool_name",
+          "type": "string",
+          "description": "Name of the pool to remove the node from",
+          "required": true,
+          "contains": [
+            "f5 pool name"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "create_pool",
+      "name": "Create Pool",
+      "description": "Create a new pool",
+      "http_method": "GET",
+      "endpoint": "/actions/create_pool",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "pool_name",
+          "type": "string",
+          "description": "Name of the pool to create",
+          "required": true,
+          "contains": [
+            "f5 pool name"
+          ]
+        },
+        {
+          "name": "pool_description",
+          "type": "string",
+          "description": "Description of the pool",
+          "required": false
+        },
+        {
+          "name": "partition_name",
+          "type": "string",
+          "description": "Name of the partition",
+          "required": true,
+          "contains": [
+            "f5 partition name"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "delete_pool",
+      "name": "Delete Pool",
+      "description": "Delete an existing pool",
+      "http_method": "GET",
+      "endpoint": "/actions/delete_pool",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "pool_name",
+          "type": "string",
+          "description": "Name of the pool to delete",
+          "required": true,
+          "contains": [
+            "f5 pool name"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "add_node",
+      "name": "Add Node",
+      "description": "Add an existing node to a pool",
+      "http_method": "GET",
+      "endpoint": "/actions/add_node",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "node_name",
+          "type": "string",
+          "description": "Name of the node to add",
+          "required": true,
+          "contains": [
+            "f5 node name"
+          ]
+        },
+        {
+          "name": "partition_name",
+          "type": "string",
+          "description": "Name of the partition to add node",
+          "required": true,
+          "contains": [
+            "f5 partition name"
+          ]
+        },
+        {
+          "name": "port",
+          "type": "string",
+          "description": "Port number",
+          "required": true,
+          "contains": [
+            "port"
+          ]
+        },
+        {
+          "name": "pool_name",
+          "type": "string",
+          "description": "Name of the pool to add node member",
+          "required": true,
+          "contains": [
+            "f5 pool name"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "disable_node",
+      "name": "Disable Node",
+      "description": "Disable a node",
+      "http_method": "POST",
+      "endpoint": "/actions/disable_node",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "node_name",
+          "type": "string",
+          "description": "Name of the node to disable",
+          "required": true,
+          "contains": [
+            "f5 node name"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "enable_node",
+      "name": "Enable Node",
+      "description": "Enable a node",
+      "http_method": "POST",
+      "endpoint": "/actions/enable_node",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "node_name",
+          "type": "string",
+          "description": "Name of the node to enable",
+          "required": true,
+          "contains": [
+            "f5 node name"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "describe_node",
+      "name": "Describe Node",
+      "description": "Get information about a node",
+      "http_method": "GET",
+      "endpoint": "/actions/describe_node",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "node_name",
+          "type": "string",
+          "description": "Name of the node to describe",
+          "required": true,
+          "contains": [
+            "f5 node name"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_node_stats",
+      "name": "Get Node Stats",
+      "description": "Get stats of the node",
+      "http_method": "GET",
+      "endpoint": "/actions/get_node_stats",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "node_name",
+          "type": "string",
+          "description": "Name of the node",
+          "required": true,
+          "contains": [
+            "f5 node name"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_nodes",
+      "name": "List Nodes",
+      "description": "Fetch a list of nodes (if no value is provided, all nodes will be returned)",
+      "http_method": "GET",
+      "endpoint": "/actions/list_nodes",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "max_results",
+          "type": "number",
+          "description": "Max number of nodes to return",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_pools",
+      "name": "List Pools",
+      "description": "Fetch a list of configured pools (if no value is provided, all pools will be returned)",
+      "http_method": "GET",
+      "endpoint": "/actions/list_pools",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "max_results",
+          "type": "number",
+          "description": "Max number of pools to return",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_members",
+      "name": "List Members",
+      "description": "Fetch a list of configured node members of a pool (if no value is provided, all node members of a pool will be returned)",
+      "http_method": "GET",
+      "endpoint": "/actions/list_members",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "pool_name",
+          "type": "string",
+          "description": "Name of the pool",
+          "required": true,
+          "contains": [
+            "f5 pool name"
+          ]
+        },
+        {
+          "name": "partition_name",
+          "type": "string",
+          "description": "Name of the partition",
+          "required": true,
+          "contains": [
+            "f5 partition name"
+          ]
+        },
+        {
+          "name": "max_results",
+          "type": "number",
+          "description": "Max number of members to return",
+          "required": false
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "F5 BIG-IP LTM",
+    "original_type": "network device",
+    "converted_at": "2025-12-18T16:25:28.766628",
+    "source_version": "2.1.2"
+  }
+}

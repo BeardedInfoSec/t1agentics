@@ -1,0 +1,523 @@
+{
+  "id": "check_point_firewall",
+  "name": "Check Point Firewall",
+  "description": "This app supports a variety of endpoint and network based containment actions on Check Point Firewall",
+  "version": "2.2.1",
+  "category": "network",
+  "vendor": "Check Point Software Technologies",
+  "auth_type": "basic_auth",
+  "auth_config": {
+    "type": "basic_auth",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "Using base URL ",
+  "actions": [
+    {
+      "id": "list_policies",
+      "name": "List Policies",
+      "description": "List policies",
+      "http_method": "GET",
+      "endpoint": "/actions/list_policies",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "list_layers",
+      "name": "List Layers",
+      "description": "List access layers",
+      "http_method": "GET",
+      "endpoint": "/actions/list_layers",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "block_ip",
+      "name": "Block Ip",
+      "description": "Block an IP/subnet",
+      "http_method": "POST",
+      "endpoint": "/actions/block_ip",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "IP to block",
+          "required": true,
+          "contains": [
+            "ip"
+          ]
+        },
+        {
+          "name": "policy",
+          "type": "string",
+          "description": "Policy",
+          "required": true,
+          "contains": [
+            "check point policy"
+          ]
+        },
+        {
+          "name": "layer",
+          "type": "string",
+          "description": "Layer",
+          "required": true,
+          "contains": [
+            "check point layer"
+          ]
+        },
+        {
+          "name": "skip_install_policy",
+          "type": "boolean",
+          "description": "Skip the policy installation step",
+          "required": false,
+          "default": false
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "unblock_ip",
+      "name": "Unblock Ip",
+      "description": "Unblock an IP/subnet ",
+      "http_method": "POST",
+      "endpoint": "/actions/unblock_ip",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "IP to unblock",
+          "required": true,
+          "contains": [
+            "ip"
+          ]
+        },
+        {
+          "name": "policy",
+          "type": "string",
+          "description": "Policy",
+          "required": true,
+          "contains": [
+            "check point policy"
+          ]
+        },
+        {
+          "name": "layer",
+          "type": "string",
+          "description": "Layer",
+          "required": true,
+          "contains": [
+            "check point layer"
+          ]
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "list_hosts",
+      "name": "List Hosts",
+      "description": "List hosts",
+      "http_method": "POST",
+      "endpoint": "/actions/list_hosts",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": []
+    },
+    {
+      "id": "add_host",
+      "name": "Add Host",
+      "description": "Add host",
+      "http_method": "POST",
+      "endpoint": "/actions/add_host",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Object/host name (must be unique in the domain)",
+          "required": true,
+          "contains": [
+            "check point host name"
+          ]
+        },
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "IPv4 or IPv6 address to add (if both addresses are required use ipv4 and ipv6 fields explicitly)",
+          "required": false,
+          "contains": [
+            "ip",
+            "ipv6"
+          ]
+        },
+        {
+          "name": "ipv4",
+          "type": "string",
+          "description": "IPv4 address to add",
+          "required": false,
+          "contains": [
+            "ip"
+          ]
+        },
+        {
+          "name": "ipv6",
+          "type": "string",
+          "description": "IPv6 address to add",
+          "required": false,
+          "contains": [
+            "ipv6"
+          ]
+        },
+        {
+          "name": "comments",
+          "type": "string",
+          "description": "Comments string to add",
+          "required": false
+        },
+        {
+          "name": "groups",
+          "type": "string",
+          "description": "Comma-separated list of group identifiers",
+          "required": false
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "delete_host",
+      "name": "Delete Host",
+      "description": "Delete host",
+      "http_method": "POST",
+      "endpoint": "/actions/delete_host",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "uid",
+          "type": "string",
+          "description": "Host's unique identifier",
+          "required": false,
+          "contains": [
+            "check point host uid"
+          ]
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Object/host name",
+          "required": false,
+          "contains": [
+            "check point host name"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "add_network",
+      "name": "Add Network",
+      "description": "Create network object",
+      "http_method": "POST",
+      "endpoint": "/actions/add_network",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Object/network name (must be unique in the domain)",
+          "required": true,
+          "contains": [
+            "check point network name"
+          ]
+        },
+        {
+          "name": "subnet",
+          "type": "string",
+          "description": "IPv4 or IPv6 network address. If both addresses are required use subnet4 and subnet6 fields explicitly",
+          "required": false,
+          "contains": [
+            "ip",
+            "ipv6"
+          ]
+        },
+        {
+          "name": "subnet_v4",
+          "type": "string",
+          "description": "IPv4 network address",
+          "required": false,
+          "contains": [
+            "ip"
+          ]
+        },
+        {
+          "name": "subnet_v6",
+          "type": "string",
+          "description": "IPv6 network address",
+          "required": false,
+          "contains": [
+            "ipv6"
+          ]
+        },
+        {
+          "name": "subnet_mask_length",
+          "type": "string",
+          "description": "IPv4 or IPv6 network mask length. If both masks are required use mask-length4 and mask-length6 fields explicitly. Instead of IPv4 mask length it is possible to specify IPv4 mask itself in subnet-mask field",
+          "required": false
+        },
+        {
+          "name": "subnet_mask_length_v4",
+          "type": "string",
+          "description": "IPv4 network mask length",
+          "required": false
+        },
+        {
+          "name": "subnet_mask_length_v6",
+          "type": "string",
+          "description": "IPv6 network mask length",
+          "required": false
+        },
+        {
+          "name": "subnet_mask",
+          "type": "string",
+          "description": "IPv4 network mask",
+          "required": false
+        },
+        {
+          "name": "groups",
+          "type": "string",
+          "description": "Comma-separated list of group names or uids",
+          "required": false
+        },
+        {
+          "name": "comments",
+          "type": "string",
+          "description": "Comments string to add",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "delete_network",
+      "name": "Delete Network",
+      "description": "Delete network object",
+      "http_method": "POST",
+      "endpoint": "/actions/delete_network",
+      "action_type": "contain",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Object/host name to be deleted",
+          "required": false,
+          "contains": [
+            "check point network name"
+          ]
+        },
+        {
+          "name": "uid",
+          "type": "string",
+          "description": "Object/host uid to be deleted",
+          "required": false,
+          "contains": [
+            "check point network uid"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "update_group_members",
+      "name": "Update Group Members",
+      "description": "Update group members",
+      "http_method": "GET",
+      "endpoint": "/actions/update_group_members",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "uid",
+          "type": "string",
+          "description": "Groups unique identifier",
+          "required": false
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Object/group name",
+          "required": false
+        },
+        {
+          "name": "action",
+          "type": "string",
+          "description": "Type of operation to perform",
+          "required": true
+        },
+        {
+          "name": "members",
+          "type": "string",
+          "description": "Comma-separated list of network objects identified by name or uid",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "logout_session",
+      "name": "Logout Session",
+      "description": "Logout of an existing session",
+      "http_method": "POST",
+      "endpoint": "logout",
+      "action_type": "correct",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "session_id",
+          "type": "string",
+          "description": "Session ID to log out from",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "install_policy",
+      "name": "Install Policy",
+      "description": "Executes the install-policy on a given list of targets",
+      "http_method": "GET",
+      "endpoint": "/actions/install_policy",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "policy",
+          "type": "string",
+          "description": "The name of the Policy Package to be installed",
+          "required": true
+        },
+        {
+          "name": "targets",
+          "type": "string",
+          "description": "Comma-separated list of targets that may be identified by their name, or object unique identifier",
+          "required": true
+        },
+        {
+          "name": "access",
+          "type": "boolean",
+          "description": "Set to be true in order to install the Access Control policy. By default, the value is true if Access Control policy is enabled on the input policy package, otherwise false",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "add_user",
+      "name": "Add User",
+      "description": "Create a new user based on a pre-built template",
+      "http_method": "GET",
+      "endpoint": "/actions/add_user",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "The name of the user to be created. Must be unique in the domain",
+          "required": true,
+          "contains": [
+            "check point user name"
+          ]
+        },
+        {
+          "name": "template",
+          "type": "string",
+          "description": "User template name or UID",
+          "required": true
+        },
+        {
+          "name": "email",
+          "type": "string",
+          "description": "User email",
+          "required": false
+        },
+        {
+          "name": "phone_number",
+          "type": "string",
+          "description": "User phone number",
+          "required": false
+        },
+        {
+          "name": "comments",
+          "type": "string",
+          "description": "Comments string",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "delete_user",
+      "name": "Delete User",
+      "description": "Delete existing user",
+      "http_method": "GET",
+      "endpoint": "/actions/delete_user",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Name of the user to be deleted",
+          "required": false,
+          "contains": [
+            "check point user name"
+          ]
+        },
+        {
+          "name": "uid",
+          "type": "string",
+          "description": "UID of the user to be deleted",
+          "required": false,
+          "contains": [
+            "check point user uid"
+          ]
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Check Point Firewall",
+    "original_type": "firewall",
+    "converted_at": "2025-12-18T16:25:28.639926",
+    "source_version": "2.2.1"
+  }
+}

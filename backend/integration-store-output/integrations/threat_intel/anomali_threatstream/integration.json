@@ -1,0 +1,208 @@
+{
+  "id": "anomali_threatstream",
+  "name": "Anomali ThreatStream",
+  "description": "Integrate with Anomali ThreatStream to search observables, intelligence, and threat models using the v2 API",
+  "version": "1.0.0",
+  "category": "threat_intel",
+  "vendor": "Anomali",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "query",
+    "note": "Authentication via query params: ?username={username}&api_key={api_key} appended to every request"
+  },
+  "base_url": "https://api.threatstream.com/api/v2",
+  "actions": [
+    {
+      "id": "search_intelligence",
+      "name": "Search Intelligence",
+      "description": "Search Anomali ThreatStream intelligence for indicators matching specified criteria",
+      "http_method": "GET",
+      "endpoint": "/intelligence/",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "value",
+          "type": "string",
+          "description": "Indicator value to search for (IP, domain, hash, URL, email)",
+          "required": false,
+          "contains": ["ip", "domain", "hash", "url", "email"]
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Indicator type (ip, domain, md5, sha1, sha256, url, email)",
+          "required": false
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Indicator status: active, inactive, falsepos",
+          "required": false
+        },
+        {
+          "name": "confidence",
+          "type": "number",
+          "description": "Minimum confidence score (0-100)",
+          "required": false
+        },
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Severity filter: low, medium, high, very-high",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of results (default 20, max 1000)",
+          "required": false
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "description": "Offset for pagination",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "lookup_observable",
+      "name": "Lookup Observable",
+      "description": "Look up a specific observable in ThreatStream for enrichment and context",
+      "http_method": "GET",
+      "endpoint": "/intelligence/",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "value",
+          "type": "string",
+          "description": "Observable value (IP, domain, hash, URL)",
+          "required": true,
+          "contains": ["ip", "domain", "hash", "url"]
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "search_threat_models",
+      "name": "Search Threat Models",
+      "description": "Search ThreatStream threat models including actors, campaigns, TTPs, and incidents",
+      "http_method": "GET",
+      "endpoint": "/threatmodel/",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "model_type",
+          "type": "string",
+          "description": "Model type: actor, campaign, ttp, incident, vulnerability, signature",
+          "required": false
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Name filter for threat models",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of results",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "search_vulnerabilities",
+      "name": "Search Vulnerabilities",
+      "description": "Search for vulnerability intelligence in ThreatStream",
+      "http_method": "GET",
+      "endpoint": "/vulnerability/",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "CVE ID or vulnerability name to search",
+          "required": false,
+          "contains": ["cve"]
+        },
+        {
+          "name": "is_exploitable",
+          "type": "boolean",
+          "description": "Filter for exploitable vulnerabilities",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of results",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "import_indicators",
+      "name": "Import Indicators",
+      "description": "Import indicators (observables) into ThreatStream for tracking and correlation",
+      "http_method": "POST",
+      "endpoint": "/intelligence/import/",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "datatext",
+          "type": "string",
+          "description": "Indicator data in text format (one per line) or JSON",
+          "required": true
+        },
+        {
+          "name": "classification",
+          "type": "string",
+          "description": "Classification: public, private",
+          "required": false
+        },
+        {
+          "name": "threat_type",
+          "type": "string",
+          "description": "Threat type: malware, compromised, c2, apt",
+          "required": false
+        },
+        {
+          "name": "confidence",
+          "type": "number",
+          "description": "Confidence score (0-100)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_threat_bulletin",
+      "name": "Get Threat Bulletin",
+      "description": "Retrieve threat bulletins from ThreatStream for curated intelligence summaries",
+      "http_method": "GET",
+      "endpoint": "/tipreport/",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Threat bulletin name filter",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "number",
+          "description": "Maximum number of results",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

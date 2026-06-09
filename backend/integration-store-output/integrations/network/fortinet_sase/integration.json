@@ -1,0 +1,144 @@
+{
+  "id": "fortinet_sase",
+  "name": "Fortinet FortiSASE",
+  "description": "Fortinet FortiSASE REST API for managing SWG policies, security profiles, web filtering, SD-WAN, and remote user management",
+  "version": "1.0.0",
+  "category": "network",
+  "vendor": "Fortinet",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "header_name": "Authorization",
+    "location": "header",
+    "token_prefix": "Bearer",
+    "note": "Uses FortiCloud API token or FortiSASE admin credentials"
+  },
+  "base_url": "https://{host}/api/v1",
+  "actions": [
+    {
+      "id": "list_swg_policies",
+      "name": "List SWG Policies",
+      "description": "Retrieve all Secure Web Gateway policies configured in FortiSASE",
+      "http_method": "GET",
+      "endpoint": "/policy/swg",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "create_swg_policy",
+      "name": "Create SWG Policy",
+      "description": "Create a new Secure Web Gateway policy for traffic filtering and inspection",
+      "http_method": "POST",
+      "endpoint": "/policy/swg",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "body",
+          "type": "object",
+          "description": "SWG policy including name, action (accept/deny), source users/groups, URL categories, web filter profile, and SSL inspection profile",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_security_profiles",
+      "name": "List Security Profiles",
+      "description": "Retrieve all security profiles (antivirus, IPS, web filter, DNS filter)",
+      "http_method": "GET",
+      "endpoint": "/security-profiles",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Profile type: antivirus, webfilter, dnsfilter, ips, applicationcontrol",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_web_filter_profile",
+      "name": "Get Web Filter Profile",
+      "description": "Retrieve a specific web filter profile with category settings",
+      "http_method": "GET",
+      "endpoint": "/security-profiles/webfilter/{profile_name}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "profile_name",
+          "type": "string",
+          "description": "Name of the web filter profile",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_url_filters",
+      "name": "List URL Filters",
+      "description": "Retrieve all custom URL filter entries for blocking or allowing URLs",
+      "http_method": "GET",
+      "endpoint": "/webfilter/urlfilter",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "create_url_filter",
+      "name": "Create URL Filter",
+      "description": "Create a URL filter entry to block or allow a specific URL pattern",
+      "http_method": "POST",
+      "endpoint": "/webfilter/urlfilter",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "body",
+          "type": "object",
+          "description": "URL filter entry including url, type (simple/regex/wildcard), and action (allow/block/monitor)",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_users",
+      "name": "List Remote Users",
+      "description": "Retrieve all remote users connected to FortiSASE",
+      "http_method": "GET",
+      "endpoint": "/user/remote",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "get_dns_filter_profile",
+      "name": "Get DNS Filter Profile",
+      "description": "Retrieve a DNS filter profile with domain category and block settings",
+      "http_method": "GET",
+      "endpoint": "/security-profiles/dnsfilter/{profile_name}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "profile_name",
+          "type": "string",
+          "description": "Name of the DNS filter profile",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_system_status",
+      "name": "Get System Status",
+      "description": "Retrieve FortiSASE system status, licensing, and service health",
+      "http_method": "GET",
+      "endpoint": "/system/status",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    }
+  ]
+}

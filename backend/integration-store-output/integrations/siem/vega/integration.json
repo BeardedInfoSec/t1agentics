@@ -1,0 +1,331 @@
+{
+  "id": "vega",
+  "name": "Vega",
+  "description": "Integrates with Vega's Security Analytics Mesh platform for federated search across distributed data sources, AI-native threat detection, alert triage, and investigation support without requiring data migration",
+  "version": "1.0.0",
+  "category": "siem",
+  "vendor": "Vega",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "https://api.vega.io/v1",
+  "actions": [
+    {
+      "id": "federated_search",
+      "name": "Federated Search",
+      "description": "Execute a federated search query across all connected data sources without data migration. Supports structured queries and natural language via Lyra AI.",
+      "http_method": "POST",
+      "endpoint": "/search",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Search query (structured query syntax or natural language)",
+          "required": true
+        },
+        {
+          "name": "data_sources",
+          "type": "array",
+          "description": "List of data source IDs to search across. Omit to search all connected sources.",
+          "required": false
+        },
+        {
+          "name": "time_range",
+          "type": "object",
+          "description": "Time range filter with 'start' and 'end' ISO 8601 timestamps",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "description": "Maximum number of results to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "list_detections",
+      "name": "List Detections",
+      "description": "Retrieve detections (alerts) from the Vega platform with optional severity and status filters",
+      "http_method": "GET",
+      "endpoint": "/detections",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Filter by severity: critical, high, medium, low, informational",
+          "required": false
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Filter by status: open, investigating, resolved, dismissed",
+          "required": false
+        },
+        {
+          "name": "time_range",
+          "type": "string",
+          "description": "Time range shorthand: 1h, 6h, 24h, 7d, 30d",
+          "required": false,
+          "default": "24h"
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "description": "Maximum number of detections to return",
+          "required": false,
+          "default": 50
+        },
+        {
+          "name": "offset",
+          "type": "integer",
+          "description": "Pagination offset",
+          "required": false,
+          "default": 0
+        }
+      ]
+    },
+    {
+      "id": "get_detection",
+      "name": "Get Detection Details",
+      "description": "Retrieve full details for a specific detection including timeline, entities, and related events",
+      "http_method": "GET",
+      "endpoint": "/detections/{detection_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "detection_id",
+          "type": "string",
+          "description": "Unique detection identifier",
+          "required": true
+        },
+        {
+          "name": "include_events",
+          "type": "boolean",
+          "description": "Include raw events that triggered the detection",
+          "required": false,
+          "default": true
+        }
+      ]
+    },
+    {
+      "id": "update_detection",
+      "name": "Update Detection Status",
+      "description": "Update the status, severity, or assignment of a detection",
+      "http_method": "PATCH",
+      "endpoint": "/detections/{detection_id}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "detection_id",
+          "type": "string",
+          "description": "Unique detection identifier",
+          "required": true
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "New status: open, investigating, resolved, dismissed",
+          "required": false
+        },
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Updated severity: critical, high, medium, low, informational",
+          "required": false
+        },
+        {
+          "name": "assigned_to",
+          "type": "string",
+          "description": "User or team to assign this detection to",
+          "required": false
+        },
+        {
+          "name": "notes",
+          "type": "string",
+          "description": "Analyst notes or comments",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_detection_rules",
+      "name": "List Detection Rules",
+      "description": "Retrieve all configured detection rules and their current status",
+      "http_method": "GET",
+      "endpoint": "/rules",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "enabled",
+          "type": "boolean",
+          "description": "Filter by enabled/disabled status",
+          "required": false
+        },
+        {
+          "name": "category",
+          "type": "string",
+          "description": "Filter by rule category (e.g., malware, lateral_movement, exfiltration)",
+          "required": false
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "description": "Maximum number of rules to return",
+          "required": false,
+          "default": 100
+        }
+      ]
+    },
+    {
+      "id": "create_detection_rule",
+      "name": "Create Detection Rule",
+      "description": "Deploy a new detection rule across the analytics mesh",
+      "http_method": "POST",
+      "endpoint": "/rules",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "Detection rule name",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Rule description",
+          "required": true
+        },
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Detection query logic",
+          "required": true
+        },
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Default severity for triggered detections: critical, high, medium, low",
+          "required": true,
+          "default": "medium"
+        },
+        {
+          "name": "data_sources",
+          "type": "array",
+          "description": "Data sources to run this rule against",
+          "required": false
+        },
+        {
+          "name": "enabled",
+          "type": "boolean",
+          "description": "Whether the rule is active immediately",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "mitre_tactics",
+          "type": "array",
+          "description": "MITRE ATT&CK tactics this rule maps to",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "list_data_sources",
+      "name": "List Data Sources",
+      "description": "List all connected data sources in the analytics mesh with health and status information",
+      "http_method": "GET",
+      "endpoint": "/data-sources",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Filter by connection status: connected, degraded, disconnected",
+          "required": false
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Filter by source type: cloud, siem, edr, network, saas, data_lake",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "lookup_entity",
+      "name": "Lookup Entity",
+      "description": "Search across all data sources for activity related to a specific entity (IP, domain, user, hash)",
+      "http_method": "POST",
+      "endpoint": "/entities/lookup",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "value",
+          "type": "string",
+          "description": "Entity value to look up (IP address, domain, username, file hash, etc.)",
+          "required": true,
+          "contains": ["ip", "domain", "hash", "email", "user"]
+        },
+        {
+          "name": "entity_type",
+          "type": "string",
+          "description": "Entity type hint: ip, domain, hash, email, user, host. Auto-detected if omitted.",
+          "required": false
+        },
+        {
+          "name": "time_range",
+          "type": "string",
+          "description": "Time range to search: 1h, 6h, 24h, 7d, 30d, 90d",
+          "required": false,
+          "default": "7d"
+        }
+      ]
+    },
+    {
+      "id": "ai_triage",
+      "name": "AI Triage Detection",
+      "description": "Submit a detection to Vega's Lyra AI engine for automated triage, severity assessment, and recommended response actions",
+      "http_method": "POST",
+      "endpoint": "/ai/triage",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "detection_id",
+          "type": "string",
+          "description": "Detection ID to triage",
+          "required": true
+        },
+        {
+          "name": "include_recommendations",
+          "type": "boolean",
+          "description": "Include AI-generated response action recommendations",
+          "required": false,
+          "default": true
+        },
+        {
+          "name": "context",
+          "type": "object",
+          "description": "Additional context to inform AI triage (e.g., asset criticality, user role)",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,565 @@
+{
+  "id": "thehive_ticketing",
+  "name": "TheHive",
+  "description": "This app integrates with an instance of TheHive to perform ticketing actions",
+  "version": "2.2.1",
+  "category": "ticketing",
+  "vendor": "TheHive Project",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "{}/",
+  "actions": [
+    {
+      "id": "create_ticket",
+      "name": "Create Ticket",
+      "description": "Create a ticket (issue)",
+      "http_method": "GET",
+      "endpoint": "/actions/create_ticket",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "title",
+          "type": "string",
+          "description": "Title",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Description of the ticket",
+          "required": true
+        },
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Severity of the case (default is Medium)",
+          "required": false,
+          "default": "Medium"
+        },
+        {
+          "name": "tlp",
+          "type": "string",
+          "description": "TLP (default is Amber)",
+          "required": false,
+          "default": "Amber"
+        },
+        {
+          "name": "owner",
+          "type": "string",
+          "description": "User to whom the case has been assigned (default is the user who created the case)",
+          "required": false,
+          "contains": [
+            "thehive username"
+          ]
+        },
+        {
+          "name": "fields",
+          "type": "string",
+          "description": "JSON containing field values",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_ticket",
+      "name": "Get Ticket",
+      "description": "Get ticket (issue) information",
+      "http_method": "GET",
+      "endpoint": "/actions/get_ticket",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Ticket ID",
+          "required": true,
+          "contains": [
+            "thehive ticket id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "update_ticket",
+      "name": "Update Ticket",
+      "description": "Update ticket (issue)",
+      "http_method": "GET",
+      "endpoint": "/actions/update_ticket",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Ticket ID",
+          "required": true,
+          "contains": [
+            "thehive ticket id"
+          ]
+        },
+        {
+          "name": "fields",
+          "type": "string",
+          "description": "JSON containing field values",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_tickets",
+      "name": "List Tickets",
+      "description": "List all tickets",
+      "http_method": "GET",
+      "endpoint": "/actions/list_tickets",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "list_alerts",
+      "name": "List Alerts",
+      "description": "List all alerts",
+      "http_method": "GET",
+      "endpoint": "/actions/list_alerts",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "create_task",
+      "name": "Create Task",
+      "description": "Create Task",
+      "http_method": "GET",
+      "endpoint": "/actions/create_task",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Ticket ID",
+          "required": true,
+          "contains": [
+            "thehive ticket id"
+          ]
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "description": "Title",
+          "required": true
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Status",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "search_ticket",
+      "name": "Search Ticket",
+      "description": "Search ticket",
+      "http_method": "GET",
+      "endpoint": "/actions/search_ticket",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "search_ticket",
+          "type": "string",
+          "description": "Search string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "search_task",
+      "name": "Search Task",
+      "description": "Search task",
+      "http_method": "GET",
+      "endpoint": "/actions/search_task",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "search_task",
+          "type": "string",
+          "description": "Search string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "update_task",
+      "name": "Update Task",
+      "description": "Update the task",
+      "http_method": "GET",
+      "endpoint": "/actions/update_task",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "task_id",
+          "type": "string",
+          "description": "Task ID",
+          "required": true,
+          "contains": [
+            "thehive task id"
+          ]
+        },
+        {
+          "name": "task_title",
+          "type": "string",
+          "description": "Task title",
+          "required": false
+        },
+        {
+          "name": "task_owner",
+          "type": "string",
+          "description": "Task owner",
+          "required": false,
+          "contains": [
+            "thehive username"
+          ]
+        },
+        {
+          "name": "task_status",
+          "type": "string",
+          "description": "Task status",
+          "required": false
+        },
+        {
+          "name": "task_description",
+          "type": "string",
+          "description": "Task description",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "create_observable",
+      "name": "Create Observable",
+      "description": "Creates an observable for the specified case/alert",
+      "http_method": "GET",
+      "endpoint": "/actions/create_observable",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Ticket/Alert ID",
+          "required": true,
+          "contains": [
+            "thehive ticket id",
+            "thehive alert id"
+          ]
+        },
+        {
+          "name": "ticket_type",
+          "type": "string",
+          "description": "Ticket or Alert (Default is Ticket)",
+          "required": false,
+          "default": "Ticket"
+        },
+        {
+          "name": "data_type",
+          "type": "string",
+          "description": "Data type of the observable (select one from list)",
+          "required": true
+        },
+        {
+          "name": "data",
+          "type": "string",
+          "description": "Value of the data for this observable",
+          "required": false
+        },
+        {
+          "name": "tlp",
+          "type": "string",
+          "description": "TLP (default is Amber)",
+          "required": false,
+          "default": "Amber"
+        },
+        {
+          "name": "tags",
+          "type": "string",
+          "description": "Tags to associate with this observable (can be a comma-separated list)",
+          "required": false
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Describe the observable in the context of the case",
+          "required": false
+        },
+        {
+          "name": "vault_id",
+          "type": "string",
+          "description": "Vault ID for the file to be attached. Ignored if not 'file' data_type",
+          "required": false,
+          "contains": [
+            "vault id"
+          ]
+        },
+        {
+          "name": "ioc",
+          "type": "boolean",
+          "description": "Indicates if this observable is an IOC",
+          "required": false
+        },
+        {
+          "name": "sighted",
+          "type": "boolean",
+          "description": "Indicates if this observable was sighted",
+          "required": false
+        },
+        {
+          "name": "ignore_similarity",
+          "type": "boolean",
+          "description": "Indicates if this observable should be used or not to calculate the similarity stats",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_observables",
+      "name": "Get Observables",
+      "description": "Retrieve observables associated with a case",
+      "http_method": "GET",
+      "endpoint": "/actions/get_observables",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "ticket_id",
+          "type": "string",
+          "description": "Ticket ID to retrieve observables from",
+          "required": true,
+          "contains": [
+            "thehive ticket id"
+          ]
+        },
+        {
+          "name": "data_type",
+          "type": "string",
+          "description": "Limit the results by observable type",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "create_task_log",
+      "name": "Create Task Log",
+      "description": "Create task log",
+      "http_method": "GET",
+      "endpoint": "/actions/create_task_log",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "task_id",
+          "type": "string",
+          "description": "Task ID",
+          "required": true,
+          "contains": [
+            "thehive task id"
+          ]
+        },
+        {
+          "name": "message",
+          "type": "string",
+          "description": "Message",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "create_alert",
+      "name": "Create Alert",
+      "description": "Create Alert",
+      "http_method": "GET",
+      "endpoint": "/actions/create_alert",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "title",
+          "type": "string",
+          "description": "Title",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Description",
+          "required": true
+        },
+        {
+          "name": "severity",
+          "type": "string",
+          "description": "Severity of the alert (default is Medium)",
+          "required": false,
+          "default": "Medium"
+        },
+        {
+          "name": "tags",
+          "type": "string",
+          "description": "Tags to associate with this alert (can be a comma-separated list)",
+          "required": false
+        },
+        {
+          "name": "tlp",
+          "type": "string",
+          "description": "TLP (default is Amber)",
+          "required": false,
+          "default": "Amber"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Type of the alert",
+          "required": true
+        },
+        {
+          "name": "source",
+          "type": "string",
+          "description": "Source of the alert",
+          "required": true
+        },
+        {
+          "name": "source_ref",
+          "type": "string",
+          "description": "Source reference of the alert",
+          "required": true
+        },
+        {
+          "name": "artifacts",
+          "type": "string",
+          "description": "JSON Array containing artifact attributes",
+          "required": false
+        },
+        {
+          "name": "case_template",
+          "type": "string",
+          "description": "Case template to use when case is created from this alert",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_alert",
+      "name": "Get Alert",
+      "description": "Get alert information",
+      "http_method": "GET",
+      "endpoint": "/actions/get_alert",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Alert ID",
+          "required": true,
+          "contains": [
+            "thehive alert id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "add_ttp",
+      "name": "Add Ttp",
+      "description": "Add TTP to Case",
+      "http_method": "GET",
+      "endpoint": "/actions/add_ttp",
+      "action_type": "investigate",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Case ID",
+          "required": true,
+          "contains": [
+            "thehive ticket id"
+          ]
+        },
+        {
+          "name": "ph",
+          "type": "string",
+          "description": "Placeholder",
+          "required": false
+        },
+        {
+          "name": "tactic",
+          "type": "string",
+          "description": "Tactic",
+          "required": true
+        },
+        {
+          "name": "pattern_id",
+          "type": "string",
+          "description": "Pattern ID (Technique)",
+          "required": true
+        },
+        {
+          "name": "occur_date",
+          "type": "string",
+          "description": "Occur Date (format: DD-MM-YYYY hh:mm)",
+          "required": false
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Procedure",
+          "required": false
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "TheHive",
+    "original_type": "ticketing",
+    "converted_at": "2025-12-18T16:25:29.220535",
+    "source_version": "2.2.1"
+  }
+}

@@ -1,0 +1,179 @@
+{
+  "id": "opnsense",
+  "name": "OPNsense Firewall",
+  "description": "OPNsense REST API for managing firewall filter rules, aliases, NAT, and network configuration on OPNsense firewalls",
+  "version": "1.0.0",
+  "category": "firewall",
+  "vendor": "Deciso",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header",
+    "note": "Uses API key and secret pair via HTTP Basic Authentication (key as username, secret as password)"
+  },
+  "base_url": "https://{host}/api",
+  "actions": [
+    {
+      "id": "list_firewall_rules",
+      "name": "List Firewall Rules",
+      "description": "Retrieve all firewall filter rules (automation rules by default, add show_all for all rules)",
+      "http_method": "GET",
+      "endpoint": "/firewall/filter/searchRule",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "show_all",
+          "type": "boolean",
+          "description": "Show all rules including those from Firewall > Rules page",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "create_firewall_rule",
+      "name": "Create Firewall Rule",
+      "description": "Create a new firewall automation filter rule",
+      "http_method": "POST",
+      "endpoint": "/firewall/filter/addRule",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "body",
+          "type": "object",
+          "description": "Rule definition including enabled, action (pass/block/reject), interface, direction, protocol, source, destination",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "toggle_firewall_rule",
+      "name": "Toggle Firewall Rule",
+      "description": "Enable or disable a specific firewall rule by UUID",
+      "http_method": "POST",
+      "endpoint": "/firewall/filter/toggleRule/{uuid}",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "uuid",
+          "type": "string",
+          "description": "UUID of the rule to toggle",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "delete_firewall_rule",
+      "name": "Delete Firewall Rule",
+      "description": "Delete a specific firewall rule by UUID",
+      "http_method": "POST",
+      "endpoint": "/firewall/filter/delRule/{uuid}",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "uuid",
+          "type": "string",
+          "description": "UUID of the rule to delete",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_aliases",
+      "name": "List Aliases",
+      "description": "Retrieve all firewall aliases (IP groups, port groups, etc.)",
+      "http_method": "GET",
+      "endpoint": "/firewall/alias/searchItem",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": []
+    },
+    {
+      "id": "get_alias_content",
+      "name": "Get Alias Content",
+      "description": "List the contents (IP addresses/entries) of a specific alias",
+      "http_method": "GET",
+      "endpoint": "/firewall/alias_util/list/{alias_name}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "alias_name",
+          "type": "string",
+          "description": "Name of the alias to list contents for",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "add_to_alias",
+      "name": "Add IP to Alias",
+      "description": "Add an IP address to an existing alias (block list management)",
+      "http_method": "POST",
+      "endpoint": "/firewall/alias_util/add/{alias_name}",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "alias_name",
+          "type": "string",
+          "description": "Name of the alias to add the address to",
+          "required": true
+        },
+        {
+          "name": "address",
+          "type": "string",
+          "description": "IP address or CIDR to add to the alias",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "remove_from_alias",
+      "name": "Remove IP from Alias",
+      "description": "Remove an IP address from an existing alias",
+      "http_method": "POST",
+      "endpoint": "/firewall/alias_util/delete/{alias_name}",
+      "action_type": "contain",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "alias_name",
+          "type": "string",
+          "description": "Name of the alias to remove the address from",
+          "required": true
+        },
+        {
+          "name": "address",
+          "type": "string",
+          "description": "IP address or CIDR to remove from the alias",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "apply_changes",
+      "name": "Apply Changes",
+      "description": "Apply pending firewall and alias changes (reconfigure)",
+      "http_method": "POST",
+      "endpoint": "/firewall/filter/apply",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": []
+    },
+    {
+      "id": "reconfigure_aliases",
+      "name": "Reconfigure Aliases",
+      "description": "Apply pending alias changes after add/remove operations",
+      "http_method": "POST",
+      "endpoint": "/firewall/alias/reconfigure",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": []
+    }
+  ]
+}

@@ -1,0 +1,299 @@
+{
+  "id": "shodan_network",
+  "name": "Shodan",
+  "description": "This app integrates with the Shodan Search engine. It supports search and on-demand scanning APIs",
+  "version": "1.0.2",
+  "category": "network",
+  "vendor": "Shodan",
+  "auth_type": "api_key",
+  "auth_config": {
+    "type": "api_key",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "https://api.shodan.io",
+  "actions": [
+    {
+      "id": "search_ip",
+      "name": "Search Ip",
+      "description": "Returns all services that have been found on the given host IP",
+      "http_method": "GET",
+      "endpoint": "/actions/search_ip",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "Host IP address",
+          "required": true,
+          "contains": [
+            "ip"
+          ]
+        },
+        {
+          "name": "history",
+          "type": "boolean",
+          "description": "True if all historical banners should be returned (default: False)",
+          "required": false
+        },
+        {
+          "name": "minify",
+          "type": "boolean",
+          "description": "True to only return the list of ports and the general host information, no banners. (default: False)",
+          "required": false
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "host_count",
+      "name": "Host Count",
+      "description": "Search Shodan without Results",
+      "http_method": "GET",
+      "endpoint": "/shodan/host/count",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Shodan search query. The provided string is used to search the database of banners in Shodan",
+          "required": true
+        },
+        {
+          "name": "facets",
+          "type": "string",
+          "description": "A comma-separated list of properties to get summary information on",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "search_shodan",
+      "name": "Search Shodan",
+      "description": "Search Shodan using the same query syntax as the website and use facets to get summary information for different properties",
+      "http_method": "GET",
+      "endpoint": "/actions/search_shodan",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Shodan search query",
+          "required": true
+        },
+        {
+          "name": "facets",
+          "type": "string",
+          "description": "A comma-separated list of properties to get summary information on",
+          "required": false
+        },
+        {
+          "name": "page",
+          "type": "number",
+          "description": "The page number to page through results 100 at a time (default: 1)",
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "minify",
+          "type": "boolean",
+          "description": "Whether or not to truncate some of the larger fields (default: True)",
+          "required": false,
+          "default": true
+        }
+      ]
+    },
+    {
+      "id": "search_parameter",
+      "name": "Search Parameter",
+      "description": "List all search facets, filters",
+      "http_method": "GET",
+      "endpoint": "/actions/search_parameter",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "parameter_to_search",
+          "type": "string",
+          "description": "Select parameter from dropdown",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "search_token",
+      "name": "Search Token",
+      "description": "Break the search query into tokens",
+      "http_method": "GET",
+      "endpoint": "/shodan/host/search/tokens",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Shodan search query. The provided string is used to search the database of banners in Shodan",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "scan_ports",
+      "name": "Scan Ports",
+      "description": "List all ports that Shodan is crawling on the Internet",
+      "http_method": "GET",
+      "endpoint": "/actions/scan_ports",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "scan_protocols",
+      "name": "Scan Protocols",
+      "description": "List all protocols that can be used when performing on-demand Internet scans via Shodan",
+      "http_method": "GET",
+      "endpoint": "/actions/scan_protocols",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": []
+    },
+    {
+      "id": "ip_only_scan",
+      "name": "Scan Ip Only",
+      "description": "Request Shodan to crawl an IP/ netblock",
+      "http_method": "GET",
+      "endpoint": "/actions/ip_only_scan",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "ip_list",
+          "type": "string",
+          "description": "A comma-separated list of IPs or netblocks (in CIDR notation) that should get crawled. ip_1,ip_2,...,ip_n",
+          "required": true
+        },
+        {
+          "name": "force",
+          "type": "boolean",
+          "description": "Whether or not to force Shodan to re-scan the provided IPs. Only available to enterprise users",
+          "required": false
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "scan_ip_with_services",
+      "name": "Scan Ip Services",
+      "description": "A pipe-separated list of IPs or netblocks (in CIDR notation) that should get crawled with services",
+      "http_method": "GET",
+      "endpoint": "/actions/scan_ip_with_services",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "ip_with_services",
+          "type": "string",
+          "description": "A pipe-separated list of IP addresses along with their services. ip_1:[ip_1_service_1],[ip_1_service_2] | ip_2:[ip_2_service_1],[ip_2_service_2] | and so on",
+          "required": true
+        },
+        {
+          "name": "force",
+          "type": "boolean",
+          "description": "Whether or not to force Shodan to re-scan the provided IPs. Only available to enterprise users",
+          "required": false
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "scan_internet",
+      "name": "Scan Internet",
+      "description": "Crawl the Internet for a specific port and protocol using Shodan",
+      "http_method": "GET",
+      "endpoint": "/actions/scan_internet",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "port",
+          "type": "string",
+          "description": "The port that Shodan should crawl the Internet for",
+          "required": true
+        },
+        {
+          "name": "protocol",
+          "type": "string",
+          "description": "The name of the protocol that should be used to interrogate the port. See /shodan/protocols for a list of supported protocols",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "scan_status_bulk",
+      "name": "Scan Status Bulk",
+      "description": "Get list of all the created scans",
+      "http_method": "GET",
+      "endpoint": "/actions/scan_status_bulk",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "page_number",
+          "type": "string",
+          "description": "From page number. Each page contains 100 scan results in it",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "shodan_scan_individual",
+      "name": "Shodan Scan Individual",
+      "description": "Get the status of a scan request",
+      "http_method": "GET",
+      "endpoint": "/actions/shodan_scan_individual",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "The unique scan ID that was returned by /shodan/scan",
+          "required": true
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "Shodan",
+    "original_type": "network security",
+    "converted_at": "2025-12-18T16:25:29.124022",
+    "source_version": "1.0.2"
+  }
+}

@@ -1,0 +1,309 @@
+{
+  "id": "hatching_triage",
+  "name": "Hatching Triage",
+  "description": "Hatching Triage (now Recorded Future Sandbox) provides high-speed automated malware analysis with behavioral profiling, configuration extraction, network analysis, and family classification",
+  "version": "1.0.0",
+  "category": "sandbox",
+  "vendor": "Hatching",
+  "auth_type": "bearer",
+  "auth_config": {
+    "type": "bearer",
+    "header_name": "Authorization",
+    "location": "header",
+    "prefix": "Bearer"
+  },
+  "base_url": "https://api.tria.ge/v0",
+  "actions": [
+    {
+      "id": "submit_sample",
+      "name": "Submit Sample",
+      "description": "Submit a file sample for automated malware analysis with optional interactive mode and profile selection",
+      "http_method": "POST",
+      "endpoint": "/samples",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "file",
+          "type": "file",
+          "description": "The file to submit for analysis (multipart form data)",
+          "required": true
+        },
+        {
+          "name": "_json",
+          "type": "string",
+          "description": "JSON configuration string (e.g., {\"kind\":\"file\",\"interactive\":false})",
+          "required": true
+        }
+      ],
+      "observable_type": "hash"
+    },
+    {
+      "id": "submit_url",
+      "name": "Submit URL",
+      "description": "Submit a URL for sandbox analysis or file fetching",
+      "http_method": "POST",
+      "endpoint": "/samples",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "URL to analyze",
+          "required": true
+        },
+        {
+          "name": "kind",
+          "type": "string",
+          "description": "Type of URL submission: url (browse to URL) or fetch (download file at URL)",
+          "required": true,
+          "default": "url"
+        },
+        {
+          "name": "interactive",
+          "type": "boolean",
+          "description": "Pause at static analysis stage for manual profile selection",
+          "required": false,
+          "default": false
+        }
+      ],
+      "observable_type": "url"
+    },
+    {
+      "id": "get_sample",
+      "name": "Get Sample",
+      "description": "Retrieve metadata for a specific submitted sample",
+      "http_method": "GET",
+      "endpoint": "/samples/{sample_id}",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "sample_id",
+          "type": "string",
+          "description": "Sample ID returned from submission (format: YYMMDD-XXXXXXX)",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_sample_summary",
+      "name": "Get Sample Summary",
+      "description": "Get a brief summary of the sample and its analysis tasks including verdict and threat scores",
+      "http_method": "GET",
+      "endpoint": "/samples/{sample_id}/summary",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "sample_id",
+          "type": "string",
+          "description": "Sample ID to summarize",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_overview",
+      "name": "Get Overview",
+      "description": "Retrieve comprehensive analysis overview with signatures, extracted configurations, and IOCs",
+      "http_method": "GET",
+      "endpoint": "/samples/{sample_id}/overview.json",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "sample_id",
+          "type": "string",
+          "description": "Sample ID to get the overview for",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_static_report",
+      "name": "Get Static Report",
+      "description": "Retrieve the static analysis report for a sample including file type, imports, and sections",
+      "http_method": "GET",
+      "endpoint": "/samples/{sample_id}/reports/static",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "sample_id",
+          "type": "string",
+          "description": "Sample ID to get the static report for",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_triage_report",
+      "name": "Get Triage Report",
+      "description": "Retrieve the full dynamic analysis report for a specific task including behavioral data and network activity",
+      "http_method": "GET",
+      "endpoint": "/samples/{sample_id}/{task_id}/report_triage.json",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "sample_id",
+          "type": "string",
+          "description": "Sample ID",
+          "required": true
+        },
+        {
+          "name": "task_id",
+          "type": "string",
+          "description": "Task ID within the sample (e.g., behavioral1, behavioral2)",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_pcap",
+      "name": "Get PCAP",
+      "description": "Download the network packet capture from a specific analysis task",
+      "http_method": "GET",
+      "endpoint": "/samples/{sample_id}/{task_id}/dump.pcapng",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "sample_id",
+          "type": "string",
+          "description": "Sample ID",
+          "required": true
+        },
+        {
+          "name": "task_id",
+          "type": "string",
+          "description": "Task ID (e.g., behavioral1)",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "download_sample",
+      "name": "Download Sample",
+      "description": "Download the original submitted sample file",
+      "http_method": "GET",
+      "endpoint": "/samples/{sample_id}/sample",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "sample_id",
+          "type": "string",
+          "description": "Sample ID to download",
+          "required": true
+        }
+      ],
+      "observable_type": "hash"
+    },
+    {
+      "id": "search",
+      "name": "Search",
+      "description": "Search for analyzed samples using IOC queries, file properties, and analysis results",
+      "http_method": "GET",
+      "endpoint": "/search",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Search query (e.g., hash, family name, tag, IOC). Supports Lucene-like syntax.",
+          "required": true
+        },
+        {
+          "name": "subset",
+          "type": "string",
+          "description": "Sample visibility filter: owned (your samples), public, or org (organization-wide)",
+          "required": false,
+          "default": "owned"
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "description": "Maximum number of results to return",
+          "required": false,
+          "default": 20
+        },
+        {
+          "name": "offset",
+          "type": "integer",
+          "description": "Result offset for pagination",
+          "required": false
+        }
+      ],
+      "observable_type": "hash"
+    },
+    {
+      "id": "select_profile",
+      "name": "Select Profile",
+      "description": "Select analysis profiles for an interactive sample that is paused at static analysis",
+      "http_method": "POST",
+      "endpoint": "/samples/{sample_id}/profile",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "sample_id",
+          "type": "string",
+          "description": "Sample ID in interactive mode",
+          "required": true
+        },
+        {
+          "name": "profiles",
+          "type": "string",
+          "description": "JSON array of profile configurations to execute",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "list_samples",
+      "name": "List Samples",
+      "description": "List all submitted samples with optional filtering",
+      "http_method": "GET",
+      "endpoint": "/samples",
+      "action_type": "investigate",
+      "read_only": true,
+      "parameters": [
+        {
+          "name": "subset",
+          "type": "string",
+          "description": "Filter by ownership: owned, public, org",
+          "required": false,
+          "default": "owned"
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "description": "Maximum number of samples to return",
+          "required": false,
+          "default": 20
+        }
+      ]
+    },
+    {
+      "id": "delete_sample",
+      "name": "Delete Sample",
+      "description": "Delete a sample and all associated analysis data",
+      "http_method": "DELETE",
+      "endpoint": "/samples/{sample_id}",
+      "action_type": "generic",
+      "read_only": false,
+      "parameters": [
+        {
+          "name": "sample_id",
+          "type": "string",
+          "description": "Sample ID to delete",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

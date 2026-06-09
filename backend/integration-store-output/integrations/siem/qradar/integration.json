@@ -1,0 +1,492 @@
+{
+  "id": "qradar",
+  "name": "QRadar",
+  "description": "This app supports generic, investigative, and ingestion actions on an IBM QRadar device",
+  "version": "2.3.1",
+  "category": "siem",
+  "vendor": "IBM",
+  "auth_type": "basic_auth",
+  "auth_config": {
+    "type": "basic_auth",
+    "header_name": "Authorization",
+    "location": "header"
+  },
+  "base_url": "Using base url {base_url}",
+  "actions": [
+    {
+      "id": "list_offenses",
+      "name": "List Offenses",
+      "description": "Get a list of offenses",
+      "http_method": "GET",
+      "endpoint": "/actions/list_offenses",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "start_time",
+          "type": "number",
+          "description": "Start of time range, in epoch time (milliseconds)",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "number",
+          "description": "End of time range, in epoch time (milliseconds)",
+          "required": false
+        },
+        {
+          "name": "count",
+          "type": "number",
+          "description": "Number of offenses to retrieve",
+          "required": false
+        },
+        {
+          "name": "offense_id",
+          "type": "string",
+          "description": "Comma-separated list of offense IDs to fetch",
+          "required": false,
+          "contains": [
+            "qradar offense id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_closing_reasons",
+      "name": "List Closing Reasons",
+      "description": "Get a list of offense closing reasons",
+      "http_method": "GET",
+      "endpoint": "/actions/list_closing_reasons",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "include_reserved",
+          "type": "boolean",
+          "description": "Include reserved offense closing reasons",
+          "required": false,
+          "default": false
+        },
+        {
+          "name": "include_deleted",
+          "type": "boolean",
+          "description": "Include deleted offense closing reasons",
+          "required": false,
+          "default": false
+        }
+      ]
+    },
+    {
+      "id": "get_events",
+      "name": "Get Events",
+      "description": "Get events belonging to an offense",
+      "http_method": "GET",
+      "endpoint": "/actions/get_events",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "offense_id",
+          "type": "number",
+          "description": "Offense ID to get events of",
+          "required": false,
+          "contains": [
+            "qradar offense id"
+          ]
+        },
+        {
+          "name": "ph",
+          "type": "string",
+          "description": "",
+          "required": false
+        },
+        {
+          "name": "start_time",
+          "type": "number",
+          "description": "Start of time range, in epoch time (milliseconds)",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "number",
+          "description": "End of time range, in epoch time (milliseconds)",
+          "required": false
+        },
+        {
+          "name": "count",
+          "type": "number",
+          "description": "Number of events to retrieve",
+          "required": false
+        },
+        {
+          "name": "fields_filter",
+          "type": "string",
+          "description": "Filter on event field values",
+          "required": false
+        },
+        {
+          "name": "interval_days",
+          "type": "number",
+          "description": "Interval days",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "get_flows",
+      "name": "Get Flows",
+      "description": "Get flows that make up an offense for a particular IP",
+      "http_method": "GET",
+      "endpoint": "/actions/get_flows",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "IP to get all the flows of",
+          "required": false,
+          "contains": [
+            "ip"
+          ]
+        },
+        {
+          "name": "offense_id",
+          "type": "number",
+          "description": "Offense ID to get flows of",
+          "required": false,
+          "contains": [
+            "qradar offense id"
+          ]
+        },
+        {
+          "name": "start_time",
+          "type": "number",
+          "description": "Start of time range, in epoch time (milliseconds)",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "number",
+          "description": "End of time range, in epoch time (milliseconds)",
+          "required": false
+        },
+        {
+          "name": "count",
+          "type": "number",
+          "description": "Number of flows to retrieve",
+          "required": false
+        },
+        {
+          "name": "fields_filter",
+          "type": "string",
+          "description": "Filter in AQL format on flow field values",
+          "required": false
+        }
+      ],
+      "observable_type": "ip"
+    },
+    {
+      "id": "offense_details",
+      "name": "Offense Details",
+      "description": "Get details about an offense",
+      "http_method": "GET",
+      "endpoint": "/actions/offense_details",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "offense_id",
+          "type": "number",
+          "description": "Offense ID to get the details of",
+          "required": true,
+          "contains": [
+            "qradar offense id"
+          ]
+        },
+        {
+          "name": "tenant_id",
+          "type": "number",
+          "description": "Tenant ID for saving container",
+          "required": false
+        },
+        {
+          "name": "ingest_offense",
+          "type": "boolean",
+          "description": "Ingest offense into Phantom",
+          "required": false,
+          "default": false
+        }
+      ]
+    },
+    {
+      "id": "alt_manage_ingestion",
+      "name": "Alt Manage Ingestion",
+      "description": "Manage ingestion details",
+      "http_method": "GET",
+      "endpoint": "/actions/alt_manage_ingestion",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "operation",
+          "type": "string",
+          "description": "Operation to perform on the ingestion data stored in the state file",
+          "required": true,
+          "default": "get last saved ingestion time data"
+        },
+        {
+          "name": "datetime",
+          "type": "string",
+          "description": "Datetime string to be stored against the ingestion data in the state file",
+          "required": false
+        },
+        {
+          "name": "offense_id",
+          "type": "number",
+          "description": "Offense ID against which to store the 'datetime' parameter value",
+          "required": false,
+          "contains": [
+            "qradar offense id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "run_query",
+      "name": "Run Query",
+      "description": "Execute an ariel query on the QRadar device",
+      "http_method": "GET",
+      "endpoint": "/actions/run_query",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "description": "Ariel Query",
+          "required": true,
+          "contains": [
+            "qradar ariel query"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "add_to_reference_set",
+      "name": "Add Listitem",
+      "description": "Add an item to a reference set in QRadar",
+      "http_method": "GET",
+      "endpoint": "/actions/add_to_reference_set",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "reference_set_name",
+          "type": "string",
+          "description": "Name of reference set to add to",
+          "required": true
+        },
+        {
+          "name": "reference_set_value",
+          "type": "string",
+          "description": "Value to add to the reference set",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "close_offense",
+      "name": "Close Offense",
+      "description": "Close an active offense, marking status=CLOSED",
+      "http_method": "GET",
+      "endpoint": "/actions/close_offense",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "offense_id",
+          "type": "number",
+          "description": "Offense ID to close",
+          "required": true,
+          "contains": [
+            "qradar offense id"
+          ]
+        },
+        {
+          "name": "closing_reason_id",
+          "type": "number",
+          "description": "Reason for closing offense",
+          "required": true,
+          "contains": [
+            "qradar offense closing reason id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "add_note",
+      "name": "Update Offense",
+      "description": "Attach a note to an offense",
+      "http_method": "GET",
+      "endpoint": "/actions/add_note",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "offense_id",
+          "type": "number",
+          "description": "Offense ID to attach note to",
+          "required": true,
+          "contains": [
+            "qradar offense id"
+          ]
+        },
+        {
+          "name": "note_text",
+          "type": "string",
+          "description": "Text to put into note",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "assign_user",
+      "name": "Assign User",
+      "description": "Assign the user to an offense",
+      "http_method": "GET",
+      "endpoint": "/actions/assign_user",
+      "action_type": "generic",
+      "read_only": false,
+      "cacheable": false,
+      "cache_ttl_days": 0,
+      "parameters": [
+        {
+          "name": "offense_id",
+          "type": "number",
+          "description": "Offense ID to assign the user to",
+          "required": true,
+          "contains": [
+            "qradar offense id"
+          ]
+        },
+        {
+          "name": "assignee",
+          "type": "string",
+          "description": "Name of the user",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_rule_info",
+      "name": "Get Rule Info",
+      "description": "Retrieve QRadar rule information",
+      "http_method": "GET",
+      "endpoint": "/actions/get_rule_info",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "rule_id",
+          "type": "number",
+          "description": "Rule ID for which information needs to be extracted",
+          "required": true,
+          "contains": [
+            "qradar rule id"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "list_rules",
+      "name": "List Rules",
+      "description": "List all QRadar rules",
+      "http_method": "GET",
+      "endpoint": "/actions/list_rules",
+      "action_type": "investigate",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "count",
+          "type": "number",
+          "description": "Number of rules to retrieve",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "on_poll",
+      "name": "On Poll",
+      "description": "Callback action for the on_poll ingest functionality",
+      "http_method": "GET",
+      "endpoint": "/actions/on_poll",
+      "action_type": "ingest",
+      "read_only": true,
+      "cacheable": true,
+      "cache_ttl_days": 7,
+      "parameters": [
+        {
+          "name": "container_id",
+          "type": "string",
+          "description": "Parameter ignored for this app",
+          "required": false
+        },
+        {
+          "name": "start_time",
+          "type": "number",
+          "description": "Start of time range, in epoch time (milliseconds)",
+          "required": false
+        },
+        {
+          "name": "end_time",
+          "type": "number",
+          "description": "End of time range, in epoch time (milliseconds)",
+          "required": false
+        },
+        {
+          "name": "container_count",
+          "type": "number",
+          "description": "Maximum number of container records to query for",
+          "required": false
+        },
+        {
+          "name": "artifact_count",
+          "type": "number",
+          "description": "Parameter ignored for this app",
+          "required": false
+        }
+      ]
+    }
+  ],
+  "source_metadata": {
+    "original_name": "QRadar",
+    "original_type": "siem",
+    "converted_at": "2025-12-18T16:25:29.053595",
+    "source_version": "2.3.1"
+  }
+}
