@@ -289,21 +289,24 @@ async def _apply_admin(conn, tenant_id: str, admin: Dict[str, Any]) -> str:
     if not username:
         username = email_l.split("@", 1)[0]
 
-    # users upsert by email (mirrors bootstrap_platform_admin._ensure_user)
-    row = await conn.fetchrow("SELECT id FROM users WHERE email = $1", email_l)
+    # Upsert the admin. Reconcile by USERNAME first so the configured admin
+    # (e.g. "admin") TAKES OVER any seeded default admin of the same username
+    # instead of creating a suffixed duplicate the operator can't log in as.
+    # Fall back to email, then insert.
+    row = await conn.fetchrow("SELECT id FROM users WHERE username = $1", username)
+    if not row:
+        row = await conn.fetchrow("SELECT id FROM users WHERE email = $1", email_l)
     if row:
         user_id = row["id"]
         await conn.execute(
-            "UPDATE users SET hashed_password = $2, role = 'admin', disabled = FALSE, "
-            "force_password_reset = FALSE, failed_login_attempts = 0, locked_until = NULL "
-            "WHERE id = $1",
-            user_id, password_hash,
+            "UPDATE users SET username = $2, email = $3, hashed_password = $4, "
+            "full_name = $5, role = 'admin', disabled = FALSE, "
+            "force_password_reset = FALSE, failed_login_attempts = 0, "
+            "locked_until = NULL, tenant_id = $6::uuid WHERE id = $1",
+            user_id, username, email_l, password_hash, full_name, tenant_id,
         )
     else:
         user_id = uuid.uuid4()
-        # username is unique+NOT NULL; suffix on collision.
-        if await conn.fetchval("SELECT 1 FROM users WHERE username = $1", username):
-            username = f"{username}-{user_id.hex[:6]}"
         await conn.execute(
             "INSERT INTO users (id, username, email, hashed_password, full_name, role, "
             "tenant_id, disabled, force_password_reset) "

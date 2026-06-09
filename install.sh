@@ -342,6 +342,9 @@ triage:
   priorities: []
 ${SMTP_SECTION}
 CFG
+  # World-readable so the backend container (different uid) can read it on
+  # startup. It holds no secrets - those are ${ENV_VAR} references into .env.
+  chmod 644 t1.config.yaml
   log "t1.config.yaml written."
 }
 
@@ -465,11 +468,18 @@ done_msg() {
   If https://${DOMAIN} does not load, check 'docker compose logs caddy'
   and confirm the domain's DNS A record points at this host.
 DONE
-  if [[ -z "${ANTHROPIC_API_KEY:-}" ]]; then
+  if [[ -n "${AI_CHAT_PROVIDER:-}" && "${AI_CHAT_PROVIDER}" != "none" ]]; then
     cat <<DONEAI
 
-  AI features are OFF. Add ANTHROPIC_API_KEY to .env and run
-  'docker compose up -d backend' to enable them.
+  AI is configured via t1.config.yaml: provider '${AI_CHAT_PROVIDER}',
+  model '${AI_CHAT_MODEL:-}' at '${AI_CHAT_BASE_URL:-}'.
+  Edit t1.config.yaml and run 'docker compose up -d backend' to change it.
+DONEAI
+  elif [[ -z "${ANTHROPIC_API_KEY:-}" ]]; then
+    cat <<DONEAI
+
+  AI features are OFF. Configure an AI provider in t1.config.yaml (ai.chat)
+  and run 'docker compose up -d backend' to enable them.
 DONEAI
   fi
 }
