@@ -35,11 +35,10 @@ cd t1agentics
 <table>
   <tr>
     <td width="50%"><img src="docs/screenshots/investigation-riggs.png" alt="AI-assisted investigation with the Riggs assistant"><br><sub><b>AI-assisted investigation</b> — Riggs reads the alert, scores a verdict with its reasoning, and proposes concrete actions you approve or dismiss.</sub></td>
-    <td width="50%"><img src="docs/screenshots/security-queue.png" alt="Unified security triage queue"><br><sub><b>Unified triage queue</b> — every alert and investigation in one place, with severity heat-strips and SLA tracking.</sub></td>
+    <td width="50%"><img src="docs/screenshots/playbook-marketplace.png" alt="Playbook marketplace"><br><sub><b>Playbook marketplace</b> — 200+ ready-to-run response playbooks across phishing, malware, identity, cloud, and more.</sub></td>
   </tr>
   <tr>
-    <td width="50%"><img src="docs/screenshots/playbook-marketplace.png" alt="Playbook marketplace"><br><sub><b>Playbook marketplace</b> — 200+ ready-to-run response playbooks across phishing, malware, identity, cloud, and more.</sub></td>
-    <td width="50%"><img src="docs/screenshots/knowledge-base.png" alt="Built-in knowledge base"><br><sub><b>Knowledge base</b> — 340+ built-in SOC runbooks and reference articles, searchable in-product.</sub></td>
+    <td colspan="2" align="center"><img src="docs/screenshots/knowledge-base.png" alt="Built-in knowledge base" width="800"><br><sub><b>Knowledge base</b> — 340+ built-in SOC runbooks and reference articles, searchable in-product.</sub></td>
   </tr>
 </table>
 
