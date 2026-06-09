@@ -1,6 +1,6 @@
 # Installing T1 Agentics
 
-This is the full install reference. For the short version, see the Quick install section in [README.md](README.md).
+This is the full install reference. For the short version, see the Quick start section in [README.md](README.md). For the config-file reference see [CONFIGURATION.md](CONFIGURATION.md); for problems see [TROUBLESHOOTING.md](TROUBLESHOOTING.md).
 
 ## Requirements
 
@@ -33,15 +33,16 @@ Per-OS prerequisites:
 
 What it does, in order:
 
-1. Runs preflight checks (supported OS, Docker daemon reachable, required ports free)
-2. Prompts for your domain and an optional LLM provider API key
-3. Generates random values for every required secret and writes `.env`
-4. Builds the images and brings the stack up with `docker compose up -d`
-5. Bootstraps the first platform admin
-6. Seeds the built-in content libraries — playbook marketplace and knowledge base (best-effort; see [Seeding built-in content](#seeding-built-in-content))
-7. Prints the URL and next-step pointers
+1. Runs preflight checks (supported OS, Docker daemon reachable, RAM ≥ 8 GB, disk ≥ 20 GB, ports 80/443 free)
+2. Prompts for your domain, admin email + password, an optional AI provider, organization name/slug, license tier, and optional SMTP
+3. Generates random values for every required secret and writes **`.env`** (mode 600)
+4. Writes **`t1.config.yaml`** from your answers — the single-file app config the backend applies on startup (see [CONFIGURATION.md](CONFIGURATION.md))
+5. Builds the images and brings the stack up with `docker compose up -d`. Postgres initializes its schema from `native-schema.sql` on first boot
+6. Bootstraps the first platform admin (`scripts/bootstrap_platform_admin.py`; password from `ADMIN_PASSWORD`)
+7. Seeds the built-in content libraries — playbook marketplace and knowledge base (best-effort; see [Seeding built-in content](#seeding-built-in-content))
+8. Prints the URL and next-step pointers
 
-It expects Docker already installed (it will not install Docker for you). Read `install.sh` in the repo first if you want to see exactly what runs.
+It expects Docker already installed (it will not install Docker for you). Re-running is safe: it reuses an existing `.env`/`t1.config.yaml` unless you pass `--reset`. Read `install.sh` in the repo first if you want to see exactly what runs.
 
 ---
 
@@ -78,6 +79,16 @@ docker compose logs -f backend
 
 The backend is ready when you see `Application startup complete`.
 
+**Optional: app config file.** Copy the template to drive org identity, license tier, AI provider, admin, triage taxonomy, and SMTP from one place (applied idempotently on every backend startup):
+
+```bash
+cp t1.config.yaml.example t1.config.yaml
+nano t1.config.yaml          # set org/license/ai; secrets stay in .env as ${ENV_VAR}
+docker compose up -d backend
+```
+
+See [CONFIGURATION.md](CONFIGURATION.md) for the full reference. The file is optional — absent, startup is a clean no-op.
+
 A manual install does **not** seed the content libraries or bootstrap the admin. After the backend is up, run:
 
 ```bash
@@ -85,6 +96,21 @@ docker compose exec -T backend python scripts/bootstrap_platform_admin.py
 ```
 
 then seed content as described in [Seeding built-in content](#seeding-built-in-content) below.
+
+---
+
+## Option C: native mode (no Docker, experimental)
+
+A single-process mode that boots an **embedded PostgreSQL** (shipped as a pip wheel — no system Postgres, no admin rights) and serves the whole app (UI + API + WebSocket) on one port. Good for trying it on a laptop. Needs **Python 3.11 or 3.12** and Node (to build the frontend once). Redis and ClickHouse are off in this mode; the app falls back gracefully.
+
+```bash
+git clone https://github.com/BeardedInfoSec/t1agentics
+cd t1agentics
+./run-native.sh            # Linux / macOS
+# .\run-native.ps1         # Windows PowerShell
+```
+
+The script creates a virtualenv under `./.native/`, installs `backend/requirements.txt` + `requirements-native.txt`, builds the frontend if `frontend/build/` is missing, starts the embedded Postgres, and opens `http://localhost:8000`. Docker Compose remains the path for production multi-tenant deployments with automatic TLS.
 
 ---
 
@@ -156,42 +182,24 @@ For internal-only deployments (no public DNS), use your own reverse proxy with a
 
 ---
 
-## Configure AI / bring your own model
+## Adding an AI provider after install
 
-The platform comes up with no AI provider configured. Until you set one, AI-assisted triage, the Riggs investigation assistant, and recommended actions are disabled. Everything else works without it.
+The platform comes up with no AI provider configured — AI-assisted triage, the Riggs assistant, and recommended actions are disabled until you set one. Everything else works without it.
 
-You choose the model. Two providers are supported.
-
-### Option 1: local, OpenAI-compatible model (Ollama / vLLM / LM Studio)
-
-The simplest self-hosted path — no API costs, no data leaving your host. Start your model server, then point T1 Agentics at its OpenAI-compatible endpoint. For Ollama on the Docker host:
-
-- **Endpoint:** `http://host.docker.internal:11434/v1`
-- **Model:** whatever you pulled (e.g. `llama3.1`)
-- **API key:** any non-empty placeholder (local servers ignore it)
-
-vLLM and LM Studio expose the same OpenAI-compatible shape — point at their `/v1` base URL and set the model name.
-
-### Option 2: Anthropic
-
-Edit `.env`:
+Configure the provider in the `ai.chat` section of `t1.config.yaml`, then apply:
 
 ```bash
-nano .env
-# AI_PROVIDER=claude
-# ANTHROPIC_API_KEY=<your key>
-# CLAUDE_DEFAULT_MODEL=<a model id from your account>
-
-# Apply (compose restart does NOT reload env vars)
-docker compose up -d
+nano t1.config.yaml
+docker compose up -d backend     # a bare 'restart' does NOT reload .env
 ```
 
-### Where to set it: two layers
+Three supported shapes:
 
-1. **Per-tenant (recommended).** Configure the provider, endpoint, model, and key from the admin UI under **Settings to AI Provider**. This drives the chat/triage service and lets each tenant bill against its own account. Use this layer for a local model.
-2. **Agent executor (Riggs).** Backed by the `ai_providers` table. Configuring a provider in the UI populates what the agent executor needs. If your build does not yet expose the local-model option in the UI, set `AI_PROVIDER` / endpoint / model in `.env` as a fallback and `docker compose up -d`.
+- **Local OpenAI-compatible (Ollama / vLLM / LM Studio)** — `provider: self_hosted`, `api_style: openai`, `base_url: http://host.docker.internal:<port>`. The backend reaches the host via `extra_hosts: host.docker.internal:host-gateway` (set in the shipped compose); start Ollama with `OLLAMA_HOST=0.0.0.0` so the container can reach it.
+- **Anthropic cloud** — `provider: anthropic`, `api_style: anthropic`, key from `${ANTHROPIC_API_KEY}` in `.env`.
+- **OpenAI cloud** — `provider: openai`, `api_style: openai`, key from `.env`.
 
-To rotate or change the model later, edit `.env` or the tenant setting and run `docker compose up -d` again.
+You can also set the provider in **Settings → AI** in the UI. Full worked examples (including embeddings) are in [CONFIGURATION.md → Configure AI](CONFIGURATION.md#configure-ai).
 
 ---
 
@@ -277,6 +285,8 @@ docker compose exec -T postgres pg_restore -U agentcore -d agentcore --clean --i
 ---
 
 ## Troubleshooting
+
+For the full symptom → cause → fix guide (AI not configured, mixed-content behind a proxy, empty marketplace/KB, missing deep analysis, GPU/AVX, LAN TLS, admin-password resets, and more) see **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)**. A few install-time issues:
 
 **Caddy cannot get a certificate.** Check DNS first: `dig +short your-domain.com` should print your host's public IP. Check that ports 80 and 443 are reachable from the public internet (not just the LAN). Inspect logs with `docker compose logs caddy`.
 

@@ -81,6 +81,11 @@ services:
       dockerfile: Dockerfile
     image: t1agentics/backend:local
     container_name: t1-backend
+    # Let the backend reach services on the Docker host (e.g. a local Ollama /
+    # vLLM / LM Studio at http://host.docker.internal:<port>). On Linux this
+    # name does not resolve unless mapped to the host gateway.
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     environment:
       ENVIRONMENT: ${ENVIRONMENT:-production}
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
