@@ -6,6 +6,10 @@
 [![Version](https://img.shields.io/badge/version-0.1.0-informational.svg)](#)
 [![GitHub](https://img.shields.io/badge/GitHub-t1agentics-181717.svg)](https://github.com/BeardedInfoSec/t1agentics)
 
+<p align="center">
+  <img src="docs/screenshots/dashboard.png" alt="T1 Agentics — Security Operations Center dashboard" width="900">
+</p>
+
 T1 Agentics is a self-hosted, multi-tenant SOC platform: it ingests alerts from your existing tools, triages them with an AI assistant of your choice, walks investigations through a structured workbench, and runs remediation through 700+ pre-built connectors. Tenants are isolated at the database layer with Row-Level Security, which makes it useful for MSPs, consultancies, and in-house teams running more than one environment.
 
 **Docs:** [INSTALL.md](INSTALL.md) · [CONFIGURATION.md](CONFIGURATION.md) · [TROUBLESHOOTING.md](TROUBLESHOOTING.md) · [OVERVIEW.md](OVERVIEW.md) · [SECURITY.md](SECURITY.md) · [CONTRIBUTING.md](CONTRIBUTING.md)
@@ -23,6 +27,21 @@ cd t1agentics
 ```
 
 `install.sh` runs preflight checks, prompts for your domain and an optional AI provider, generates secrets, writes `.env` and `t1.config.yaml`, builds the images, starts the stack, bootstraps the first platform admin, and seeds the built-in content libraries (playbook marketplace + knowledge base). The web UI comes up on port 443 once DNS resolves. See [INSTALL.md](INSTALL.md) for the manual and native paths.
+
+---
+
+## Screenshots
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/investigation-riggs.png" alt="AI-assisted investigation with the Riggs assistant"><br><sub><b>AI-assisted investigation</b> — Riggs reads the alert, scores a verdict with its reasoning, and proposes concrete actions you approve or dismiss.</sub></td>
+    <td width="50%"><img src="docs/screenshots/security-queue.png" alt="Unified security triage queue"><br><sub><b>Unified triage queue</b> — every alert and investigation in one place, with severity heat-strips and SLA tracking.</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/playbook-marketplace.png" alt="Playbook marketplace"><br><sub><b>Playbook marketplace</b> — 200+ ready-to-run response playbooks across phishing, malware, identity, cloud, and more.</sub></td>
+    <td width="50%"><img src="docs/screenshots/knowledge-base.png" alt="Built-in knowledge base"><br><sub><b>Knowledge base</b> — 340+ built-in SOC runbooks and reference articles, searchable in-product.</sub></td>
+  </tr>
+</table>
 
 ---
 
