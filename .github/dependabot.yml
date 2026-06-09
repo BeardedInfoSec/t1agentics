@@ -2,6 +2,9 @@ version: 2
 
 # Schedules dependency update PRs across every ecosystem this repo uses.
 # Grouped by ecosystem so we don't get one PR per dependency on update day.
+# Major-version bumps are ignored on purpose: they tend to be breaking and
+# need manual testing/code changes, so take them deliberately rather than on
+# Dependabot's schedule. GitHub Actions still get all updates (low risk).
 # Security advisories fire independently of the schedule — those land
 # as PRs the moment GitHub knows about them.
 
@@ -20,6 +23,10 @@ updates:
         update-types:
           - patch
           - minor
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - version-update:semver-major
 
   - package-ecosystem: npm
     directory: /frontend
@@ -35,6 +42,10 @@ updates:
         update-types:
           - patch
           - minor
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - version-update:semver-major
 
   - package-ecosystem: docker
     directory: /backend
@@ -44,6 +55,10 @@ updates:
     labels:
       - dependencies
       - docker
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - version-update:semver-major
 
   - package-ecosystem: docker
     directory: /frontend
@@ -53,6 +68,10 @@ updates:
     labels:
       - dependencies
       - docker
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - version-update:semver-major
 
   - package-ecosystem: github-actions
     directory: /
