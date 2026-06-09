@@ -34,7 +34,7 @@ cd t1agentics
 
 <table>
   <tr>
-    <td width="50%"><img src="docs/screenshots/investigation-riggs.png" alt="AI-assisted investigation with the Riggs assistant"><br><sub><b>AI-assisted investigation</b> — Riggs reads the alert, scores a verdict with its reasoning, and proposes concrete actions you approve or dismiss.</sub></td>
+    <td width="50%"><img src="docs/screenshots/investigation-riggs.png" alt="AI deep-dive analysis with the Riggs assistant"><br><sub><b>AI deep-dive analysis</b> — Riggs runs a deep analysis (threat assessment, MITRE ATT&CK mapping, root cause) and proposes concrete actions you approve or dismiss.</sub></td>
     <td width="50%"><img src="docs/screenshots/playbook-marketplace.png" alt="Playbook marketplace"><br><sub><b>Playbook marketplace</b> — 200+ ready-to-run response playbooks across phishing, malware, identity, cloud, and more.</sub></td>
   </tr>
   <tr>
