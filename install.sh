@@ -15,6 +15,10 @@ log()  { printf '[install] %s\n' "$*"; }
 warn() { printf '[install] WARN  %s\n' "$*" >&2; }
 fail() { printf '[install] ERROR %s\n' "$*" >&2; exit 1; }
 
+# Run privileged commands with sudo only when not already root.
+SUDO=""
+if [[ "$(id -u)" -ne 0 ]] && command -v sudo >/dev/null 2>&1; then SUDO="sudo"; fi
+
 banner() {
   cat <<'BANNER'
 ================================================================
@@ -96,6 +100,31 @@ preflight() {
 prompts() {
   if [[ -f .env && "${1:-}" != "--reset" ]]; then
     log ".env already exists. Reusing it. Run with --reset to regenerate."
+    return 0
+  fi
+
+  # Unattended / one-shot mode: take every answer from T1_* env vars instead of
+  # prompting. Required: T1_DOMAIN, T1_ADMIN_EMAIL, T1_ADMIN_PASSWORD. Everything
+  # else has a sensible self-hosted default (local Ollama, platform tier).
+  if [[ "${T1_UNATTENDED:-}" == "1" ]]; then
+    log "Unattended mode: reading configuration from T1_* environment variables."
+    DOMAIN="${T1_DOMAIN:?T1_DOMAIN is required in unattended mode}"
+    ADMIN_EMAIL="${T1_ADMIN_EMAIL:?T1_ADMIN_EMAIL is required in unattended mode}"
+    ADMIN_PASSWORD="${T1_ADMIN_PASSWORD:?T1_ADMIN_PASSWORD is required (min 12 chars)}"
+    ANTHROPIC_API_KEY="${T1_ANTHROPIC_API_KEY:-}"
+    ORG_NAME="${T1_ORG_NAME:-T1 Agentics}"
+    ORG_SLUG="${T1_ORG_SLUG:-t1-agentics}"
+    LICENSE_TIER="${T1_LICENSE_TIER:-platform}"
+    AI_CHAT_PROVIDER="${T1_AI_CHAT_PROVIDER:-self_hosted}"
+    AI_CHAT_API_STYLE="${T1_AI_CHAT_API_STYLE:-openai}"
+    AI_CHAT_BASE_URL="${T1_AI_CHAT_BASE_URL:-http://host.docker.internal:11434}"
+    AI_CHAT_MODEL="${T1_AI_CHAT_MODEL:-qwen2.5:7b-instruct}"
+    AI_CHAT_API_KEY="${T1_AI_CHAT_API_KEY:-}"
+    SMTP_HOST="${T1_SMTP_HOST:-}"
+    SMTP_PORT="${T1_SMTP_PORT:-587}"
+    SMTP_USERNAME="${T1_SMTP_USERNAME:-}"
+    SMTP_PASSWORD="${T1_SMTP_PASSWORD:-}"
+    SMTP_FROM_EMAIL="${T1_SMTP_FROM_EMAIL:-}"
     return 0
   fi
 
@@ -446,6 +475,62 @@ DONEAI
 }
 
 # ---------------------------------------------------------------------------
+# Local AI (Ollama) - turnkey setup so AI works on first boot
+# ---------------------------------------------------------------------------
+setup_ollama() {
+  # Only when the configured chat provider is a local Ollama endpoint (:11434).
+  case "${AI_CHAT_PROVIDER:-}" in
+    self_hosted|local|ollama) : ;;
+    *) return 0 ;;
+  esac
+  case "${AI_CHAT_BASE_URL:-}" in
+    *11434*) : ;;
+    *) log "AI base URL '${AI_CHAT_BASE_URL:-}' is not a local Ollama; skipping Ollama setup."; return 0 ;;
+  esac
+
+  log "Setting up local Ollama (turnkey AI)..."
+
+  # 1) Install Ollama if it is not already present.
+  if ! command -v ollama >/dev/null 2>&1; then
+    log "Installing Ollama..."
+    curl -fsSL https://ollama.com/install.sh | sh || fail "Ollama install failed. See https://ollama.com/download"
+  else
+    log "Ollama already installed."
+  fi
+
+  # 2) Bind Ollama on all interfaces so the backend container can reach it via
+  #    host.docker.internal. No-op if it is already bound to 0.0.0.0.
+  if command -v systemctl >/dev/null 2>&1 && systemctl list-unit-files 2>/dev/null | grep -q '^ollama\.service'; then
+    if ! systemctl show ollama -p Environment 2>/dev/null | grep -q 'OLLAMA_HOST=0\.0\.0\.0'; then
+      log "Binding Ollama to 0.0.0.0:11434..."
+      $SUDO mkdir -p /etc/systemd/system/ollama.service.d
+      printf '[Service]\nEnvironment="OLLAMA_HOST=0.0.0.0:11434"\n' | $SUDO tee /etc/systemd/system/ollama.service.d/override.conf >/dev/null
+      $SUDO systemctl daemon-reload
+      $SUDO systemctl restart ollama
+    fi
+    $SUDO systemctl enable ollama >/dev/null 2>&1 || true
+  fi
+
+  # 3) Wait for the Ollama API to come up.
+  log "Waiting for Ollama to respond on :11434..."
+  local i
+  for i in $(seq 1 30); do
+    curl -fsS http://localhost:11434/api/tags >/dev/null 2>&1 && break
+    sleep 1
+  done
+
+  # 4) Pull the configured model (idempotent).
+  local model="${AI_CHAT_MODEL:-qwen2.5:7b-instruct}"
+  if ollama list 2>/dev/null | awk 'NR>1{print $1}' | grep -qx "$model"; then
+    log "Model '$model' already present."
+  else
+    log "Pulling model '$model' (this can take several minutes)..."
+    ollama pull "$model" || warn "Could not pull '$model'. Pull it later with: ollama pull $model"
+  fi
+  log "Ollama is ready."
+}
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 main() {
@@ -458,6 +543,8 @@ main() {
   # Load whatever we just wrote so the success banner can reference it.
   # shellcheck disable=SC1091
   set -a; . ./.env; set +a
+
+  setup_ollama
 
   bring_up
   done_msg
