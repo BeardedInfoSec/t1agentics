@@ -144,6 +144,24 @@ prompts() {
     echo "  -> not a valid email, try again."
   done
 
+  # TLS mode - ask, defaulting to whatever the domain looks like.
+  local _tls_default; _tls_default="$(detect_tls_default)"
+  echo
+  if [[ "$_tls_default" == "internal" ]]; then
+    echo "  '$DOMAIN' looks like an internal/LAN name."
+  else
+    echo "  '$DOMAIN' looks like a public domain."
+  fi
+  echo "    internal = Caddy's own CA; works on a LAN with no public DNS (clients"
+  echo "               get a self-signed cert until they trust the root CA)."
+  echo "    public   = Let's Encrypt; needs a public domain + ports 80/443 open."
+  while :; do
+    read -rp "TLS mode (internal/public) [$_tls_default]: " TLS_MODE
+    TLS_MODE="$(printf '%s' "${TLS_MODE:-$_tls_default}" | tr '[:upper:]' '[:lower:]')"
+    [[ "$TLS_MODE" == internal || "$TLS_MODE" == public ]] && break
+    echo "  -> enter 'internal' or 'public'."
+  done
+
   while :; do
     read -rsp "Admin password (min 12 chars): " ADMIN_PASSWORD; echo
     if [[ "${#ADMIN_PASSWORD}" -lt 12 ]]; then
@@ -218,9 +236,45 @@ gen_fernet() {
   fi
 }
 
+# Pure domain heuristic: echo "internal" for a private/LAN name, else "public".
+# Used as the smart default for the interactive prompt and for auto mode.
+detect_tls_default() {
+  local d; d="$(printf '%s' "$DOMAIN" | tr '[:upper:]' '[:lower:]')"
+  if [[ "$d" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]] || [[ "$d" != *.* ]] \
+     || [[ "$d" == *.lan || "$d" == *.local || "$d" == *.localdomain \
+        || "$d" == *.internal || "$d" == *.intranet || "$d" == *.home \
+        || "$d" == *.lab || "$d" == *.corp || "$d" == *.test ]]; then
+    echo internal
+  else
+    echo public
+  fi
+}
+
+# Resolve the final TLS mode and set CADDY_TLS. Precedence: an explicit choice
+# (the interactive prompt or T1_TLS_MODE) wins; otherwise auto-detect from the
+# domain. Public ACME only works for a publicly-resolvable domain; a LAN host
+# must use Caddy's own CA or HTTPS never comes up. CADDY_TLS is "internal"
+# (Caddy's CA) or the admin email (which switches Caddy to public ACME).
+determine_tls_mode() {
+  local mode
+  mode="$(printf '%s' "${TLS_MODE:-${T1_TLS_MODE:-auto}}" | tr '[:upper:]' '[:lower:]')"
+  [[ "$mode" == "auto" ]] && mode="$(detect_tls_default)"
+  case "$mode" in
+    public|acme|letsencrypt) CADDY_TLS="$ADMIN_EMAIL" ;;
+    *)                       CADDY_TLS="internal" ;;
+  esac
+}
+
 write_env() {
   if [[ -f .env && "${1:-}" != "--reset" ]]; then
     return 0
+  fi
+
+  determine_tls_mode
+  if [[ "$CADDY_TLS" == "internal" ]]; then
+    log "TLS: '$DOMAIN' looks internal -> using Caddy's built-in CA (no public cert)."
+  else
+    log "TLS: '$DOMAIN' looks public -> using Let's Encrypt (ACME)."
   fi
 
   log "Generating secrets and writing .env..."
@@ -243,6 +297,8 @@ ENVIRONMENT=production
 DOMAIN=${DOMAIN}
 ADMIN_EMAIL=${ADMIN_EMAIL}
 ADMIN_USERNAME=admin
+# TLS: "internal" = Caddy's own CA (LAN/private domains); an email = public ACME.
+CADDY_TLS=${CADDY_TLS}
 ADMIN_PASSWORD=${ADMIN_PASSWORD}
 
 # Database
@@ -467,7 +523,8 @@ done_msg() {
                        Install complete
 ================================================================
   URL:    https://${DOMAIN}
-  Login:  ${ADMIN_EMAIL}
+  Login:  username 'admin', organization '${ORG_SLUG:-t1-agentics}'
+          (admin email on file: ${ADMIN_EMAIL})
 
   Useful commands:
     docker compose ps              - service status
@@ -475,10 +532,30 @@ done_msg() {
     ./bin/t1 logs backend          - tail one service
     ./bin/t1 backup                - snapshot db + caddy data
 
+DONE
+  if [[ "${CADDY_TLS:-internal}" == "internal" ]]; then
+    local host_ip
+    host_ip="$(hostname -I 2>/dev/null | awk '{print $1}')"
+    cat <<DONETLS
+
+  TLS: '${DOMAIN}' is a private/internal name, so HTTPS uses Caddy's built-in
+  CA (no public certificate). To reach it from another machine:
+    1. Make '${DOMAIN}' resolve to this host - e.g. add to the client's hosts
+       file:   ${host_ip:-<this-host-ip>}  ${DOMAIN}
+    2. The browser will warn about the self-signed cert - accept it, or trust
+       the root CA to silence the warning:
+         docker compose exec caddy cat \\
+           /data/caddy/pki/authorities/local/root.crt > t1-root-ca.crt
+       then import t1-root-ca.crt into the client's OS/browser trust store.
+DONETLS
+  else
+    cat <<DONETLS
+
   Cert provisioning can take up to a minute on first boot.
   If https://${DOMAIN} does not load, check 'docker compose logs caddy'
-  and confirm the domain's DNS A record points at this host.
-DONE
+  and confirm the domain's public DNS A record points at this host.
+DONETLS
+  fi
   if [[ -n "${AI_CHAT_PROVIDER:-}" && "${AI_CHAT_PROVIDER}" != "none" ]]; then
     cat <<DONEAI
 

@@ -67,6 +67,7 @@ With the defaults, that single command builds the stack, **installs Ollama and p
 | `T1_DOMAIN` | **yes** | — | FQDN Caddy serves and requests a TLS cert for. |
 | `T1_ADMIN_EMAIL` | **yes** | — | First platform admin and Let's Encrypt contact. |
 | `T1_ADMIN_PASSWORD` | **yes** | — | Min 12 chars. Stored only in `.env`. |
+| `T1_TLS_MODE` | no | `auto` | `auto` picks internal vs public from the domain; force with `internal` (Caddy CA) or `public` (Let's Encrypt). |
 | `T1_ORG_NAME` | no | `T1 Agentics` | Organization display name. |
 | `T1_ORG_SLUG` | no | `t1-agentics` | Tenant slug — this is the **Organization** you type at login. |
 | `T1_LICENSE_TIER` | no | `platform` | `platform` is unlimited; recommended for self-host. |
@@ -200,21 +201,28 @@ Then use the **Forgot password** flow or reset the bcrypt hash with the admin CL
 
 ## DNS and TLS
 
-T1 Agentics ships with Caddy fronting the stack. Caddy obtains a Let's Encrypt certificate automatically when:
+T1 Agentics ships with Caddy fronting the stack, and the installer picks a TLS mode automatically from your domain. Override the choice with `T1_TLS_MODE=internal|public`.
 
-1. Your domain's A record (and AAAA if you use IPv6) points to the host's public IP
+**Internal / LAN domains** (e.g. `soc.lan`, a single-label hostname, or an IP) → Caddy uses its **built-in CA** — no public DNS or internet exposure required. This is the default for private names. To reach it from another machine:
+
+1. Make the domain resolve to the host — local DNS, or a hosts-file entry on the client:
+   ```
+   192.168.1.50   soc.lan
+   ```
+   (the raw IP alone won't work — the certificate is issued for the name)
+2. Either accept the browser's self-signed warning, or trust Caddy's root CA to remove it:
+   ```bash
+   docker compose exec caddy cat /data/caddy/pki/authorities/local/root.crt > t1-root-ca.crt
+   # then import t1-root-ca.crt into the client's OS / browser trust store
+   ```
+
+**Public domains** → Caddy obtains a **Let's Encrypt** certificate automatically when:
+
+1. The domain's A record (and AAAA for IPv6) points to the host's public IP
 2. Ports 80 and 443 are reachable from the public internet
-3. `BASE_URL` in `.env` matches the domain you are using
+3. The admin email you gave is a real address (ACME rejects `example.com` and the like)
 
-Verify DNS resolves to the right host:
-
-```bash
-dig +short your-domain.com
-```
-
-If Caddy cannot get a certificate, check `docker compose logs caddy` — the most common causes are unresolved DNS, a firewall blocking port 80, or a stale A record from a previous host.
-
-For internal-only deployments (no public DNS), use your own reverse proxy with an internal certificate authority and point the stack at it instead.
+Verify DNS with `dig +short your-domain.com`. If Caddy cannot get a public cert, check `docker compose logs caddy` — usual causes are unresolved DNS, a firewall blocking port 80, a stale A record, or a non-public domain (use internal mode for those).
 
 ---
 

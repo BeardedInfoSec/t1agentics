@@ -1,14 +1,20 @@
 # T1 Agentics - Caddy reverse proxy
-# DOMAIN and ADMIN_EMAIL are injected from the compose environment.
-# Caddy auto-provisions a Let's Encrypt cert for {$DOMAIN} on first boot.
+# DOMAIN and CADDY_TLS are injected from the compose environment by install.sh:
+#   CADDY_TLS=internal       -> Caddy's built-in CA (LAN / private domains)
+#   CADDY_TLS=you@email.com  -> public ACME (Let's Encrypt) for a real domain
+# The mode is chosen automatically from your domain; override with T1_TLS_MODE.
 
 {
-	email {$ADMIN_EMAIL}
-	# Use the staging directory while debugging certs; comment out for prod.
+	# While debugging a public cert you can point at Let's Encrypt staging:
 	# acme_ca https://acme-staging-v02.api.letsencrypt.org/directory
 }
 
 {$DOMAIN} {
+	# "internal" uses Caddy's own CA for private/LAN domains; an email address
+	# switches this to public ACME. A public domain that resolves to this host
+	# is required for ACME to succeed.
+	tls {$CADDY_TLS:internal}
+
 	encode zstd gzip
 
 	log {

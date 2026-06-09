@@ -128,14 +128,26 @@ The schema is applied by Postgres on first init (`./native-schema.sql` is mounte
 
 ---
 
-## TLS on a LAN box with no public domain
+## Can't reach the site from another machine / TLS errors on a LAN domain
 
-**Cause.** Caddy's default Let's Encrypt flow needs a publicly resolvable domain and reachable ports 80/443. On a LAN-only host it can't get a publicly-trusted cert.
+**Cause.** Public ACME (Let's Encrypt/ZeroSSL) can't issue a certificate for a private name like `soc.lan` (`DNS identifier is invalid`) or for an `example.com` admin email. If Caddy was pointed at public ACME for such a domain it never gets a cert, and **HTTPS fails for everyone** — even the host itself.
 
-**Fix — pick one:**
+**The installer now auto-detects this:** internal/LAN domains (private TLDs like `.lan`/`.local`/`.internal`, a single-label host, or an IP) get Caddy's **built-in CA** automatically — no public DNS needed. Override with `T1_TLS_MODE=internal|public`.
 
-- **Caddy internal CA.** Use Caddy's internal certificate (`tls internal` in the `Caddyfile` site block) and install/trust Caddy's root CA on each client machine. Good for a closed lab.
-- **Real domain + DNS-01.** Use a real domain and an ACME DNS-01 challenge (e.g. a Cloudflare API token) so the cert is publicly trusted without exposing port 80. This works even when the host has no inbound public reachability.
+**If you're on an internal domain and can't connect from another machine:**
+
+1. **Name resolution.** The cert is issued for the name, so the raw IP won't validate. Point the domain at the host via local DNS, or add a hosts-file entry on the client:
+   ```
+   192.168.1.50   soc.lan
+   ```
+2. **Trust.** Accept the browser's self-signed warning, or install Caddy's root CA for warning-free TLS:
+   ```bash
+   docker compose exec caddy cat /data/caddy/pki/authorities/local/root.crt > t1-root-ca.crt
+   # import t1-root-ca.crt into the client's OS / browser trust store
+   ```
+3. **Already installed with the wrong mode?** Set `CADDY_TLS=internal` in `.env` (or `T1_TLS_MODE=internal ./install.sh --reset`) and `docker compose up -d caddy`.
+
+**Want a publicly-trusted cert without exposing port 80?** Use a real domain with an ACME DNS-01 challenge (e.g. a Cloudflare API token) — works even with no inbound public reachability.
 
 ---
 
