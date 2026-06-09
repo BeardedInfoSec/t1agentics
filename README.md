@@ -37,10 +37,11 @@ cd t1agentics
 <table>
   <tr>
     <td width="50%"><img src="docs/screenshots/investigation-riggs.png" alt="AI deep-dive analysis with the Riggs assistant"><br><sub><b>AI deep-dive analysis</b> — Riggs runs a deep analysis (threat assessment, MITRE ATT&CK mapping, root cause) and proposes concrete actions you approve or dismiss.</sub></td>
-    <td width="50%"><img src="docs/screenshots/playbook-marketplace.png" alt="Playbook marketplace"><br><sub><b>Playbook marketplace</b> — 200+ ready-to-run response playbooks across phishing, malware, identity, cloud, and more.</sub></td>
+    <td width="50%"><img src="docs/screenshots/alert-triage-preview.png" alt="Inline alert triage drawer"><br><sub><b>Triage at a glance</b> — an alert's verdict, key findings, and IOCs surface in the queue drawer before you open the case.</sub></td>
   </tr>
   <tr>
-    <td colspan="2" align="center"><img src="docs/screenshots/knowledge-base.png" alt="Built-in knowledge base" width="800"><br><sub><b>Knowledge base</b> — 340+ built-in SOC runbooks and reference articles, searchable in-product.</sub></td>
+    <td width="50%"><img src="docs/screenshots/playbook-marketplace.png" alt="Playbook marketplace"><br><sub><b>Playbook marketplace</b> — 200+ ready-to-run response playbooks across phishing, malware, identity, cloud, and more.</sub></td>
+    <td width="50%"><img src="docs/screenshots/knowledge-base.png" alt="Built-in knowledge base"><br><sub><b>Knowledge base</b> — 340+ built-in SOC runbooks and reference articles, searchable in-product.</sub></td>
   </tr>
 </table>
 
